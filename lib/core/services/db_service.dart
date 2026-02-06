@@ -5,7 +5,7 @@ import '../../features/projects/data/models/project_model.dart';
 
 part 'db_service.g.dart';
 
-@DriftDatabase(tables: [Projects])
+@DriftDatabase(tables: [ProjectTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 

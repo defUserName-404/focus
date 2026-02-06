@@ -1,56 +1,57 @@
 import 'package:drift/drift.dart';
-import 'package:focus/core/services/db_service.dart' as db;
+
+import '../../../../core/services/db_service.dart';
 
 abstract class IProjectLocalDataSource {
-  Future<List<db.Project>> getAllProjects();
+  Future<List<ProjectTableData>> getAllProjects();
 
-  Future<db.Project?> getProjectById(String id);
+  Future<ProjectTableData?> getProjectById(String id);
 
-  Future<void> createProject(db.ProjectsCompanion companion);
+  Future<void> createProject(ProjectTableCompanion companion);
 
-  Future<void> updateProject(db.ProjectsCompanion companion);
+  Future<void> updateProject(ProjectTableCompanion companion);
 
   Future<void> deleteProject(String id);
 
-  Stream<List<db.Project>> watchAllProjects();
+  Stream<List<ProjectTableData>> watchAllProjects();
 }
 
 class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
   ProjectLocalDataSourceImpl(this._db);
 
-  final db.AppDatabase _db;
+  final AppDatabase _db;
 
   @override
-  Future<List<db.Project>> getAllProjects() async {
-    final rows = await _db.select(_db.projects).get();
+  Future<List<ProjectTableData>> getAllProjects() async {
+    final rows = await _db.select(_db.projectTable).get();
     return rows;
   }
 
   @override
-  Future<db.Project?> getProjectById(String id) async {
-    final query = _db.select(_db.projects)..where((t) => t.id.equals(id));
+  Future<ProjectTableData?> getProjectById(String id) async {
+    final query = _db.select(_db.projectTable)..where((t) => t.id.equals(id));
     final row = await query.getSingleOrNull();
     return row;
   }
 
   @override
-  Future<void> createProject(db.ProjectsCompanion companion) async {
-    await _db.into(_db.projects).insert(companion);
+  Future<void> createProject(ProjectTableCompanion companion) async {
+    await _db.into(_db.projectTable).insert(companion);
   }
 
   @override
-  Future<void> updateProject(db.ProjectsCompanion companion) async {
-    await _db.into(_db.projects).insert(companion, mode: InsertMode.insertOrReplace);
+  Future<void> updateProject(ProjectTableCompanion companion) async {
+    await _db.into(_db.projectTable).insert(companion, mode: InsertMode.insertOrReplace);
   }
 
   @override
   Future<void> deleteProject(String id) async {
-    final deleteQuery = _db.delete(_db.projects)..where((t) => t.id.equals(id));
+    final deleteQuery = _db.delete(_db.projectTable)..where((t) => t.id.equals(id));
     await deleteQuery.go();
   }
 
   @override
-  Stream<List<db.Project>> watchAllProjects() {
-    return _db.select(_db.projects).watch();
+  Stream<List<ProjectTableData>> watchAllProjects() {
+    return _db.select(_db.projectTable).watch();
   }
 }

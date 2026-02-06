@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart' show BuildGeneralColumn, Column, DateTimeColumn, Table, TextColumn;
 
-class Projects extends Table {
+class ProjectTable extends Table {
   TextColumn get id => text()();
 
   TextColumn get title => text()();

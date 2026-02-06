@@ -3,11 +3,12 @@
 part of 'db_service.dart';
 
 // ignore_for_file: type=lint
-class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
+class $ProjectTableTable extends ProjectTable
+    with TableInfo<$ProjectTableTable, ProjectTableData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $ProjectsTable(this.attachedDatabase, [this._alias]);
+  $ProjectTableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -95,10 +96,10 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'projects';
+  static const String $name = 'project_table';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Project> instance, {
+    Insertable<ProjectTableData> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -165,9 +166,9 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Project map(Map<String, dynamic> data, {String? tablePrefix}) {
+  ProjectTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Project(
+    return ProjectTableData(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -200,12 +201,13 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
   }
 
   @override
-  $ProjectsTable createAlias(String alias) {
-    return $ProjectsTable(attachedDatabase, alias);
+  $ProjectTableTable createAlias(String alias) {
+    return $ProjectTableTable(attachedDatabase, alias);
   }
 }
 
-class Project extends DataClass implements Insertable<Project> {
+class ProjectTableData extends DataClass
+    implements Insertable<ProjectTableData> {
   final String id;
   final String title;
   final String description;
@@ -213,7 +215,7 @@ class Project extends DataClass implements Insertable<Project> {
   final DateTime deadline;
   final DateTime createdAt;
   final DateTime updatedAt;
-  const Project({
+  const ProjectTableData({
     required this.id,
     required this.title,
     required this.description,
@@ -235,8 +237,8 @@ class Project extends DataClass implements Insertable<Project> {
     return map;
   }
 
-  ProjectsCompanion toCompanion(bool nullToAbsent) {
-    return ProjectsCompanion(
+  ProjectTableCompanion toCompanion(bool nullToAbsent) {
+    return ProjectTableCompanion(
       id: Value(id),
       title: Value(title),
       description: Value(description),
@@ -247,12 +249,12 @@ class Project extends DataClass implements Insertable<Project> {
     );
   }
 
-  factory Project.fromJson(
+  factory ProjectTableData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Project(
+    return ProjectTableData(
       id: serializer.fromJson<String>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String>(json['description']),
@@ -276,7 +278,7 @@ class Project extends DataClass implements Insertable<Project> {
     };
   }
 
-  Project copyWith({
+  ProjectTableData copyWith({
     String? id,
     String? title,
     String? description,
@@ -284,7 +286,7 @@ class Project extends DataClass implements Insertable<Project> {
     DateTime? deadline,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) => Project(
+  }) => ProjectTableData(
     id: id ?? this.id,
     title: title ?? this.title,
     description: description ?? this.description,
@@ -293,8 +295,8 @@ class Project extends DataClass implements Insertable<Project> {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
-  Project copyWithCompanion(ProjectsCompanion data) {
-    return Project(
+  ProjectTableData copyWithCompanion(ProjectTableCompanion data) {
+    return ProjectTableData(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
       description: data.description.present
@@ -309,7 +311,7 @@ class Project extends DataClass implements Insertable<Project> {
 
   @override
   String toString() {
-    return (StringBuffer('Project(')
+    return (StringBuffer('ProjectTableData(')
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
@@ -334,7 +336,7 @@ class Project extends DataClass implements Insertable<Project> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Project &&
+      (other is ProjectTableData &&
           other.id == this.id &&
           other.title == this.title &&
           other.description == this.description &&
@@ -344,7 +346,7 @@ class Project extends DataClass implements Insertable<Project> {
           other.updatedAt == this.updatedAt);
 }
 
-class ProjectsCompanion extends UpdateCompanion<Project> {
+class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
   final Value<String> id;
   final Value<String> title;
   final Value<String> description;
@@ -353,7 +355,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
-  const ProjectsCompanion({
+  const ProjectTableCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
@@ -363,7 +365,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  ProjectsCompanion.insert({
+  ProjectTableCompanion.insert({
     required String id,
     required String title,
     required String description,
@@ -379,7 +381,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
        deadline = Value(deadline),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
-  static Insertable<Project> custom({
+  static Insertable<ProjectTableData> custom({
     Expression<String>? id,
     Expression<String>? title,
     Expression<String>? description,
@@ -401,7 +403,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     });
   }
 
-  ProjectsCompanion copyWith({
+  ProjectTableCompanion copyWith({
     Value<String>? id,
     Value<String>? title,
     Value<String>? description,
@@ -411,7 +413,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
   }) {
-    return ProjectsCompanion(
+    return ProjectTableCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
@@ -455,7 +457,7 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
 
   @override
   String toString() {
-    return (StringBuffer('ProjectsCompanion(')
+    return (StringBuffer('ProjectTableCompanion(')
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
@@ -472,16 +474,16 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $ProjectsTable projects = $ProjectsTable(this);
+  late final $ProjectTableTable projectTable = $ProjectTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [projects];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [projectTable];
 }
 
-typedef $$ProjectsTableCreateCompanionBuilder =
-    ProjectsCompanion Function({
+typedef $$ProjectTableTableCreateCompanionBuilder =
+    ProjectTableCompanion Function({
       required String id,
       required String title,
       required String description,
@@ -491,8 +493,8 @@ typedef $$ProjectsTableCreateCompanionBuilder =
       required DateTime updatedAt,
       Value<int> rowid,
     });
-typedef $$ProjectsTableUpdateCompanionBuilder =
-    ProjectsCompanion Function({
+typedef $$ProjectTableTableUpdateCompanionBuilder =
+    ProjectTableCompanion Function({
       Value<String> id,
       Value<String> title,
       Value<String> description,
@@ -503,9 +505,9 @@ typedef $$ProjectsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-class $$ProjectsTableFilterComposer
-    extends Composer<_$AppDatabase, $ProjectsTable> {
-  $$ProjectsTableFilterComposer({
+class $$ProjectTableTableFilterComposer
+    extends Composer<_$AppDatabase, $ProjectTableTable> {
+  $$ProjectTableTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -548,9 +550,9 @@ class $$ProjectsTableFilterComposer
   );
 }
 
-class $$ProjectsTableOrderingComposer
-    extends Composer<_$AppDatabase, $ProjectsTable> {
-  $$ProjectsTableOrderingComposer({
+class $$ProjectTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProjectTableTable> {
+  $$ProjectTableTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -593,9 +595,9 @@ class $$ProjectsTableOrderingComposer
   );
 }
 
-class $$ProjectsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ProjectsTable> {
-  $$ProjectsTableAnnotationComposer({
+class $$ProjectTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProjectTableTable> {
+  $$ProjectTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -626,32 +628,35 @@ class $$ProjectsTableAnnotationComposer
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }
 
-class $$ProjectsTableTableManager
+class $$ProjectTableTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $ProjectsTable,
-          Project,
-          $$ProjectsTableFilterComposer,
-          $$ProjectsTableOrderingComposer,
-          $$ProjectsTableAnnotationComposer,
-          $$ProjectsTableCreateCompanionBuilder,
-          $$ProjectsTableUpdateCompanionBuilder,
-          (Project, BaseReferences<_$AppDatabase, $ProjectsTable, Project>),
-          Project,
+          $ProjectTableTable,
+          ProjectTableData,
+          $$ProjectTableTableFilterComposer,
+          $$ProjectTableTableOrderingComposer,
+          $$ProjectTableTableAnnotationComposer,
+          $$ProjectTableTableCreateCompanionBuilder,
+          $$ProjectTableTableUpdateCompanionBuilder,
+          (
+            ProjectTableData,
+            BaseReferences<_$AppDatabase, $ProjectTableTable, ProjectTableData>,
+          ),
+          ProjectTableData,
           PrefetchHooks Function()
         > {
-  $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
+  $$ProjectTableTableTableManager(_$AppDatabase db, $ProjectTableTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$ProjectsTableFilterComposer($db: db, $table: table),
+              $$ProjectTableTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$ProjectsTableOrderingComposer($db: db, $table: table),
+              $$ProjectTableTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$ProjectsTableAnnotationComposer($db: db, $table: table),
+              $$ProjectTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -662,7 +667,7 @@ class $$ProjectsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => ProjectsCompanion(
+              }) => ProjectTableCompanion(
                 id: id,
                 title: title,
                 description: description,
@@ -682,7 +687,7 @@ class $$ProjectsTableTableManager
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
-              }) => ProjectsCompanion.insert(
+              }) => ProjectTableCompanion.insert(
                 id: id,
                 title: title,
                 description: description,
@@ -700,24 +705,27 @@ class $$ProjectsTableTableManager
       );
 }
 
-typedef $$ProjectsTableProcessedTableManager =
+typedef $$ProjectTableTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $ProjectsTable,
-      Project,
-      $$ProjectsTableFilterComposer,
-      $$ProjectsTableOrderingComposer,
-      $$ProjectsTableAnnotationComposer,
-      $$ProjectsTableCreateCompanionBuilder,
-      $$ProjectsTableUpdateCompanionBuilder,
-      (Project, BaseReferences<_$AppDatabase, $ProjectsTable, Project>),
-      Project,
+      $ProjectTableTable,
+      ProjectTableData,
+      $$ProjectTableTableFilterComposer,
+      $$ProjectTableTableOrderingComposer,
+      $$ProjectTableTableAnnotationComposer,
+      $$ProjectTableTableCreateCompanionBuilder,
+      $$ProjectTableTableUpdateCompanionBuilder,
+      (
+        ProjectTableData,
+        BaseReferences<_$AppDatabase, $ProjectTableTable, ProjectTableData>,
+      ),
+      ProjectTableData,
       PrefetchHooks Function()
     >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$ProjectsTableTableManager get projects =>
-      $$ProjectsTableTableManager(_db, _db.projects);
+  $$ProjectTableTableTableManager get projectTable =>
+      $$ProjectTableTableTableManager(_db, _db.projectTable);
 }
