@@ -54,7 +54,7 @@ final class ProjectRepositoryProvider
   }
 }
 
-String _$projectRepositoryHash() => r'3fe24e935536c9f96abde5563157d9ab59464871';
+String _$projectRepositoryHash() => r'2ea2b8d143bc9e84730588e39440be11f1650fdd';
 
 @ProviderFor(projectList)
 final projectListProvider = ProjectListProvider._();
@@ -93,7 +93,7 @@ final class ProjectListProvider
   }
 }
 
-String _$projectListHash() => r'80b0004f16026499e279d3d1996825cf4683ab53';
+String _$projectListHash() => r'c6c5a795744f5e0937c863f15e03b133d11bd437';
 
 @ProviderFor(ProjectNotifier)
 final projectProvider = ProjectNotifierProvider._();
@@ -127,7 +127,7 @@ final class ProjectNotifierProvider
   }
 }
 
-String _$projectNotifierHash() => r'3a1c22f74458243ca49adfe29803e3bd7139f11d';
+String _$projectNotifierHash() => r'bc17d26bdef1f8d0ae7cbc358b9e2b5393f37e42';
 
 abstract class _$ProjectNotifier extends $Notifier<AsyncValue<List<Project>>> {
   AsyncValue<List<Project>> build();

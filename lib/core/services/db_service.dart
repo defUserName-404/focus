@@ -1,23 +1,14 @@
-import 'package:isar_community/isar.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:drift/drift.dart';
+import 'package:drift_flutter/drift_flutter.dart';
 
 import '../../features/projects/data/models/project_model.dart';
 
-class IsarDatabase {
-  static Isar? _instance;
+part 'db_service.g.dart';
 
-  static Future<Isar> getInstance() async {
-    if (_instance != null) return _instance!;
+@DriftDatabase(tables: [Projects])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
-    final dir = await getApplicationDocumentsDirectory();
-
-    _instance = await Isar.open([ProjectModelSchema], directory: dir.path, name: 'focus');
-
-    return _instance!;
-  }
-
-  static Future<void> close() async {
-    await _instance?.close();
-    _instance = null;
-  }
+  @override
+  int get schemaVersion => 1;
 }

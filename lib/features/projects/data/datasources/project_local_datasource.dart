@@ -1,61 +1,56 @@
-import 'package:isar_community/isar.dart';
-
-// No longer need to import db_service.dart here as Isar instance is injected
-// import '../../../../core/services/db_service.dart';
-import '../models/project_model.dart';
+import 'package:drift/drift.dart';
+import 'package:focus/core/services/db_service.dart' as db;
 
 abstract class IProjectLocalDataSource {
-  Future<List<ProjectModel>> getAllProjectModels();
+  Future<List<db.Project>> getAllProjects();
 
-  Future<ProjectModel?> getProjectModelById(String id);
+  Future<db.Project?> getProjectById(String id);
 
-  Future<void> createProjectModel(ProjectModel project);
+  Future<void> createProject(db.ProjectsCompanion companion);
 
-  Future<void> updateProjectModel(ProjectModel project);
+  Future<void> updateProject(db.ProjectsCompanion companion);
 
-  Future<void> deleteProjectModel(String id);
+  Future<void> deleteProject(String id);
 
-  Stream<List<ProjectModel>> watchAllProjectModels();
+  Stream<List<db.Project>> watchAllProjects();
 }
 
 class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
-  final Isar _isar; // Now final and initialized via constructor
+  ProjectLocalDataSourceImpl(this._db);
 
-  ProjectLocalDataSourceImpl(this._isar); // Constructor to inject Isar
+  final db.AppDatabase _db;
 
   @override
-  Future<List<ProjectModel>> getAllProjectModels() async {
-    return await _isar.projectModels.where().findAll();
+  Future<List<db.Project>> getAllProjects() async {
+    final rows = await _db.select(_db.projects).get();
+    return rows;
   }
 
   @override
-  Future<ProjectModel?> getProjectModelById(String id) async {
-    return await _isar.projectModels.filter().projectIdEqualTo(id).findFirst();
+  Future<db.Project?> getProjectById(String id) async {
+    final query = _db.select(_db.projects)..where((t) => t.id.equals(id));
+    final row = await query.getSingleOrNull();
+    return row;
   }
 
   @override
-  Future<void> createProjectModel(ProjectModel project) async {
-    await _isar.writeTxn(() async {
-      await _isar.projectModels.put(project);
-    });
+  Future<void> createProject(db.ProjectsCompanion companion) async {
+    await _db.into(_db.projects).insert(companion);
   }
 
   @override
-  Future<void> updateProjectModel(ProjectModel project) async {
-    await _isar.writeTxn(() async {
-      await _isar.projectModels.put(project); // Upsert behavior
-    });
+  Future<void> updateProject(db.ProjectsCompanion companion) async {
+    await _db.into(_db.projects).insert(companion, mode: InsertMode.insertOrReplace);
   }
 
   @override
-  Future<void> deleteProjectModel(String id) async {
-    await _isar.writeTxn(() async {
-      await _isar.projectModels.filter().projectIdEqualTo(id).deleteFirst();
-    });
+  Future<void> deleteProject(String id) async {
+    final deleteQuery = _db.delete(_db.projects)..where((t) => t.id.equals(id));
+    await deleteQuery.go();
   }
 
   @override
-  Stream<List<ProjectModel>> watchAllProjectModels() {
-    return _isar.projectModels.where().watch(fireImmediately: true);
+  Stream<List<db.Project>> watchAllProjects() {
+    return _db.select(_db.projects).watch();
   }
 }
