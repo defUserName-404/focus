@@ -1,40 +1,20 @@
-import 'package:isar_community/isar.dart';
+import 'package:drift/drift.dart' show BuildGeneralColumn, Column, DateTimeColumn, Table, TextColumn;
 
-import '../../domain/entities/project.dart';
+class ProjectTable extends Table {
+  TextColumn get id => text()();
 
-part 'project_model.g.dart';
+  TextColumn get title => text()();
 
-@collection
-class ProjectModel {
-  Id id = Isar.autoIncrement;
+  TextColumn get description => text()();
 
-  @Index(unique: true)
-  late String projectId;
+  DateTimeColumn get startDate => dateTime()();
 
-  late String title;
-  late String description;
-  late DateTime startDate;
-  late DateTime deadline;
-  late DateTime createdAt;
-  late DateTime updatedAt;
+  DateTimeColumn get deadline => dateTime()();
 
-  // Conversion methods
-  Project toEntity() => Project(
-    id: projectId,
-    title: title,
-    description: description,
-    startDate: startDate,
-    deadline: deadline,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-  );
+  DateTimeColumn get createdAt => dateTime()();
 
-  static ProjectModel fromEntity(Project project) => ProjectModel()
-    ..projectId = project.id
-    ..title = project.title
-    ..description = project.description
-    ..startDate = project.startDate
-    ..deadline = project.deadline
-    ..createdAt = project.createdAt
-    ..updatedAt = project.updatedAt;
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

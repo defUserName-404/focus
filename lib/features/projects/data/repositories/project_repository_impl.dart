@@ -1,7 +1,7 @@
 import '../../domain/entities/project.dart';
 import '../../domain/repositories/i_project_repository.dart';
 import '../datasources/project_local_datasource.dart';
-import '../models/project_model.dart';
+import '../mappers/project_extensions.dart';
 
 class ProjectRepositoryImpl implements IProjectRepository {
   final IProjectLocalDataSource _localDataSource;
@@ -10,35 +10,35 @@ class ProjectRepositoryImpl implements IProjectRepository {
 
   @override
   Future<List<Project>> getAllProjects() async {
-    final models = await _localDataSource.getAllProjectModels();
-    return models.map((m) => m.toEntity()).toList();
+    final rows = await _localDataSource.getAllProjects();
+    return rows.map((r) => r.toDomain()).toList();
   }
 
   @override
   Future<Project?> getProjectById(String id) async {
-    final model = await _localDataSource.getProjectModelById(id);
-    return model?.toEntity();
+    final row = await _localDataSource.getProjectById(id);
+    return row?.toDomain();
   }
 
   @override
   Future<void> createProject(Project project) async {
-    final model = ProjectModel.fromEntity(project);
-    await _localDataSource.createProjectModel(model);
+    final companion = project.toCompanion();
+    await _localDataSource.createProject(companion);
   }
 
   @override
   Future<void> updateProject(Project project) async {
-    final model = ProjectModel.fromEntity(project);
-    await _localDataSource.updateProjectModel(model);
+    final companion = project.toCompanion();
+    await _localDataSource.updateProject(companion);
   }
 
   @override
   Future<void> deleteProject(String id) async {
-    await _localDataSource.deleteProjectModel(id);
+    await _localDataSource.deleteProject(id);
   }
 
   @override
   Stream<List<Project>> watchAllProjects() {
-    return _localDataSource.watchAllProjectModels().map((models) => models.map((m) => m.toEntity()).toList());
+    return _localDataSource.watchAllProjects().map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 }

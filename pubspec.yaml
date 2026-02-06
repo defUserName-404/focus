@@ -15,12 +15,13 @@ dependencies:
 
   # Dependency Injection
   get_it: ^9.2.0
-  injectable: ^2.7.1+4
 
-  # Database
-  isar_community: ^3.3.0
-  isar_community_flutter_libs: ^3.3.0
-  path_provider: ^2.1.5
+  # Database - drift_flutter includes everything
+  drift_flutter: ^0.2.8
+  drift: ^2.31.0
+
+  # Required native sqlite binaries for Drift on some platforms
+  sqlite3_flutter_libs: ^0.5.41
 
   # UI
   forui: ^0.17.0
@@ -40,8 +41,10 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
-  # Code Generation
-  build_runner: ^2.7.1
-  isar_community_generator: ^3.3.0
+  # Code generation
+  build_runner: ^2.11.0
+  drift_dev: ^2.31.0
   riverpod_generator: ^4.0.0+1
-  injectable_generator: ^2.6.1
+
+flutter:
+  uses-material-design: true
