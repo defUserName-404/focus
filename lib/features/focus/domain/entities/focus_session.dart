@@ -1,0 +1,1 @@
+// Feature (focus) - domain entity

@@ -1,0 +1,1 @@
+// Feature (projects) - domain entity
