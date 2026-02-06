@@ -12,5 +12,18 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) async {
+      await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      // If upgrading from schema version 1, create the new `task_table`.
+      if (from < 2) {
+        await m.createTable(taskTable);
+      }
+    },
+  );
 }
