@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import '../../../projects/presentation/providers/project_provider.dart';
+import '../../../projects/presentation/screens/project_list_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -37,7 +38,7 @@ class HomeScreen extends ConsumerWidget {
                   FButton(
                     child: const Text('Create Your First Project'),
                     onPress: () {
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen()));
                     },
                   ),
                 ],
@@ -58,7 +59,7 @@ class HomeScreen extends ConsumerWidget {
                     subtitle: Text(project.description),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => ProjectListScreen()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ProjectListScreen()));
                     },
                   ),
                 ),
@@ -71,7 +72,7 @@ class HomeScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const ProjectListScreen()));
         },
         icon: const Icon(Icons.add),
         label: const Text('New Project'),
