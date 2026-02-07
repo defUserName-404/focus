@@ -1,104 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/features/projects/presentation/screens/project_detail_screen.dart';
-import 'package:forui/forui.dart';
+import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/constants/layout_constants.dart';
+import '../../domain/entities/project.dart';
 import '../providers/project_provider.dart';
+import '../widgets/project_card.dart';
+import '../widgets/project_search_filter.dart';
+import 'project_detail_screen.dart';
 
-class ProjectListScreen extends ConsumerWidget {
+class ProjectListScreen extends ConsumerStatefulWidget {
   const ProjectListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProjectListScreen> createState() => _ProjectListScreenState();
+}
+
+class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String? _selectedFilter;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final projectsAsync = ref.watch(projectListProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Projects')),
-      body: projectsAsync.when(
+    return fu.FScaffold(
+      header: const fu.FHeader(title: Text('Projects')),
+      child: projectsAsync.when(
         data: (projects) {
-          if (projects.isEmpty) {
-            return const Center(child: Text('No projects. Create one!'));
-          }
+          final filtered = _applyFilters(projects, _searchController.text, _selectedFilter);
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: projects.length,
-            itemBuilder: (context, index) {
-              final project = projects[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  title: Text(project.title),
-                  subtitle: Text(project.description),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ProjectDetailScreen(projectId: project.id)),
-                    );
-                  },
-                ),
-              );
-            },
+          return Column(
+            children: [
+              ProjectSearchFilter(
+                controller: _searchController,
+                filters: const ['Active', 'Completed'],
+                selectedFilter: _selectedFilter,
+                onSearchChanged: (s) => setState(() {}),
+                onFilterChanged: (v) => setState(() => _selectedFilter = v),
+              ),
+              Expanded(
+                child: filtered.isEmpty
+                    ? Center(child: Text('No projects. Create one!'))
+                    : ListView.builder(
+                        padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final Project project = filtered[index];
+                          return ProjectCard(
+                            project: project,
+                            onTap: () => _openDetail(project.id),
+                            onEdit: () {},
+                            onDelete: () {},
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+        loading: () => const Center(child: fu.FCircularProgress()),
+        error: (err, _) => Center(child: Text('Error: $err')),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateProjectDialog(context, ref),
-        child: const Icon(Icons.add),
-      ),
+      // floatingAction: fu.FButton.icon(
+      //   icon: fu.FIcon.add,
+      //   child: const Text('New'),
+      //   onPress: () => _showCreateProjectDialog(),
+      // ),
     );
   }
 
-  void _showCreateProjectDialog(BuildContext context, WidgetRef ref) {
-    final titleController = TextEditingController();
-    final descController = TextEditingController();
-    DateTime startDate = DateTime.now();
-    DateTime deadline = DateTime.now().add(const Duration(days: 30));
+  List<Project> _applyFilters(List<Project> all, String query, String? filter) {
+    var result = all;
+    final q = query.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      result = result
+          .where((p) => p.title.toLowerCase().contains(q) || p.description.toLowerCase().contains(q))
+          .toList();
+    }
+    // simple filter placeholder (no status on Project domain yet)
+    if (filter != null && filter.isNotEmpty) {
+      if (filter == 'Completed') {
+        result = result.where((p) => p.title.toLowerCase().contains('done')).toList();
+      } else if (filter == 'Active') {
+        result = result.where((p) => !p.title.toLowerCase().contains('done')).toList();
+      }
+    }
+    return result;
+  }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create Project'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'Title'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          FButton(
-            child: const Text('Create'),
-            onPress: () async {
-              if (titleController.text.isNotEmpty) {
-                await ref
-                    .read(projectProvider.notifier)
-                    .createProject(
-                      title: titleController.text,
-                      description: descController.text,
-                      startDate: startDate,
-                      deadline: deadline,
-                    );
-                if (context.mounted) Navigator.pop(context);
-              }
-            },
-          ),
-        ],
-      ),
-    );
+  void _openDetail(String projectId) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: projectId)));
   }
 }
