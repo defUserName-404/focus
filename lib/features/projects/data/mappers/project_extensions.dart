@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:focus/core/services/db_service.dart';
 
 import '../../domain/entities/project.dart';

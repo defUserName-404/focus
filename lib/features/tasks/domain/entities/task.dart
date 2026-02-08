@@ -2,10 +2,10 @@ import 'task_priority.dart';
 
 class Task {
   final String id;
-  final String projectId;
+  final BigInt projectId;
   final String? parentTaskId;
   final String title;
-  final String description;
+  final String? description;
   final TaskPriority priority;
   final DateTime startDate;
   final DateTime endDate;
@@ -19,7 +19,7 @@ class Task {
     required this.projectId,
     this.parentTaskId,
     required this.title,
-    required this.description,
+    this.description,
     required this.priority,
     required this.startDate,
     required this.endDate,

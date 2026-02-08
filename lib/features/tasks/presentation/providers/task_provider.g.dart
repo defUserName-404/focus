@@ -105,7 +105,7 @@ final class TasksByProjectProvider
   }
 }
 
-String _$tasksByProjectHash() => r'c7110d5b6d4961aa76c2d71157d42f4d8bc23dd1';
+String _$tasksByProjectHash() => r'3b31ea9bcdc3b502c70e25f4a31881f684a5b8a1';
 
 final class TasksByProjectFamily extends $Family
     with $FunctionalFamilyOverride<Stream<List<Task>>, String> {
@@ -174,7 +174,7 @@ final class TaskNotifierProvider
   }
 }
 
-String _$taskNotifierHash() => r'2db1691c00da9454aeb2305808b834a449bbdf56';
+String _$taskNotifierHash() => r'02e25fab2ed806b4365ae5b8108bb6ab7283e00a';
 
 final class TaskNotifierFamily extends $Family
     with

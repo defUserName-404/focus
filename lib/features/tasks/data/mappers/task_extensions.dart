@@ -26,7 +26,7 @@ extension DomainTaskToCompanion on Task {
     projectId: projectId,
     parentTaskId: Value(parentTaskId),
     title: title,
-    description: description,
+    description: Value<String?>(description),
     priority: priority,
     startDate: startDate,
     endDate: endDate,

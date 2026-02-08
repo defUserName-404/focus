@@ -11,7 +11,7 @@ class _TaskCopyWithUnset {
 extension TaskCopyWith on Task {
   Task copyWith({
     String? id,
-    String? projectId,
+    BigInt? projectId,
     Object? parentTaskId = _taskCopyWithUnset,
     String? title,
     String? description,

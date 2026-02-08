@@ -160,7 +160,7 @@ class ProjectDetailScreen extends ConsumerWidget {
                       .createTask(
                         projectId: projectIdString,
                         title: titleController.text,
-                        description: descController.text,
+                        description: descController.text.isEmpty ? null : descController.text,
                         priority: priority,
                         startDate: DateTime.now(),
                         endDate: DateTime.now().add(const Duration(days: 7)),

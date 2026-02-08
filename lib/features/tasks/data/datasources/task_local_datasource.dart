@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:focus/core/services/db_service.dart';
 
 abstract class ITaskLocalDataSource {
-  Future<List<TaskTableData>> getTasksByProjectId(String projectId);
+  Future<List<TaskTableData>> getTasksByProjectId(BigInt projectId);
 
   Future<TaskTableData?> getTaskById(String id);
 
@@ -14,7 +14,7 @@ abstract class ITaskLocalDataSource {
 
   Future<void> deleteTask(String id);
 
-  Stream<List<TaskTableData>> watchTasksByProjectId(String projectId);
+  Stream<List<TaskTableData>> watchTasksByProjectId(BigInt projectId);
 }
 
 class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
@@ -23,7 +23,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   final AppDatabase _db;
 
   @override
-  Future<List<TaskTableData>> getTasksByProjectId(String projectId) async {
+  Future<List<TaskTableData>> getTasksByProjectId(BigInt projectId) async {
     return await (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).get();
   }
 
@@ -53,7 +53,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   }
 
   @override
-  Stream<List<TaskTableData>> watchTasksByProjectId(String projectId) {
+  Stream<List<TaskTableData>> watchTasksByProjectId(BigInt projectId) {
     return (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).watch();
   }
 }

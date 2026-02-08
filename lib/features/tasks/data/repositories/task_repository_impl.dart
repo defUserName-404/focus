@@ -9,7 +9,7 @@ class TaskRepositoryImpl implements ITaskRepository {
   TaskRepositoryImpl(this._local);
 
   @override
-  Future<List<Task>> getTasksByProjectId(String projectId) async {
+  Future<List<Task>> getTasksByProjectId(BigInt projectId) async {
     final rows = await _local.getTasksByProjectId(projectId);
     return rows.map((r) => r.toDomain()).toList();
   }
@@ -44,7 +44,7 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   @override
-  Stream<List<Task>> watchTasksByProjectId(String projectId) {
+  Stream<List<Task>> watchTasksByProjectId(BigInt projectId) {
     return _local.watchTasksByProjectId(projectId).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 }

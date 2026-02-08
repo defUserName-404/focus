@@ -15,8 +15,12 @@ class $ProjectTableTable extends ProjectTable
     'id',
     aliasedName,
     false,
+    hasAutoIncrement: true,
     type: DriftSqlType.bigInt,
     requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
   );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
@@ -479,11 +483,11 @@ class $TaskTableTable extends TaskTable
     'projectId',
   );
   @override
-  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+  late final GeneratedColumn<BigInt> projectId = GeneratedColumn<BigInt>(
     'project_id',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: DriftSqlType.bigInt,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _parentTaskIdMeta = const VerificationMeta(
@@ -513,9 +517,9 @@ class $TaskTableTable extends TaskTable
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
     'description',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   @override
   late final GeneratedColumnWithTypeConverter<TaskPriority, int> priority =
@@ -659,8 +663,6 @@ class $TaskTableTable extends TaskTable
           _descriptionMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
     }
     if (data.containsKey('start_date')) {
       context.handle(
@@ -725,7 +727,7 @@ class $TaskTableTable extends TaskTable
         data['${effectivePrefix}id'],
       )!,
       projectId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        DriftSqlType.bigInt,
         data['${effectivePrefix}project_id'],
       )!,
       parentTaskId: attachedDatabase.typeMapping.read(
@@ -739,7 +741,7 @@ class $TaskTableTable extends TaskTable
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
-      )!,
+      ),
       priority: $TaskTableTable.$converterpriority.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.int,
@@ -784,10 +786,10 @@ class $TaskTableTable extends TaskTable
 
 class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   final String id;
-  final String projectId;
+  final BigInt projectId;
   final String? parentTaskId;
   final String title;
-  final String description;
+  final String? description;
   final TaskPriority priority;
   final DateTime startDate;
   final DateTime endDate;
@@ -800,7 +802,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     required this.projectId,
     this.parentTaskId,
     required this.title,
-    required this.description,
+    this.description,
     required this.priority,
     required this.startDate,
     required this.endDate,
@@ -813,12 +815,14 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['project_id'] = Variable<String>(projectId);
+    map['project_id'] = Variable<BigInt>(projectId);
     if (!nullToAbsent || parentTaskId != null) {
       map['parent_task_id'] = Variable<String>(parentTaskId);
     }
     map['title'] = Variable<String>(title);
-    map['description'] = Variable<String>(description);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
     {
       map['priority'] = Variable<int>(
         $TaskTableTable.$converterpriority.toSql(priority),
@@ -841,7 +845,9 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           ? const Value.absent()
           : Value(parentTaskId),
       title: Value(title),
-      description: Value(description),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
       priority: Value(priority),
       startDate: Value(startDate),
       endDate: Value(endDate),
@@ -859,10 +865,10 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TaskTableData(
       id: serializer.fromJson<String>(json['id']),
-      projectId: serializer.fromJson<String>(json['projectId']),
+      projectId: serializer.fromJson<BigInt>(json['projectId']),
       parentTaskId: serializer.fromJson<String?>(json['parentTaskId']),
       title: serializer.fromJson<String>(json['title']),
-      description: serializer.fromJson<String>(json['description']),
+      description: serializer.fromJson<String?>(json['description']),
       priority: $TaskTableTable.$converterpriority.fromJson(
         serializer.fromJson<int>(json['priority']),
       ),
@@ -879,10 +885,10 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'projectId': serializer.toJson<String>(projectId),
+      'projectId': serializer.toJson<BigInt>(projectId),
       'parentTaskId': serializer.toJson<String?>(parentTaskId),
       'title': serializer.toJson<String>(title),
-      'description': serializer.toJson<String>(description),
+      'description': serializer.toJson<String?>(description),
       'priority': serializer.toJson<int>(
         $TaskTableTable.$converterpriority.toJson(priority),
       ),
@@ -897,10 +903,10 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
 
   TaskTableData copyWith({
     String? id,
-    String? projectId,
+    BigInt? projectId,
     Value<String?> parentTaskId = const Value.absent(),
     String? title,
-    String? description,
+    Value<String?> description = const Value.absent(),
     TaskPriority? priority,
     DateTime? startDate,
     DateTime? endDate,
@@ -913,7 +919,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     projectId: projectId ?? this.projectId,
     parentTaskId: parentTaskId.present ? parentTaskId.value : this.parentTaskId,
     title: title ?? this.title,
-    description: description ?? this.description,
+    description: description.present ? description.value : this.description,
     priority: priority ?? this.priority,
     startDate: startDate ?? this.startDate,
     endDate: endDate ?? this.endDate,
@@ -999,10 +1005,10 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
 
 class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   final Value<String> id;
-  final Value<String> projectId;
+  final Value<BigInt> projectId;
   final Value<String?> parentTaskId;
   final Value<String> title;
-  final Value<String> description;
+  final Value<String?> description;
   final Value<TaskPriority> priority;
   final Value<DateTime> startDate;
   final Value<DateTime> endDate;
@@ -1028,10 +1034,10 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   });
   TaskTableCompanion.insert({
     required String id,
-    required String projectId,
+    required BigInt projectId,
     this.parentTaskId = const Value.absent(),
     required String title,
-    required String description,
+    this.description = const Value.absent(),
     required TaskPriority priority,
     required DateTime startDate,
     required DateTime endDate,
@@ -1043,7 +1049,6 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   }) : id = Value(id),
        projectId = Value(projectId),
        title = Value(title),
-       description = Value(description),
        priority = Value(priority),
        startDate = Value(startDate),
        endDate = Value(endDate),
@@ -1052,7 +1057,7 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
        updatedAt = Value(updatedAt);
   static Insertable<TaskTableData> custom({
     Expression<String>? id,
-    Expression<String>? projectId,
+    Expression<BigInt>? projectId,
     Expression<String>? parentTaskId,
     Expression<String>? title,
     Expression<String>? description,
@@ -1084,10 +1089,10 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
 
   TaskTableCompanion copyWith({
     Value<String>? id,
-    Value<String>? projectId,
+    Value<BigInt>? projectId,
     Value<String?>? parentTaskId,
     Value<String>? title,
-    Value<String>? description,
+    Value<String?>? description,
     Value<TaskPriority>? priority,
     Value<DateTime>? startDate,
     Value<DateTime>? endDate,
@@ -1121,7 +1126,7 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       map['id'] = Variable<String>(id.value);
     }
     if (projectId.present) {
-      map['project_id'] = Variable<String>(projectId.value);
+      map['project_id'] = Variable<BigInt>(projectId.value);
     }
     if (parentTaskId.present) {
       map['parent_task_id'] = Variable<String>(parentTaskId.value);
@@ -1431,10 +1436,10 @@ typedef $$ProjectTableTableProcessedTableManager =
 typedef $$TaskTableTableCreateCompanionBuilder =
     TaskTableCompanion Function({
       required String id,
-      required String projectId,
+      required BigInt projectId,
       Value<String?> parentTaskId,
       required String title,
-      required String description,
+      Value<String?> description,
       required TaskPriority priority,
       required DateTime startDate,
       required DateTime endDate,
@@ -1447,10 +1452,10 @@ typedef $$TaskTableTableCreateCompanionBuilder =
 typedef $$TaskTableTableUpdateCompanionBuilder =
     TaskTableCompanion Function({
       Value<String> id,
-      Value<String> projectId,
+      Value<BigInt> projectId,
       Value<String?> parentTaskId,
       Value<String> title,
-      Value<String> description,
+      Value<String?> description,
       Value<TaskPriority> priority,
       Value<DateTime> startDate,
       Value<DateTime> endDate,
@@ -1475,7 +1480,7 @@ class $$TaskTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get projectId => $composableBuilder(
+  ColumnFilters<BigInt> get projectId => $composableBuilder(
     column: $table.projectId,
     builder: (column) => ColumnFilters(column),
   );
@@ -1546,7 +1551,7 @@ class $$TaskTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get projectId => $composableBuilder(
+  ColumnOrderings<BigInt> get projectId => $composableBuilder(
     column: $table.projectId,
     builder: (column) => ColumnOrderings(column),
   );
@@ -1614,7 +1619,7 @@ class $$TaskTableTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get projectId =>
+  GeneratedColumn<BigInt> get projectId =>
       $composableBuilder(column: $table.projectId, builder: (column) => column);
 
   GeneratedColumn<String> get parentTaskId => $composableBuilder(
@@ -1686,10 +1691,10 @@ class $$TaskTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String> projectId = const Value.absent(),
+                Value<BigInt> projectId = const Value.absent(),
                 Value<String?> parentTaskId = const Value.absent(),
                 Value<String> title = const Value.absent(),
-                Value<String> description = const Value.absent(),
+                Value<String?> description = const Value.absent(),
                 Value<TaskPriority> priority = const Value.absent(),
                 Value<DateTime> startDate = const Value.absent(),
                 Value<DateTime> endDate = const Value.absent(),
@@ -1716,10 +1721,10 @@ class $$TaskTableTableTableManager
           createCompanionCallback:
               ({
                 required String id,
-                required String projectId,
+                required BigInt projectId,
                 Value<String?> parentTaskId = const Value.absent(),
                 required String title,
-                required String description,
+                Value<String?> description = const Value.absent(),
                 required TaskPriority priority,
                 required DateTime startDate,
                 required DateTime endDate,

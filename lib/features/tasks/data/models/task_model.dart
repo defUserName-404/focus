@@ -1,18 +1,18 @@
 import 'package:drift/drift.dart'
-    show BuildGeneralColumn, Column, DateTimeColumn, Table, TextColumn, IntColumn, BoolColumn, Constant, BuildColumn;
+    show BuildGeneralColumn, Column, DateTimeColumn, Table, TextColumn, IntColumn, BoolColumn, Constant, BuildColumn, Int64Column;
 
 import '../../domain/entities/task_priority.dart';
 
 class TaskTable extends Table {
   TextColumn get id => text()();
 
-  TextColumn get projectId => text()();
+  Int64Column get projectId => int64()();
 
   TextColumn get parentTaskId => text().nullable()();
 
   TextColumn get title => text()();
 
-  TextColumn get description => text()();
+  TextColumn get description => text().nullable()();
 
   IntColumn get priority => intEnum<TaskPriority>()();
 

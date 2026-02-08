@@ -17,7 +17,7 @@ ITaskRepository taskRepository(Ref ref) {
 @Riverpod(keepAlive: true)
 Stream<List<Task>> tasksByProject(Ref ref, String projectId) {
   final repository = ref.watch(taskRepositoryProvider);
-  return repository.watchTasksByProjectId(projectId);
+  return repository.watchTasksByProjectId(BigInt.parse(projectId));
 }
 
 @Riverpod(keepAlive: true)
@@ -34,7 +34,7 @@ class TaskNotifier extends _$TaskNotifier {
   Future<void> _loadTasks(String projectId) async {
     state = const AsyncValue.loading();
     try {
-      final tasks = await _repository.getTasksByProjectId(projectId);
+      final tasks = await _repository.getTasksByProjectId(BigInt.parse(projectId));
       state = AsyncValue.data(tasks);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -46,7 +46,7 @@ class TaskNotifier extends _$TaskNotifier {
     String? parentTaskId,
     required String title,
     TaskPriority? priority,
-    required String description,
+    String? description,
     required DateTime startDate,
     required DateTime endDate,
     required int depth,
@@ -54,7 +54,7 @@ class TaskNotifier extends _$TaskNotifier {
     final time = DateTime.now();
     final task = Task(
       id: const Uuid().v4(),
-      projectId: projectId,
+      projectId: BigInt.parse(projectId),
       parentTaskId: parentTaskId,
       title: title,
       description: description,
@@ -73,7 +73,7 @@ class TaskNotifier extends _$TaskNotifier {
 
   Future<void> updateTask(Task task) async {
     await _repository.updateTask(task);
-    await _loadTasks(task.projectId);
+    await _loadTasks(task.projectId.toString());
   }
 
   Future<void> deleteTask(String id, String projectId) async {

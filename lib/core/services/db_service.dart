@@ -12,7 +12,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -22,6 +22,12 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       // If upgrading from schema version 1, create the new `task_table`.
       if (from < 2) {
+        await m.createTable(taskTable);
+      }
+      // If upgrading from schema version 2 to 3, recreate task table with new schema
+      // (projectId changed from Text to Int64, description made nullable)
+      if (from < 3) {
+        await m.deleteTable('task_table');
         await m.createTable(taskTable);
       }
     },
