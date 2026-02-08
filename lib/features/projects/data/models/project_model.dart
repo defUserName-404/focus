@@ -1,15 +1,16 @@
-import 'package:drift/drift.dart' show BuildGeneralColumn, Column, DateTimeColumn, Table, TextColumn;
+import 'package:drift/drift.dart'
+    show BuildGeneralColumn, Column, DateTimeColumn, Table, TextColumn, Int64Column, BuildInt64Column;
 
 class ProjectTable extends Table {
-  TextColumn get id => text()();
+  Int64Column get id => int64().autoIncrement()();
 
   TextColumn get title => text()();
 
-  TextColumn get description => text()();
+  TextColumn get description => text().nullable()();
 
-  DateTimeColumn get startDate => dateTime()();
+  DateTimeColumn get startDate => dateTime().nullable()();
 
-  DateTimeColumn get deadline => dateTime()();
+  DateTimeColumn get deadline => dateTime().nullable()();
 
   DateTimeColumn get createdAt => dateTime()();
 

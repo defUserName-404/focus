@@ -56,7 +56,7 @@ class HomeScreen extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     title: Text(project.title),
-                    subtitle: Text(project.description),
+                    subtitle: Text(project.description ?? ''),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => ProjectListScreen()));

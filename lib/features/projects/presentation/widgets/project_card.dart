@@ -29,7 +29,10 @@ class ProjectCard extends StatelessWidget {
                   children: [
                     Text(project.title),
                     const SizedBox(height: 6),
-                    Text(project.description, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    if (project.description != null)
+                      Text(project.description!, maxLines: 2, overflow: TextOverflow.ellipsis)
+                    else
+                      Text('No description', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey)),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -55,7 +58,8 @@ class ProjectCard extends StatelessWidget {
   }
 
   String _formatDeadline(Project p) {
-    final days = p.deadline.difference(DateTime.now()).inDays;
+    if (p.deadline == null) return 'No deadline';
+    final days = p.deadline!.difference(DateTime.now()).inDays;
     if (days < 0) return 'Overdue';
     if (days == 0) return 'Due today';
     return 'Due in $days days';

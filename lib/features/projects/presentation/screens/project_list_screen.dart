@@ -55,7 +55,7 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
                           final Project project = filtered[index];
                           return ProjectCard(
                             project: project,
-                            onTap: () => _openDetail(project.id),
+                            onTap: () => project.id != null ? _openDetail(project.id!) : null,
                             onEdit: () {},
                             onDelete: () {},
                           );
@@ -81,7 +81,7 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
     final q = query.trim().toLowerCase();
     if (q.isNotEmpty) {
       result = result
-          .where((p) => p.title.toLowerCase().contains(q) || p.description.toLowerCase().contains(q))
+          .where((p) => p.title.toLowerCase().contains(q) || (p.description?.toLowerCase().contains(q) ?? false))
           .toList();
     }
     // simple filter placeholder (no status on Project domain yet)
@@ -95,7 +95,7 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
     return result;
   }
 
-  void _openDetail(String projectId) {
+  void _openDetail(BigInt projectId) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: projectId)));
   }
 }

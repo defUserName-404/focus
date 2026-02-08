@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/project.dart';
@@ -41,13 +40,12 @@ class ProjectNotifier extends _$ProjectNotifier {
 
   Future<void> createProject({
     required String title,
-    required String description,
-    required DateTime startDate,
-    required DateTime deadline,
+    String? description,
+    DateTime? startDate,
+    DateTime? deadline,
   }) async {
     final time = DateTime.now();
     final project = Project(
-      id: const Uuid().v4(),
       title: title,
       description: description,
       startDate: startDate,
@@ -65,7 +63,7 @@ class ProjectNotifier extends _$ProjectNotifier {
     await _loadProjects();
   }
 
-  Future<void> deleteProject(String id) async {
+  Future<void> deleteProject(BigInt id) async {
     await _repository.deleteProject(id);
     await _loadProjects();
   }

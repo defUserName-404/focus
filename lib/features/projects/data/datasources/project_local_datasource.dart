@@ -5,13 +5,13 @@ import '../../../../core/services/db_service.dart';
 abstract class IProjectLocalDataSource {
   Future<List<ProjectTableData>> getAllProjects();
 
-  Future<ProjectTableData?> getProjectById(String id);
+  Future<ProjectTableData?> getProjectById(BigInt id);
 
   Future<void> createProject(ProjectTableCompanion companion);
 
   Future<void> updateProject(ProjectTableCompanion companion);
 
-  Future<void> deleteProject(String id);
+  Future<void> deleteProject(BigInt id);
 
   Stream<List<ProjectTableData>> watchAllProjects();
 }
@@ -28,7 +28,7 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
   }
 
   @override
-  Future<ProjectTableData?> getProjectById(String id) async {
+  Future<ProjectTableData?> getProjectById(BigInt id) async {
     final query = _db.select(_db.projectTable)..where((t) => t.id.equals(id));
     final row = await query.getSingleOrNull();
     return row;
@@ -45,7 +45,7 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
   }
 
   @override
-  Future<void> deleteProject(String id) async {
+  Future<void> deleteProject(BigInt id) async {
     final deleteQuery = _db.delete(_db.projectTable)..where((t) => t.id.equals(id));
     await deleteQuery.go();
   }

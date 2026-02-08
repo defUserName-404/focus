@@ -15,7 +15,7 @@ class ProjectRepositoryImpl implements IProjectRepository {
   }
 
   @override
-  Future<Project?> getProjectById(String id) async {
+  Future<Project?> getProjectById(BigInt id) async {
     final row = await _localDataSource.getProjectById(id);
     return row?.toDomain();
   }
@@ -33,7 +33,7 @@ class ProjectRepositoryImpl implements IProjectRepository {
   }
 
   @override
-  Future<void> deleteProject(String id) async {
+  Future<void> deleteProject(BigInt id) async {
     await _localDataSource.deleteProject(id);
   }
 

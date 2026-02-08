@@ -11,12 +11,12 @@ class $ProjectTableTable extends ProjectTable
   $ProjectTableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+  late final GeneratedColumn<BigInt> id = GeneratedColumn<BigInt>(
     'id',
     aliasedName,
     false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    type: DriftSqlType.bigInt,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
@@ -34,9 +34,9 @@ class $ProjectTableTable extends ProjectTable
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
     'description',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _startDateMeta = const VerificationMeta(
     'startDate',
@@ -45,9 +45,9 @@ class $ProjectTableTable extends ProjectTable
   late final GeneratedColumn<DateTime> startDate = GeneratedColumn<DateTime>(
     'start_date',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _deadlineMeta = const VerificationMeta(
     'deadline',
@@ -56,9 +56,9 @@ class $ProjectTableTable extends ProjectTable
   late final GeneratedColumn<DateTime> deadline = GeneratedColumn<DateTime>(
     'deadline',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -106,8 +106,6 @@ class $ProjectTableTable extends ProjectTable
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('title')) {
       context.handle(
@@ -125,24 +123,18 @@ class $ProjectTableTable extends ProjectTable
           _descriptionMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
     }
     if (data.containsKey('start_date')) {
       context.handle(
         _startDateMeta,
         startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
       );
-    } else if (isInserting) {
-      context.missing(_startDateMeta);
     }
     if (data.containsKey('deadline')) {
       context.handle(
         _deadlineMeta,
         deadline.isAcceptableOrUnknown(data['deadline']!, _deadlineMeta),
       );
-    } else if (isInserting) {
-      context.missing(_deadlineMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -170,7 +162,7 @@ class $ProjectTableTable extends ProjectTable
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ProjectTableData(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        DriftSqlType.bigInt,
         data['${effectivePrefix}id'],
       )!,
       title: attachedDatabase.typeMapping.read(
@@ -180,15 +172,15 @@ class $ProjectTableTable extends ProjectTable
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
-      )!,
+      ),
       startDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}start_date'],
-      )!,
+      ),
       deadline: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}deadline'],
-      )!,
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -208,30 +200,36 @@ class $ProjectTableTable extends ProjectTable
 
 class ProjectTableData extends DataClass
     implements Insertable<ProjectTableData> {
-  final String id;
+  final BigInt id;
   final String title;
-  final String description;
-  final DateTime startDate;
-  final DateTime deadline;
+  final String? description;
+  final DateTime? startDate;
+  final DateTime? deadline;
   final DateTime createdAt;
   final DateTime updatedAt;
   const ProjectTableData({
     required this.id,
     required this.title,
-    required this.description,
-    required this.startDate,
-    required this.deadline,
+    this.description,
+    this.startDate,
+    this.deadline,
     required this.createdAt,
     required this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
+    map['id'] = Variable<BigInt>(id);
     map['title'] = Variable<String>(title);
-    map['description'] = Variable<String>(description);
-    map['start_date'] = Variable<DateTime>(startDate);
-    map['deadline'] = Variable<DateTime>(deadline);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || startDate != null) {
+      map['start_date'] = Variable<DateTime>(startDate);
+    }
+    if (!nullToAbsent || deadline != null) {
+      map['deadline'] = Variable<DateTime>(deadline);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -241,9 +239,15 @@ class ProjectTableData extends DataClass
     return ProjectTableCompanion(
       id: Value(id),
       title: Value(title),
-      description: Value(description),
-      startDate: Value(startDate),
-      deadline: Value(deadline),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      startDate: startDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startDate),
+      deadline: deadline == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deadline),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -255,11 +259,11 @@ class ProjectTableData extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ProjectTableData(
-      id: serializer.fromJson<String>(json['id']),
+      id: serializer.fromJson<BigInt>(json['id']),
       title: serializer.fromJson<String>(json['title']),
-      description: serializer.fromJson<String>(json['description']),
-      startDate: serializer.fromJson<DateTime>(json['startDate']),
-      deadline: serializer.fromJson<DateTime>(json['deadline']),
+      description: serializer.fromJson<String?>(json['description']),
+      startDate: serializer.fromJson<DateTime?>(json['startDate']),
+      deadline: serializer.fromJson<DateTime?>(json['deadline']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -268,30 +272,30 @@ class ProjectTableData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
+      'id': serializer.toJson<BigInt>(id),
       'title': serializer.toJson<String>(title),
-      'description': serializer.toJson<String>(description),
-      'startDate': serializer.toJson<DateTime>(startDate),
-      'deadline': serializer.toJson<DateTime>(deadline),
+      'description': serializer.toJson<String?>(description),
+      'startDate': serializer.toJson<DateTime?>(startDate),
+      'deadline': serializer.toJson<DateTime?>(deadline),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
 
   ProjectTableData copyWith({
-    String? id,
+    BigInt? id,
     String? title,
-    String? description,
-    DateTime? startDate,
-    DateTime? deadline,
+    Value<String?> description = const Value.absent(),
+    Value<DateTime?> startDate = const Value.absent(),
+    Value<DateTime?> deadline = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => ProjectTableData(
     id: id ?? this.id,
     title: title ?? this.title,
-    description: description ?? this.description,
-    startDate: startDate ?? this.startDate,
-    deadline: deadline ?? this.deadline,
+    description: description.present ? description.value : this.description,
+    startDate: startDate.present ? startDate.value : this.startDate,
+    deadline: deadline.present ? deadline.value : this.deadline,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -347,14 +351,13 @@ class ProjectTableData extends DataClass
 }
 
 class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
-  final Value<String> id;
+  final Value<BigInt> id;
   final Value<String> title;
-  final Value<String> description;
-  final Value<DateTime> startDate;
-  final Value<DateTime> deadline;
+  final Value<String?> description;
+  final Value<DateTime?> startDate;
+  final Value<DateTime?> deadline;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
-  final Value<int> rowid;
   const ProjectTableCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -363,33 +366,26 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
     this.deadline = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
   });
   ProjectTableCompanion.insert({
-    required String id,
+    this.id = const Value.absent(),
     required String title,
-    required String description,
-    required DateTime startDate,
-    required DateTime deadline,
+    this.description = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.deadline = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       title = Value(title),
-       description = Value(description),
-       startDate = Value(startDate),
-       deadline = Value(deadline),
+  }) : title = Value(title),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<ProjectTableData> custom({
-    Expression<String>? id,
+    Expression<BigInt>? id,
     Expression<String>? title,
     Expression<String>? description,
     Expression<DateTime>? startDate,
     Expression<DateTime>? deadline,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
-    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -399,19 +395,17 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
       if (deadline != null) 'deadline': deadline,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (rowid != null) 'rowid': rowid,
     });
   }
 
   ProjectTableCompanion copyWith({
-    Value<String>? id,
+    Value<BigInt>? id,
     Value<String>? title,
-    Value<String>? description,
-    Value<DateTime>? startDate,
-    Value<DateTime>? deadline,
+    Value<String?>? description,
+    Value<DateTime?>? startDate,
+    Value<DateTime?>? deadline,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
-    Value<int>? rowid,
   }) {
     return ProjectTableCompanion(
       id: id ?? this.id,
@@ -421,7 +415,6 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
       deadline: deadline ?? this.deadline,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -429,7 +422,7 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<String>(id.value);
+      map['id'] = Variable<BigInt>(id.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -449,9 +442,6 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
     return map;
   }
 
@@ -464,8 +454,7 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
           ..write('startDate: $startDate, ')
           ..write('deadline: $deadline, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('rowid: $rowid')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -1207,25 +1196,23 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$ProjectTableTableCreateCompanionBuilder =
     ProjectTableCompanion Function({
-      required String id,
+      Value<BigInt> id,
       required String title,
-      required String description,
-      required DateTime startDate,
-      required DateTime deadline,
+      Value<String?> description,
+      Value<DateTime?> startDate,
+      Value<DateTime?> deadline,
       required DateTime createdAt,
       required DateTime updatedAt,
-      Value<int> rowid,
     });
 typedef $$ProjectTableTableUpdateCompanionBuilder =
     ProjectTableCompanion Function({
-      Value<String> id,
+      Value<BigInt> id,
       Value<String> title,
-      Value<String> description,
-      Value<DateTime> startDate,
-      Value<DateTime> deadline,
+      Value<String?> description,
+      Value<DateTime?> startDate,
+      Value<DateTime?> deadline,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
-      Value<int> rowid,
     });
 
 class $$ProjectTableTableFilterComposer
@@ -1237,7 +1224,7 @@ class $$ProjectTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
+  ColumnFilters<BigInt> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
@@ -1282,7 +1269,7 @@ class $$ProjectTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
+  ColumnOrderings<BigInt> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
@@ -1327,7 +1314,7 @@ class $$ProjectTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get id =>
+  GeneratedColumn<BigInt> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<String> get title =>
@@ -1382,14 +1369,13 @@ class $$ProjectTableTableTableManager
               $$ProjectTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<String> id = const Value.absent(),
+                Value<BigInt> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
-                Value<String> description = const Value.absent(),
-                Value<DateTime> startDate = const Value.absent(),
-                Value<DateTime> deadline = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<DateTime?> startDate = const Value.absent(),
+                Value<DateTime?> deadline = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
               }) => ProjectTableCompanion(
                 id: id,
                 title: title,
@@ -1398,18 +1384,16 @@ class $$ProjectTableTableTableManager
                 deadline: deadline,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
-                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                required String id,
+                Value<BigInt> id = const Value.absent(),
                 required String title,
-                required String description,
-                required DateTime startDate,
-                required DateTime deadline,
+                Value<String?> description = const Value.absent(),
+                Value<DateTime?> startDate = const Value.absent(),
+                Value<DateTime?> deadline = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
-                Value<int> rowid = const Value.absent(),
               }) => ProjectTableCompanion.insert(
                 id: id,
                 title: title,
@@ -1418,7 +1402,6 @@ class $$ProjectTableTableTableManager
                 deadline: deadline,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
-                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

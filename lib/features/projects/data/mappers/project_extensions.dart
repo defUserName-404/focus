@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:focus/core/services/db_service.dart';
 
 import '../../domain/entities/project.dart';
@@ -16,11 +17,10 @@ extension DbProjectToDomain on ProjectTableData {
 
 extension DomainProjectToCompanion on Project {
   ProjectTableCompanion toCompanion() => ProjectTableCompanion.insert(
-    id: id,
     title: title,
-    description: description,
-    startDate: startDate,
-    deadline: deadline,
+    description: Value<String?>(description),
+    startDate: Value<DateTime?>(startDate),
+    deadline: Value<DateTime?>(deadline),
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

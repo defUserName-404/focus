@@ -7,13 +7,14 @@ import '../../../tasks/presentation/providers/task_provider.dart';
 import '../providers/project_provider.dart';
 
 class ProjectDetailScreen extends ConsumerWidget {
-  final String projectId;
+  final BigInt projectId;
 
   const ProjectDetailScreen({super.key, required this.projectId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tasksAsync = ref.watch(tasksByProjectProvider(projectId));
+    final projectIdString = projectId.toString();
+    final tasksAsync = ref.watch(tasksByProjectProvider(projectIdString));
     final projectsAsync = ref.watch(projectListProvider);
 
     return Scaffold(
@@ -50,7 +51,7 @@ class ProjectDetailScreen extends ConsumerWidget {
                       leading: Checkbox(
                         value: task.isCompleted,
                         onChanged: (_) {
-                          ref.read(taskProvider(projectId).notifier).toggleTaskCompletion(task);
+                          ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(task);
                         },
                       ),
                       title: Text(
@@ -78,7 +79,7 @@ class ProjectDetailScreen extends ConsumerWidget {
                               leading: Checkbox(
                                 value: subtask.isCompleted,
                                 onChanged: (_) {
-                                  ref.read(taskProvider(projectId).notifier).toggleTaskCompletion(subtask);
+                                  ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(subtask);
                                 },
                               ),
                               title: Text(
@@ -102,13 +103,13 @@ class ProjectDetailScreen extends ConsumerWidget {
         error: (error, stack) => Center(child: Text('Error: $error')),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateTaskDialog(context, ref),
+        onPressed: () => _showCreateTaskDialog(context, ref, projectIdString),
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  void _showCreateTaskDialog(BuildContext context, WidgetRef ref) {
+  void _showCreateTaskDialog(BuildContext context, WidgetRef ref, String projectIdString) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
     TaskPriority priority = TaskPriority.medium;
@@ -155,9 +156,9 @@ class ProjectDetailScreen extends ConsumerWidget {
               onPress: () async {
                 if (titleController.text.isNotEmpty) {
                   await ref
-                      .read(taskProvider(projectId).notifier)
+                      .read(taskProvider(projectIdString).notifier)
                       .createTask(
-                        projectId: projectId,
+                        projectId: projectIdString,
                         title: titleController.text,
                         description: descController.text,
                         priority: priority,

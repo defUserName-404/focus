@@ -2,7 +2,7 @@ import 'project.dart';
 
 extension ProjectCopyWith on Project {
   Project copyWith({
-    String? id,
+    BigInt? id,
     String? title,
     String? description,
     DateTime? startDate,
