@@ -4,15 +4,15 @@ import 'package:focus/core/services/db_service.dart';
 abstract class ITaskLocalDataSource {
   Future<List<TaskTableData>> getTasksByProjectId(BigInt projectId);
 
-  Future<TaskTableData?> getTaskById(String id);
+  Future<TaskTableData?> getTaskById(BigInt id);
 
-  Future<List<TaskTableData>> getSubtasks(String parentTaskId);
+  Future<List<TaskTableData>> getSubtasks(BigInt parentTaskId);
 
   Future<void> createTask(TaskTableCompanion companion);
 
   Future<void> updateTask(TaskTableCompanion companion);
 
-  Future<void> deleteTask(String id);
+  Future<void> deleteTask(BigInt id);
 
   Stream<List<TaskTableData>> watchTasksByProjectId(BigInt projectId);
 }
@@ -28,12 +28,12 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   }
 
   @override
-  Future<TaskTableData?> getTaskById(String id) async {
+  Future<TaskTableData?> getTaskById(BigInt id) async {
     return await (_db.select(_db.taskTable)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
   @override
-  Future<List<TaskTableData>> getSubtasks(String parentTaskId) async {
+  Future<List<TaskTableData>> getSubtasks(BigInt parentTaskId) async {
     return await (_db.select(_db.taskTable)..where((t) => t.parentTaskId.equals(parentTaskId))).get();
   }
 
@@ -48,7 +48,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   }
 
   @override
-  Future<void> deleteTask(String id) async {
+  Future<void> deleteTask(BigInt id) async {
     await (_db.delete(_db.taskTable)..where((t) => t.id.equals(id))).go();
   }
 

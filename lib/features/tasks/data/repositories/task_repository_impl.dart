@@ -15,13 +15,13 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   @override
-  Future<Task?> getTaskById(String id) async {
+  Future<Task?> getTaskById(BigInt id) async {
     final row = await _local.getTaskById(id);
     return row?.toDomain();
   }
 
   @override
-  Future<List<Task>> getSubtasks(String parentTaskId) async {
+  Future<List<Task>> getSubtasks(BigInt parentTaskId) async {
     final rows = await _local.getSubtasks(parentTaskId);
     return rows.map((r) => r.toDomain()).toList();
   }
@@ -39,7 +39,7 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   @override
-  Future<void> deleteTask(String id) async {
+  Future<void> deleteTask(BigInt id) async {
     await _local.deleteTask(id);
   }
 

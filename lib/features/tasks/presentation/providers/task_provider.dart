@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/task.dart';
@@ -43,17 +42,16 @@ class TaskNotifier extends _$TaskNotifier {
 
   Future<void> createTask({
     required String projectId,
-    String? parentTaskId,
+    BigInt? parentTaskId,
     required String title,
     TaskPriority? priority,
     String? description,
-    required DateTime startDate,
-    required DateTime endDate,
+    DateTime? startDate,
+    DateTime? endDate,
     required int depth,
   }) async {
     final time = DateTime.now();
     final task = Task(
-      id: const Uuid().v4(),
       projectId: BigInt.parse(projectId),
       parentTaskId: parentTaskId,
       title: title,
@@ -76,7 +74,7 @@ class TaskNotifier extends _$TaskNotifier {
     await _loadTasks(task.projectId.toString());
   }
 
-  Future<void> deleteTask(String id, String projectId) async {
+  Future<void> deleteTask(BigInt id, String projectId) async {
     await _repository.deleteTask(id);
     await _loadTasks(projectId);
   }

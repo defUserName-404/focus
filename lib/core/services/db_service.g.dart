@@ -472,12 +472,16 @@ class $TaskTableTable extends TaskTable
   $TaskTableTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+  late final GeneratedColumn<BigInt> id = GeneratedColumn<BigInt>(
     'id',
     aliasedName,
     false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    hasAutoIncrement: true,
+    type: DriftSqlType.bigInt,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
   );
   static const VerificationMeta _projectIdMeta = const VerificationMeta(
     'projectId',
@@ -494,12 +498,15 @@ class $TaskTableTable extends TaskTable
     'parentTaskId',
   );
   @override
-  late final GeneratedColumn<String> parentTaskId = GeneratedColumn<String>(
+  late final GeneratedColumn<BigInt> parentTaskId = GeneratedColumn<BigInt>(
     'parent_task_id',
     aliasedName,
     true,
-    type: DriftSqlType.string,
+    type: DriftSqlType.bigInt,
     requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES task_table (id)',
+    ),
   );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
@@ -537,9 +544,9 @@ class $TaskTableTable extends TaskTable
   late final GeneratedColumn<DateTime> startDate = GeneratedColumn<DateTime>(
     'start_date',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _endDateMeta = const VerificationMeta(
     'endDate',
@@ -548,9 +555,9 @@ class $TaskTableTable extends TaskTable
   late final GeneratedColumn<DateTime> endDate = GeneratedColumn<DateTime>(
     'end_date',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _depthMeta = const VerificationMeta('depth');
   @override
@@ -627,8 +634,6 @@ class $TaskTableTable extends TaskTable
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('project_id')) {
       context.handle(
@@ -669,16 +674,12 @@ class $TaskTableTable extends TaskTable
         _startDateMeta,
         startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
       );
-    } else if (isInserting) {
-      context.missing(_startDateMeta);
     }
     if (data.containsKey('end_date')) {
       context.handle(
         _endDateMeta,
         endDate.isAcceptableOrUnknown(data['end_date']!, _endDateMeta),
       );
-    } else if (isInserting) {
-      context.missing(_endDateMeta);
     }
     if (data.containsKey('depth')) {
       context.handle(
@@ -723,7 +724,7 @@ class $TaskTableTable extends TaskTable
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TaskTableData(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        DriftSqlType.bigInt,
         data['${effectivePrefix}id'],
       )!,
       projectId: attachedDatabase.typeMapping.read(
@@ -731,7 +732,7 @@ class $TaskTableTable extends TaskTable
         data['${effectivePrefix}project_id'],
       )!,
       parentTaskId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        DriftSqlType.bigInt,
         data['${effectivePrefix}parent_task_id'],
       ),
       title: attachedDatabase.typeMapping.read(
@@ -751,11 +752,11 @@ class $TaskTableTable extends TaskTable
       startDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}start_date'],
-      )!,
+      ),
       endDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}end_date'],
-      )!,
+      ),
       depth: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}depth'],
@@ -785,14 +786,14 @@ class $TaskTableTable extends TaskTable
 }
 
 class TaskTableData extends DataClass implements Insertable<TaskTableData> {
-  final String id;
+  final BigInt id;
   final BigInt projectId;
-  final String? parentTaskId;
+  final BigInt? parentTaskId;
   final String title;
   final String? description;
   final TaskPriority priority;
-  final DateTime startDate;
-  final DateTime endDate;
+  final DateTime? startDate;
+  final DateTime? endDate;
   final int depth;
   final bool isCompleted;
   final DateTime createdAt;
@@ -804,8 +805,8 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     required this.title,
     this.description,
     required this.priority,
-    required this.startDate,
-    required this.endDate,
+    this.startDate,
+    this.endDate,
     required this.depth,
     required this.isCompleted,
     required this.createdAt,
@@ -814,10 +815,10 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
+    map['id'] = Variable<BigInt>(id);
     map['project_id'] = Variable<BigInt>(projectId);
     if (!nullToAbsent || parentTaskId != null) {
-      map['parent_task_id'] = Variable<String>(parentTaskId);
+      map['parent_task_id'] = Variable<BigInt>(parentTaskId);
     }
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || description != null) {
@@ -828,8 +829,12 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
         $TaskTableTable.$converterpriority.toSql(priority),
       );
     }
-    map['start_date'] = Variable<DateTime>(startDate);
-    map['end_date'] = Variable<DateTime>(endDate);
+    if (!nullToAbsent || startDate != null) {
+      map['start_date'] = Variable<DateTime>(startDate);
+    }
+    if (!nullToAbsent || endDate != null) {
+      map['end_date'] = Variable<DateTime>(endDate);
+    }
     map['depth'] = Variable<int>(depth);
     map['is_completed'] = Variable<bool>(isCompleted);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -849,8 +854,12 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           ? const Value.absent()
           : Value(description),
       priority: Value(priority),
-      startDate: Value(startDate),
-      endDate: Value(endDate),
+      startDate: startDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startDate),
+      endDate: endDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endDate),
       depth: Value(depth),
       isCompleted: Value(isCompleted),
       createdAt: Value(createdAt),
@@ -864,16 +873,16 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TaskTableData(
-      id: serializer.fromJson<String>(json['id']),
+      id: serializer.fromJson<BigInt>(json['id']),
       projectId: serializer.fromJson<BigInt>(json['projectId']),
-      parentTaskId: serializer.fromJson<String?>(json['parentTaskId']),
+      parentTaskId: serializer.fromJson<BigInt?>(json['parentTaskId']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String?>(json['description']),
       priority: $TaskTableTable.$converterpriority.fromJson(
         serializer.fromJson<int>(json['priority']),
       ),
-      startDate: serializer.fromJson<DateTime>(json['startDate']),
-      endDate: serializer.fromJson<DateTime>(json['endDate']),
+      startDate: serializer.fromJson<DateTime?>(json['startDate']),
+      endDate: serializer.fromJson<DateTime?>(json['endDate']),
       depth: serializer.fromJson<int>(json['depth']),
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -884,16 +893,16 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
+      'id': serializer.toJson<BigInt>(id),
       'projectId': serializer.toJson<BigInt>(projectId),
-      'parentTaskId': serializer.toJson<String?>(parentTaskId),
+      'parentTaskId': serializer.toJson<BigInt?>(parentTaskId),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String?>(description),
       'priority': serializer.toJson<int>(
         $TaskTableTable.$converterpriority.toJson(priority),
       ),
-      'startDate': serializer.toJson<DateTime>(startDate),
-      'endDate': serializer.toJson<DateTime>(endDate),
+      'startDate': serializer.toJson<DateTime?>(startDate),
+      'endDate': serializer.toJson<DateTime?>(endDate),
       'depth': serializer.toJson<int>(depth),
       'isCompleted': serializer.toJson<bool>(isCompleted),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -902,14 +911,14 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   }
 
   TaskTableData copyWith({
-    String? id,
+    BigInt? id,
     BigInt? projectId,
-    Value<String?> parentTaskId = const Value.absent(),
+    Value<BigInt?> parentTaskId = const Value.absent(),
     String? title,
     Value<String?> description = const Value.absent(),
     TaskPriority? priority,
-    DateTime? startDate,
-    DateTime? endDate,
+    Value<DateTime?> startDate = const Value.absent(),
+    Value<DateTime?> endDate = const Value.absent(),
     int? depth,
     bool? isCompleted,
     DateTime? createdAt,
@@ -921,8 +930,8 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     title: title ?? this.title,
     description: description.present ? description.value : this.description,
     priority: priority ?? this.priority,
-    startDate: startDate ?? this.startDate,
-    endDate: endDate ?? this.endDate,
+    startDate: startDate.present ? startDate.value : this.startDate,
+    endDate: endDate.present ? endDate.value : this.endDate,
     depth: depth ?? this.depth,
     isCompleted: isCompleted ?? this.isCompleted,
     createdAt: createdAt ?? this.createdAt,
@@ -1004,19 +1013,18 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
 }
 
 class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
-  final Value<String> id;
+  final Value<BigInt> id;
   final Value<BigInt> projectId;
-  final Value<String?> parentTaskId;
+  final Value<BigInt?> parentTaskId;
   final Value<String> title;
   final Value<String?> description;
   final Value<TaskPriority> priority;
-  final Value<DateTime> startDate;
-  final Value<DateTime> endDate;
+  final Value<DateTime?> startDate;
+  final Value<DateTime?> endDate;
   final Value<int> depth;
   final Value<bool> isCompleted;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
-  final Value<int> rowid;
   const TaskTableCompanion({
     this.id = const Value.absent(),
     this.projectId = const Value.absent(),
@@ -1030,35 +1038,30 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     this.isCompleted = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
   });
   TaskTableCompanion.insert({
-    required String id,
+    this.id = const Value.absent(),
     required BigInt projectId,
     this.parentTaskId = const Value.absent(),
     required String title,
     this.description = const Value.absent(),
     required TaskPriority priority,
-    required DateTime startDate,
-    required DateTime endDate,
+    this.startDate = const Value.absent(),
+    this.endDate = const Value.absent(),
     required int depth,
     this.isCompleted = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       projectId = Value(projectId),
+  }) : projectId = Value(projectId),
        title = Value(title),
        priority = Value(priority),
-       startDate = Value(startDate),
-       endDate = Value(endDate),
        depth = Value(depth),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<TaskTableData> custom({
-    Expression<String>? id,
+    Expression<BigInt>? id,
     Expression<BigInt>? projectId,
-    Expression<String>? parentTaskId,
+    Expression<BigInt>? parentTaskId,
     Expression<String>? title,
     Expression<String>? description,
     Expression<int>? priority,
@@ -1068,7 +1071,6 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     Expression<bool>? isCompleted,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
-    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1083,24 +1085,22 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       if (isCompleted != null) 'is_completed': isCompleted,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (rowid != null) 'rowid': rowid,
     });
   }
 
   TaskTableCompanion copyWith({
-    Value<String>? id,
+    Value<BigInt>? id,
     Value<BigInt>? projectId,
-    Value<String?>? parentTaskId,
+    Value<BigInt?>? parentTaskId,
     Value<String>? title,
     Value<String?>? description,
     Value<TaskPriority>? priority,
-    Value<DateTime>? startDate,
-    Value<DateTime>? endDate,
+    Value<DateTime?>? startDate,
+    Value<DateTime?>? endDate,
     Value<int>? depth,
     Value<bool>? isCompleted,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
-    Value<int>? rowid,
   }) {
     return TaskTableCompanion(
       id: id ?? this.id,
@@ -1115,7 +1115,6 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -1123,13 +1122,13 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<String>(id.value);
+      map['id'] = Variable<BigInt>(id.value);
     }
     if (projectId.present) {
       map['project_id'] = Variable<BigInt>(projectId.value);
     }
     if (parentTaskId.present) {
-      map['parent_task_id'] = Variable<String>(parentTaskId.value);
+      map['parent_task_id'] = Variable<BigInt>(parentTaskId.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -1160,9 +1159,6 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
     return map;
   }
 
@@ -1180,8 +1176,7 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
           ..write('depth: $depth, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('rowid: $rowid')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -1435,36 +1430,58 @@ typedef $$ProjectTableTableProcessedTableManager =
     >;
 typedef $$TaskTableTableCreateCompanionBuilder =
     TaskTableCompanion Function({
-      required String id,
+      Value<BigInt> id,
       required BigInt projectId,
-      Value<String?> parentTaskId,
+      Value<BigInt?> parentTaskId,
       required String title,
       Value<String?> description,
       required TaskPriority priority,
-      required DateTime startDate,
-      required DateTime endDate,
+      Value<DateTime?> startDate,
+      Value<DateTime?> endDate,
       required int depth,
       Value<bool> isCompleted,
       required DateTime createdAt,
       required DateTime updatedAt,
-      Value<int> rowid,
     });
 typedef $$TaskTableTableUpdateCompanionBuilder =
     TaskTableCompanion Function({
-      Value<String> id,
+      Value<BigInt> id,
       Value<BigInt> projectId,
-      Value<String?> parentTaskId,
+      Value<BigInt?> parentTaskId,
       Value<String> title,
       Value<String?> description,
       Value<TaskPriority> priority,
-      Value<DateTime> startDate,
-      Value<DateTime> endDate,
+      Value<DateTime?> startDate,
+      Value<DateTime?> endDate,
       Value<int> depth,
       Value<bool> isCompleted,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
-      Value<int> rowid,
     });
+
+final class $$TaskTableTableReferences
+    extends BaseReferences<_$AppDatabase, $TaskTableTable, TaskTableData> {
+  $$TaskTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TaskTableTable _parentTaskIdTable(_$AppDatabase db) =>
+      db.taskTable.createAlias(
+        $_aliasNameGenerator(db.taskTable.parentTaskId, db.taskTable.id),
+      );
+
+  $$TaskTableTableProcessedTableManager? get parentTaskId {
+    final $_column = $_itemColumn<BigInt>('parent_task_id');
+    if ($_column == null) return null;
+    final manager = $$TaskTableTableTableManager(
+      $_db,
+      $_db.taskTable,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_parentTaskIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
 
 class $$TaskTableTableFilterComposer
     extends Composer<_$AppDatabase, $TaskTableTable> {
@@ -1475,18 +1492,13 @@ class $$TaskTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
+  ColumnFilters<BigInt> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<BigInt> get projectId => $composableBuilder(
     column: $table.projectId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get parentTaskId => $composableBuilder(
-    column: $table.parentTaskId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1535,6 +1547,29 @@ class $$TaskTableTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$TaskTableTableFilterComposer get parentTaskId {
+    final $$TaskTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.parentTaskId,
+      referencedTable: $db.taskTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableFilterComposer(
+            $db: $db,
+            $table: $db.taskTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TaskTableTableOrderingComposer
@@ -1546,18 +1581,13 @@ class $$TaskTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
+  ColumnOrderings<BigInt> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
 
   ColumnOrderings<BigInt> get projectId => $composableBuilder(
     column: $table.projectId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get parentTaskId => $composableBuilder(
-    column: $table.parentTaskId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1605,6 +1635,29 @@ class $$TaskTableTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$TaskTableTableOrderingComposer get parentTaskId {
+    final $$TaskTableTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.parentTaskId,
+      referencedTable: $db.taskTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableOrderingComposer(
+            $db: $db,
+            $table: $db.taskTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TaskTableTableAnnotationComposer
@@ -1616,16 +1669,11 @@ class $$TaskTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get id =>
+  GeneratedColumn<BigInt> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<BigInt> get projectId =>
       $composableBuilder(column: $table.projectId, builder: (column) => column);
-
-  GeneratedColumn<String> get parentTaskId => $composableBuilder(
-    column: $table.parentTaskId,
-    builder: (column) => column,
-  );
 
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
@@ -1657,6 +1705,29 @@ class $$TaskTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$TaskTableTableAnnotationComposer get parentTaskId {
+    final $$TaskTableTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.parentTaskId,
+      referencedTable: $db.taskTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableAnnotationComposer(
+            $db: $db,
+            $table: $db.taskTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TaskTableTableTableManager
@@ -1670,12 +1741,9 @@ class $$TaskTableTableTableManager
           $$TaskTableTableAnnotationComposer,
           $$TaskTableTableCreateCompanionBuilder,
           $$TaskTableTableUpdateCompanionBuilder,
-          (
-            TaskTableData,
-            BaseReferences<_$AppDatabase, $TaskTableTable, TaskTableData>,
-          ),
+          (TaskTableData, $$TaskTableTableReferences),
           TaskTableData,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool parentTaskId})
         > {
   $$TaskTableTableTableManager(_$AppDatabase db, $TaskTableTable table)
     : super(
@@ -1690,19 +1758,18 @@ class $$TaskTableTableTableManager
               $$TaskTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<String> id = const Value.absent(),
+                Value<BigInt> id = const Value.absent(),
                 Value<BigInt> projectId = const Value.absent(),
-                Value<String?> parentTaskId = const Value.absent(),
+                Value<BigInt?> parentTaskId = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<TaskPriority> priority = const Value.absent(),
-                Value<DateTime> startDate = const Value.absent(),
-                Value<DateTime> endDate = const Value.absent(),
+                Value<DateTime?> startDate = const Value.absent(),
+                Value<DateTime?> endDate = const Value.absent(),
                 Value<int> depth = const Value.absent(),
                 Value<bool> isCompleted = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
               }) => TaskTableCompanion(
                 id: id,
                 projectId: projectId,
@@ -1716,23 +1783,21 @@ class $$TaskTableTableTableManager
                 isCompleted: isCompleted,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
-                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                required String id,
+                Value<BigInt> id = const Value.absent(),
                 required BigInt projectId,
-                Value<String?> parentTaskId = const Value.absent(),
+                Value<BigInt?> parentTaskId = const Value.absent(),
                 required String title,
                 Value<String?> description = const Value.absent(),
                 required TaskPriority priority,
-                required DateTime startDate,
-                required DateTime endDate,
+                Value<DateTime?> startDate = const Value.absent(),
+                Value<DateTime?> endDate = const Value.absent(),
                 required int depth,
                 Value<bool> isCompleted = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
-                Value<int> rowid = const Value.absent(),
               }) => TaskTableCompanion.insert(
                 id: id,
                 projectId: projectId,
@@ -1746,12 +1811,56 @@ class $$TaskTableTableTableManager
                 isCompleted: isCompleted,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
-                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TaskTableTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({parentTaskId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (parentTaskId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.parentTaskId,
+                                referencedTable: $$TaskTableTableReferences
+                                    ._parentTaskIdTable(db),
+                                referencedColumn: $$TaskTableTableReferences
+                                    ._parentTaskIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
@@ -1766,12 +1875,9 @@ typedef $$TaskTableTableProcessedTableManager =
       $$TaskTableTableAnnotationComposer,
       $$TaskTableTableCreateCompanionBuilder,
       $$TaskTableTableUpdateCompanionBuilder,
-      (
-        TaskTableData,
-        BaseReferences<_$AppDatabase, $TaskTableTable, TaskTableData>,
-      ),
+      (TaskTableData, $$TaskTableTableReferences),
       TaskTableData,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool parentTaskId})
     >;
 
 class $AppDatabaseManager {

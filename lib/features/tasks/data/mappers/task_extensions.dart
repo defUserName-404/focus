@@ -22,14 +22,13 @@ extension DbTaskToDomain on TaskTableData {
 
 extension DomainTaskToCompanion on Task {
   TaskTableCompanion toCompanion() => TaskTableCompanion.insert(
-    id: id,
     projectId: projectId,
     parentTaskId: Value(parentTaskId),
     title: title,
-    description: Value<String?>(description),
+    description: Value(description),
     priority: priority,
-    startDate: startDate,
-    endDate: endDate,
+    startDate: Value(startDate),
+    endDate: Value(endDate),
     depth: depth,
     isCompleted: Value(isCompleted),
     createdAt: createdAt,

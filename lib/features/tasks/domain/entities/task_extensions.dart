@@ -10,14 +10,14 @@ class _TaskCopyWithUnset {
 
 extension TaskCopyWith on Task {
   Task copyWith({
-    String? id,
+    BigInt? id,
     BigInt? projectId,
     Object? parentTaskId = _taskCopyWithUnset,
     String? title,
     String? description,
     TaskPriority? priority,
-    DateTime? startDate,
-    DateTime? endDate,
+    Object? startDate = _taskCopyWithUnset,
+    Object? endDate = _taskCopyWithUnset,
     int? depth,
     bool? isCompleted,
     DateTime? createdAt,
@@ -25,12 +25,12 @@ extension TaskCopyWith on Task {
   }) => Task(
     id: id ?? this.id,
     projectId: projectId ?? this.projectId,
-    parentTaskId: parentTaskId == _taskCopyWithUnset ? this.parentTaskId : parentTaskId as String?,
+    parentTaskId: parentTaskId == _taskCopyWithUnset ? this.parentTaskId : parentTaskId as BigInt?,
     title: title ?? this.title,
     description: description ?? this.description,
     priority: priority ?? this.priority,
-    startDate: startDate ?? this.startDate,
-    endDate: endDate ?? this.endDate,
+    startDate: startDate == _taskCopyWithUnset ? this.startDate : startDate as DateTime?,
+    endDate: endDate == _taskCopyWithUnset ? this.endDate : endDate as DateTime?,
     depth: depth ?? this.depth,
     isCompleted: isCompleted ?? this.isCompleted,
     createdAt: createdAt ?? this.createdAt,
