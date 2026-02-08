@@ -5,13 +5,14 @@ import '../../../../core/constants/layout_constants.dart';
 
 /// Sort criteria enum for project filtering
 enum SortCriteria {
-  createdDate('Created Date'),
-  recentlyModified('Recently Modified'),
-  startDate('Start Date'),
+  recentlyModified('Recent'),
   deadline('Deadline'),
-  title('Title');
+  startDate('Start'),
+  title('Title'),
+  createdDate('Created');
 
   final String label;
+
   const SortCriteria(this.label);
 }
 

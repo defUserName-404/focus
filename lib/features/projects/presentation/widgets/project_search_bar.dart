@@ -34,7 +34,8 @@ class _ProjectSearchBarState extends State<ProjectSearchBar> {
     return FTextField(
       control: FTextFieldControl.managed(controller: widget.controller),
       hint: 'Search projects...',
-      prefixBuilder: (_, _, _) => const Icon(FIcons.search),
+      prefixBuilder: (_, _, _) =>
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 8.0), child: const Icon(FIcons.search)),
       clearable: (value) => value.text.isNotEmpty,
     );
   }

@@ -42,25 +42,21 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
 
           return Column(
             children: [
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: LayoutConstants.spacing.paddingRegular,
-                  vertical: LayoutConstants.spacing.paddingSmall,
-                ),
-                child: Column(
-                  spacing: LayoutConstants.spacing.paddingSmall,
-                  children: [ProjectSearchBar(controller: _searchController, onChanged: (s) => setState(() {}))],
-                ),
-              ),
+              ProjectSearchBar(controller: _searchController, onChanged: (s) => setState(() {})),
               Row(
                 children: [
-                  ProjectSortOrderSelector(
-                    selectedOrder: _sortOrder,
-                    onChanged: (order) => setState(() => _sortOrder = order),
+                  SizedBox(
+                    width: 120.0, // Fixed width for the Sort Order Selector
+                    child: ProjectSortOrderSelector(
+                      selectedOrder: _sortOrder,
+                      onChanged: (order) => setState(() => _sortOrder = order),
+                    ),
                   ),
-                  ProjectSortFilterChips(
-                    selectedCriteria: _selectedCriteria,
-                    onChanged: (criteria) => setState(() => _selectedCriteria = criteria),
+                  Expanded(
+                    child: ProjectSortFilterChips(
+                      selectedCriteria: _selectedCriteria,
+                      onChanged: (criteria) => setState(() => _selectedCriteria = criteria),
+                    ),
                   ),
                 ],
               ),
