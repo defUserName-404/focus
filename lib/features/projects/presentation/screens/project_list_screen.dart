@@ -6,7 +6,8 @@ import '../../../../core/constants/layout_constants.dart';
 import '../../domain/entities/project.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
-import '../widgets/project_search_filter.dart';
+import '../widgets/project_search_bar.dart';
+import '../widgets/project_sort_dropdown.dart';
 import 'project_detail_screen.dart';
 
 class ProjectListScreen extends ConsumerStatefulWidget {
@@ -18,7 +19,7 @@ class ProjectListScreen extends ConsumerStatefulWidget {
 
 class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String? _selectedFilter;
+  ProjectSortOrder _sortOrder = ProjectSortOrder.createdDate;
 
   @override
   void dispose() {
@@ -34,16 +35,27 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
       header: const fu.FHeader(title: Text('Projects')),
       child: projectsAsync.when(
         data: (projects) {
-          final filtered = _applyFilters(projects, _searchController.text, _selectedFilter);
+          final filtered = _applyFiltersAndSort(projects, _searchController.text, _sortOrder);
 
           return Column(
             children: [
-              ProjectSearchFilter(
-                controller: _searchController,
-                filters: const ['Active', 'Completed'],
-                selectedFilter: _selectedFilter,
-                onSearchChanged: (s) => setState(() {}),
-                onFilterChanged: (v) => setState(() => _selectedFilter = v),
+              Padding(
+                padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+                child: Row(
+                  spacing: LayoutConstants.spacing.paddingSmall,
+                  children: [
+                    Expanded(
+                      child: ProjectSearchBar(controller: _searchController, onChanged: (s) => setState(() {})),
+                    ),
+                    SizedBox(
+                      width: 200,
+                      child: ProjectSortDropdown(
+                        selectedSort: _sortOrder,
+                        onChanged: (order) => setState(() => _sortOrder = order),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Expanded(
                 child: filtered.isEmpty
@@ -76,22 +88,31 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
     );
   }
 
-  List<Project> _applyFilters(List<Project> all, String query, String? filter) {
+  List<Project> _applyFiltersAndSort(List<Project> all, String query, ProjectSortOrder sortOrder) {
     var result = all;
+
+    // Apply search filter
     final q = query.trim().toLowerCase();
     if (q.isNotEmpty) {
       result = result
           .where((p) => p.title.toLowerCase().contains(q) || (p.description?.toLowerCase().contains(q) ?? false))
           .toList();
     }
-    // simple filter placeholder (no status on Project domain yet)
-    if (filter != null && filter.isNotEmpty) {
-      if (filter == 'Completed') {
-        result = result.where((p) => p.title.toLowerCase().contains('done')).toList();
-      } else if (filter == 'Active') {
-        result = result.where((p) => !p.title.toLowerCase().contains('done')).toList();
+
+    // Apply sorting
+    result.sort((a, b) {
+      switch (sortOrder) {
+        case ProjectSortOrder.createdDate:
+          return b.createdAt.compareTo(a.createdAt); // Most recent first
+        case ProjectSortOrder.deadline:
+          // Projects without deadline go to end
+          if (a.deadline == null && b.deadline == null) return 0;
+          if (a.deadline == null) return 1;
+          if (b.deadline == null) return -1;
+          return a.deadline!.compareTo(b.deadline!); // Earliest deadline first
       }
-    }
+    });
+
     return result;
   }
 

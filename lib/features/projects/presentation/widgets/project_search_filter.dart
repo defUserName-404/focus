@@ -26,7 +26,10 @@ class ProjectSearchFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        fu.FTextField(control: .managed(), hint: 'Search projects'),
+        fu.FTextField(
+          control: .managed(controller: controller),
+          hint: 'Search projects',
+        ),
         SizedBox(height: LayoutConstants.spacing.paddingSmall),
         Row(
           children: [
@@ -34,7 +37,7 @@ class ProjectSearchFilter extends StatelessWidget {
               child: fu.FSelect<String?>(
                 // value: selectedFilter,
                 hint: 'All status',
-                items: {'Stirng': 'Active', 'What': 'The'},
+                items: {'String': 'Active', 'What': 'The'},
                 // itemLabel: (v) => v ?? 'All',
                 // onChanged: onFilterChanged,
               ),
