@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/constants/layout_constants.dart';
@@ -7,7 +8,8 @@ import '../../domain/entities/project.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
 import '../widgets/project_search_bar.dart';
-import '../widgets/project_sort_dropdown.dart';
+import '../widgets/project_sort_filter_chips.dart';
+import '../widgets/project_sort_order_selector.dart';
 import 'project_detail_screen.dart';
 
 class ProjectListScreen extends ConsumerStatefulWidget {
@@ -19,7 +21,8 @@ class ProjectListScreen extends ConsumerStatefulWidget {
 
 class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
   final TextEditingController _searchController = TextEditingController();
-  ProjectSortOrder _sortOrder = ProjectSortOrder.createdDate;
+  SortOrder _sortOrder = SortOrder.none;
+  SortCriteria _selectedCriteria = SortCriteria.createdDate;
 
   @override
   void dispose() {
@@ -32,30 +35,34 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
     final projectsAsync = ref.watch(projectListProvider);
 
     return fu.FScaffold(
-      header: const fu.FHeader(title: Text('Projects')),
+      header: fu.FHeader(title: Text('Projects', style: context.typography.lg)),
       child: projectsAsync.when(
         data: (projects) {
-          final filtered = _applyFiltersAndSort(projects, _searchController.text, _sortOrder);
+          final filtered = _applyFiltersAndSort(projects, _searchController.text, _sortOrder, _selectedCriteria);
 
           return Column(
             children: [
               Padding(
-                padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
-                child: Row(
-                  spacing: LayoutConstants.spacing.paddingSmall,
-                  children: [
-                    Expanded(
-                      child: ProjectSearchBar(controller: _searchController, onChanged: (s) => setState(() {})),
-                    ),
-                    SizedBox(
-                      width: 200,
-                      child: ProjectSortDropdown(
-                        selectedSort: _sortOrder,
-                        onChanged: (order) => setState(() => _sortOrder = order),
-                      ),
-                    ),
-                  ],
+                padding: EdgeInsets.symmetric(
+                  horizontal: LayoutConstants.spacing.paddingRegular,
+                  vertical: LayoutConstants.spacing.paddingSmall,
                 ),
+                child: Column(
+                  spacing: LayoutConstants.spacing.paddingSmall,
+                  children: [ProjectSearchBar(controller: _searchController, onChanged: (s) => setState(() {}))],
+                ),
+              ),
+              Row(
+                children: [
+                  ProjectSortOrderSelector(
+                    selectedOrder: _sortOrder,
+                    onChanged: (order) => setState(() => _sortOrder = order),
+                  ),
+                  ProjectSortFilterChips(
+                    selectedCriteria: _selectedCriteria,
+                    onChanged: (criteria) => setState(() => _selectedCriteria = criteria),
+                  ),
+                ],
               ),
               Expanded(
                 child: filtered.isEmpty
@@ -80,15 +87,10 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
         loading: () => const Center(child: fu.FCircularProgress()),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
-      // floatingAction: fu.FButton.icon(
-      //   icon: fu.FIcon.add,
-      //   child: const Text('New'),
-      //   onPress: () => _showCreateProjectDialog(),
-      // ),
     );
   }
 
-  List<Project> _applyFiltersAndSort(List<Project> all, String query, ProjectSortOrder sortOrder) {
+  List<Project> _applyFiltersAndSort(List<Project> all, String query, SortOrder sortOrder, SortCriteria criteria) {
     var result = all;
 
     // Apply search filter
@@ -99,19 +101,48 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
           .toList();
     }
 
-    // Apply sorting
-    result.sort((a, b) {
-      switch (sortOrder) {
-        case ProjectSortOrder.createdDate:
-          return b.createdAt.compareTo(a.createdAt); // Most recent first
-        case ProjectSortOrder.deadline:
-          // Projects without deadline go to end
-          if (a.deadline == null && b.deadline == null) return 0;
-          if (a.deadline == null) return 1;
-          if (b.deadline == null) return -1;
-          return a.deadline!.compareTo(b.deadline!); // Earliest deadline first
-      }
-    });
+    // Apply multi-criteria sorting if order is not 'none'
+    if (sortOrder != SortOrder.none) {
+      result.sort((a, b) {
+        int comparison = 0;
+
+        switch (criteria) {
+          case SortCriteria.createdDate:
+            comparison = a.createdAt.compareTo(b.createdAt);
+            break;
+          case SortCriteria.recentlyModified:
+            comparison = a.updatedAt.compareTo(b.updatedAt);
+            break;
+          case SortCriteria.startDate:
+            if (a.startDate == null && b.startDate == null) {
+              comparison = 0;
+            } else if (a.startDate == null) {
+              comparison = 1;
+            } else if (b.startDate == null) {
+              comparison = -1;
+            } else {
+              comparison = a.startDate!.compareTo(b.startDate!);
+            }
+            break;
+          case SortCriteria.deadline:
+            if (a.deadline == null && b.deadline == null) {
+              comparison = 0;
+            } else if (a.deadline == null) {
+              comparison = 1;
+            } else if (b.deadline == null) {
+              comparison = -1;
+            } else {
+              comparison = a.deadline!.compareTo(b.deadline!);
+            }
+            break;
+          case SortCriteria.title:
+            comparison = a.title.compareTo(b.title);
+            break;
+        }
+
+        return sortOrder == SortOrder.ascending ? comparison : -comparison;
+      });
+    }
 
     return result;
   }
