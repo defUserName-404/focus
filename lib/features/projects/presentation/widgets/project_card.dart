@@ -1,56 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/layout_constants.dart';
 import '../../domain/entities/project.dart';
 
 class ProjectCard extends StatelessWidget {
   final Project project;
   final VoidCallback? onTap;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
 
-  const ProjectCard({super.key, required this.project, this.onTap, this.onEdit, this.onDelete});
+  const ProjectCard({super.key, required this.project, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: LayoutConstants.spacing.marginExtraLarge),
+      padding: EdgeInsets.only(bottom: LayoutConstants.spacing.marginRegular),
       child: fu.FCard(
-        child: Padding(
-          padding: EdgeInsets.all(LayoutConstants.spacing.paddingSmall),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(width: LayoutConstants.spacing.paddingSmall),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: GestureDetector(
+          child: Padding(
+            padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title
+                Text(project.title, style: context.typography.base.copyWith(fontWeight: FontWeight.w600)),
+
+                // Description
+                if (project.description != null) ...[
+                  SizedBox(height: LayoutConstants.spacing.paddingSmall),
+                  Text(project.description!, maxLines: 2, overflow: TextOverflow.ellipsis),
+                ],
+
+                SizedBox(height: LayoutConstants.spacing.paddingRegular),
+
+                // Metadata row
+                Row(
+                  spacing: LayoutConstants.spacing.paddingSmall,
                   children: [
-                    Text(project.title),
-                    const SizedBox(height: 6),
-                    if (project.description != null)
-                      Text(project.description!, maxLines: 2, overflow: TextOverflow.ellipsis)
+                    // Deadline badge
+                    if (project.deadline != null)
+                      fu.FBadge(child: Text(_formatDeadline(project)))
                     else
-                      Text('No description', style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(_formatDeadline(project)),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                    ),
+                      fu.FBadge(child: const Text('No deadline')),
+
+                    // Action buttons (if needed)
+                    const Spacer(),
+                    fu.FButton.icon(onPress: onTap, child: Icon(fu.FIcons.arrowRight)),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -60,10 +59,9 @@ class ProjectCard extends StatelessWidget {
   String _formatDeadline(Project p) {
     if (p.deadline == null) return 'No deadline';
     final days = p.deadline!.difference(DateTime.now()).inDays;
-    if (days < 0) return 'Overdue';
+    if (days < 0) return 'Overdue ${days.abs()} days';
     if (days == 0) return 'Due today';
+    if (days == 1) return 'Due tomorrow';
     return 'Due in $days days';
   }
 }
-
-// Feature (projects) - project card widget

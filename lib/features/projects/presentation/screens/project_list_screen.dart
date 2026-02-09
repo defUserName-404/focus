@@ -69,23 +69,29 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
                   ),
                 ],
               ),
-              Expanded(
-                child: filtered.isEmpty
-                    ? Center(child: Text('No projects. Create one!'))
-                    : ListView.builder(
-                        padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final Project project = filtered[index];
-                          return ProjectCard(
-                            project: project,
-                            onTap: () => project.id != null ? _openDetail(project.id!) : null,
-                            onEdit: () {},
-                            onDelete: () {},
-                          );
-                        },
+              filtered.isEmpty
+                  ? ProjectCard(
+                      project: Project(
+                        title: 'No projects. Create one!',
+                        deadline: DateTime(2026, DateTime.february, 12),
+                        description: 'No description',
+                        id: BigInt.zero,
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
                       ),
-              ),
+                      onTap: () {},
+                    )
+                  : ListView.builder(
+                      padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final Project project = filtered[index];
+                        return ProjectCard(
+                          project: project,
+                          onTap: () => project.id != null ? _openDetail(project.id!) : null,
+                        );
+                      },
+                    ),
             ],
           );
         },
