@@ -22,7 +22,7 @@ class ProjectListScreen extends ConsumerStatefulWidget {
 class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
   final TextEditingController _searchController = TextEditingController();
   SortOrder _sortOrder = SortOrder.none;
-  SortCriteria _selectedCriteria = SortCriteria.createdDate;
+  SortCriteria _selectedCriteria = SortCriteria.recentlyModified;
 
   @override
   void dispose() {
@@ -35,7 +35,16 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
     final projectsAsync = ref.watch(projectListProvider);
 
     return fu.FScaffold(
-      header: fu.FHeader(title: Text('Projects', style: context.typography.lg)),
+      header: fu.FHeader.nested(
+        prefixes: [
+          fu.FHeaderAction.back(
+            onPress: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+        title: Text('Projects', style: context.typography.lg),
+      ),
       footer: Padding(
         padding: EdgeInsets.all(LayoutConstants.spacing.paddingLarge),
         child: fu.FButton(
