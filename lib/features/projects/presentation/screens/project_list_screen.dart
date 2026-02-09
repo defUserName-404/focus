@@ -6,6 +6,7 @@ import 'package:forui/forui.dart' as fu;
 import '../../../../core/constants/layout_constants.dart';
 import '../../domain/entities/project.dart';
 import '../providers/project_provider.dart';
+import '../widgets/create_project_modal_content.dart'; // Import the new modal content
 import '../widgets/project_card.dart';
 import '../widgets/project_search_bar.dart';
 import '../widgets/project_sort_filter_chips.dart';
@@ -49,8 +50,18 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
         padding: EdgeInsets.all(LayoutConstants.spacing.paddingLarge),
         child: fu.FButton(
           child: const Text('Create New Project'),
-          onPress: () {
-            // Navigate to create project screen
+          onPress: () async {
+            final newProject = await fu.showFSheet<Project>(
+              context: context,
+              side: fu.FLayout.btt,
+              builder: (context) => const CreateProjectModalContent(),
+            );
+
+            if (newProject != null && newProject.id != null) {
+              if (context.mounted) {
+                _openDetail(newProject.id!);
+              }
+            }
           },
         ),
       ),

@@ -5,7 +5,7 @@ abstract class IProjectRepository {
 
   Future<Project?> getProjectById(BigInt id);
 
-  Future<void> createProject(Project project);
+  Future<Project> createProject(Project project);
 
   Future<void> updateProject(Project project);
 

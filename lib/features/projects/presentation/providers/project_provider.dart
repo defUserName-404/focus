@@ -38,7 +38,7 @@ class ProjectNotifier extends _$ProjectNotifier {
     }
   }
 
-  Future<void> createProject({
+  Future<Project> createProject({
     required String title,
     String? description,
     DateTime? startDate,
@@ -54,8 +54,9 @@ class ProjectNotifier extends _$ProjectNotifier {
       updatedAt: time,
     );
 
-    await _repository.createProject(project);
+    final createdProject = await _repository.createProject(project);
     await _loadProjects();
+    return createdProject;
   }
 
   Future<void> updateProject(Project project) async {

@@ -7,7 +7,7 @@ abstract class IProjectLocalDataSource {
 
   Future<ProjectTableData?> getProjectById(BigInt id);
 
-  Future<void> createProject(ProjectTableCompanion companion);
+  Future<int> createProject(ProjectTableCompanion companion);
 
   Future<void> updateProject(ProjectTableCompanion companion);
 
@@ -35,8 +35,8 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
   }
 
   @override
-  Future<void> createProject(ProjectTableCompanion companion) async {
-    await _db.into(_db.projectTable).insert(companion);
+  Future<int> createProject(ProjectTableCompanion companion) async {
+    return await _db.into(_db.projectTable).insert(companion);
   }
 
   @override

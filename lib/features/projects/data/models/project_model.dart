@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart'
-    show BuildGeneralColumn, Column, DateTimeColumn, Table, TextColumn, Int64Column, BuildInt64Column;
+    show BuildGeneralColumn, DateTimeColumn, Table, TextColumn, Int64Column, BuildInt64Column, Column;
 
 class ProjectTable extends Table {
   Int64Column get id => int64().autoIncrement()();

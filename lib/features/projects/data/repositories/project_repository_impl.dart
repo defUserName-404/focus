@@ -1,4 +1,5 @@
 import '../../domain/entities/project.dart';
+import '../../domain/entities/project_extensions.dart';
 import '../../domain/repositories/i_project_repository.dart';
 import '../datasources/project_local_datasource.dart';
 import '../mappers/project_extensions.dart';
@@ -21,9 +22,10 @@ class ProjectRepositoryImpl implements IProjectRepository {
   }
 
   @override
-  Future<void> createProject(Project project) async {
+  Future<Project> createProject(Project project) async {
     final companion = project.toCompanion();
-    await _localDataSource.createProject(companion);
+    final id = await _localDataSource.createProject(companion);
+    return project.copyWith(id: BigInt.from(id));
   }
 
   @override
