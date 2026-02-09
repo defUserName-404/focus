@@ -36,6 +36,15 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
 
     return fu.FScaffold(
       header: fu.FHeader(title: Text('Projects', style: context.typography.lg)),
+      footer: Padding(
+        padding: EdgeInsets.all(LayoutConstants.spacing.paddingLarge),
+        child: fu.FButton(
+          child: const Text('Create New Project'),
+          onPress: () {
+            // Navigate to create project screen
+          },
+        ),
+      ),
       child: projectsAsync.when(
         data: (projects) {
           final filtered = _applyFiltersAndSort(projects, _searchController.text, _sortOrder, _selectedCriteria);
