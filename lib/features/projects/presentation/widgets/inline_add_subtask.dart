@@ -6,11 +6,7 @@ class InlineAddSubtask extends StatefulWidget {
   final VoidCallback onCancel;
   final ValueChanged<String> onSubmit;
 
-  const InlineAddSubtask({
-    super.key,
-    required this.onCancel,
-    required this.onSubmit,
-  });
+  const InlineAddSubtask({super.key, required this.onCancel, required this.onSubmit});
 
   @override
   State<InlineAddSubtask> createState() => _InlineAddSubtaskState();
@@ -52,9 +48,7 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
             // Matching indent line
             SizedBox(
               width: 40,
-              child: Center(
-                child: Container(width: 1, color: context.colors.border),
-              ),
+              child: Center(child: Container(width: 1, color: context.colors.border)),
             ),
             Expanded(
               child: Padding(
@@ -68,21 +62,18 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
                           border: Border.all(color: context.colors.border),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: TextField(
-                          controller: _controller,
-                          focusNode: _focusNode,
-                          onSubmitted: (_) => _submit(),
-                          style: context.typography.sm.copyWith(
-                            color: context.colors.foreground,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Subtask title…',
-                            hintStyle: context.typography.sm.copyWith(
-                              color: context.colors.mutedForeground,
+                        child: Material(
+                          child: TextField(
+                            controller: _controller,
+                            focusNode: _focusNode,
+                            onSubmitted: (_) => _submit(),
+                            style: context.typography.sm.copyWith(color: context.colors.foreground),
+                            decoration: InputDecoration(
+                              hintText: 'Subtask title…',
+                              hintStyle: context.typography.sm.copyWith(color: context.colors.mutedForeground),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              border: InputBorder.none,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            border: InputBorder.none,
                           ),
                         ),
                       ),

@@ -34,10 +34,7 @@ class SubtaskRow extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    fu.FCheckbox(
-                      value: subtask.isCompleted,
-                      onChange: (_) => onToggle(),
-                    ),
+                    fu.FCheckbox(value: subtask.isCompleted, onChange: (_) => onToggle()),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
