@@ -6,7 +6,7 @@ import 'package:forui/forui.dart' as fu;
 import '../../../../core/constants/layout_constants.dart';
 import '../../domain/entities/project.dart';
 import '../providers/project_provider.dart';
-import '../widgets/create_project_modal_content.dart'; // Import the new modal content
+import '../widgets/create_project_modal_content.dart';
 import '../widgets/project_card.dart';
 import '../widgets/project_search_bar.dart';
 import '../widgets/project_sort_filter_chips.dart';

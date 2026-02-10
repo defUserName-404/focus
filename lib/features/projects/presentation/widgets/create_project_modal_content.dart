@@ -75,7 +75,7 @@ class _CreateProjectModalContentState extends ConsumerState<CreateProjectModalCo
                 FButton(
                   onPress: () async {
                     if (_titleController.text.isNotEmpty) {
-                      final newProject = await ref
+                      await ref
                           .read(projectProvider.notifier)
                           .createProject(
                             title: _titleController.text,

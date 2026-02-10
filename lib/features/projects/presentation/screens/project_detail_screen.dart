@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
 import 'package:forui/forui.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/layout_constants.dart';
+import '../../../tasks/domain/entities/task.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
 import '../../../tasks/presentation/providers/task_provider.dart';
 import '../providers/project_provider.dart';
@@ -42,7 +44,11 @@ class ProjectDetailScreen extends ConsumerWidget {
         child: FButton(
           child: const Text('Create New Task'),
           onPress: () async {
-            _showCreateTaskDialog(context, ref, projectIdString);
+            await showFSheet<Task>(
+              context: context,
+              side: FLayout.btt,
+              builder: (context) => CreateTaskModalContent(projectId: projectId),
+            );
           },
         ),
       ),
@@ -123,70 +129,4 @@ class ProjectDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showCreateTaskDialog(BuildContext context, WidgetRef ref, String projectIdString) {
-    final titleController = TextEditingController();
-    final descController = TextEditingController();
-    TaskPriority priority = TaskPriority.medium;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Create Task'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(labelText: 'Title'),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: descController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<TaskPriority>(
-                  initialValue: priority,
-                  decoration: const InputDecoration(labelText: 'Priority'),
-                  items: TaskPriority.values.map((p) {
-                    return DropdownMenuItem(value: p, child: Text(p.label));
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => priority = value);
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-            FButton(
-              child: const Text('Create'),
-              onPress: () async {
-                if (titleController.text.isNotEmpty) {
-                  await ref
-                      .read(taskProvider(projectIdString).notifier)
-                      .createTask(
-                        projectId: projectIdString,
-                        title: titleController.text,
-                        description: descController.text.isEmpty ? null : descController.text,
-                        priority: priority,
-                        startDate: DateTime.now(),
-                        endDate: DateTime.now().add(const Duration(days: 7)),
-                        depth: 0,
-                      );
-                  if (context.mounted) Navigator.pop(context);
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
