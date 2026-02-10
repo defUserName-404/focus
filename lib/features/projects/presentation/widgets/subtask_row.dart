@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
+import 'package:forui/forui.dart' as fu;
 
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
@@ -14,8 +16,8 @@ class SubtaskRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFF1E1E1E))),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: context.colors.border)),
       ),
       child: IntrinsicHeight(
         child: Row(
@@ -24,7 +26,7 @@ class SubtaskRow extends StatelessWidget {
             // Indent thread line
             SizedBox(
               width: 40,
-              child: Center(child: Container(width: 1, color: const Color(0xFF333333))),
+              child: Center(child: Container(width: 1, color: context.colors.border)),
             ),
             Expanded(
               child: Padding(
@@ -32,7 +34,10 @@ class SubtaskRow extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SubtaskCheckbox(checked: subtask.isCompleted, onToggle: onToggle),
+                    fu.FCheckbox(
+                      value: subtask.isCompleted,
+                      onChange: (_) => onToggle(),
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -43,12 +48,13 @@ class SubtaskRow extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   subtask.title,
-                                  style: TextStyle(
-                                    fontSize: 14,
+                                  style: context.typography.sm.copyWith(
                                     fontWeight: subtask.isCompleted ? FontWeight.w400 : FontWeight.w500,
-                                    color: subtask.isCompleted ? const Color(0xFF666666) : const Color(0xFFD0D0D0),
+                                    color: subtask.isCompleted
+                                        ? context.colors.mutedForeground
+                                        : context.colors.foreground,
                                     decoration: subtask.isCompleted ? TextDecoration.lineThrough : null,
-                                    decorationColor: const Color(0xFF666666),
+                                    decorationColor: context.colors.mutedForeground,
                                   ),
                                 ),
                               ),
@@ -66,7 +72,7 @@ class SubtaskRow extends StatelessWidget {
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: onTap,
-                      child: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF555555)),
+                      child: Icon(fu.FIcons.chevronRight, size: 14, color: context.colors.mutedForeground),
                     ),
                     const SizedBox(width: 4),
                   ],
@@ -75,32 +81,6 @@ class SubtaskRow extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SubtaskCheckbox extends StatelessWidget {
-  final bool checked;
-  final VoidCallback onToggle;
-
-  const _SubtaskCheckbox({required this.checked, required this.onToggle});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onToggle,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 18,
-        height: 18,
-        margin: const EdgeInsets.only(top: 1),
-        decoration: BoxDecoration(
-          color: checked ? Colors.white : Colors.transparent,
-          border: checked ? null : Border.all(color: const Color(0xFF555555), width: 1.5),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: checked ? const Icon(Icons.check, size: 12, color: Color(0xFF111111)) : null,
       ),
     );
   }

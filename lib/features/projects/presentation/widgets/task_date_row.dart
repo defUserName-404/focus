@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:forui/forui.dart' as fu;
 import 'package:intl/intl.dart';
 
 class TaskDateRow extends StatelessWidget {
@@ -6,12 +8,7 @@ class TaskDateRow extends StatelessWidget {
   final DateTime? deadline;
   final bool isOverdue;
 
-  const TaskDateRow({
-    super.key,
-    this.startDate,
-    this.deadline,
-    this.isOverdue = false,
-  });
+  const TaskDateRow({super.key, this.startDate, this.deadline, this.isOverdue = false});
 
   String _fmt(DateTime dt) => DateFormat('MMM d').format(dt);
 
@@ -20,15 +17,11 @@ class TaskDateRow extends StatelessWidget {
     if (isOverdue && deadline != null) {
       return Row(
         children: [
-          const Icon(Icons.error, color: Color(0xFFB71C1C), size: 13),
+          Icon(fu.FIcons.triangleAlert, color: context.colors.destructive, size: 13),
           const SizedBox(width: 4),
           Text(
             'Overdue (${_fmt(deadline!)})',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFFB71C1C),
-            ),
+            style: context.typography.xs.copyWith(fontWeight: FontWeight.w500, color: context.colors.destructive),
           ),
         ],
       );
@@ -39,18 +32,14 @@ class TaskDateRow extends StatelessWidget {
     final dateText = startDate != null && deadline != null
         ? '${_fmt(startDate!)} – ${_fmt(deadline!)}'
         : deadline != null
-            ? _fmt(deadline!)
-            : _fmt(startDate!);
+        ? _fmt(deadline!)
+        : _fmt(startDate!);
 
     return Row(
       children: [
-        const Icon(Icons.calendar_today_outlined,
-            size: 13, color: Color(0xFF666666)),
+        Icon(fu.FIcons.calendar, size: 13, color: context.colors.mutedForeground),
         const SizedBox(width: 5),
-        Text(
-          dateText,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
-        ),
+        Text(dateText, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
       ],
     );
   }

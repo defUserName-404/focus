@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:forui/forui.dart' as fu;
 
 class InlineAddSubtask extends StatefulWidget {
   final VoidCallback onCancel;
@@ -39,9 +41,9 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF0D0D0D),
-        border: Border(top: BorderSide(color: Color(0xFF1E1E1E))),
+      decoration: BoxDecoration(
+        color: context.colors.background,
+        border: Border(top: BorderSide(color: context.colors.border)),
       ),
       child: IntrinsicHeight(
         child: Row(
@@ -51,37 +53,34 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
             SizedBox(
               width: 40,
               child: Center(
-                child: Container(width: 1, color: const Color(0xFF333333)),
+                child: Container(width: 1, color: context.colors.border),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 0, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
                 child: Row(
                   children: [
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A1A),
-                          border: Border.all(color: const Color(0xFF333333)),
+                          color: context.colors.muted,
+                          border: Border.all(color: context.colors.border),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextField(
                           controller: _controller,
                           focusNode: _focusNode,
                           onSubmitted: (_) => _submit(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFFD0D0D0),
+                          style: context.typography.sm.copyWith(
+                            color: context.colors.foreground,
                           ),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             hintText: 'Subtask title…',
-                            hintStyle: TextStyle(
-                              color: Color(0xFF555555),
-                              fontSize: 14,
+                            hintStyle: context.typography.sm.copyWith(
+                              color: context.colors.mutedForeground,
                             ),
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
                             border: InputBorder.none,
                           ),
@@ -91,10 +90,9 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
                     const SizedBox(width: 6),
                     GestureDetector(
                       onTap: widget.onCancel,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Icon(Icons.close,
-                            size: 18, color: Color(0xFF666666)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Icon(fu.FIcons.x, size: 18, color: context.colors.mutedForeground),
                       ),
                     ),
                   ],

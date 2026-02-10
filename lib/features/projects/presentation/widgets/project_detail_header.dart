@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:focus/core/constants/layout_constants.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
+import 'package:forui/forui.dart' as fu;
 
 import 'project_meta_section.dart';
 import 'project_progress_bar.dart';
@@ -16,31 +19,40 @@ class ProjectDetailHeader extends StatelessWidget {
     final completed = tasks.where((t) => t.isCompleted).length;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      padding: EdgeInsets.fromLTRB(
+        LayoutConstants.spacing.paddingLarge,
+        0,
+        LayoutConstants.spacing.paddingLarge,
+        0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Description
           if (project.description != null && project.description!.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(project.description!, style: const TextStyle(fontSize: 14, color: Color(0xFF888888), height: 1.5)),
+            Text(
+              project.description!,
+              style: context.typography.sm.copyWith(
+                color: context.colors.mutedForeground,
+                height: 1.5,
+              ),
+            ),
           ],
 
-          const SizedBox(height: 16),
+          SizedBox(height: LayoutConstants.spacing.paddingLarge),
 
           // Progress bar
           ProjectProgressBar(completed: completed, total: tasks.length),
 
-          const SizedBox(height: 12),
+          SizedBox(height: LayoutConstants.spacing.paddingRegular),
 
           // Collapsible metadata chips
           ProjectMetaSection(project: project),
 
           // Divider
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Divider(color: Color(0xFF1A1A1A), height: 1),
-          ),
+          fu.FDivider(),
+          SizedBox(height: LayoutConstants.spacing.paddingSmall),
         ],
       ),
     );

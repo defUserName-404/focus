@@ -29,7 +29,12 @@ class ProjectCard extends StatelessWidget {
                 // Description
                 if (project.description != null) ...[
                   SizedBox(height: LayoutConstants.spacing.paddingSmall),
-                  Text(project.description!, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(
+                    project.description!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
+                  ),
                 ],
 
                 SizedBox(height: LayoutConstants.spacing.paddingRegular),
@@ -40,9 +45,12 @@ class ProjectCard extends StatelessWidget {
                   children: [
                     // Deadline badge
                     if (project.deadline != null)
-                      fu.FBadge(child: Text(_formatDeadline(project)))
+                      fu.FBadge(
+                        style: _isOverdue(project) ? fu.FBadgeStyle.destructive() : fu.FBadgeStyle.secondary(),
+                        child: Text(_formatDeadline(project)),
+                      )
                     else
-                      fu.FBadge(child: const Text('No deadline')),
+                      fu.FBadge(style: fu.FBadgeStyle.outline(), child: const Text('No deadline')),
 
                     // Action buttons (if needed)
                     const Spacer(),
@@ -64,5 +72,10 @@ class ProjectCard extends StatelessWidget {
     if (days == 0) return 'Due today';
     if (days == 1) return 'Due tomorrow';
     return 'Due in $days days';
+  }
+
+  bool _isOverdue(Project p) {
+    if (p.deadline == null) return false;
+    return p.deadline!.isBefore(DateTime.now());
   }
 }

@@ -1,4 +1,5 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart' show StateProvider;
+import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/injection.dart';
@@ -23,38 +24,27 @@ Stream<List<Task>> tasksByProject(Ref ref, String projectId) {
 
 // ── Filter state provider (manual, per-project family) ─────────────────────
 
-final taskListFilterStateProvider =
-    StateProvider.family<TaskListFilterState, String>(
+final taskListFilterStateProvider = StateProvider.family<TaskListFilterState, String>(
   (ref, projectId) => const TaskListFilterState(),
 );
 
 // ── Computed provider: filtered & sorted task list per project ──────────────
 
-final filteredTasksProvider =
-    Provider.family<AsyncValue<List<Task>>, String>((ref, projectId) {
+final filteredTasksProvider = Provider.family<AsyncValue<List<Task>>, String>((ref, projectId) {
   final tasksAsync = ref.watch(tasksByProjectProvider(projectId));
   final filter = ref.watch(taskListFilterStateProvider(projectId));
 
-  return tasksAsync.whenData(
-    (tasks) => _filterAndSortTasks(tasks, filter),
-  );
+  return tasksAsync.whenData((tasks) => _filterAndSortTasks(tasks, filter));
 });
 
-List<Task> _filterAndSortTasks(
-  List<Task> tasks,
-  TaskListFilterState filter,
-) {
+List<Task> _filterAndSortTasks(List<Task> tasks, TaskListFilterState filter) {
   var result = tasks;
 
   // Search filter
   final q = filter.searchQuery.trim().toLowerCase();
   if (q.isNotEmpty) {
     result = result
-        .where(
-          (t) =>
-              t.title.toLowerCase().contains(q) ||
-              (t.description?.toLowerCase().contains(q) ?? false),
-        )
+        .where((t) => t.title.toLowerCase().contains(q) || (t.description?.toLowerCase().contains(q) ?? false))
         .toList();
   }
 
@@ -149,10 +139,7 @@ class TaskNotifier extends _$TaskNotifier {
   }
 
   Future<void> toggleTaskCompletion(Task task) async {
-    final updatedTask = task.copyWith(
-      isCompleted: !task.isCompleted,
-      updatedAt: DateTime.now(),
-    );
+    final updatedTask = task.copyWith(isCompleted: !task.isCompleted, updatedAt: DateTime.now());
     await _repository.updateTask(updatedTask);
     await _loadTasks(task.projectId.toString());
   }

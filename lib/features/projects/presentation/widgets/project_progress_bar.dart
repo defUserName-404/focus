@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:forui/forui.dart' as fu;
 
 class ProjectProgressBar extends StatelessWidget {
   final int completed;
   final int total;
 
-  const ProjectProgressBar({
-    super.key,
-    required this.completed,
-    required this.total,
-  });
+  const ProjectProgressBar({super.key, required this.completed, required this.total});
 
   @override
   Widget build(BuildContext context) {
     final progress = total > 0 ? completed / total : 0.0;
     final percent = (progress * 100).round();
-    final isDone = percent == 100;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,32 +21,19 @@ class ProjectProgressBar extends StatelessWidget {
           children: [
             Text(
               '$completed of $total tasks',
-              style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
+              style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
             ),
             Text(
               '$percent%',
-              style: TextStyle(
-                fontSize: 12,
+              style: context.typography.xs.copyWith(
                 fontWeight: FontWeight.w600,
-                color: isDone
-                    ? const Color(0xFF4CAF50)
-                    : const Color(0xFFAAAAAA),
+                color: percent == 100 ? context.colors.primary : context.colors.foreground,
               ),
             ),
           ],
         ),
         const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(2),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 4,
-            backgroundColor: const Color(0xFF1E1E1E),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              isDone ? const Color(0xFF4CAF50) : Colors.white,
-            ),
-          ),
-        ),
+        fu.FProgress(),
       ],
     );
   }

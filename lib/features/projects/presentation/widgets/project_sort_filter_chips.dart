@@ -2,24 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
 import '../../../../core/constants/layout_constants.dart';
-
-/// Sort criteria enum for project filtering
-enum SortCriteria {
-  recentlyModified('Recent'),
-  deadline('Deadline'),
-  startDate('Start'),
-  title('Title'),
-  createdDate('Created');
-
-  final String label;
-
-  const SortCriteria(this.label);
-}
+import '../providers/project_list_filter_state.dart';
 
 /// Widget displaying filter chips for sort criteria selection
 class ProjectSortFilterChips extends StatelessWidget {
-  final SortCriteria selectedCriteria;
-  final ValueChanged<SortCriteria> onChanged;
+  final ProjectSortCriteria selectedCriteria;
+  final ValueChanged<ProjectSortCriteria> onChanged;
 
   const ProjectSortFilterChips({super.key, required this.selectedCriteria, required this.onChanged});
 
@@ -35,7 +23,7 @@ class ProjectSortFilterChips extends StatelessWidget {
         child: Row(
           spacing: LayoutConstants.spacing.paddingSmall,
           children: [
-            for (final criteria in SortCriteria.values)
+            for (final criteria in ProjectSortCriteria.values)
               FButton(
                 style: selectedCriteria == criteria ? FButtonStyle.secondary() : FButtonStyle.outline(),
                 onPress: () => onChanged(criteria),

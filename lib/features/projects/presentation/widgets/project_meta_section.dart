@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:focus/core/constants/layout_constants.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
+import 'package:forui/forui.dart' as fu;
 import 'package:intl/intl.dart';
 
 class ProjectMetaSection extends StatefulWidget {
@@ -19,8 +22,7 @@ class _ProjectMetaSectionState extends State<ProjectMetaSection> {
   @override
   Widget build(BuildContext context) {
     final project = widget.project;
-    final hasAnyMeta =
-        project.startDate != null || project.deadline != null;
+    final hasAnyMeta = project.startDate != null || project.deadline != null;
 
     if (!hasAnyMeta) return const SizedBox.shrink();
 
@@ -36,84 +38,38 @@ class _ProjectMetaSectionState extends State<ProjectMetaSection> {
                     ? Icons.keyboard_arrow_down_rounded
                     : Icons.keyboard_arrow_right_rounded,
                 size: 16,
-                color: const Color(0xFF666666),
+                color: context.colors.mutedForeground,
               ),
               const SizedBox(width: 4),
-              const Text(
+              Text(
                 'Project details',
-                style: TextStyle(fontSize: 12, color: Color(0xFF666666)),
+                style: context.typography.xs.copyWith(
+                  color: context.colors.mutedForeground,
+                ),
               ),
             ],
           ),
         ),
         if (_expanded) ...[
-          const SizedBox(height: 10),
+          SizedBox(height: LayoutConstants.spacing.paddingRegular),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              spacing: 8,
+              spacing: LayoutConstants.spacing.paddingRegular,
               children: [
                 if (project.startDate != null)
-                  _MetaChip(label: 'Start', value: _fmt(project.startDate!)),
+                  fu.FBadge(child: Text('Start: ${_fmt(project.startDate!)}')),
                 if (project.deadline != null)
-                  _MetaChip(
-                    label: 'Deadline',
-                    value: _fmt(project.deadline!),
-                    valueColor: const Color(0xFFE8A87C),
+                  fu.FBadge(
+                    style: fu.FBadgeStyle.destructive(),
+                    child: Text('Deadline: ${_fmt(project.deadline!)}'),
                   ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: LayoutConstants.spacing.paddingRegular),
         ],
       ],
-    );
-  }
-}
-
-class _MetaChip extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color valueColor;
-
-  const _MetaChip({
-    required this.label,
-    required this.value,
-    this.valueColor = const Color(0xFFCCCCCC),
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF111111),
-        border: Border.all(color: const Color(0xFF222222)),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.7,
-              color: Color(0xFF666666),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: valueColor,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

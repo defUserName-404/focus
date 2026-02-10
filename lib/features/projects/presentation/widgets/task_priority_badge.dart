@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
+import 'package:forui/forui.dart' as fu;
 
 class TaskPriorityBadge extends StatelessWidget {
   final TaskPriority priority;
@@ -8,21 +9,18 @@ class TaskPriorityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: priority == TaskPriority.medium ? const Color(0xFFB71C1C) : const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Text(
-        priority.label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.4,
-          color: priority == TaskPriority.medium ? Colors.white : const Color(0xFFCCCCCC),
-        ),
-      ),
-    );
+    final fu.FBadgeStyle Function() style;
+    // switch (priority) {
+    //   case TaskPriority.critical:
+    //     style = fu.FBadgeStyle.destructive as fu.FBadgeStyle Function();
+    //   case TaskPriority.high:
+    //     style = fu.FBadgeStyle.primary as fu.FBadgeStyle Function();
+    //   case TaskPriority.medium:
+    //     style = fu.FBadgeStyle.secondary as fu.FBadgeStyle Function();
+    //   case TaskPriority.low:
+    //     style = fu.FBadgeStyle.outline as fu.FBadgeStyle Function();
+    // }
+
+    return fu.FBadge(child: Text(priority.label));
   }
 }

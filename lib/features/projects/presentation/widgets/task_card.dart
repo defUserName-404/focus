@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
+import 'package:forui/forui.dart' as fu;
 
 import 'inline_add_subtask.dart';
 import 'subtask_row.dart';
@@ -40,14 +42,10 @@ class _TaskCardState extends ConsumerState<TaskCard> {
     final task = widget.task;
     final subtasks = widget.subtasks;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF111111),
-        border: Border.all(color: const Color(0xFF232323)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ClipRRect(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: fu.FCard(
+        child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -90,9 +88,14 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                 child: InlineAddSubtask(
                   onCancel: () => setState(() => _addingSubtask = false),
                   onSubmit: (title) {
-                    // ref
-                    //     .read(taskProvider(widget.projectIdString).notifier)
-                    //     .createSubtask(task, title);
+                    ref
+                        .read(taskProvider(widget.projectIdString).notifier)
+                        .createTask(
+                          projectId: widget.projectIdString,
+                          parentTaskId: widget.task.id,
+                          title: title,
+                          depth: widget.task.depth + 1,
+                        );
                     setState(() {
                       _addingSubtask = false;
                       _subtasksExpanded = true;
@@ -103,6 +106,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
           ],
         ),
       ),
+    ),
     );
   }
 }
@@ -138,7 +142,10 @@ class _TaskMainRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Checkbox
-          _TaskCheckbox(checked: task.isCompleted, onToggle: onToggle),
+          fu.FCheckbox(
+            value: task.isCompleted,
+            onChange: (_) => onToggle(),
+          ),
           const SizedBox(width: 12),
 
           // Content
@@ -152,12 +159,13 @@ class _TaskMainRow extends StatelessWidget {
                     Expanded(
                       child: Text(
                         task.title,
-                        style: TextStyle(
-                          fontSize: 15,
+                        style: context.typography.base.copyWith(
                           fontWeight: task.isCompleted ? FontWeight.w400 : FontWeight.w600,
-                          color: task.isCompleted ? const Color(0xFF666666) : const Color(0xFFF0F0F0),
+                          color: task.isCompleted
+                              ? context.colors.mutedForeground
+                              : context.colors.foreground,
                           decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                          decorationColor: const Color(0xFF666666),
+                          decorationColor: context.colors.mutedForeground,
                         ),
                       ),
                     ),
@@ -166,7 +174,7 @@ class _TaskMainRow extends StatelessWidget {
                     const SizedBox(width: 6),
                     GestureDetector(
                       onTap: onTap,
-                      child: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF555555)),
+                      child: Icon(fu.FIcons.chevronRight, size: 14, color: context.colors.mutedForeground),
                     ),
                   ],
                 ),
@@ -174,7 +182,13 @@ class _TaskMainRow extends StatelessWidget {
                 // Description
                 if (task.description != null && task.description!.isNotEmpty) ...[
                   const SizedBox(height: 3),
-                  Text(task.description!, style: const TextStyle(fontSize: 13, color: Color(0xFF888888), height: 1.4)),
+                  Text(
+                    task.description!,
+                    style: context.typography.sm.copyWith(
+                      color: context.colors.mutedForeground,
+                      height: 1.4,
+                    ),
+                  ),
                 ],
 
                 const SizedBox(height: 6),
@@ -200,34 +214,6 @@ class _TaskMainRow extends StatelessWidget {
   }
 }
 
-// ── Private: task checkbox ───────────────────────────────────────────────────
-
-class _TaskCheckbox extends StatelessWidget {
-  final bool checked;
-  final VoidCallback onToggle;
-
-  const _TaskCheckbox({required this.checked, required this.onToggle});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onToggle,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 20,
-        height: 20,
-        margin: const EdgeInsets.only(top: 1),
-        decoration: BoxDecoration(
-          color: checked ? Colors.white : Colors.transparent,
-          border: checked ? null : Border.all(color: const Color(0xFF555555), width: 1.5),
-          borderRadius: BorderRadius.circular(5),
-        ),
-        child: checked ? const Icon(Icons.check, size: 13, color: Color(0xFF111111)) : null,
-      ),
-    );
-  }
-}
-
 // ── Private: "+ subtask" chip ────────────────────────────────────────────────
 
 class _AddSubtaskChip extends StatelessWidget {
@@ -237,25 +223,13 @@ class _AddSubtaskChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFF2A2A2A)),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.add, size: 13, color: Color(0xFF888888)),
-            SizedBox(width: 2),
-            Text(
-              'subtask',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF888888)),
-            ),
-          ],
-        ),
+    return fu.FButton(
+      style: fu.FButtonStyle.outline(),
+      onPress: onPressed,
+      prefix: const Icon(fu.FIcons.plus, size: 13),
+      child: Text(
+        'subtask',
+        style: context.typography.xs,
       ),
     );
   }
@@ -272,29 +246,16 @@ class _SubtaskCountChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onToggle,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFF2A2A2A)),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '$count',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF888888)),
-            ),
-            const SizedBox(width: 2),
-            Icon(
-              expanded ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_right_rounded,
-              size: 14,
-              color: const Color(0xFF888888),
-            ),
-          ],
-        ),
+    return fu.FButton(
+      style: fu.FButtonStyle.outline(),
+      onPress: onToggle,
+      suffix: Icon(
+        expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight,
+        size: 14,
+      ),
+      child: Text(
+        '$count',
+        style: context.typography.xs,
       ),
     );
   }

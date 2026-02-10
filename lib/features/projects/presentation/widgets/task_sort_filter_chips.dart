@@ -2,18 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:focus/core/constants/layout_constants.dart';
 import 'package:forui/forui.dart' as fu;
 
-/// Sort criteria for the task list in the project detail screen.
-/// Mirrors the pattern in [ProjectSortFilterChips].
-enum TaskSortCriteria {
-  recentlyModified('Recent'),
-  deadline('Deadline'),
-  priority('Priority'),
-  title('Title'),
-  createdDate('Created');
-
-  final String label;
-  const TaskSortCriteria(this.label);
-}
+import '../../../tasks/presentation/providers/task_filter_state.dart';
 
 class TaskSortFilterChips extends StatelessWidget {
   final TaskSortCriteria selectedCriteria;

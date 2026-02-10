@@ -5,6 +5,7 @@ import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/constants/layout_constants.dart';
 import '../../domain/entities/project.dart';
+import '../providers/project_list_filter_state.dart';
 import '../providers/project_provider.dart';
 import '../widgets/create_project_modal_content.dart';
 import '../widgets/project_card.dart';
@@ -13,36 +14,18 @@ import '../widgets/project_sort_filter_chips.dart';
 import '../widgets/project_sort_order_selector.dart';
 import 'project_detail_screen.dart';
 
-class ProjectListScreen extends ConsumerStatefulWidget {
+class ProjectListScreen extends ConsumerWidget {
   const ProjectListScreen({super.key});
 
   @override
-  ConsumerState<ProjectListScreen> createState() => _ProjectListScreenState();
-}
-
-class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  SortOrder _sortOrder = SortOrder.none;
-  SortCriteria _selectedCriteria = SortCriteria.recentlyModified;
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final projectsAsync = ref.watch(projectListProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filteredAsync = ref.watch(filteredProjectListProvider);
+    final filter = ref.watch(projectListFilterStateProvider);
 
     return fu.FScaffold(
       header: fu.FHeader.nested(
         prefixes: [
-          fu.FHeaderAction.back(
-            onPress: () {
-              Navigator.pop(context);
-            },
-          ),
+          fu.FHeaderAction.back(onPress: () => Navigator.pop(context)),
         ],
         title: Text('Projects', style: context.typography.lg),
       ),
@@ -59,118 +42,74 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
 
             if (newProject != null && newProject.id != null) {
               if (context.mounted) {
-                _openDetail(newProject.id!);
+                _openDetail(context, newProject.id!);
               }
             }
           },
         ),
       ),
-      child: projectsAsync.when(
-        data: (projects) {
-          final filtered = _applyFiltersAndSort(projects, _searchController.text, _sortOrder, _selectedCriteria);
-
-          return Column(
+      child: Column(
+        children: [
+          ProjectSearchBar(
+            onChanged: (query) {
+              ref.read(projectListFilterStateProvider.notifier).state =
+                  filter.copyWith(searchQuery: query);
+            },
+          ),
+          Row(
             children: [
-              ProjectSearchBar(controller: _searchController, onChanged: (s) => setState(() {})),
-              Row(
-                children: [
-                  SizedBox(
-                    width: 120.0,
-                    child: ProjectSortOrderSelector(
-                      selectedOrder: _sortOrder,
-                      onChanged: (order) => setState(() => _sortOrder = order),
-                    ),
-                  ),
-                  Expanded(
-                    child: ProjectSortFilterChips(
-                      selectedCriteria: _selectedCriteria,
-                      onChanged: (criteria) => setState(() => _selectedCriteria = criteria),
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: 120.0,
+                child: ProjectSortOrderSelector(
+                  selectedOrder: filter.sortOrder,
+                  onChanged: (order) {
+                    ref.read(projectListFilterStateProvider.notifier).state =
+                        filter.copyWith(sortOrder: order);
+                  },
+                ),
               ),
               Expanded(
-                child: filtered.isEmpty
-                    ? Center(child: Text('No projects found'))
-                    : ListView.builder(
-                        padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final Project project = filtered[index];
-                          return ProjectCard(
-                            project: project,
-                            onTap: () => project.id != null ? _openDetail(project.id!) : null,
-                          );
-                        },
-                      ),
+                child: ProjectSortFilterChips(
+                  selectedCriteria: filter.sortCriteria,
+                  onChanged: (criteria) {
+                    ref.read(projectListFilterStateProvider.notifier).state =
+                        filter.copyWith(sortCriteria: criteria);
+                  },
+                ),
               ),
             ],
-          );
-        },
-        loading: () => const Center(child: fu.FCircularProgress()),
-        error: (err, _) => Center(child: Text('Error: $err')),
+          ),
+          Expanded(
+            child: filteredAsync.when(
+              loading: () => const Center(child: fu.FCircularProgress()),
+              error: (err, _) => Center(child: Text('Error: $err')),
+              data: (projects) => projects.isEmpty
+                  ? const Center(child: Text('No projects found'))
+                  : ListView.builder(
+                      padding: EdgeInsets.all(
+                          LayoutConstants.spacing.paddingRegular),
+                      itemCount: projects.length,
+                      itemBuilder: (context, index) {
+                        final project = projects[index];
+                        return ProjectCard(
+                          project: project,
+                          onTap: () => project.id != null
+                              ? _openDetail(context, project.id!)
+                              : null,
+                        );
+                      },
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  List<Project> _applyFiltersAndSort(List<Project> all, String query, SortOrder sortOrder, SortCriteria criteria) {
-    var result = all;
-
-    // Apply search filter
-    final q = query.trim().toLowerCase();
-    if (q.isNotEmpty) {
-      result = result
-          .where((p) => p.title.toLowerCase().contains(q) || (p.description?.toLowerCase().contains(q) ?? false))
-          .toList();
-    }
-
-    // Apply multi-criteria sorting if order is not 'none'
-    if (sortOrder != SortOrder.none) {
-      result.sort((a, b) {
-        int comparison = 0;
-
-        switch (criteria) {
-          case SortCriteria.createdDate:
-            comparison = a.createdAt.compareTo(b.createdAt);
-            break;
-          case SortCriteria.recentlyModified:
-            comparison = a.updatedAt.compareTo(b.updatedAt);
-            break;
-          case SortCriteria.startDate:
-            if (a.startDate == null && b.startDate == null) {
-              comparison = 0;
-            } else if (a.startDate == null) {
-              comparison = 1;
-            } else if (b.startDate == null) {
-              comparison = -1;
-            } else {
-              comparison = a.startDate!.compareTo(b.startDate!);
-            }
-            break;
-          case SortCriteria.deadline:
-            if (a.deadline == null && b.deadline == null) {
-              comparison = 0;
-            } else if (a.deadline == null) {
-              comparison = 1;
-            } else if (b.deadline == null) {
-              comparison = -1;
-            } else {
-              comparison = a.deadline!.compareTo(b.deadline!);
-            }
-            break;
-          case SortCriteria.title:
-            comparison = a.title.compareTo(b.title);
-            break;
-        }
-
-        return sortOrder == SortOrder.ascending ? comparison : -comparison;
-      });
-    }
-
-    return result;
-  }
-
-  void _openDetail(BigInt projectId) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: projectId)));
+  void _openDetail(BuildContext context, BigInt projectId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (_) => ProjectDetailScreen(projectId: projectId)),
+    );
   }
 }
