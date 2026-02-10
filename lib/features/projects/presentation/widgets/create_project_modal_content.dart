@@ -53,15 +53,13 @@ class _CreateProjectModalContentState extends ConsumerState<CreateProjectModalCo
             FDateField.calendar(
               label: Text('Start Date'),
               hint: 'Select Start Date (Optional)',
-              start: _startDate,
-              onSaved: (date) => setState(() => _startDate = date),
+              onChange: (date) => setState(() => _startDate = date),
             ),
             SizedBox(height: LayoutConstants.spacing.paddingRegular),
             FDateField.calendar(
               label: Text('Deadline'),
               hint: 'Select Deadline (Optional)',
-              start: _deadline,
-              onSaved: (date) => setState(() => _deadline = date),
+              onChange: (date) => setState(() => _deadline = date),
             ),
             SizedBox(height: LayoutConstants.spacing.paddingLarge),
             Row(

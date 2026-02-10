@@ -41,7 +41,9 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
 
   @override
   Future<void> updateProject(ProjectTableCompanion companion) async {
-    await _db.into(_db.projectTable).insert(companion, mode: InsertMode.insertOrReplace);
+    await (_db.update(_db.projectTable)
+          ..where((t) => t.id.equals(companion.id.value)))
+        .write(companion);
   }
 
   @override

@@ -16,12 +16,27 @@ extension DbProjectToDomain on ProjectTableData {
 }
 
 extension DomainProjectToCompanion on Project {
-  ProjectTableCompanion toCompanion() => ProjectTableCompanion.insert(
-    title: title,
-    description: Value<String?>(description),
-    startDate: Value<DateTime?>(startDate),
-    deadline: Value<DateTime?>(deadline),
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-  );
+  /// Returns an insert companion (no id) for new rows,
+  /// or a full companion (with id) for updates.
+  ProjectTableCompanion toCompanion() {
+    if (id != null) {
+      return ProjectTableCompanion(
+        id: Value(id!),
+        title: Value(title),
+        description: Value(description),
+        startDate: Value(startDate),
+        deadline: Value(deadline),
+        createdAt: Value(createdAt),
+        updatedAt: Value(updatedAt),
+      );
+    }
+    return ProjectTableCompanion.insert(
+      title: title,
+      description: Value<String?>(description),
+      startDate: Value<DateTime?>(startDate),
+      deadline: Value<DateTime?>(deadline),
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
 }

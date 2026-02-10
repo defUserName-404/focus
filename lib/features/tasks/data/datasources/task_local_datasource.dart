@@ -8,7 +8,7 @@ abstract class ITaskLocalDataSource {
 
   Future<List<TaskTableData>> getSubtasks(BigInt parentTaskId);
 
-  Future<void> createTask(TaskTableCompanion companion);
+  Future<int> createTask(TaskTableCompanion companion);
 
   Future<void> updateTask(TaskTableCompanion companion);
 
@@ -38,13 +38,15 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   }
 
   @override
-  Future<void> createTask(TaskTableCompanion companion) async {
-    await _db.into(_db.taskTable).insert(companion);
+  Future<int> createTask(TaskTableCompanion companion) async {
+    return await _db.into(_db.taskTable).insert(companion);
   }
 
   @override
   Future<void> updateTask(TaskTableCompanion companion) async {
-    await _db.into(_db.taskTable).insert(companion, mode: InsertMode.insertOrReplace);
+    await (_db.update(_db.taskTable)
+          ..where((t) => t.id.equals(companion.id.value)))
+        .write(companion);
   }
 
   @override

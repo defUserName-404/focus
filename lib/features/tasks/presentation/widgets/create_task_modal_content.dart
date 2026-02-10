@@ -4,17 +4,27 @@ import 'package:forui/forui.dart';
 
 import '../../../../core/constants/layout_constants.dart';
 import '../../domain/entities/task_priority.dart';
-import '../providers/task_provider.dart'; // Placeholder for task provider
+import '../providers/task_provider.dart';
 
 class CreateTaskModalContent extends ConsumerStatefulWidget {
   final BigInt projectId;
-  const CreateTaskModalContent({super.key, required this.projectId});
+  final BigInt? parentTaskId;
+  final int depth;
+
+  const CreateTaskModalContent({
+    super.key,
+    required this.projectId,
+    this.parentTaskId,
+    this.depth = 0,
+  });
 
   @override
-  ConsumerState<CreateTaskModalContent> createState() => _CreateTaskModalContentState();
+  ConsumerState<CreateTaskModalContent> createState() =>
+      _CreateTaskModalContentState();
 }
 
-class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent> {
+class _CreateTaskModalContentState
+    extends ConsumerState<CreateTaskModalContent> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   DateTime? _startDate;
@@ -43,45 +53,49 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
             mainAxisSize: .min,
             crossAxisAlignment: .stretch,
             children: [
-              Text('Create New Task', textAlign: .center),
+              Text(
+                widget.parentTaskId != null
+                    ? 'Create Subtask'
+                    : 'Create New Task',
+                textAlign: .center,
+              ),
               SizedBox(height: LayoutConstants.spacing.paddingLarge),
               FTextField(
-                control: FTextFieldControl.managed(controller: _titleController),
+                control: FTextFieldControl.managed(
+                    controller: _titleController),
                 hint: 'Task Title',
-                label: Text('Title'),
+                label: const Text('Title'),
               ),
               SizedBox(height: LayoutConstants.spacing.paddingRegular),
               FTextField(
-                control: FTextFieldControl.managed(controller: _descriptionController),
+                control: FTextFieldControl.managed(
+                    controller: _descriptionController),
                 hint: 'Task Description (Optional)',
-                label: Text('Description'),
+                label: const Text('Description'),
                 maxLines: 3,
               ),
               SizedBox(height: LayoutConstants.spacing.paddingRegular),
               FSelect<TaskPriority>(
-                onSaved: (newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _priority = newValue;
-                    });
+                initialValue: _priority,
+                onChange: (value) {
+                  if (value != null) {
+                    setState(() => _priority = value);
                   }
                 },
                 items: _priorityItems,
-                label: Text('Priority'),
+                label: const Text('Priority'),
               ),
               SizedBox(height: LayoutConstants.spacing.paddingRegular),
               FDateField.calendar(
-                label: Text('Start Date'),
+                label: const Text('Start Date'),
                 hint: 'Select Start Date (Optional)',
-                start: _startDate,
-                onSaved: (date) => setState(() => _startDate = date),
+                onChange: (date) => setState(() => _startDate = date),
               ),
               SizedBox(height: LayoutConstants.spacing.paddingRegular),
               FDateField.calendar(
-                label: Text('End Date'),
+                label: const Text('End Date'),
                 hint: 'Select End Date (Optional)',
-                start: _endDate,
-                onSaved: (date) => setState(() => _endDate = date),
+                onChange: (date) => setState(() => _endDate = date),
               ),
               SizedBox(height: LayoutConstants.spacing.paddingLarge),
               Row(
@@ -93,24 +107,7 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
                     child: const Text('Cancel'),
                   ),
                   FButton(
-                    onPress: () async {
-                      if (_titleController.text.isNotEmpty) {
-                        await ref
-                            .read(taskProvider(widget.projectId.toString()).notifier)
-                            .createTask(
-                              projectId: widget.projectId.toString(),
-                              title: _titleController.text,
-                              description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
-                              priority: _priority,
-                              startDate: _startDate,
-                              endDate: _endDate,
-                              depth: 1,
-                            );
-                        if (context.mounted) {
-                          Navigator.of(context).pop();
-                        }
-                      }
-                    },
+                    onPress: _submit,
                     child: const Text('Create'),
                   ),
                 ],
@@ -121,10 +118,27 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
       ),
     );
   }
-}
 
-extension StringExtension on String {
-  String capitalize() {
-    return "${this[0].toUpperCase()}${substring(1)}";
+  Future<void> _submit() async {
+    final title = _titleController.text.trim();
+    if (title.isEmpty) return;
+
+    await ref
+        .read(taskProvider(widget.projectId.toString()).notifier)
+        .createTask(
+          projectId: widget.projectId.toString(),
+          parentTaskId: widget.parentTaskId,
+          title: title,
+          description: _descriptionController.text.trim().isEmpty
+              ? null
+              : _descriptionController.text.trim(),
+          priority: _priority,
+          startDate: _startDate,
+          endDate: _endDate,
+          depth: widget.depth,
+        );
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 }

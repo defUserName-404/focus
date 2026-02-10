@@ -1,4 +1,5 @@
 import '../../domain/entities/task.dart';
+import '../../domain/entities/task_extensions.dart';
 import '../../domain/repositories/i_task_repository.dart';
 import '../datasources/task_local_datasource.dart';
 import '../mappers/task_extensions.dart';
@@ -27,9 +28,10 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   @override
-  Future<void> createTask(Task task) async {
+  Future<Task> createTask(Task task) async {
     final companion = task.toCompanion();
-    await _local.createTask(companion);
+    final id = await _local.createTask(companion);
+    return task.copyWith(id: BigInt.from(id));
   }
 
   @override
