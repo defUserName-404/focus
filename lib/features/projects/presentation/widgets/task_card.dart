@@ -161,66 +161,67 @@ class _TaskMainRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Checkbox
-          fu.FCheckbox(value: task.isCompleted, onChange: (_) => onToggle()),
-          const SizedBox(width: 12),
-
-          // Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title + priority + actions
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        task.title,
-                        style: context.typography.base.copyWith(
-                          fontWeight: task.isCompleted ? FontWeight.w400 : FontWeight.w600,
-                          color: task.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
-                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                          decorationColor: context.colors.mutedForeground,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    TaskPriorityBadge(priority: task.priority),
-                    const SizedBox(width: 4),
-                    _ActionPopup(onEdit: onEditPressed, onDelete: onDeletePressed),
-                  ],
-                ),
-
-                // Description
-                if (task.description != null && task.description!.isNotEmpty) ...[
-                  const SizedBox(height: 3),
-                  Text(
-                    task.description!,
-                    style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.4),
+          // Title row: checkbox + title + priority + actions
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              fu.FCheckbox(value: task.isCompleted, onChange: (_) => onToggle()),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  task.title,
+                  style: context.typography.base.copyWith(
+                    fontWeight: task.isCompleted ? FontWeight.w400 : FontWeight.w600,
+                    color: task.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
+                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                    decorationColor: context.colors.mutedForeground,
                   ),
-                ],
-
-                const SizedBox(height: 6),
-
-                // Date row (always show start & end dates)
-                TaskDateRow(startDate: task.startDate, deadline: task.endDate, isOverdue: isOverdue),
-
-                const SizedBox(height: 6),
-
-                // Action chips row
-                Row(
-                  children: [
-                    _AddSubtaskChip(onPressed: onAddSubtaskPressed),
-                    if (subtaskCount > 0) ...[
-                      const SizedBox(width: 4),
-                      _SubtaskCountChip(count: subtaskCount, expanded: subtasksExpanded, onToggle: onExpandToggle!),
-                    ],
-                  ],
                 ),
+              ),
+              const SizedBox(width: 4),
+              TaskPriorityBadge(priority: task.priority),
+              const SizedBox(width: 2),
+              _ActionPopup(onEdit: onEditPressed, onDelete: onDeletePressed),
+            ],
+          ),
+
+          // Description (max 2 lines)
+          if (task.description != null && task.description!.isNotEmpty) ...[            const SizedBox(height: 3),
+            Padding(
+              padding: const EdgeInsets.only(left: 30),
+              child: Text(
+                task.description!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.4),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 4),
+
+          // Date row
+          Padding(
+            padding: const EdgeInsets.only(left: 30),
+            child: TaskDateRow(startDate: task.startDate, deadline: task.endDate, isOverdue: isOverdue),
+          ),
+
+          const SizedBox(height: 4),
+
+          // Action chips row
+          Padding(
+            padding: const EdgeInsets.only(left: 30),
+            child: Row(
+              children: [
+                _AddSubtaskChip(onPressed: onAddSubtaskPressed),
+                if (subtaskCount > 0) ...[
+                  const SizedBox(width: 4),
+                  _SubtaskCountChip(count: subtaskCount, expanded: subtasksExpanded, onToggle: onExpandToggle!),
+                ],
               ],
             ),
           ),

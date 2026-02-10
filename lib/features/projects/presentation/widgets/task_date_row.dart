@@ -14,33 +14,55 @@ class TaskDateRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isOverdue && deadline != null) {
-      return Row(
-        children: [
-          Icon(fu.FIcons.triangleAlert, color: context.colors.destructive, size: 13),
-          const SizedBox(width: 4),
-          Text(
-            'Overdue (${_fmt(deadline!)})',
-            style: context.typography.xs.copyWith(fontWeight: FontWeight.w500, color: context.colors.destructive),
-          ),
-        ],
-      );
-    }
-
     if (startDate == null && deadline == null) return const SizedBox.shrink();
 
+    final children = <Widget>[];
+
+    // Date text
     final dateText = startDate != null && deadline != null
         ? '${_fmt(startDate!)} – ${_fmt(deadline!)}'
         : deadline != null
-        ? _fmt(deadline!)
-        : _fmt(startDate!);
+            ? _fmt(deadline!)
+            : _fmt(startDate!);
 
-    return Row(
-      children: [
-        Icon(fu.FIcons.calendar, size: 13, color: context.colors.mutedForeground),
-        const SizedBox(width: 5),
-        Text(dateText, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
-      ],
-    );
+    children.addAll([
+      Icon(fu.FIcons.calendar, size: 12, color: context.colors.mutedForeground),
+      const SizedBox(width: 4),
+      Text(dateText, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
+    ]);
+
+    // Overdue / approaching label
+    if (deadline != null) {
+      final now = DateTime.now();
+      final days = deadline!.difference(now).inDays;
+
+      if (isOverdue || days < 0) {
+        children.addAll([
+          const SizedBox(width: 6),
+          Icon(fu.FIcons.triangleAlert, color: context.colors.destructive, size: 12),
+          const SizedBox(width: 3),
+          Text(
+            'Overdue ${days.abs()}d',
+            style: context.typography.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.destructive),
+          ),
+        ]);
+      } else if (days <= 3) {
+        children.addAll([
+          const SizedBox(width: 6),
+          Icon(fu.FIcons.clock, color: Colors.orange, size: 12),
+          const SizedBox(width: 3),
+          Text(
+            days == 0
+                ? 'Due today'
+                : days == 1
+                    ? 'Due tomorrow'
+                    : 'Due in ${days}d',
+            style: context.typography.xs.copyWith(fontWeight: FontWeight.w600, color: Colors.orange),
+          ),
+        ]);
+      }
+    }
+
+    return Row(children: children);
   }
 }
