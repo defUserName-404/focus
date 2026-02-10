@@ -1,32 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/constants/layout_constants.dart';
+import '../../domain/entities/task.dart';
+import '../../domain/entities/task_extensions.dart';
 import '../../domain/entities/task_priority.dart';
 import '../providers/task_provider.dart';
 
-class CreateTaskModalContent extends ConsumerStatefulWidget {
-  final BigInt projectId;
-  final BigInt? parentTaskId;
-  final int depth;
+class EditTaskModalContent extends ConsumerStatefulWidget {
+  final Task task;
 
-  const CreateTaskModalContent({super.key, required this.projectId, this.parentTaskId, this.depth = 0});
+  const EditTaskModalContent({super.key, required this.task});
 
   @override
-  ConsumerState<CreateTaskModalContent> createState() => _CreateTaskModalContentState();
+  ConsumerState<EditTaskModalContent> createState() => _EditTaskModalContentState();
 }
 
-class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  DateTime? _startDate;
-  DateTime? _endDate;
-  TaskPriority _priority = TaskPriority.medium;
+class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
+  late final TextEditingController _titleController;
+  late final TextEditingController _descriptionController;
+  late DateTime? _startDate;
+  late DateTime? _endDate;
+  late TaskPriority _priority;
 
   static final Map<String, TaskPriority> _priorityItems = {
     for (final priority in TaskPriority.values) priority.label: priority,
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.task.title);
+    _descriptionController = TextEditingController(text: widget.task.description ?? '');
+    _startDate = widget.task.startDate;
+    _endDate = widget.task.endDate;
+    _priority = widget.task.priority;
+  }
 
   @override
   void dispose() {
@@ -34,6 +45,8 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
     _descriptionController.dispose();
     super.dispose();
   }
+
+  String _fmtDate(DateTime? dt) => dt != null ? DateFormat('MMM d, yyyy').format(dt) : '';
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +56,10 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
         padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: .min,
-            crossAxisAlignment: .stretch,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(widget.parentTaskId != null ? 'Create Subtask' : 'Create New Task', textAlign: .center),
+              const Text('Edit Task', textAlign: TextAlign.center),
               SizedBox(height: LayoutConstants.spacing.paddingLarge),
               FTextField(
                 control: FTextFieldControl.managed(controller: _titleController),
@@ -65,9 +78,7 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
                 control: FSelectControl.managed(
                   initial: _priority,
                   onChange: (value) {
-                    if (value != null) {
-                      setState(() => _priority = value);
-                    }
+                    if (value != null) setState(() => _priority = value);
                   },
                 ),
                 items: _priorityItems,
@@ -76,8 +87,9 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
               SizedBox(height: LayoutConstants.spacing.paddingRegular),
               FDateField.calendar(
                 label: const Text('Start Date'),
-                hint: 'Select Start Date (Optional)',
+                hint: _startDate != null ? _fmtDate(_startDate) : 'Select Start Date (Optional)',
                 control: FDateFieldControl.managed(
+                  initial: _startDate,
                   onChange: (date) => _startDate = date,
                 ),
                 clearable: true,
@@ -85,8 +97,9 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
               SizedBox(height: LayoutConstants.spacing.paddingRegular),
               FDateField.calendar(
                 label: const Text('End Date'),
-                hint: 'Select End Date (Optional)',
+                hint: _endDate != null ? _fmtDate(_endDate) : 'Select End Date (Optional)',
                 control: FDateFieldControl.managed(
+                  initial: _endDate,
                   onChange: (date) => _endDate = date,
                 ),
                 clearable: true,
@@ -100,7 +113,10 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
                     style: FButtonStyle.ghost(),
                     child: const Text('Cancel'),
                   ),
-                  FButton(onPress: _submit, child: const Text('Create')),
+                  FButton(
+                    onPress: _submit,
+                    child: const Text('Save'),
+                  ),
                 ],
               ),
             ],
@@ -114,20 +130,16 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
 
-    await ref
-        .read(taskProvider(widget.projectId.toString()).notifier)
-        .createTask(
-          projectId: widget.projectId.toString(),
-          parentTaskId: widget.parentTaskId,
-          title: title,
-          description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-          priority: _priority,
-          startDate: _startDate,
-          endDate: _endDate,
-          depth: widget.depth,
-        );
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+    final updated = widget.task.copyWith(
+      title: title,
+      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      priority: _priority,
+      startDate: _startDate,
+      endDate: _endDate,
+      updatedAt: DateTime.now(),
+    );
+
+    await ref.read(taskProvider(widget.task.projectId.toString()).notifier).updateTask(updated);
+    if (mounted) Navigator.of(context).pop();
   }
 }

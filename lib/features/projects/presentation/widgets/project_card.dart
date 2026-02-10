@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:intl/intl.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/layout_constants.dart';
@@ -8,8 +9,12 @@ import '../../domain/entities/project.dart';
 class ProjectCard extends StatelessWidget {
   final Project project;
   final VoidCallback? onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
-  const ProjectCard({super.key, required this.project, this.onTap});
+  const ProjectCard({super.key, required this.project, this.onTap, this.onEdit, this.onDelete});
+
+  String _fmtDate(DateTime dt) => DateFormat('MMM d, yyyy').format(dt);
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +26,31 @@ class ProjectCard extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
             child: Column(
-              crossAxisAlignment: .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title
-                Text(project.title, style: context.typography.base.copyWith(fontWeight: FontWeight.w600)),
+                // Title + action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(project.title, style: context.typography.base.copyWith(fontWeight: FontWeight.w600)),
+                    ),
+                    if (onEdit != null)
+                      fu.FButton.icon(
+                        style: fu.FButtonStyle.ghost(),
+                        onPress: onEdit,
+                        child: Icon(fu.FIcons.pencil, size: 16, color: context.colors.mutedForeground),
+                      ),
+                    if (onDelete != null)
+                      fu.FButton.icon(
+                        style: fu.FButtonStyle.ghost(),
+                        onPress: onDelete,
+                        child: Icon(fu.FIcons.trash2, size: 16, color: context.colors.destructive),
+                      ),
+                  ],
+                ),
 
                 // Description
-                if (project.description != null) ...[
+                if (project.description != null && project.description!.isNotEmpty) ...[
                   SizedBox(height: LayoutConstants.spacing.paddingSmall),
                   Text(
                     project.description!,
@@ -39,20 +62,37 @@ class ProjectCard extends StatelessWidget {
 
                 SizedBox(height: LayoutConstants.spacing.paddingRegular),
 
-                // Metadata row
-                Row(
+                // Date badges row
+                Wrap(
                   spacing: LayoutConstants.spacing.paddingSmall,
+                  runSpacing: LayoutConstants.spacing.paddingSmall,
                   children: [
-                    // Deadline badge
+                    if (project.startDate != null)
+                      fu.FBadge(
+                        style: fu.FBadgeStyle.outline(),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(fu.FIcons.calendarClock, size: 12, color: context.colors.mutedForeground),
+                            const SizedBox(width: 4),
+                            Text('Start: ${_fmtDate(project.startDate!)}'),
+                          ],
+                        ),
+                      ),
                     if (project.deadline != null)
                       fu.FBadge(
                         style: _isOverdue(project) ? fu.FBadgeStyle.destructive() : fu.FBadgeStyle.secondary(),
-                        child: Text(_formatDeadline(project)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(fu.FIcons.calendarCheck, size: 12),
+                            const SizedBox(width: 4),
+                            Text(_formatDeadline(project)),
+                          ],
+                        ),
                       )
                     else
                       fu.FBadge(style: fu.FBadgeStyle.outline(), child: const Text('No deadline')),
-
-                    // Action buttons (if needed)
                     const Spacer(),
                     fu.FButton.icon(onPress: onTap, child: Icon(fu.FIcons.arrowRight)),
                   ],
@@ -68,10 +108,10 @@ class ProjectCard extends StatelessWidget {
   String _formatDeadline(Project p) {
     if (p.deadline == null) return 'No deadline';
     final days = p.deadline!.difference(DateTime.now()).inDays;
-    if (days < 0) return 'Overdue ${days.abs()} days';
+    if (days < 0) return 'Overdue ${days.abs()}d';
     if (days == 0) return 'Due today';
     if (days == 1) return 'Due tomorrow';
-    return 'Due in $days days';
+    return 'Due in ${days}d';
   }
 
   bool _isOverdue(Project p) {

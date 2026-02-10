@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
+import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
+import 'package:focus/features/tasks/presentation/widgets/edit_task_modal_content.dart';
 import 'package:forui/forui.dart' as fu;
 
-import 'inline_add_subtask.dart';
 import 'subtask_row.dart';
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
@@ -32,7 +33,6 @@ class TaskCard extends ConsumerStatefulWidget {
 
 class _TaskCardState extends ConsumerState<TaskCard> {
   bool _subtasksExpanded = true;
-  bool _addingSubtask = false;
 
   bool get _isOverdue =>
       widget.task.endDate != null && widget.task.endDate!.isBefore(DateTime.now()) && !widget.task.isCompleted;
@@ -45,8 +45,6 @@ class _TaskCardState extends ConsumerState<TaskCard> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: fu.FCard(
-        child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -58,7 +56,9 @@ class _TaskCardState extends ConsumerState<TaskCard> {
               isOverdue: _isOverdue,
               onToggle: () => ref.read(taskProvider(widget.projectIdString).notifier).toggleTaskCompletion(task),
               onTap: widget.onTaskTap,
-              onAddSubtaskPressed: () => setState(() => _addingSubtask = true),
+              onAddSubtaskPressed: () => _openAddSubtaskModal(context),
+              onEditPressed: () => _editTask(context, task),
+              onDeletePressed: () => _confirmDeleteTask(context, task),
               onExpandToggle: subtasks.isNotEmpty ? () => setState(() => _subtasksExpanded = !_subtasksExpanded) : null,
             ),
 
@@ -75,38 +75,61 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                           onToggle: () =>
                               ref.read(taskProvider(widget.projectIdString).notifier).toggleTaskCompletion(st),
                           onTap: widget.onSubtaskTap != null ? () => widget.onSubtaskTap!(st) : null,
+                          onEdit: () => _editTask(context, st),
+                          onDelete: () => _confirmDeleteTask(context, st),
                         ),
                       )
                       .toList(),
                 ),
               ),
-
-            // ── Inline add subtask ──
-            if (_addingSubtask)
-              ColoredBox(
-                color: const Color(0xFF0D0D0D),
-                child: InlineAddSubtask(
-                  onCancel: () => setState(() => _addingSubtask = false),
-                  onSubmit: (title) {
-                    ref
-                        .read(taskProvider(widget.projectIdString).notifier)
-                        .createTask(
-                          projectId: widget.projectIdString,
-                          parentTaskId: widget.task.id,
-                          title: title,
-                          depth: widget.task.depth + 1,
-                        );
-                    setState(() {
-                      _addingSubtask = false;
-                      _subtasksExpanded = true;
-                    });
-                  },
-                ),
-              ),
           ],
         ),
       ),
-    ),
+    );
+  }
+
+  void _openAddSubtaskModal(BuildContext context) {
+    fu.showFSheet(
+      context: context,
+      side: fu.FLayout.btt,
+      builder: (context) => CreateTaskModalContent(
+        projectId: widget.task.projectId,
+        parentTaskId: widget.task.id,
+        depth: widget.task.depth + 1,
+      ),
+    );
+  }
+
+  void _editTask(BuildContext context, Task task) {
+    fu.showFSheet(
+      context: context,
+      side: fu.FLayout.btt,
+      builder: (context) => EditTaskModalContent(task: task),
+    );
+  }
+
+  void _confirmDeleteTask(BuildContext context, Task task) {
+    showAdaptiveDialog(
+      context: context,
+      builder: (ctx) => AlertDialog.adaptive(
+        title: const Text('Delete Task'),
+        content: Text('Are you sure you want to delete "${task.title}"? Subtasks will also be deleted.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (task.id != null) {
+                ref.read(taskProvider(widget.projectIdString).notifier).deleteTask(task.id!, widget.projectIdString);
+              }
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -121,6 +144,8 @@ class _TaskMainRow extends StatelessWidget {
   final VoidCallback onToggle;
   final VoidCallback? onTap;
   final VoidCallback onAddSubtaskPressed;
+  final VoidCallback onEditPressed;
+  final VoidCallback onDeletePressed;
   final VoidCallback? onExpandToggle;
 
   const _TaskMainRow({
@@ -130,6 +155,8 @@ class _TaskMainRow extends StatelessWidget {
     required this.isOverdue,
     required this.onToggle,
     required this.onAddSubtaskPressed,
+    required this.onEditPressed,
+    required this.onDeletePressed,
     this.onTap,
     this.onExpandToggle,
   });
@@ -142,10 +169,7 @@ class _TaskMainRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Checkbox
-          fu.FCheckbox(
-            value: task.isCompleted,
-            onChange: (_) => onToggle(),
-          ),
+          fu.FCheckbox(value: task.isCompleted, onChange: (_) => onToggle()),
           const SizedBox(width: 12),
 
           // Content
@@ -153,7 +177,7 @@ class _TaskMainRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title + priority + arrow
+                // Title + priority + actions
                 Row(
                   children: [
                     Expanded(
@@ -161,20 +185,18 @@ class _TaskMainRow extends StatelessWidget {
                         task.title,
                         style: context.typography.base.copyWith(
                           fontWeight: task.isCompleted ? FontWeight.w400 : FontWeight.w600,
-                          color: task.isCompleted
-                              ? context.colors.mutedForeground
-                              : context.colors.foreground,
+                          color: task.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
                           decoration: task.isCompleted ? TextDecoration.lineThrough : null,
                           decorationColor: context.colors.mutedForeground,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     TaskPriorityBadge(priority: task.priority),
-                    const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: onTap,
-                      child: Icon(fu.FIcons.chevronRight, size: 14, color: context.colors.mutedForeground),
+                    const SizedBox(width: 4),
+                    _ActionPopup(
+                      onEdit: onEditPressed,
+                      onDelete: onDeletePressed,
                     ),
                   ],
                 ),
@@ -184,20 +206,20 @@ class _TaskMainRow extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     task.description!,
-                    style: context.typography.sm.copyWith(
-                      color: context.colors.mutedForeground,
-                      height: 1.4,
-                    ),
+                    style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.4),
                   ),
                 ],
 
                 const SizedBox(height: 6),
 
-                // Date row + action chips
+                // Date row (always show start & end dates)
+                TaskDateRow(startDate: task.startDate, deadline: task.endDate, isOverdue: isOverdue),
+
+                const SizedBox(height: 6),
+
+                // Action chips row
                 Row(
                   children: [
-                    TaskDateRow(startDate: task.startDate, deadline: task.endDate, isOverdue: isOverdue),
-                    const Spacer(),
                     _AddSubtaskChip(onPressed: onAddSubtaskPressed),
                     if (subtaskCount > 0) ...[
                       const SizedBox(width: 4),
@@ -210,6 +232,32 @@ class _TaskMainRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Private: action popup (edit/delete) ─────────────────────────────────────
+
+class _ActionPopup extends StatelessWidget {
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ActionPopup({required this.onEdit, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      icon: Icon(fu.FIcons.ellipsisVertical, size: 16, color: context.colors.mutedForeground),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      itemBuilder: (_) => [
+        const PopupMenuItem(value: 'edit', child: Text('Edit')),
+        const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.red))),
+      ],
+      onSelected: (value) {
+        if (value == 'edit') onEdit();
+        if (value == 'delete') onDelete();
+      },
     );
   }
 }
@@ -227,10 +275,7 @@ class _AddSubtaskChip extends StatelessWidget {
       style: fu.FButtonStyle.outline(),
       onPress: onPressed,
       prefix: const Icon(fu.FIcons.plus, size: 13),
-      child: Text(
-        'subtask',
-        style: context.typography.xs,
-      ),
+      child: Text('subtask', style: context.typography.xs),
     );
   }
 }
@@ -249,14 +294,8 @@ class _SubtaskCountChip extends StatelessWidget {
     return fu.FButton(
       style: fu.FButtonStyle.outline(),
       onPress: onToggle,
-      suffix: Icon(
-        expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight,
-        size: 14,
-      ),
-      child: Text(
-        '$count',
-        style: context.typography.xs,
-      ),
+      suffix: Icon(expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight, size: 14),
+      child: Text('$count', style: context.typography.xs),
     );
   }
 }

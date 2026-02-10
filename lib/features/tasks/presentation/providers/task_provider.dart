@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
+import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider, StreamProvider;
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -22,59 +22,25 @@ Stream<List<Task>> tasksByProject(Ref ref, String projectId) {
   return repository.watchTasksByProjectId(BigInt.parse(projectId));
 }
 
-// ── Filter state provider (manual, per-project family) ─────────────────────
+// ── Filter state provider (per-project family) ─────────────────────────────
 
 final taskListFilterStateProvider = StateProvider.family<TaskListFilterState, String>(
   (ref, projectId) => const TaskListFilterState(),
 );
 
-// ── Computed provider: filtered & sorted task list per project ──────────────
+// ── Filtered task list — delegates to DB-level filtering ───────────────────
 
-final filteredTasksProvider = Provider.family<AsyncValue<List<Task>>, String>((ref, projectId) {
-  final tasksAsync = ref.watch(tasksByProjectProvider(projectId));
+final filteredTasksProvider = StreamProvider.family<List<Task>, String>((ref, projectId) {
+  final repository = ref.watch(taskRepositoryProvider);
   final filter = ref.watch(taskListFilterStateProvider(projectId));
 
-  return tasksAsync.whenData((tasks) => _filterAndSortTasks(tasks, filter));
+  return repository.watchFilteredTasks(
+    projectId: BigInt.parse(projectId),
+    searchQuery: filter.searchQuery,
+    sortCriteria: filter.sortCriteria,
+    priorityFilter: filter.priorityFilter,
+  );
 });
-
-List<Task> _filterAndSortTasks(List<Task> tasks, TaskListFilterState filter) {
-  var result = tasks;
-
-  // Search filter
-  final q = filter.searchQuery.trim().toLowerCase();
-  if (q.isNotEmpty) {
-    result = result
-        .where((t) => t.title.toLowerCase().contains(q) || (t.description?.toLowerCase().contains(q) ?? false))
-        .toList();
-  }
-
-  // Priority filter
-  if (filter.priorityFilter != null) {
-    result = result.where((t) => t.priority == filter.priorityFilter).toList();
-  }
-
-  // Sort
-  result = List.of(result);
-  result.sort((a, b) {
-    switch (filter.sortCriteria) {
-      case TaskSortCriteria.recentlyModified:
-        return b.updatedAt.compareTo(a.updatedAt);
-      case TaskSortCriteria.deadline:
-        if (a.endDate == null && b.endDate == null) return 0;
-        if (a.endDate == null) return 1;
-        if (b.endDate == null) return -1;
-        return a.endDate!.compareTo(b.endDate!);
-      case TaskSortCriteria.priority:
-        return a.priority.index.compareTo(b.priority.index);
-      case TaskSortCriteria.title:
-        return a.title.compareTo(b.title);
-      case TaskSortCriteria.createdDate:
-        return b.createdAt.compareTo(a.createdAt);
-    }
-  });
-
-  return result;
-}
 
 @Riverpod(keepAlive: true)
 class TaskNotifier extends _$TaskNotifier {

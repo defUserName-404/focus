@@ -10,8 +10,17 @@ class SubtaskRow extends StatelessWidget {
   final Task subtask;
   final VoidCallback onToggle;
   final VoidCallback? onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
-  const SubtaskRow({super.key, required this.subtask, required this.onToggle, this.onTap});
+  const SubtaskRow({
+    super.key,
+    required this.subtask,
+    required this.onToggle,
+    this.onTap,
+    this.onEdit,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +64,27 @@ class SubtaskRow extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 4),
                               TaskPriorityBadge(priority: subtask.priority),
+                              const SizedBox(width: 4),
+                              if (onEdit != null || onDelete != null)
+                                PopupMenuButton<String>(
+                                  icon: Icon(fu.FIcons.ellipsisVertical, size: 14, color: context.colors.mutedForeground),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  itemBuilder: (_) => [
+                                    if (onEdit != null) const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                                    if (onDelete != null)
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text('Delete', style: TextStyle(color: Colors.red)),
+                                      ),
+                                  ],
+                                  onSelected: (value) {
+                                    if (value == 'edit') onEdit?.call();
+                                    if (value == 'delete') onDelete?.call();
+                                  },
+                                ),
                             ],
                           ),
                           if (subtask.endDate != null || subtask.startDate != null) ...[
@@ -65,11 +93,6 @@ class SubtaskRow extends StatelessWidget {
                           ],
                         ],
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: onTap,
-                      child: Icon(fu.FIcons.chevronRight, size: 14, color: context.colors.mutedForeground),
                     ),
                     const SizedBox(width: 4),
                   ],

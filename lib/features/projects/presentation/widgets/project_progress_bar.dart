@@ -33,7 +33,7 @@ class ProjectProgressBar extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 6),
-        fu.FProgress(),
+        fu.FDeterminateProgress(value: progress),
       ],
     );
   }

@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/project.dart';
+import '../../domain/entities/project_extensions.dart';
 import '../../domain/repositories/i_project_repository.dart';
 import 'project_list_filter_state.dart';
 
@@ -20,71 +21,22 @@ Stream<List<Project>> projectList(Ref ref) {
   return repository.watchAllProjects();
 }
 
-// ── Filter state provider (manual, no codegen needed) ──────────────────────
+// ── Filter state provider ──────────────────────────────────────────────────
 
 final projectListFilterStateProvider = StateProvider<ProjectListFilterState>((ref) => const ProjectListFilterState());
 
-// ── Computed provider: filtered & sorted project list ──────────────────────
+// ── Filtered project list — delegates to DB-level filtering ────────────────
 
-final filteredProjectListProvider = Provider<AsyncValue<List<Project>>>((ref) {
-  final projectsAsync = ref.watch(projectListProvider);
+final filteredProjectListProvider = StreamProvider<List<Project>>((ref) {
+  final repository = ref.watch(projectRepositoryProvider);
   final filter = ref.watch(projectListFilterStateProvider);
 
-  return projectsAsync.whenData((projects) => _filterAndSortProjects(projects, filter));
+  return repository.watchFilteredProjects(
+    searchQuery: filter.searchQuery,
+    sortCriteria: filter.sortCriteria,
+    sortOrder: filter.sortOrder,
+  );
 });
-
-List<Project> _filterAndSortProjects(List<Project> projects, ProjectListFilterState filter) {
-  var result = projects;
-
-  // Search filter
-  final q = filter.searchQuery.trim().toLowerCase();
-  if (q.isNotEmpty) {
-    result = result
-        .where((p) => p.title.toLowerCase().contains(q) || (p.description?.toLowerCase().contains(q) ?? false))
-        .toList();
-  }
-
-  // Sort
-  if (filter.sortOrder != ProjectSortOrder.none) {
-    result = List.of(result);
-    result.sort((a, b) {
-      int comparison = 0;
-
-      switch (filter.sortCriteria) {
-        case ProjectSortCriteria.createdDate:
-          comparison = a.createdAt.compareTo(b.createdAt);
-        case ProjectSortCriteria.recentlyModified:
-          comparison = a.updatedAt.compareTo(b.updatedAt);
-        case ProjectSortCriteria.startDate:
-          if (a.startDate == null && b.startDate == null) {
-            comparison = 0;
-          } else if (a.startDate == null) {
-            comparison = 1;
-          } else if (b.startDate == null) {
-            comparison = -1;
-          } else {
-            comparison = a.startDate!.compareTo(b.startDate!);
-          }
-        case ProjectSortCriteria.deadline:
-          if (a.deadline == null && b.deadline == null) {
-            comparison = 0;
-          } else if (a.deadline == null) {
-            comparison = 1;
-          } else if (b.deadline == null) {
-            comparison = -1;
-          } else {
-            comparison = a.deadline!.compareTo(b.deadline!);
-          }
-        case ProjectSortCriteria.title:
-          comparison = a.title.compareTo(b.title);
-      }
-
-      return filter.sortOrder == ProjectSortOrder.ascending ? comparison : -comparison;
-    });
-  }
-
-  return result;
-}
 
 @Riverpod(keepAlive: true)
 class ProjectNotifier extends _$ProjectNotifier {
@@ -129,7 +81,8 @@ class ProjectNotifier extends _$ProjectNotifier {
   }
 
   Future<void> updateProject(Project project) async {
-    await _repository.updateProject(project);
+    final updated = project.copyWith(updatedAt: DateTime.now());
+    await _repository.updateProject(updated);
     await _loadProjects();
   }
 

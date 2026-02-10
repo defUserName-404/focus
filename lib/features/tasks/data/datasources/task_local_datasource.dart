@@ -1,20 +1,22 @@
 import 'package:drift/drift.dart';
 import 'package:focus/core/services/db_service.dart';
+import 'package:focus/features/tasks/domain/entities/task_priority.dart';
+import 'package:focus/features/tasks/presentation/providers/task_filter_state.dart';
 
 abstract class ITaskLocalDataSource {
   Future<List<TaskTableData>> getTasksByProjectId(BigInt projectId);
-
   Future<TaskTableData?> getTaskById(BigInt id);
-
   Future<List<TaskTableData>> getSubtasks(BigInt parentTaskId);
-
   Future<int> createTask(TaskTableCompanion companion);
-
   Future<void> updateTask(TaskTableCompanion companion);
-
   Future<void> deleteTask(BigInt id);
-
   Stream<List<TaskTableData>> watchTasksByProjectId(BigInt projectId);
+  Stream<List<TaskTableData>> watchFilteredTasks({
+    required BigInt projectId,
+    String searchQuery,
+    TaskSortCriteria sortCriteria,
+    TaskPriority? priorityFilter,
+  });
 }
 
 class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
@@ -51,11 +53,53 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
 
   @override
   Future<void> deleteTask(BigInt id) async {
+    // Cascade: delete child tasks first
+    final children = await (_db.select(_db.taskTable)..where((t) => t.parentTaskId.equals(id))).get();
+    for (final child in children) {
+      await deleteTask(child.id);
+    }
     await (_db.delete(_db.taskTable)..where((t) => t.id.equals(id))).go();
   }
 
   @override
   Stream<List<TaskTableData>> watchTasksByProjectId(BigInt projectId) {
     return (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).watch();
+  }
+
+  @override
+  Stream<List<TaskTableData>> watchFilteredTasks({
+    required BigInt projectId,
+    String searchQuery = '',
+    TaskSortCriteria sortCriteria = TaskSortCriteria.recentlyModified,
+    TaskPriority? priorityFilter,
+  }) {
+    final query = _db.select(_db.taskTable)
+      ..where((t) => t.projectId.equals(projectId));
+
+    final q = searchQuery.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      query.where(
+        (t) => t.title.lower().like('%$q%') | t.description.lower().like('%$q%'),
+      );
+    }
+
+    if (priorityFilter != null) {
+      query.where((t) => t.priority.equalsValue(priorityFilter));
+    }
+
+    switch (sortCriteria) {
+      case TaskSortCriteria.recentlyModified:
+        query.orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
+      case TaskSortCriteria.deadline:
+        query.orderBy([(t) => OrderingTerm.asc(t.endDate)]);
+      case TaskSortCriteria.priority:
+        query.orderBy([(t) => OrderingTerm.asc(t.priority)]);
+      case TaskSortCriteria.title:
+        query.orderBy([(t) => OrderingTerm.asc(t.title)]);
+      case TaskSortCriteria.createdDate:
+        query.orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+    }
+
+    return query.watch();
   }
 }

@@ -6,6 +6,7 @@ import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
+import 'package:focus/features/tasks/presentation/widgets/edit_task_modal_content.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../providers/project_provider.dart';
@@ -156,8 +157,6 @@ class ProjectDetailScreen extends ConsumerWidget {
                           task: task,
                           subtasks: subtasks,
                           projectIdString: _projectIdString,
-                          onTaskTap: task.id != null ? () => _openTaskDetail(context, task) : null,
-                          onSubtaskTap: (st) => _openTaskDetail(context, st),
                         );
                       },
                     );
@@ -169,10 +168,6 @@ class ProjectDetailScreen extends ConsumerWidget {
         },
       ),
     );
-  }
-
-  void _openTaskDetail(BuildContext context, Task task) {
-    // TODO: Navigate to task detail screen
   }
 }
 
@@ -188,6 +183,13 @@ class _PriorityFilterSelect extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return fu.FSelect<TaskPriority?>(items: _items, hint: 'Priority');
+    return fu.FSelect<TaskPriority?>(
+      items: _items,
+      hint: 'Priority',
+      control: fu.FSelectControl.managed(
+        initial: selected,
+        onChange: (value) => onChanged(value),
+      ),
+    );
   }
 }

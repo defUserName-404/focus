@@ -127,7 +127,7 @@ final class ProjectNotifierProvider
   }
 }
 
-String _$projectNotifierHash() => r'c3371c83cfe8d13327381c8f6a085c593cecddc0';
+String _$projectNotifierHash() => r'617d58331ed1eb07bb67cbfc29f06705d71ecf85';
 
 abstract class _$ProjectNotifier extends $Notifier<AsyncValue<List<Project>>> {
   AsyncValue<List<Project>> build();

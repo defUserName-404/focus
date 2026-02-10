@@ -1,6 +1,8 @@
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_extensions.dart';
+import '../../domain/entities/task_priority.dart';
 import '../../domain/repositories/i_task_repository.dart';
+import '../../presentation/providers/task_filter_state.dart';
 import '../datasources/task_local_datasource.dart';
 import '../mappers/task_extensions.dart';
 
@@ -48,5 +50,22 @@ class TaskRepositoryImpl implements ITaskRepository {
   @override
   Stream<List<Task>> watchTasksByProjectId(BigInt projectId) {
     return _local.watchTasksByProjectId(projectId).map((rows) => rows.map((r) => r.toDomain()).toList());
+  }
+
+  @override
+  Stream<List<Task>> watchFilteredTasks({
+    required BigInt projectId,
+    String searchQuery = '',
+    TaskSortCriteria sortCriteria = TaskSortCriteria.recentlyModified,
+    TaskPriority? priorityFilter,
+  }) {
+    return _local
+        .watchFilteredTasks(
+          projectId: projectId,
+          searchQuery: searchQuery,
+          sortCriteria: sortCriteria,
+          priorityFilter: priorityFilter,
+        )
+        .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 }
