@@ -1,132 +1,174 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:focus/core/constants/layout_constants.dart';
+import 'package:focus/features/tasks/domain/entities/task.dart';
+import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
-import 'package:forui/forui.dart';
+import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/config/theme/app_theme.dart';
-import '../../../../core/constants/layout_constants.dart';
-import '../../../tasks/domain/entities/task.dart';
-import '../../../tasks/domain/entities/task_priority.dart';
-import '../../../tasks/presentation/providers/task_provider.dart';
 import '../providers/project_provider.dart';
+import '../widgets/project_detail_header.dart';
+import '../widgets/project_search_bar.dart';
+import '../widgets/task_card.dart';
+import '../widgets/task_sort_filter_chips.dart';
 
-class ProjectDetailScreen extends ConsumerWidget {
+class ProjectDetailScreen extends ConsumerStatefulWidget {
   final BigInt projectId;
 
   const ProjectDetailScreen({super.key, required this.projectId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final projectIdString = projectId.toString();
-    final tasksAsync = ref.watch(tasksByProjectProvider(projectIdString));
+  ConsumerState<ProjectDetailScreen> createState() => _ProjectDetailScreenState();
+}
+
+class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  TaskSortCriteria _sortCriteria = TaskSortCriteria.recentlyModified;
+  bool _showSearch = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  String get _projectIdString => widget.projectId.toString();
+
+  @override
+  Widget build(BuildContext context) {
+    final tasksAsync = ref.watch(tasksByProjectProvider(_projectIdString));
     final projectsAsync = ref.watch(projectListProvider);
 
-    return FScaffold(
-      header: FHeader.nested(
-        prefixes: [
-          FHeaderAction.back(
-            onPress: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
-        title: projectsAsync.when(
+    return fu.FScaffold(
+      header: fu.FHeader.nested(
+        prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
+        title: projectsAsync.maybeWhen(
           data: (projects) {
-            final project = projects.firstWhere((p) => p.id == projectId);
+            final project = projects.firstWhere((p) => p.id == widget.projectId, orElse: () => projects.first);
             return Text(project.title, style: context.typography.lg);
           },
-          loading: () => const Text('Loading...'),
-          error: (_, _) => const Text('Error'),
+          orElse: () => const Text('Project'),
         ),
       ),
       footer: Padding(
         padding: EdgeInsets.all(LayoutConstants.spacing.paddingLarge),
-        child: FButton(
+        child: fu.FButton(
           child: const Text('Create New Task'),
           onPress: () async {
-            await showFSheet<Task>(
+            await fu.showFSheet<Task>(
               context: context,
-              side: FLayout.btt,
-              builder: (context) => CreateTaskModalContent(projectId: projectId),
+              side: fu.FLayout.btt,
+              builder: (context) => CreateTaskModalContent(projectId: widget.projectId),
             );
           },
         ),
       ),
       child: tasksAsync.when(
-        data: (tasks) {
-          final rootTasks = tasks.where((t) => t.parentTaskId == null).toList();
+        loading: () => const Center(child: fu.FCircularProgress()),
+        error: (err, _) => Center(child: Text('Error: $err')),
+        data: (tasks) => projectsAsync.when(
+          loading: () => const Center(child: fu.FCircularProgress()),
+          error: (err, _) => Center(child: Text('Error: $err')),
+          data: (projects) {
+            final project = projects.firstWhere((p) => p.id == widget.projectId);
+            final rootTasks = tasks.where((t) => t.parentTaskId == null).toList();
+            final filtered = _applySearchAndSort(rootTasks);
 
-          if (rootTasks.isEmpty) {
-            return const Center(child: Text('No tasks. Create one!'));
-          }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Project header (title, desc, progress, meta) ──
+                ProjectDetailHeader(project: project, tasks: rootTasks),
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: rootTasks.length,
-            itemBuilder: (context, index) {
-              final task = rootTasks[index];
-              final subtasks = tasks.where((t) => t.parentTaskId == task.id).toList();
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Checkbox(
-                        value: task.isCompleted,
-                        onChanged: (_) {
-                          ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(task);
-                        },
-                      ),
-                      title: Text(
-                        task.title,
-                        style: TextStyle(decoration: task.isCompleted ? TextDecoration.lineThrough : null),
-                      ),
-                      subtitle: Text(task.priority.label),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                      onTap: () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => TaskDetailScreen(taskId: task.id, projectId: projectId),
-                        //   ),
-                        // );
-                      },
-                    ),
-                    if (subtasks.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 32, bottom: 8),
-                        child: Column(
-                          children: subtasks.map((subtask) {
-                            return ListTile(
-                              dense: true,
-                              leading: Checkbox(
-                                value: subtask.isCompleted,
-                                onChanged: (_) {
-                                  ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(subtask);
-                                },
-                              ),
-                              title: Text(
-                                subtask.title,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  decoration: subtask.isCompleted ? TextDecoration.lineThrough : null,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                  ],
+                // ── Search bar
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: LayoutConstants.spacing.paddingRegular,
+                    right: LayoutConstants.spacing.paddingRegular,
+                    bottom: 4,
+                  ),
+                  child: ProjectSearchBar(controller: _searchController, onChanged: (_) => setState(() {})),
                 ),
-              );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+
+                // ── Sort chips (same pattern as ProjectListScreen) ──
+                TaskSortFilterChips(
+                  selectedCriteria: _sortCriteria,
+                  onChanged: (c) => setState(() => _sortCriteria = c),
+                ),
+
+                // ── Task list ──
+                Expanded(
+                  child: filtered.isEmpty
+                      ? const Center(
+                          child: Text('No tasks. Create one!', style: TextStyle(color: Color(0xFF555555))),
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: LayoutConstants.spacing.paddingRegular,
+                            vertical: 4,
+                          ),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final task = filtered[index];
+                            final subtasks = tasks.where((t) => t.parentTaskId == task.id).toList();
+                            return TaskCard(
+                              task: task,
+                              subtasks: subtasks,
+                              projectIdString: _projectIdString,
+                              onTaskTap: task.id != null ? () => _openTaskDetail(task) : null,
+                              onSubtaskTap: (st) => _openTaskDetail(st),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
+  List<Task> _applySearchAndSort(List<Task> tasks) {
+    var result = tasks;
+
+    // Search
+    final q = _searchController.text.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      result = result
+          .where((t) => t.title.toLowerCase().contains(q) || (t.description?.toLowerCase().contains(q) ?? false))
+          .toList();
+    }
+
+    // Sort
+    result = List.of(result);
+    result.sort((a, b) {
+      switch (_sortCriteria) {
+        case TaskSortCriteria.recentlyModified:
+          return b.updatedAt.compareTo(a.updatedAt);
+        case TaskSortCriteria.deadline:
+          if (a.endDate == null && b.endDate == null) return 0;
+          if (a.endDate == null) return 1;
+          if (b.endDate == null) return -1;
+          return a.endDate!.compareTo(b.endDate!);
+        case TaskSortCriteria.priority:
+          return a.priority.index.compareTo(b.priority.index);
+        case TaskSortCriteria.title:
+          return a.title.compareTo(b.title);
+        case TaskSortCriteria.createdDate:
+          return b.createdAt.compareTo(a.createdAt);
+      }
+    });
+
+    return result;
+  }
+
+  void _openTaskDetail(Task task) {
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (_) => TaskDetailScreen(taskId: task.id!, projectId: widget.projectId),
+    //   ),
+    // );
+  }
 }
