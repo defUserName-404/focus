@@ -75,7 +75,7 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
               Row(
                 children: [
                   SizedBox(
-                    width: 120.0, // Fixed width for the Sort Order Selector
+                    width: 120.0,
                     child: ProjectSortOrderSelector(
                       selectedOrder: _sortOrder,
                       onChanged: (order) => setState(() => _sortOrder = order),
@@ -89,29 +89,21 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
                   ),
                 ],
               ),
-              filtered.isEmpty
-                  ? ProjectCard(
-                      project: Project(
-                        title: 'No projects. Create one!',
-                        deadline: DateTime(2026, DateTime.february, 12),
-                        description: 'No description',
-                        id: BigInt.zero,
-                        createdAt: DateTime.now(),
-                        updatedAt: DateTime.now(),
+              Expanded(
+                child: filtered.isEmpty
+                    ? Center(child: Text('No projects found'))
+                    : ListView.builder(
+                        padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final Project project = filtered[index];
+                          return ProjectCard(
+                            project: project,
+                            onTap: () => project.id != null ? _openDetail(project.id!) : null,
+                          );
+                        },
                       ),
-                      onTap: () {},
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final Project project = filtered[index];
-                        return ProjectCard(
-                          project: project,
-                          onTap: () => project.id != null ? _openDetail(project.id!) : null,
-                        );
-                      },
-                    ),
+              ),
             ],
           );
         },

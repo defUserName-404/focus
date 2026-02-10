@@ -32,33 +32,33 @@ class _CreateProjectModalContentState extends ConsumerState<CreateProjectModalCo
       child: Padding(
         padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: .min,
+          crossAxisAlignment: .stretch,
           children: [
-            Text('Create New Project', textAlign: TextAlign.center),
+            Text('Create New Project', textAlign: .center),
             SizedBox(height: LayoutConstants.spacing.paddingLarge),
             FTextField(
               control: FTextFieldControl.managed(controller: _titleController),
               hint: 'Project Title',
-              label: Text('Title'), // Corrected to String
+              label: Text('Title'),
             ),
             SizedBox(height: LayoutConstants.spacing.paddingRegular),
             FTextField(
               control: FTextFieldControl.managed(controller: _descriptionController),
               hint: 'Project Description (Optional)',
-              label: Text('Description'), // Corrected to String
+              label: Text('Description'),
               maxLines: 3,
             ),
             SizedBox(height: LayoutConstants.spacing.paddingRegular),
             FDateField.calendar(
-              label: Text('Start Date'), // Corrected to String
+              label: Text('Start Date'),
               hint: 'Select Start Date (Optional)',
               start: _startDate,
               onSaved: (date) => setState(() => _startDate = date),
             ),
             SizedBox(height: LayoutConstants.spacing.paddingRegular),
             FDateField.calendar(
-              label: Text('Deadline'), // Corrected to String
+              label: Text('Deadline'),
               hint: 'Select Deadline (Optional)',
               start: _deadline,
               onSaved: (date) => setState(() => _deadline = date),
@@ -84,7 +84,7 @@ class _CreateProjectModalContentState extends ConsumerState<CreateProjectModalCo
                             deadline: _deadline,
                           );
                       if (context.mounted) {
-                        Navigator.of(context).pop(newProject);
+                        Navigator.of(context).pop();
                       }
                     }
                   },

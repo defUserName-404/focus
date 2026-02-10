@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
+import '../../../../core/config/theme/app_theme.dart';
+import '../../../../core/constants/layout_constants.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
 import '../../../tasks/presentation/providers/task_provider.dart';
 import '../providers/project_provider.dart';
@@ -17,18 +19,34 @@ class ProjectDetailScreen extends ConsumerWidget {
     final tasksAsync = ref.watch(tasksByProjectProvider(projectIdString));
     final projectsAsync = ref.watch(projectListProvider);
 
-    return Scaffold(
-      appBar: AppBar(
+    return FScaffold(
+      header: FHeader.nested(
+        prefixes: [
+          FHeaderAction.back(
+            onPress: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
         title: projectsAsync.when(
           data: (projects) {
             final project = projects.firstWhere((p) => p.id == projectId);
-            return Text(project.title);
+            return Text(project.title, style: context.typography.lg);
           },
           loading: () => const Text('Loading...'),
           error: (_, _) => const Text('Error'),
         ),
       ),
-      body: tasksAsync.when(
+      footer: Padding(
+        padding: EdgeInsets.all(LayoutConstants.spacing.paddingLarge),
+        child: FButton(
+          child: const Text('Create New Project'),
+          onPress: () async {
+            _showCreateTaskDialog(context, ref, projectIdString);
+          },
+        ),
+      ),
+      child: tasksAsync.when(
         data: (tasks) {
           final rootTasks = tasks.where((t) => t.parentTaskId == null).toList();
 
@@ -101,10 +119,6 @@ class ProjectDetailScreen extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Error: $error')),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateTaskDialog(context, ref, projectIdString),
-        child: const Icon(Icons.add),
       ),
     );
   }

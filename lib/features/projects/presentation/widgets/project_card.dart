@@ -15,12 +15,13 @@ class ProjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: LayoutConstants.spacing.marginRegular),
-      child: fu.FCard(
-        child: GestureDetector(
+      child: GestureDetector(
+        onTap: onTap,
+        child: fu.FCard(
           child: Padding(
             padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               children: [
                 // Title
                 Text(project.title, style: context.typography.base.copyWith(fontWeight: FontWeight.w600)),
