@@ -43,7 +43,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
     final subtasks = widget.subtasks;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 8),
       child: fu.FCard(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -115,10 +115,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
         title: const Text('Delete Task'),
         content: Text('Are you sure you want to delete "${task.title}"? Subtasks will also be deleted.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
@@ -164,7 +161,7 @@ class _TaskMainRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -194,10 +191,7 @@ class _TaskMainRow extends StatelessWidget {
                     const SizedBox(width: 4),
                     TaskPriorityBadge(priority: task.priority),
                     const SizedBox(width: 4),
-                    _ActionPopup(
-                      onEdit: onEditPressed,
-                      onDelete: onDeletePressed,
-                    ),
+                    _ActionPopup(onEdit: onEditPressed, onDelete: onDeletePressed),
                   ],
                 ),
 
@@ -252,7 +246,10 @@ class _ActionPopup extends StatelessWidget {
       constraints: const BoxConstraints(),
       itemBuilder: (_) => [
         const PopupMenuItem(value: 'edit', child: Text('Edit')),
-        const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.red))),
+        const PopupMenuItem(
+          value: 'delete',
+          child: Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
       ],
       onSelected: (value) {
         if (value == 'edit') onEdit();
@@ -271,11 +268,14 @@ class _AddSubtaskChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return fu.FButton(
-      style: fu.FButtonStyle.outline(),
-      onPress: onPressed,
-      prefix: const Icon(fu.FIcons.plus, size: 13),
-      child: Text('subtask', style: context.typography.xs),
+    return SizedBox(
+      height: 28,
+      child: fu.FButton(
+        style: fu.FButtonStyle.outline(),
+        onPress: onPressed,
+        prefix: const Icon(fu.FIcons.plus, size: 12),
+        child: Text('subtask', style: context.typography.xs),
+      ),
     );
   }
 }
@@ -291,11 +291,14 @@ class _SubtaskCountChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return fu.FButton(
-      style: fu.FButtonStyle.outline(),
-      onPress: onToggle,
-      suffix: Icon(expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight, size: 14),
-      child: Text('$count', style: context.typography.xs),
+    return SizedBox(
+      height: 28,
+      child: fu.FButton(
+        style: fu.FButtonStyle.outline(),
+        onPress: onToggle,
+        suffix: Icon(expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight, size: 12),
+        child: Text('$count', style: context.typography.xs),
+      ),
     );
   }
 }

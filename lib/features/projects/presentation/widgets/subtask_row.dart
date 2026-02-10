@@ -13,14 +13,7 @@ class SubtaskRow extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
-  const SubtaskRow({
-    super.key,
-    required this.subtask,
-    required this.onToggle,
-    this.onTap,
-    this.onEdit,
-    this.onDelete,
-  });
+  const SubtaskRow({super.key, required this.subtask, required this.onToggle, this.onTap, this.onEdit, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -34,12 +27,12 @@ class SubtaskRow extends StatelessWidget {
           children: [
             // Indent thread line
             SizedBox(
-              width: 40,
+              width: 32,
               child: Center(child: Container(width: 1, color: context.colors.border)),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -69,7 +62,11 @@ class SubtaskRow extends StatelessWidget {
                               const SizedBox(width: 4),
                               if (onEdit != null || onDelete != null)
                                 PopupMenuButton<String>(
-                                  icon: Icon(fu.FIcons.ellipsisVertical, size: 14, color: context.colors.mutedForeground),
+                                  icon: Icon(
+                                    fu.FIcons.ellipsisVertical,
+                                    size: 14,
+                                    color: context.colors.mutedForeground,
+                                  ),
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
                                   itemBuilder: (_) => [

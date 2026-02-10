@@ -6,24 +6,42 @@ import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
-import 'package:focus/features/tasks/presentation/widgets/edit_task_modal_content.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../domain/entities/project.dart';
 import '../providers/project_provider.dart';
+import '../widgets/edit_project_modal_content.dart';
 import '../widgets/project_detail_header.dart';
 import '../widgets/project_search_bar.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_sort_filter_chips.dart';
 
-class ProjectDetailScreen extends ConsumerWidget {
+class ProjectDetailScreen extends ConsumerStatefulWidget {
   final BigInt projectId;
 
   const ProjectDetailScreen({super.key, required this.projectId});
 
-  String get _projectIdString => projectId.toString();
+  @override
+  ConsumerState<ProjectDetailScreen> createState() => _ProjectDetailScreenState();
+}
+
+class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _searchFocusNode = FocusNode();
+
+  String get _projectIdString => widget.projectId.toString();
+
+  BigInt get _projectId => widget.projectId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    _scrollController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final projectsAsync = ref.watch(projectListProvider);
     final filteredAsync = ref.watch(filteredTasksProvider(_projectIdString));
     final allTasksAsync = ref.watch(tasksByProjectProvider(_projectIdString));
@@ -34,11 +52,21 @@ class ProjectDetailScreen extends ConsumerWidget {
         prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
         title: projectsAsync.maybeWhen(
           data: (projects) {
-            final project = projects.firstWhere((p) => p.id == projectId, orElse: () => projects.first);
+            final project = projects.firstWhere((p) => p.id == _projectId, orElse: () => projects.first);
             return Text(project.title, style: context.typography.lg);
           },
           orElse: () => const Text('Project'),
         ),
+        suffixes: [
+          fu.FHeaderAction(
+            icon: Icon(fu.FIcons.search),
+            onPress: () {
+              _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+              _searchFocusNode.requestFocus();
+            },
+          ),
+          _buildPopupMenuAction(context),
+        ],
       ),
       footer: Padding(
         padding: EdgeInsets.all(LayoutConstants.spacing.paddingLarge),
@@ -48,7 +76,7 @@ class ProjectDetailScreen extends ConsumerWidget {
             await fu.showFSheet<Task>(
               context: context,
               side: fu.FLayout.btt,
-              builder: (context) => CreateTaskModalContent(projectId: projectId, depth: 0),
+              builder: (context) => CreateTaskModalContent(projectId: _projectId, depth: 0),
             );
           },
         ),
@@ -57,7 +85,7 @@ class ProjectDetailScreen extends ConsumerWidget {
         loading: () => const Center(child: fu.FCircularProgress()),
         error: (err, _) => Center(child: Text('Error: $err')),
         data: (projects) {
-          final project = projects.firstWhere((p) => p.id == projectId);
+          final project = projects.firstWhere((p) => p.id == _projectId);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,13 +97,14 @@ class ProjectDetailScreen extends ConsumerWidget {
                   return ProjectDetailHeader(project: project, tasks: rootTasks);
                 },
                 loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               ),
 
               // ── Search bar ──
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: LayoutConstants.spacing.paddingRegular),
                 child: ProjectSearchBar(
+                  focusNode: _searchFocusNode,
                   onChanged: (query) {
                     ref.read(taskListFilterStateProvider(_projectIdString).notifier).state = filter.copyWith(
                       searchQuery: query,
@@ -91,7 +120,6 @@ class ProjectDetailScreen extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(horizontal: LayoutConstants.spacing.paddingRegular),
                 child: Row(
                   children: [
-                    // Priority filter as FSelect
                     SizedBox(
                       width: 120,
                       child: _PriorityFilterSelect(
@@ -103,7 +131,6 @@ class ProjectDetailScreen extends ConsumerWidget {
                         },
                       ),
                     ),
-                    // Sort chips
                     Expanded(
                       child: TaskSortFilterChips(
                         selectedCriteria: filter.sortCriteria,
@@ -148,16 +175,13 @@ class ProjectDetailScreen extends ConsumerWidget {
                     }
 
                     return ListView.builder(
+                      controller: _scrollController,
                       padding: EdgeInsets.symmetric(horizontal: LayoutConstants.spacing.paddingRegular, vertical: 4),
                       itemCount: rootTasks.length,
                       itemBuilder: (context, index) {
                         final task = rootTasks[index];
                         final subtasks = filteredTasks.where((t) => t.parentTaskId == task.id).toList();
-                        return TaskCard(
-                          task: task,
-                          subtasks: subtasks,
-                          projectIdString: _projectIdString,
-                        );
+                        return TaskCard(task: task, subtasks: subtasks, projectIdString: _projectIdString);
                       },
                     );
                   },
@@ -166,6 +190,63 @@ class ProjectDetailScreen extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+
+  // ── Three-dot popup for edit / delete ─────────────────────────────────────
+
+  Widget _buildPopupMenuAction(BuildContext context) {
+    return PopupMenuButton<String>(
+      icon: Icon(fu.FIcons.ellipsisVertical, size: 20, color: context.colors.foreground),
+      padding: EdgeInsets.zero,
+      position: PopupMenuPosition.under,
+      itemBuilder: (_) => [
+        const PopupMenuItem(value: 'edit', child: Text('Edit Project')),
+        const PopupMenuItem(
+          value: 'delete',
+          child: Text('Delete Project', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+      onSelected: (value) {
+        if (value == 'edit') {
+          final asyncProjects = ref.read(projectListProvider);
+          asyncProjects.whenData((projects) {
+            final project = projects.firstWhere((p) => p.id == _projectId);
+            _editProject(context, project);
+          });
+        } else if (value == 'delete') {
+          _confirmDeleteProject(context);
+        }
+      },
+    );
+  }
+
+  void _editProject(BuildContext context, Project project) {
+    fu.showFSheet(
+      context: context,
+      side: fu.FLayout.btt,
+      builder: (context) => EditProjectModalContent(project: project),
+    );
+  }
+
+  void _confirmDeleteProject(BuildContext context) {
+    showAdaptiveDialog(
+      context: context,
+      builder: (ctx) => AlertDialog.adaptive(
+        title: const Text('Delete Project'),
+        content: const Text('Are you sure? All tasks will also be deleted.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(projectProvider.notifier).deleteProject(_projectId);
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }
@@ -186,10 +267,7 @@ class _PriorityFilterSelect extends StatelessWidget {
     return fu.FSelect<TaskPriority?>(
       items: _items,
       hint: 'Priority',
-      control: fu.FSelectControl.managed(
-        initial: selected,
-        onChange: (value) => onChanged(value),
-      ),
+      control: fu.FSelectControl.managed(initial: selected, onChange: (value) => onChanged(value)),
     );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider, StreamProvider;
+import 'package:flutter_riverpod/flutter_riverpod.dart' show StreamProvider;
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

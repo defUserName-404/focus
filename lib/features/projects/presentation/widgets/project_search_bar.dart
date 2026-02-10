@@ -5,9 +5,10 @@ import 'package:forui/forui.dart';
 /// Manages its own controller; reports changes via [onChanged].
 class ProjectSearchBar extends StatefulWidget {
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final ValueChanged<String> onChanged;
 
-  const ProjectSearchBar({super.key, this.controller, required this.onChanged});
+  const ProjectSearchBar({super.key, this.controller, this.focusNode, required this.onChanged});
 
   @override
   State<ProjectSearchBar> createState() => _ProjectSearchBarState();
@@ -45,6 +46,7 @@ class _ProjectSearchBarState extends State<ProjectSearchBar> {
   Widget build(BuildContext context) {
     return FTextField(
       control: FTextFieldControl.managed(controller: _controller),
+      focusNode: widget.focusNode,
       hint: 'Search...',
       prefixBuilder: (_, _, _) =>
           const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0), child: Icon(FIcons.search)),
