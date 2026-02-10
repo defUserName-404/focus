@@ -40,7 +40,7 @@ class ProjectDetailScreen extends ConsumerWidget {
       footer: Padding(
         padding: EdgeInsets.all(LayoutConstants.spacing.paddingLarge),
         child: FButton(
-          child: const Text('Create New Project'),
+          child: const Text('Create New Task'),
           onPress: () async {
             _showCreateTaskDialog(context, ref, projectIdString);
           },
