@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
-import 'package:intl/intl.dart';
 
+import '../../../../core/common/utils/date_formatter.dart';
+import '../../../../core/common/widgets/base_modal_form.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';
 import '../../domain/entities/project_extensions.dart';
@@ -39,69 +40,44 @@ class _EditProjectModalContentState extends ConsumerState<EditProjectModalConten
     super.dispose();
   }
 
-  String _fmtDate(DateTime? dt) => dt != null ? DateFormat('MMM d, yyyy').format(dt) : '';
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).canvasColor,
-      child: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.regular),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text('Edit Project', textAlign: TextAlign.center),
-              SizedBox(height: AppConstants.spacing.large),
-              FTextField(
-                control: FTextFieldControl.managed(controller: _titleController),
-                hint: 'Project Title',
-                label: const Text('Title'),
-              ),
-              SizedBox(height: AppConstants.spacing.regular),
-              FTextField(
-                control: FTextFieldControl.managed(controller: _descriptionController),
-                hint: 'Project Description (Optional)',
-                label: const Text('Description'),
-                maxLines: 3,
-              ),
-              SizedBox(height: AppConstants.spacing.regular),
-              FDateField.calendar(
-                label: const Text('Start Date'),
-                hint: _startDate != null ? _fmtDate(_startDate) : 'Select Start Date (Optional)',
-                control: FDateFieldControl.managed(
-                  initial: _startDate,
-                  onChange: (date) => setState(() => _startDate = date),
-                ),
-                clearable: true,
-              ),
-              SizedBox(height: AppConstants.spacing.regular),
-              FDateField.calendar(
-                label: const Text('Deadline'),
-                hint: _deadline != null ? _fmtDate(_deadline) : 'Select Deadline (Optional)',
-                control: FDateFieldControl.managed(
-                  initial: _deadline,
-                  onChange: (date) => setState(() => _deadline = date),
-                ),
-                clearable: true,
-              ),
-              SizedBox(height: AppConstants.spacing.large),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FButton(
-                    onPress: () => Navigator.pop(context),
-                    style: FButtonStyle.ghost(),
-                    child: const Text('Cancel'),
-                  ),
-                  FButton(onPress: _submit, child: const Text('Save')),
-                ],
-              ),
-            ],
-          ),
+    return BaseModalForm(
+      title: 'Edit Project',
+      fields: [
+        FTextField(
+          control: FTextFieldControl.managed(controller: _titleController),
+          hint: 'Project Title',
+          label: const Text('Title'),
         ),
-      ),
+        SizedBox(height: AppConstants.spacing.regular),
+        FTextField(
+          control: FTextFieldControl.managed(controller: _descriptionController),
+          hint: 'Project Description (Optional)',
+          label: const Text('Description'),
+          maxLines: 3,
+        ),
+        SizedBox(height: AppConstants.spacing.regular),
+        FDateField.calendar(
+          label: const Text('Start Date'),
+          hint: _startDate != null ? DateTimeFormatter.formatDate(_startDate!) : 'Select Start Date (Optional)',
+          control: FDateFieldControl.managed(
+            initial: _startDate,
+            onChange: (date) => setState(() => _startDate = date),
+          ),
+          clearable: true,
+        ),
+        SizedBox(height: AppConstants.spacing.regular),
+        FDateField.calendar(
+          label: const Text('Deadline'),
+          hint: _deadline != null ? DateTimeFormatter.formatDate(_deadline!) : 'Select Deadline (Optional)',
+          control: FDateFieldControl.managed(initial: _deadline, onChange: (date) => setState(() => _deadline = date)),
+          clearable: true,
+        ),
+      ],
+      onCancel: () => Navigator.pop(context),
+      onSubmit: _submit,
+      submitButtonText: 'Save',
     );
   }
 

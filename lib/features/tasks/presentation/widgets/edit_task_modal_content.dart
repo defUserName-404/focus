@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
-import 'package:intl/intl.dart';
 
+import '../../../../core/common/utils/date_formatter.dart';
+import '../../../../core/common/widgets/base_modal_form.dart';
+import '../../../../core/common/widgets/filter_select.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_extensions.dart';
@@ -25,10 +27,6 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
   late DateTime? _endDate;
   late TaskPriority _priority;
 
-  static final Map<String, TaskPriority> _priorityItems = {
-    for (final priority in TaskPriority.values) priority.label: priority,
-  };
-
   @override
   void initState() {
     super.initState();
@@ -46,74 +44,50 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
     super.dispose();
   }
 
-  String _fmtDate(DateTime? dt) => dt != null ? DateFormat('MMM d, yyyy').format(dt) : '';
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).canvasColor,
-      child: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.regular),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text('Edit Task', textAlign: TextAlign.center),
-              SizedBox(height: AppConstants.spacing.large),
-              FTextField(
-                control: FTextFieldControl.managed(controller: _titleController),
-                hint: 'Task Title',
-                label: const Text('Title'),
-              ),
-              SizedBox(height: AppConstants.spacing.regular),
-              FTextField(
-                control: FTextFieldControl.managed(controller: _descriptionController),
-                hint: 'Task Description (Optional)',
-                label: const Text('Description'),
-                maxLines: 3,
-              ),
-              SizedBox(height: AppConstants.spacing.regular),
-              FSelect<TaskPriority>(
-                control: FSelectControl.managed(
-                  initial: _priority,
-                  onChange: (value) {
-                    if (value != null) setState(() => _priority = value);
-                  },
-                ),
-                items: _priorityItems,
-                label: const Text('Priority'),
-              ),
-              SizedBox(height: AppConstants.spacing.regular),
-              FDateField.calendar(
-                label: const Text('Start Date'),
-                hint: _startDate != null ? _fmtDate(_startDate) : 'Select Start Date (Optional)',
-                control: FDateFieldControl.managed(initial: _startDate, onChange: (date) => _startDate = date),
-                clearable: true,
-              ),
-              SizedBox(height: AppConstants.spacing.regular),
-              FDateField.calendar(
-                label: const Text('End Date'),
-                hint: _endDate != null ? _fmtDate(_endDate) : 'Select End Date (Optional)',
-                control: FDateFieldControl.managed(initial: _endDate, onChange: (date) => _endDate = date),
-                clearable: true,
-              ),
-              SizedBox(height: AppConstants.spacing.large),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FButton(
-                    onPress: () => Navigator.pop(context),
-                    style: FButtonStyle.ghost(),
-                    child: const Text('Cancel'),
-                  ),
-                  FButton(onPress: _submit, child: const Text('Save')),
-                ],
-              ),
-            ],
-          ),
+    return BaseModalForm(
+      title: 'Edit Task',
+      fields: [
+        FTextField(
+          control: FTextFieldControl.managed(controller: _titleController),
+          hint: 'Task Title',
+          label: const Text('Title'),
         ),
-      ),
+        SizedBox(height: AppConstants.spacing.regular),
+        FTextField(
+          control: FTextFieldControl.managed(controller: _descriptionController),
+          hint: 'Task Description (Optional)',
+          label: const Text('Description'),
+          maxLines: 3,
+        ),
+        SizedBox(height: AppConstants.spacing.regular),
+        FilterSelect<TaskPriority>(
+          selected: _priority,
+          onChanged: (value) {
+            setState(() => _priority = value);
+          },
+          options: TaskPriority.values,
+          hint: 'Priority',
+        ),
+        SizedBox(height: AppConstants.spacing.regular),
+        FDateField.calendar(
+          label: const Text('Start Date'),
+          hint: _startDate != null ? DateTimeFormatter.formatDate(_startDate!) : 'Select Start Date (Optional)',
+          control: FDateFieldControl.managed(initial: _startDate, onChange: (date) => _startDate = date),
+          clearable: true,
+        ),
+        SizedBox(height: AppConstants.spacing.regular),
+        FDateField.calendar(
+          label: const Text('End Date'),
+          hint: _endDate != null ? DateTimeFormatter.formatDate(_endDate!) : 'Select End Date (Optional)',
+          control: FDateFieldControl.managed(initial: _endDate, onChange: (date) => _endDate = date),
+          clearable: true,
+        ),
+      ],
+      onCancel: () => Navigator.pop(context),
+      onSubmit: _submit,
+      submitButtonText: 'Save',
     );
   }
 
