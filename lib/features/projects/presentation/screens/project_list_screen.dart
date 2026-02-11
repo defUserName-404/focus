@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/common/widgets/app_search_bar.dart';
 import '../../../../core/common/widgets/sort_filter_chips.dart';
 import '../../../../core/common/widgets/sort_order_selector.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -10,7 +11,6 @@ import '../commands/project_commands.dart';
 import '../providers/project_list_filter_state.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
-import '../widgets/project_search_bar.dart';
 import 'project_detail_screen.dart';
 
 class ProjectListScreen extends ConsumerWidget {
@@ -35,7 +35,8 @@ class ProjectListScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          ProjectSearchBar(
+          AppSearchBar(
+            hint: 'Search projects...',
             onChanged: (query) {
               ref.read(projectListFilterProvider.notifier).updateFilter(searchQuery: query);
             },

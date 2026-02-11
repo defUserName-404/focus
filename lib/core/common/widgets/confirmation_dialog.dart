@@ -53,7 +53,7 @@ class ConfirmationDialog extends StatelessWidget {
             Navigator.pop(context);
             onConfirm();
           },
-          style: confirmStyle ?? fu.FButtonStyle.destructive,
+          style: confirmStyle ?? fu.FButtonStyle.destructive(),
           child: Text(confirmLabel),
         ),
       ],

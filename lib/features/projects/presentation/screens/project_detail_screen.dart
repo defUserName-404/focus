@@ -8,15 +8,15 @@ import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/common/widgets/action_menu_button.dart';
+import '../../../../core/common/widgets/app_search_bar.dart';
 import '../../../../core/common/widgets/filter_select.dart';
 import '../../../../core/common/widgets/sort_filter_chips.dart';
 import '../../../../core/common/widgets/sort_order_selector.dart';
 import '../../../tasks/presentation/commands/task_commands.dart';
+import '../../../tasks/presentation/widgets/task_card.dart';
 import '../commands/project_commands.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_detail_header.dart';
-import '../widgets/project_search_bar.dart';
-import '../widgets/task_card.dart';
 
 class ProjectDetailScreen extends ConsumerStatefulWidget {
   final BigInt projectId;
@@ -32,6 +32,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   final FocusNode _searchFocusNode = FocusNode();
 
   String get _projectIdString => widget.projectId.toString();
+
   BigInt get _projectId => widget.projectId;
 
   @override
@@ -68,18 +69,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           ),
           projectsAsync.maybeWhen(
             data: (projects) {
-              final project = projects.firstWhere(
-                (p) => p.id == _projectId,
-                orElse: () => projects.first,
-              );
+              final project = projects.firstWhere((p) => p.id == _projectId, orElse: () => projects.first);
               return ActionMenuButton(
                 onEdit: () => ProjectCommands.edit(context, project),
-                onDelete: () => ProjectCommands.delete(
-                  context,
-                  ref,
-                  project,
-                  onDeleted: () => Navigator.pop(context),
-                ),
+                onDelete: () => ProjectCommands.delete(context, ref, project, onDeleted: () => Navigator.pop(context)),
               );
             },
             orElse: () => const SizedBox.shrink(),
@@ -90,8 +83,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(
           child: const Text('Create New Task'),
-          onPress: () =>
-              TaskCommands.create(context, ref, projectId: _projectId),
+          onPress: () => TaskCommands.create(context, ref, projectId: _projectId),
         ),
       ),
       child: projectsAsync.when(
@@ -116,8 +108,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               // ── Search bar ──
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
-                child: ProjectSearchBar(
+                child: AppSearchBar(
                   focusNode: _searchFocusNode,
+                  hint: 'Search tasks...',
                   onChanged: (query) {
                     ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(searchQuery: query);
                   },

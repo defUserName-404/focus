@@ -3,25 +3,27 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-class ProjectSearchBar extends StatefulWidget {
+class AppSearchBar extends StatefulWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final ValueChanged<String> onChanged;
+  final String hint;
   final Duration debounceDuration;
 
-  const ProjectSearchBar({
+  const AppSearchBar({
     super.key,
     this.controller,
     this.focusNode,
     required this.onChanged,
+    this.hint = 'Search...',
     this.debounceDuration = const Duration(milliseconds: 300),
   });
 
   @override
-  State<ProjectSearchBar> createState() => _ProjectSearchBarState();
+  State<AppSearchBar> createState() => _AppSearchBarState();
 }
 
-class _ProjectSearchBarState extends State<ProjectSearchBar> {
+class _AppSearchBarState extends State<AppSearchBar> {
   late final TextEditingController _controller;
   late final bool _ownsController;
   Timer? _debounce;
@@ -59,7 +61,7 @@ class _ProjectSearchBarState extends State<ProjectSearchBar> {
     return FTextField(
       control: FTextFieldControl.managed(controller: _controller),
       focusNode: widget.focusNode,
-      hint: 'Search...',
+      hint: widget.hint,
       prefixBuilder: (_, _, _) =>
           const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0), child: Icon(FIcons.search)),
       clearable: (value) => value.text.isNotEmpty,
