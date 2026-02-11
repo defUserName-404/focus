@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart' show StreamProvider;
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/injection.dart';
@@ -23,16 +22,23 @@ Stream<List<Task>> tasksByProject(Ref ref, String projectId) {
 }
 
 // ── Filter state provider (per-project family) ─────────────────────────────
+@Riverpod(keepAlive: true)
+class TaskListFilter extends _$TaskListFilter {
+  @override
+  TaskListFilterState build(String projectId) {
+    return const TaskListFilterState();
+  }
 
-final taskListFilterStateProvider = StateProvider.family<TaskListFilterState, String>(
-  (ref, projectId) => const TaskListFilterState(),
-);
+  void updateFilter({String? searchQuery, TaskSortCriteria? sortCriteria, TaskPriority? priorityFilter}) {
+    state = state.copyWith(searchQuery: searchQuery, sortCriteria: sortCriteria, priorityFilter: priorityFilter);
+  }
+}
 
 // ── Filtered task list — delegates to DB-level filtering ───────────────────
 
 final filteredTasksProvider = StreamProvider.family<List<Task>, String>((ref, projectId) {
   final repository = ref.watch(taskRepositoryProvider);
-  final filter = ref.watch(taskListFilterStateProvider(projectId));
+  final filter = ref.watch(taskListFilterProvider(projectId));
 
   return repository.watchFilteredTasks(
     projectId: BigInt.parse(projectId),

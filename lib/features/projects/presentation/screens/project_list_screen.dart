@@ -20,7 +20,7 @@ class ProjectListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAsync = ref.watch(filteredProjectListProvider);
-    final filter = ref.watch(projectListFilterStateProvider);
+    final filter = ref.watch(projectListFilterProvider);
 
     return fu.FScaffold(
       header: fu.FHeader.nested(
@@ -50,7 +50,7 @@ class ProjectListScreen extends ConsumerWidget {
         children: [
           ProjectSearchBar(
             onChanged: (query) {
-              ref.read(projectListFilterStateProvider.notifier).state = filter.copyWith(searchQuery: query);
+              ref.read(projectListFilterProvider.notifier).updateFilter(searchQuery: query);
             },
           ),
           Row(
@@ -60,7 +60,7 @@ class ProjectListScreen extends ConsumerWidget {
                 child: ProjectSortOrderSelector(
                   selectedOrder: filter.sortOrder,
                   onChanged: (order) {
-                    ref.read(projectListFilterStateProvider.notifier).state = filter.copyWith(sortOrder: order);
+                    ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
                   },
                 ),
               ),
@@ -68,7 +68,7 @@ class ProjectListScreen extends ConsumerWidget {
                 child: ProjectSortFilterChips(
                   selectedCriteria: filter.sortCriteria,
                   onChanged: (criteria) {
-                    ref.read(projectListFilterStateProvider.notifier).state = filter.copyWith(sortCriteria: criteria);
+                    ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
                   },
                 ),
               ),

@@ -45,7 +45,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     final projectsAsync = ref.watch(projectListProvider);
     final filteredAsync = ref.watch(filteredTasksProvider(_projectIdString));
     final allTasksAsync = ref.watch(tasksByProjectProvider(_projectIdString));
-    final filter = ref.watch(taskListFilterStateProvider(_projectIdString));
+    final filter = ref.watch(taskListFilterProvider(_projectIdString));
 
     return fu.FScaffold(
       header: fu.FHeader.nested(
@@ -106,7 +106,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 child: ProjectSearchBar(
                   focusNode: _searchFocusNode,
                   onChanged: (query) {
-                    ref.read(taskListFilterStateProvider(_projectIdString).notifier).state = filter.copyWith(
+                    ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(
                       searchQuery: query,
                     );
                   },
@@ -125,7 +125,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                       child: _PriorityFilterSelect(
                         selected: filter.priorityFilter,
                         onChanged: (priority) {
-                          ref.read(taskListFilterStateProvider(_projectIdString).notifier).state = filter.copyWith(
+                          ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(
                             priorityFilter: priority,
                           );
                         },
@@ -135,7 +135,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                       child: TaskSortFilterChips(
                         selectedCriteria: filter.sortCriteria,
                         onChanged: (criteria) {
-                          ref.read(taskListFilterStateProvider(_projectIdString).notifier).state = filter.copyWith(
+                          ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(
                             sortCriteria: criteria,
                           );
                         },

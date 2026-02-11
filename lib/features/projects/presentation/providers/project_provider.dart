@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/injection.dart';
@@ -23,13 +22,31 @@ Stream<List<Project>> projectList(Ref ref) {
 
 // ── Filter state provider ──────────────────────────────────────────────────
 
-final projectListFilterStateProvider = StateProvider<ProjectListFilterState>((ref) => const ProjectListFilterState());
+@Riverpod(keepAlive: true)
+class ProjectListFilter extends _$ProjectListFilter {
+  @override
+  ProjectListFilterState build() {
+    return const ProjectListFilterState();
+  }
+
+  void updateFilter({
+    String? searchQuery,
+    ProjectSortCriteria? sortCriteria,
+    ProjectSortOrder? sortOrder,
+  }) {
+    state = state.copyWith(
+      searchQuery: searchQuery,
+      sortCriteria: sortCriteria,
+      sortOrder: sortOrder,
+    );
+  }
+}
 
 // ── Filtered project list — delegates to DB-level filtering ────────────────
 
 final filteredProjectListProvider = StreamProvider<List<Project>>((ref) {
   final repository = ref.watch(projectRepositoryProvider);
-  final filter = ref.watch(projectListFilterStateProvider);
+  final filter = ref.watch(projectListFilterProvider);
 
   return repository.watchFilteredProjects(
     searchQuery: filter.searchQuery,

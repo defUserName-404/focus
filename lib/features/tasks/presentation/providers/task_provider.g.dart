@@ -125,6 +125,103 @@ final class TasksByProjectFamily extends $Family
   String toString() => r'tasksByProjectProvider';
 }
 
+@ProviderFor(TaskListFilter)
+final taskListFilterProvider = TaskListFilterFamily._();
+
+final class TaskListFilterProvider
+    extends $NotifierProvider<TaskListFilter, TaskListFilterState> {
+  TaskListFilterProvider._({
+    required TaskListFilterFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'taskListFilterProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$taskListFilterHash();
+
+  @override
+  String toString() {
+    return r'taskListFilterProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  TaskListFilter create() => TaskListFilter();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TaskListFilterState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TaskListFilterState>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is TaskListFilterProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$taskListFilterHash() => r'55099099094d0af208b06c5a8cd3eed6512456fe';
+
+final class TaskListFilterFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          TaskListFilter,
+          TaskListFilterState,
+          TaskListFilterState,
+          TaskListFilterState,
+          String
+        > {
+  TaskListFilterFamily._()
+    : super(
+        retry: null,
+        name: r'taskListFilterProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
+
+  TaskListFilterProvider call(String projectId) =>
+      TaskListFilterProvider._(argument: projectId, from: this);
+
+  @override
+  String toString() => r'taskListFilterProvider';
+}
+
+abstract class _$TaskListFilter extends $Notifier<TaskListFilterState> {
+  late final _$args = ref.$arg as String;
+  String get projectId => _$args;
+
+  TaskListFilterState build(String projectId);
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<TaskListFilterState, TaskListFilterState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<TaskListFilterState, TaskListFilterState>,
+              TaskListFilterState,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, () => build(_$args));
+  }
+}
+
 @ProviderFor(TaskNotifier)
 final taskProvider = TaskNotifierFamily._();
 
