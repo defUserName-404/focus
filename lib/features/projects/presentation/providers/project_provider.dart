@@ -20,6 +20,12 @@ Stream<List<Project>> projectList(Ref ref) {
   return repository.watchAllProjects();
 }
 
+@Riverpod(keepAlive: true)
+Stream<Project?> projectById(Ref ref, String id) {
+  final repository = ref.watch(projectRepositoryProvider);
+  return repository.watchProjectById(BigInt.parse(id));
+}
+
 // ── Filter state provider ──────────────────────────────────────────────────
 
 @Riverpod(keepAlive: true)

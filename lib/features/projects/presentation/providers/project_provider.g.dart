@@ -95,6 +95,76 @@ final class ProjectListProvider
 
 String _$projectListHash() => r'c6c5a795744f5e0937c863f15e03b133d11bd437';
 
+@ProviderFor(projectById)
+final projectByIdProvider = ProjectByIdFamily._();
+
+final class ProjectByIdProvider
+    extends
+        $FunctionalProvider<AsyncValue<Project?>, Project?, Stream<Project?>>
+    with $FutureModifier<Project?>, $StreamProvider<Project?> {
+  ProjectByIdProvider._({
+    required ProjectByIdFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'projectByIdProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$projectByIdHash();
+
+  @override
+  String toString() {
+    return r'projectByIdProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<Project?> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<Project?> create(Ref ref) {
+    final argument = this.argument as String;
+    return projectById(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProjectByIdProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$projectByIdHash() => r'1acaedd1e91daeb216c501c955c23fe2f1983092';
+
+final class ProjectByIdFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<Project?>, String> {
+  ProjectByIdFamily._()
+    : super(
+        retry: null,
+        name: r'projectByIdProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
+
+  ProjectByIdProvider call(String id) =>
+      ProjectByIdProvider._(argument: id, from: this);
+
+  @override
+  String toString() => r'projectByIdProvider';
+}
+
 @ProviderFor(ProjectListFilter)
 final projectListFilterProvider = ProjectListFilterProvider._();
 

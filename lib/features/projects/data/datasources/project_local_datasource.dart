@@ -9,6 +9,7 @@ abstract class IProjectLocalDataSource {
   Future<int> createProject(ProjectTableCompanion companion);
   Future<void> updateProject(ProjectTableCompanion companion);
   Future<void> deleteProject(BigInt id);
+  Stream<ProjectTableData?> watchProjectById(BigInt id);
   Stream<List<ProjectTableData>> watchAllProjects();
   Stream<List<ProjectTableData>> watchFilteredProjects({
     String searchQuery,
@@ -50,6 +51,13 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
     // Cascade: delete all tasks belonging to this project first
     await (_db.delete(_db.taskTable)..where((t) => t.projectId.equals(id))).go();
     await (_db.delete(_db.projectTable)..where((t) => t.id.equals(id))).go();
+  }
+
+  @override
+  Stream<ProjectTableData?> watchProjectById(BigInt id) {
+    return (_db.select(
+      _db.projectTable,
+    )..where((t) => t.id.equals(id))).watchSingleOrNull();
   }
 
   @override

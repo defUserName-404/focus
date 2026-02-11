@@ -1187,11 +1187,54 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ProjectTableTable projectTable = $ProjectTableTable(this);
   late final $TaskTableTable taskTable = $TaskTableTable(this);
+  late final Index projectCreatedAtIdx = Index(
+    'project_created_at_idx',
+    'CREATE INDEX project_created_at_idx ON project_table (created_at)',
+  );
+  late final Index projectUpdatedAtIdx = Index(
+    'project_updated_at_idx',
+    'CREATE INDEX project_updated_at_idx ON project_table (updated_at)',
+  );
+  late final Index taskProjectIdIdx = Index(
+    'task_project_id_idx',
+    'CREATE INDEX task_project_id_idx ON task_table (project_id)',
+  );
+  late final Index taskParentIdIdx = Index(
+    'task_parent_id_idx',
+    'CREATE INDEX task_parent_id_idx ON task_table (parent_task_id)',
+  );
+  late final Index taskPriorityIdx = Index(
+    'task_priority_idx',
+    'CREATE INDEX task_priority_idx ON task_table (priority)',
+  );
+  late final Index taskDeadlineIdx = Index(
+    'task_deadline_idx',
+    'CREATE INDEX task_deadline_idx ON task_table (end_date)',
+  );
+  late final Index taskCompletedIdx = Index(
+    'task_completed_idx',
+    'CREATE INDEX task_completed_idx ON task_table (is_completed)',
+  );
+  late final Index taskUpdatedAtIdx = Index(
+    'task_updated_at_idx',
+    'CREATE INDEX task_updated_at_idx ON task_table (updated_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [projectTable, taskTable];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    projectTable,
+    taskTable,
+    projectCreatedAtIdx,
+    projectUpdatedAtIdx,
+    taskProjectIdIdx,
+    taskParentIdIdx,
+    taskPriorityIdx,
+    taskDeadlineIdx,
+    taskCompletedIdx,
+    taskUpdatedAtIdx,
+  ];
 }
 
 typedef $$ProjectTableTableCreateCompanionBuilder =

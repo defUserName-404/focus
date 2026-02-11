@@ -65,6 +65,7 @@ class TaskRepositoryImpl implements ITaskRepository {
           projectId: projectId,
           searchQuery: searchQuery,
           sortCriteria: sortCriteria,
+          sortOrder: sortOrder,
           priorityFilter: priorityFilter,
         )
         .map((rows) => rows.map((r) => r.toDomain()).toList());

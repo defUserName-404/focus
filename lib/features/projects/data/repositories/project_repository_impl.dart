@@ -41,6 +41,11 @@ class ProjectRepositoryImpl implements IProjectRepository {
   }
 
   @override
+  Stream<Project?> watchProjectById(BigInt id) {
+    return _localDataSource.watchProjectById(id).map((row) => row?.toDomain());
+  }
+
+  @override
   Stream<List<Project>> watchAllProjects() {
     return _localDataSource.watchAllProjects().map((rows) => rows.map((r) => r.toDomain()).toList());
   }

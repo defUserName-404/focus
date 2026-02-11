@@ -1,19 +1,13 @@
-import 'package:drift/drift.dart'
-    show
-        BuildGeneralColumn,
-        Column,
-        DateTimeColumn,
-        Table,
-        TextColumn,
-        IntColumn,
-        BoolColumn,
-        Constant,
-        BuildColumn,
-        Int64Column,
-        BuildInt64Column;
+import 'package:drift/drift.dart';
 
 import '../../domain/entities/task_priority.dart';
 
+@TableIndex(name: 'task_project_id_idx', columns: {#projectId})
+@TableIndex(name: 'task_parent_id_idx', columns: {#parentTaskId})
+@TableIndex(name: 'task_priority_idx', columns: {#priority})
+@TableIndex(name: 'task_deadline_idx', columns: {#endDate})
+@TableIndex(name: 'task_completed_idx', columns: {#isCompleted})
+@TableIndex(name: 'task_updated_at_idx', columns: {#updatedAt})
 class TaskTable extends Table {
   Int64Column get id => int64().autoIncrement()();
 
@@ -38,7 +32,4 @@ class TaskTable extends Table {
   DateTimeColumn get createdAt => dateTime()();
 
   DateTimeColumn get updatedAt => dateTime()();
-
-  @override
-  Set<Column> get primaryKey => {id};
 }

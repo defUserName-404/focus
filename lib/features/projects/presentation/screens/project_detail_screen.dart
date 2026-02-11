@@ -44,7 +44,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final projectsAsync = ref.watch(projectListProvider);
+    final projectAsync = ref.watch(projectByIdProvider(_projectIdString));
     final filteredAsync = ref.watch(filteredTasksProvider(_projectIdString));
     final allTasksAsync = ref.watch(tasksByProjectProvider(_projectIdString));
     final filter = ref.watch(taskListFilterProvider(_projectIdString));
@@ -52,11 +52,8 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     return fu.FScaffold(
       header: fu.FHeader.nested(
         prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
-        title: projectsAsync.maybeWhen(
-          data: (projects) {
-            final project = projects.firstWhere((p) => p.id == _projectId, orElse: () => projects.first);
-            return Text(project.title, style: context.typography.lg);
-          },
+        title: projectAsync.maybeWhen(
+          data: (project) => Text(project?.title ?? 'Project', style: context.typography.lg),
           orElse: () => const Text('Project'),
         ),
         suffixes: [
@@ -67,9 +64,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               _searchFocusNode.requestFocus();
             },
           ),
-          projectsAsync.maybeWhen(
-            data: (projects) {
-              final project = projects.firstWhere((p) => p.id == _projectId, orElse: () => projects.first);
+          projectAsync.maybeWhen(
+            data: (project) {
+              if (project == null) return const SizedBox.shrink();
               return ActionMenuButton(
                 onEdit: () => ProjectCommands.edit(context, project),
                 onDelete: () => ProjectCommands.delete(context, ref, project, onDeleted: () => Navigator.pop(context)),
@@ -86,11 +83,13 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           onPress: () => TaskCommands.create(context, ref, projectId: _projectId),
         ),
       ),
-      child: projectsAsync.when(
+      child: projectAsync.when(
         loading: () => const Center(child: fu.FCircularProgress()),
         error: (err, _) => Center(child: Text('Error: $err')),
-        data: (projects) {
-          final project = projects.firstWhere((p) => p.id == _projectId);
+        data: (project) {
+          if (project == null) {
+            return const Center(child: Text('Project not found'));
+          }
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,

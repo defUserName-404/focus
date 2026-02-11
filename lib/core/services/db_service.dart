@@ -12,7 +12,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -20,21 +20,30 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
     },
     onUpgrade: (m, from, to) async {
-      // If upgrading from schema version 1, create the new `task_table`.
+      // Version 2: Added task table
       if (from < 2) {
         await m.createTable(taskTable);
       }
-      // If upgrading from schema version 2 to 3, recreate task table with new schema
-      // (projectId changed from Text to Int64, description made nullable)
+      // Version 3: Revamped task table (projectId, description)
       if (from < 3) {
         await m.deleteTable('task_table');
         await m.createTable(taskTable);
       }
-      // If upgrading from schema version 3 to 4, recreate task table again
-      // (id changed from Text to Int64 auto-increment, startDate/endDate nullable, parentTaskId as Int64)
+      // Version 4: Revamped task table again (id, dates, parentId)
       if (from < 4) {
         await m.deleteTable('task_table');
         await m.createTable(taskTable);
+      }
+      // Version 5: Added indexes
+      if (from < 5) {
+        await m.createIndex(projectCreatedAtIdx);
+        await m.createIndex(projectUpdatedAtIdx);
+        await m.createIndex(taskProjectIdIdx);
+        await m.createIndex(taskParentIdIdx);
+        await m.createIndex(taskPriorityIdx);
+        await m.createIndex(taskDeadlineIdx);
+        await m.createIndex(taskCompletedIdx);
+        await m.createIndex(taskUpdatedAtIdx);
       }
     },
   );

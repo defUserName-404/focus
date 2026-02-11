@@ -1,5 +1,5 @@
-import '../entities/project.dart';
 import '../../presentation/providers/project_list_filter_state.dart';
+import '../entities/project.dart';
 
 abstract class IProjectRepository {
   Future<List<Project>> getAllProjects();
@@ -7,6 +7,7 @@ abstract class IProjectRepository {
   Future<Project> createProject(Project project);
   Future<void> updateProject(Project project);
   Future<void> deleteProject(BigInt id);
+  Stream<Project?> watchProjectById(BigInt id);
   Stream<List<Project>> watchAllProjects();
   Stream<List<Project>> watchFilteredProjects({
     String searchQuery,

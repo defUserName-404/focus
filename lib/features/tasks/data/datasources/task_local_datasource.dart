@@ -15,6 +15,7 @@ abstract class ITaskLocalDataSource {
     required BigInt projectId,
     String searchQuery,
     TaskSortCriteria sortCriteria,
+    TaskSortOrder sortOrder,
     TaskPriority? priorityFilter,
   });
 }
@@ -71,6 +72,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     required BigInt projectId,
     String searchQuery = '',
     TaskSortCriteria sortCriteria = TaskSortCriteria.recentlyModified,
+    TaskSortOrder sortOrder = TaskSortOrder.none,
     TaskPriority? priorityFilter,
   }) {
     final query = _db.select(_db.taskTable)
@@ -79,7 +81,8 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     final q = searchQuery.trim().toLowerCase();
     if (q.isNotEmpty) {
       query.where(
-        (t) => t.title.lower().like('%$q%') | t.description.lower().like('%$q%'),
+        (t) =>
+            t.title.lower().like('%$q%') | t.description.lower().like('%$q%'),
       );
     }
 
@@ -87,17 +90,29 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
       query.where((t) => t.priority.equalsValue(priorityFilter));
     }
 
-    switch (sortCriteria) {
-      case TaskSortCriteria.recentlyModified:
-        query.orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
-      case TaskSortCriteria.deadline:
-        query.orderBy([(t) => OrderingTerm.asc(t.endDate)]);
-      case TaskSortCriteria.priority:
-        query.orderBy([(t) => OrderingTerm.asc(t.priority)]);
-      case TaskSortCriteria.title:
-        query.orderBy([(t) => OrderingTerm.asc(t.title)]);
-      case TaskSortCriteria.createdDate:
-        query.orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+    if (sortOrder != TaskSortOrder.none) {
+      final mode = sortOrder == TaskSortOrder.ascending
+          ? OrderingMode.asc
+          : OrderingMode.desc;
+      query.orderBy([
+        (t) {
+          switch (sortCriteria) {
+            case TaskSortCriteria.recentlyModified:
+              return OrderingTerm(expression: t.updatedAt, mode: mode);
+            case TaskSortCriteria.deadline:
+              return OrderingTerm(expression: t.endDate, mode: mode);
+            case TaskSortCriteria.priority:
+              return OrderingTerm(expression: t.priority, mode: mode);
+            case TaskSortCriteria.title:
+              return OrderingTerm(expression: t.title, mode: mode);
+            case TaskSortCriteria.createdDate:
+              return OrderingTerm(expression: t.createdAt, mode: mode);
+          }
+        },
+      ]);
+    } else {
+      // Default: recently modified descending
+      query.orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
     }
 
     return query.watch();
