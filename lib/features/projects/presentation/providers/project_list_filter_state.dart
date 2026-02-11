@@ -1,12 +1,16 @@
+import '../../../../core/common/sort_criteria.dart';
+
 /// Sort criteria for the project list.
-enum ProjectSortCriteria {
+enum ProjectSortCriteria implements SortCriteria {
   recentlyModified('Recent'),
   deadline('Deadline'),
   startDate('Start'),
   title('Title'),
   createdDate('Created');
 
+  @override
   final String label;
+
   const ProjectSortCriteria(this.label);
 }
 
@@ -17,6 +21,7 @@ enum ProjectSortOrder {
   descending('Descending');
 
   final String label;
+
   const ProjectSortOrder(this.label);
 }
 

@@ -3,14 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/common/widgets/sort_filter_chips.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';
+import '../providers/project_list_filter_state.dart';
 import '../providers/project_provider.dart';
 import '../widgets/create_project_modal_content.dart';
 import '../widgets/edit_project_modal_content.dart';
 import '../widgets/project_card.dart';
 import '../widgets/project_search_bar.dart';
-import '../widgets/project_sort_filter_chips.dart';
 import '../widgets/project_sort_order_selector.dart';
 import 'project_detail_screen.dart';
 
@@ -65,11 +66,12 @@ class ProjectListScreen extends ConsumerWidget {
                 ),
               ),
               Expanded(
-                child: ProjectSortFilterChips(
+                child: SortFilterChips<ProjectSortCriteria>(
                   selectedCriteria: filter.sortCriteria,
                   onChanged: (criteria) {
                     ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
                   },
+                  criteriaOptions: ProjectSortCriteria.values,
                 ),
               ),
             ],

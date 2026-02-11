@@ -1,14 +1,17 @@
+import '../../../../core/common/sort_criteria.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
 
 /// Sort criteria for the task list on the project detail screen.
-enum TaskSortCriteria {
+enum TaskSortCriteria implements SortCriteria {
   recentlyModified('Recent'),
   deadline('Deadline'),
   priority('Priority'),
   title('Title'),
   createdDate('Created');
 
+  @override
   final String label;
+
   const TaskSortCriteria(this.label);
 }
 
@@ -24,16 +27,11 @@ class TaskListFilterState {
     this.priorityFilter,
   });
 
-  TaskListFilterState copyWith({
-    String? searchQuery,
-    TaskSortCriteria? sortCriteria,
-    Object? priorityFilter = _unset,
-  }) {
+  TaskListFilterState copyWith({String? searchQuery, TaskSortCriteria? sortCriteria, Object? priorityFilter = _unset}) {
     return TaskListFilterState(
       searchQuery: searchQuery ?? this.searchQuery,
       sortCriteria: sortCriteria ?? this.sortCriteria,
-      priorityFilter:
-          priorityFilter == _unset ? this.priorityFilter : priorityFilter as TaskPriority?,
+      priorityFilter: priorityFilter == _unset ? this.priorityFilter : priorityFilter as TaskPriority?,
     );
   }
 }

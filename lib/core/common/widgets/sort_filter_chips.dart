@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-import '../../../../core/constants/app_constants.dart';
-import '../providers/project_list_filter_state.dart';
+import '../../../core/constants/app_constants.dart';
+import '../sort_criteria.dart';
 
-/// Widget displaying filter chips for sort criteria selection
-class ProjectSortFilterChips extends StatelessWidget {
-  final ProjectSortCriteria selectedCriteria;
-  final ValueChanged<ProjectSortCriteria> onChanged;
+class SortFilterChips<T extends SortCriteria> extends StatelessWidget {
+  final T selectedCriteria;
+  final ValueChanged<T> onChanged;
+  final List<T> criteriaOptions;
 
-  const ProjectSortFilterChips({super.key, required this.selectedCriteria, required this.onChanged});
+  const SortFilterChips({
+    super.key,
+    required this.selectedCriteria,
+    required this.onChanged,
+    required this.criteriaOptions,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +25,7 @@ class ProjectSortFilterChips extends StatelessWidget {
         child: Row(
           spacing: AppConstants.spacing.small,
           children: [
-            for (final criteria in ProjectSortCriteria.values)
+            for (final criteria in criteriaOptions)
               FButton(
                 style: selectedCriteria == criteria ? FButtonStyle.secondary() : FButtonStyle.outline(),
                 onPress: () => onChanged(criteria),

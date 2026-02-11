@@ -8,13 +8,14 @@ import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/common/widgets/sort_filter_chips.dart';
+import '../../../tasks/presentation/providers/task_filter_state.dart';
 import '../../domain/entities/project.dart';
 import '../providers/project_provider.dart';
 import '../widgets/edit_project_modal_content.dart';
 import '../widgets/project_detail_header.dart';
 import '../widgets/project_search_bar.dart';
 import '../widgets/task_card.dart';
-import '../widgets/task_sort_filter_chips.dart';
 
 class ProjectDetailScreen extends ConsumerStatefulWidget {
   final BigInt projectId;
@@ -106,9 +107,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 child: ProjectSearchBar(
                   focusNode: _searchFocusNode,
                   onChanged: (query) {
-                    ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(
-                      searchQuery: query,
-                    );
+                    ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(searchQuery: query);
                   },
                 ),
               ),
@@ -125,20 +124,21 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                       child: _PriorityFilterSelect(
                         selected: filter.priorityFilter,
                         onChanged: (priority) {
-                          ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(
-                            priorityFilter: priority,
-                          );
+                          ref
+                              .read(taskListFilterProvider(_projectIdString).notifier)
+                              .updateFilter(priorityFilter: priority);
                         },
                       ),
                     ),
                     Expanded(
-                      child: TaskSortFilterChips(
+                      child: SortFilterChips<TaskSortCriteria>(
                         selectedCriteria: filter.sortCriteria,
                         onChanged: (criteria) {
-                          ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(
-                            sortCriteria: criteria,
-                          );
+                          ref
+                              .read(taskListFilterProvider(_projectIdString).notifier)
+                              .updateFilter(sortCriteria: criteria);
                         },
+                        criteriaOptions: TaskSortCriteria.values,
                       ),
                     ),
                   ],
