@@ -1,9 +1,12 @@
-enum TaskPriority {
+import '../../../../core/common/widgets/filter_select.dart';
+
+enum TaskPriority implements FilterSelectable {
   critical,
   high,
   medium,
   low;
 
+  @override
   String get label {
     switch (this) {
       case TaskPriority.critical:

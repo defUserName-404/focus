@@ -8,4 +8,5 @@ Functional Requirements:
 7.    Each sessions will play some noise/ or no noise(customizable from the settings)
 8.    After session ends, the app should play a small notification with an alarm
 9.    While the session is active, the app should keep the session playing in the background and display a notification just like a music player
-this is a flutter app, I will choose isar, however if i want it online or choose sync, the architecture should allow it to upgrade. the code should work on contract based with interfaces, use riverpod for state management and get_it for dependency injection. i choose forui since that is very close to shadcn's design aesthetics and makes it very easy to customize. my app should be fully ready in 5-6 hours.  create a full implementaion plan and architecture so it is ready fully within 5-6 hours but keeps the architecture flexible for future improvements
+10.   In the home screen, a github like green dots on calendar of the month(with year switcher) should show up for the home screen, more the green, it would signify the amount of tasks done on that day.
+11. The home screen should contain some metrics dashboard

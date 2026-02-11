@@ -35,6 +35,7 @@ dependencies:
   # Utils
   intl: ^0.20.2
   uuid: ^4.5.2
+  forui_assets: ^0.17.1
 
 dev_dependencies:
   flutter_test:
@@ -48,3 +49,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-VariableFont.ttf
+          weight: 400
