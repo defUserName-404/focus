@@ -54,9 +54,7 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
         FilterSelect<TaskPriority>(
           selected: _priority,
           onChanged: (value) {
-            if (value != null) {
-              setState(() => _priority = value);
-            }
+            setState(() => _priority = value);
           },
           options: TaskPriority.values,
           hint: 'Priority',

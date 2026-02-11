@@ -4,15 +4,13 @@ import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/common/widgets/sort_filter_chips.dart';
+import '../../../../core/common/widgets/sort_order_selector.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../domain/entities/project.dart';
+import '../commands/project_commands.dart';
 import '../providers/project_list_filter_state.dart';
 import '../providers/project_provider.dart';
-import '../widgets/create_project_modal_content.dart';
-import '../widgets/edit_project_modal_content.dart';
 import '../widgets/project_card.dart';
 import '../widgets/project_search_bar.dart';
-import '../../../../core/common/widgets/sort_order_selector.dart';
 import 'project_detail_screen.dart';
 
 class ProjectListScreen extends ConsumerWidget {
@@ -32,19 +30,7 @@ class ProjectListScreen extends ConsumerWidget {
         padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(
           child: const Text('Create New Project'),
-          onPress: () async {
-            final newProject = await fu.showFSheet<Project>(
-              context: context,
-              side: fu.FLayout.btt,
-              builder: (context) => const CreateProjectModalContent(),
-            );
-
-            if (newProject != null && newProject.id != null) {
-              if (context.mounted) {
-                _openDetail(context, newProject.id!);
-              }
-            }
-          },
+          onPress: () => ProjectCommands.create(context, ref),
         ),
       ),
       child: Column(
@@ -90,48 +76,22 @@ class ProjectListScreen extends ConsumerWidget {
                         final project = projects[index];
                         return ProjectCard(
                           project: project,
-                          onTap: () => project.id != null ? _openDetail(context, project.id!) : null,
-                          onEdit: () => _editProject(context, project),
-                          onDelete: () => _confirmDelete(context, ref, project),
+                          onTap: () => project.id != null
+                              ? Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => ProjectDetailScreen(
+                                      projectId: project.id!,
+                                    ),
+                                  ),
+                                )
+                              : null,
+                          onEdit: () => ProjectCommands.edit(context, project),
+                          onDelete: () =>
+                              ProjectCommands.delete(context, ref, project),
                         );
                       },
                     ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _openDetail(BuildContext context, BigInt projectId) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: projectId)));
-  }
-
-  void _editProject(BuildContext context, Project project) {
-    fu.showFSheet(
-      context: context,
-      side: fu.FLayout.btt,
-      builder: (context) => EditProjectModalContent(project: project),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, WidgetRef ref, Project project) {
-    fu.showFDialog(
-      context: context,
-      builder: (ctx, _, _) => fu.FDialog(
-        title: const Text('Delete Project'),
-        body: Text('Are you sure you want to delete "${project.title}"? All tasks will also be deleted.'),
-        actions: [
-          fu.FButton(onPress: () => Navigator.pop(ctx), style: fu.FButtonStyle.ghost(), child: const Text('Cancel')),
-          fu.FButton(
-            onPress: () {
-              Navigator.pop(ctx);
-              if (project.id != null) {
-                ref.read(projectProvider.notifier).deleteProject(project.id!);
-              }
-            },
-            style: fu.FButtonStyle.destructive(),
-            child: const Text('Delete'),
           ),
         ],
       ),

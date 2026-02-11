@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
-import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
+import 'package:focus/features/tasks/presentation/providers/task_filter_state.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
-import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/common/widgets/action_menu_button.dart';
 import '../../../../core/common/widgets/filter_select.dart';
 import '../../../../core/common/widgets/sort_filter_chips.dart';
 import '../../../../core/common/widgets/sort_order_selector.dart';
-import '../../../tasks/presentation/providers/task_filter_state.dart';
-import '../../domain/entities/project.dart';
+import '../../../tasks/presentation/commands/task_commands.dart';
+import '../commands/project_commands.dart';
 import '../providers/project_provider.dart';
-import '../widgets/edit_project_modal_content.dart';
 import '../widgets/project_detail_header.dart';
 import '../widgets/project_search_bar.dart';
 import '../widgets/task_card.dart';
@@ -33,7 +32,6 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   final FocusNode _searchFocusNode = FocusNode();
 
   String get _projectIdString => widget.projectId.toString();
-
   BigInt get _projectId => widget.projectId;
 
   @override
@@ -68,20 +66,32 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               _searchFocusNode.requestFocus();
             },
           ),
-          _buildPopupMenuAction(context),
+          projectsAsync.maybeWhen(
+            data: (projects) {
+              final project = projects.firstWhere(
+                (p) => p.id == _projectId,
+                orElse: () => projects.first,
+              );
+              return ActionMenuButton(
+                onEdit: () => ProjectCommands.edit(context, project),
+                onDelete: () => ProjectCommands.delete(
+                  context,
+                  ref,
+                  project,
+                  onDeleted: () => Navigator.pop(context),
+                ),
+              );
+            },
+            orElse: () => const SizedBox.shrink(),
+          ),
         ],
       ),
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(
           child: const Text('Create New Task'),
-          onPress: () async {
-            await fu.showFSheet<Task>(
-              context: context,
-              side: fu.FLayout.btt,
-              builder: (context) => CreateTaskModalContent(projectId: _projectId, depth: 0),
-            );
-          },
+          onPress: () =>
+              TaskCommands.create(context, ref, projectId: _projectId),
         ),
       ),
       child: projectsAsync.when(
@@ -93,7 +103,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Project header (description, progress, meta) ──
+              // ── Project header ──
               allTasksAsync.when(
                 data: (allTasks) {
                   final rootTasks = allTasks.where((t) => t.parentTaskId == null).toList();
@@ -116,7 +126,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
 
               SizedBox(height: AppConstants.spacing.small),
 
-              // ── Priority filter (FSelect) + Sort chips ──
+              // ── Priority filter + Sort ──
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
                 child: Row(
@@ -135,9 +145,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                         allLabel: 'All',
                       ),
                     ),
-                    SizedBox(width: AppConstants.spacing.small), // Add some spacing
+                    SizedBox(width: AppConstants.spacing.small),
                     SizedBox(
-                      width: 120, // Give it a similar width to the priority filter
+                      width: 120,
                       child: SortOrderSelector<TaskSortOrder>(
                         selectedOrder: filter.sortOrder,
                         onChanged: (order) {
@@ -206,63 +216,6 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             ],
           );
         },
-      ),
-    );
-  }
-
-  // ── Three-dot popup for edit / delete ─────────────────────────────────────
-
-  Widget _buildPopupMenuAction(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: Icon(fu.FIcons.ellipsisVertical, size: 20, color: context.colors.foreground),
-      padding: EdgeInsets.zero,
-      position: PopupMenuPosition.under,
-      itemBuilder: (_) => [
-        const PopupMenuItem(value: 'edit', child: Text('Edit Project')),
-        const PopupMenuItem(
-          value: 'delete',
-          child: Text('Delete Project', style: TextStyle(color: Colors.red)),
-        ),
-      ],
-      onSelected: (value) {
-        if (value == 'edit') {
-          final asyncProjects = ref.read(projectListProvider);
-          asyncProjects.whenData((projects) {
-            final project = projects.firstWhere((p) => p.id == _projectId);
-            _editProject(context, project);
-          });
-        } else if (value == 'delete') {
-          _confirmDeleteProject(context);
-        }
-      },
-    );
-  }
-
-  void _editProject(BuildContext context, Project project) {
-    fu.showFSheet(
-      context: context,
-      side: fu.FLayout.btt,
-      builder: (context) => EditProjectModalContent(project: project),
-    );
-  }
-
-  void _confirmDeleteProject(BuildContext context) {
-    showAdaptiveDialog(
-      context: context,
-      builder: (ctx) => AlertDialog.adaptive(
-        title: const Text('Delete Project'),
-        content: const Text('Are you sure? All tasks will also be deleted.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              ref.read(projectProvider.notifier).deleteProject(_projectId);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
       ),
     );
   }

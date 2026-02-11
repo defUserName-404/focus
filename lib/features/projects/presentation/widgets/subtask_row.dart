@@ -3,6 +3,7 @@ import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/common/widgets/action_menu_button.dart';
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
 
@@ -66,22 +67,7 @@ class SubtaskRow extends StatelessWidget {
                     TaskPriorityBadge(priority: subtask.priority),
                     const SizedBox(width: 2),
                     if (onEdit != null || onDelete != null)
-                      PopupMenuButton<String>(
-                        icon: Icon(fu.FIcons.ellipsisVertical, size: 14, color: context.colors.mutedForeground),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        itemBuilder: (_) => [
-                          if (onEdit != null) const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          if (onDelete != null)
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Delete', style: TextStyle(color: Colors.red)),
-                            ),
-                        ],
-                        onSelected: (value) {
-                          if (value == 'edit') onEdit?.call();
-                          if (value == 'delete') onDelete?.call();
-                        },
+                      ActionMenuButton(onEdit: onEdit, onDelete: onDelete,
                       ),
                   ],
                 ),

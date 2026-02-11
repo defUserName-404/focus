@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
-import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
-import 'package:focus/features/tasks/presentation/widgets/edit_task_modal_content.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/common/widgets/action_menu_button.dart';
+import '../../../tasks/presentation/commands/task_commands.dart';
 import 'subtask_row.dart';
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
@@ -56,9 +56,20 @@ class _TaskCardState extends ConsumerState<TaskCard> {
               isOverdue: _isOverdue,
               onToggle: () => ref.read(taskProvider(widget.projectIdString).notifier).toggleTaskCompletion(task),
               onTap: widget.onTaskTap,
-              onAddSubtaskPressed: () => _openAddSubtaskModal(context),
-              onEditPressed: () => _editTask(context, task),
-              onDeletePressed: () => _confirmDeleteTask(context, task),
+              onAddSubtaskPressed: () => TaskCommands.create(
+                context,
+                ref,
+                projectId: widget.task.projectId,
+                parentTaskId: widget.task.id,
+                depth: widget.task.depth + 1,
+              ),
+              onEditPressed: () => TaskCommands.edit(context, task),
+              onDeletePressed: () => TaskCommands.delete(
+                context,
+                ref,
+                task,
+                widget.projectIdString,
+              ),
               onExpandToggle: subtasks.isNotEmpty ? () => setState(() => _subtasksExpanded = !_subtasksExpanded) : null,
             ),
 
@@ -75,8 +86,13 @@ class _TaskCardState extends ConsumerState<TaskCard> {
                           onToggle: () =>
                               ref.read(taskProvider(widget.projectIdString).notifier).toggleTaskCompletion(st),
                           onTap: widget.onSubtaskTap != null ? () => widget.onSubtaskTap!(st) : null,
-                          onEdit: () => _editTask(context, st),
-                          onDelete: () => _confirmDeleteTask(context, st),
+                          onEdit: () => TaskCommands.edit(context, st),
+                          onDelete: () => TaskCommands.delete(
+                            context,
+                            ref,
+                            st,
+                            widget.projectIdString,
+                          ),
                         ),
                       )
                       .toList(),
@@ -84,48 +100,6 @@ class _TaskCardState extends ConsumerState<TaskCard> {
               ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _openAddSubtaskModal(BuildContext context) {
-    fu.showFSheet(
-      context: context,
-      side: fu.FLayout.btt,
-      builder: (context) => CreateTaskModalContent(
-        projectId: widget.task.projectId,
-        parentTaskId: widget.task.id,
-        depth: widget.task.depth + 1,
-      ),
-    );
-  }
-
-  void _editTask(BuildContext context, Task task) {
-    fu.showFSheet(
-      context: context,
-      side: fu.FLayout.btt,
-      builder: (context) => EditTaskModalContent(task: task),
-    );
-  }
-
-  void _confirmDeleteTask(BuildContext context, Task task) {
-    showAdaptiveDialog(
-      context: context,
-      builder: (ctx) => AlertDialog.adaptive(
-        title: const Text('Delete Task'),
-        content: Text('Are you sure you want to delete "${task.title}"? Subtasks will also be deleted.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              if (task.id != null) {
-                ref.read(taskProvider(widget.projectIdString).notifier).deleteTask(task.id!, widget.projectIdString);
-              }
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
       ),
     );
   }
@@ -185,7 +159,10 @@ class _TaskMainRow extends StatelessWidget {
               const SizedBox(width: 4),
               TaskPriorityBadge(priority: task.priority),
               const SizedBox(width: 2),
-              _ActionPopup(onEdit: onEditPressed, onDelete: onDeletePressed),
+              ActionMenuButton(
+                onEdit: onEditPressed,
+                onDelete: onDeletePressed,
+              ),
             ],
           ),
 
@@ -227,35 +204,6 @@ class _TaskMainRow extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// ── Private: action popup (edit/delete) ─────────────────────────────────────
-
-class _ActionPopup extends StatelessWidget {
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  const _ActionPopup({required this.onEdit, required this.onDelete});
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: Icon(fu.FIcons.ellipsisVertical, size: 16, color: context.colors.mutedForeground),
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
-      itemBuilder: (_) => [
-        const PopupMenuItem(value: 'edit', child: Text('Edit')),
-        const PopupMenuItem(
-          value: 'delete',
-          child: Text('Delete', style: TextStyle(color: Colors.red)),
-        ),
-      ],
-      onSelected: (value) {
-        if (value == 'edit') onEdit();
-        if (value == 'delete') onDelete();
-      },
     );
   }
 }

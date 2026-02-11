@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
 import 'package:intl/intl.dart';
 
+import '../../../../core/common/widgets/action_menu_button.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';
@@ -34,18 +35,7 @@ class ProjectCard extends StatelessWidget {
                     Expanded(
                       child: Text(project.title, style: context.typography.base.copyWith(fontWeight: FontWeight.w600)),
                     ),
-                    if (onEdit != null)
-                      fu.FButton.icon(
-                        style: fu.FButtonStyle.ghost(),
-                        onPress: onEdit,
-                        child: Icon(fu.FIcons.pencil, size: 16, color: context.colors.mutedForeground),
-                      ),
-                    if (onDelete != null)
-                      fu.FButton.icon(
-                        style: fu.FButtonStyle.ghost(),
-                        onPress: onDelete,
-                        child: Icon(fu.FIcons.trash2, size: 16, color: context.colors.destructive),
-                      ),
+                    ActionMenuButton(onEdit: onEdit, onDelete: onDelete),
                   ],
                 ),
 
