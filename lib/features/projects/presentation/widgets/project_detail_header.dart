@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:focus/core/common/utils/widget_extensions.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
@@ -16,36 +17,23 @@ class ProjectDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final completed = tasks.where((t) => t.isCompleted).length;
-
     return Padding(
-      padding: EdgeInsets.fromLTRB(AppConstants.spacing.large, 0, AppConstants.spacing.large, 0),
+      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Description
-          if (project.description != null && project.description!.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              project.description!,
-              style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.5),
+          if (project.description != null && project.description!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                project.description!,
+                style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.5),
+              ),
             ),
-          ],
-
-          SizedBox(height: AppConstants.spacing.large),
-
-          // Progress bar
-          ProjectProgressBar(completed: completed, total: tasks.length),
-
-          SizedBox(height: AppConstants.spacing.regular),
-
-          // Collapsible metadata chips
+          ProjectProgressBar(projectId: project.id!.toString()),
           ProjectMetaSection(project: project),
-
-          // Divider
           fu.FDivider(),
-          SizedBox(height: AppConstants.spacing.small),
-        ],
+        ].withSpacing(AppConstants.spacing.regular),
       ),
     );
   }

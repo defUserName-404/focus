@@ -145,7 +145,7 @@ final class ProjectByIdProvider
   }
 }
 
-String _$projectByIdHash() => r'1acaedd1e91daeb216c501c955c23fe2f1983092';
+String _$projectByIdHash() => r'c8a6a11e46ec6c3cf99c4c58742f2ea20a6dbfc3';
 
 final class ProjectByIdFamily extends $Family
     with $FunctionalFamilyOverride<Stream<Project?>, String> {
@@ -216,6 +216,81 @@ abstract class _$ProjectListFilter extends $Notifier<ProjectListFilterState> {
             >;
     element.handleCreate(ref, build);
   }
+}
+
+@ProviderFor(projectProgress)
+final projectProgressProvider = ProjectProgressFamily._();
+
+final class ProjectProgressProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<ProjectProgress>,
+          ProjectProgress,
+          FutureOr<ProjectProgress>
+        >
+    with $FutureModifier<ProjectProgress>, $FutureProvider<ProjectProgress> {
+  ProjectProgressProvider._({
+    required ProjectProgressFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'projectProgressProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$projectProgressHash();
+
+  @override
+  String toString() {
+    return r'projectProgressProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<ProjectProgress> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<ProjectProgress> create(Ref ref) {
+    final argument = this.argument as String;
+    return projectProgress(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProjectProgressProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$projectProgressHash() => r'41c17722da5bbf58a576031b29fc81638b6617f6';
+
+final class ProjectProgressFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<ProjectProgress>, String> {
+  ProjectProgressFamily._()
+    : super(
+        retry: null,
+        name: r'projectProgressProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
+
+  ProjectProgressProvider call(String projectId) =>
+      ProjectProgressProvider._(argument: projectId, from: this);
+
+  @override
+  String toString() => r'projectProgressProvider';
 }
 
 @ProviderFor(ProjectNotifier)

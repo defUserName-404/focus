@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:focus/core/constants/app_constants.dart';
 import 'package:forui/forui.dart' as fu;
 
 class InlineAddSubtask extends StatefulWidget {
@@ -36,6 +37,8 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
 
   @override
   Widget build(BuildContext context) {
+    const double leadingWidth = 32.0;
+
     return Container(
       decoration: BoxDecoration(
         color: context.colors.background,
@@ -45,45 +48,74 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Matching indent line
-            SizedBox(
-              width: 40,
-              child: Center(child: Container(width: 1, color: context.colors.border)),
+            // Matching indent line from SubtaskRow
+            Padding(
+              padding: const EdgeInsets.only(left: 14, right: 10),
+              child: Container(
+                width: 1.5,
+                decoration: BoxDecoration(
+                  color: context.colors.border,
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.border.radius.small,
+                  ),
+                ),
+              ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                padding: EdgeInsets.symmetric(
+                  vertical: AppConstants.spacing.small,
+                ),
                 child: Row(
                   children: [
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                          color: context.colors.muted,
-                          border: Border.all(color: context.colors.border),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Material(
-                          child: TextField(
-                            controller: _controller,
-                            focusNode: _focusNode,
-                            onSubmitted: (_) => _submit(),
-                            style: context.typography.sm.copyWith(color: context.colors.foreground),
-                            decoration: InputDecoration(
-                              hintText: 'Subtask title…',
-                              hintStyle: context.typography.sm.copyWith(color: context.colors.mutedForeground),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              border: InputBorder.none,
+                        padding: const EdgeInsets.only(left: leadingWidth),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: context.colors.muted,
+                            border: Border.all(color: context.colors.border),
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.border.radius.regular,
+                            ),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: TextField(
+                              controller: _controller,
+                              focusNode: _focusNode,
+                              onSubmitted: (_) => _submit(),
+                              style: context.typography.sm.copyWith(
+                                color: context.colors.foreground,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Subtask title…',
+                                hintStyle: context.typography.sm.copyWith(
+                                  color: context.colors.mutedForeground,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: AppConstants.spacing.regular,
+                                  vertical: AppConstants.spacing.small,
+                                ),
+                                border: InputBorder.none,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: AppConstants.spacing.small),
                     GestureDetector(
                       onTap: widget.onCancel,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Icon(fu.FIcons.x, size: 18, color: context.colors.mutedForeground),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppConstants.spacing.regular,
+                        ),
+                        child: Icon(
+                          fu.FIcons.x,
+                          size: AppConstants.size.icon.regular,
+                          color: context.colors.mutedForeground,
+                        ),
                       ),
                     ),
                   ],

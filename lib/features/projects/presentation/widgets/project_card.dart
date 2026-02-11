@@ -44,47 +44,44 @@ class ProjectCard extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 2),
                     child: Icon(
                       fu.FIcons.calendarClock,
-                      size: 12,
+                      size: AppConstants.size.icon.small,
                       color: context.colors.mutedForeground,
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Text('Start: ${DateTimeFormatter.formatDate(project.startDate!)}'),
+                  Text(project.startDate!.toShortDateString()),
                 ],
               ),
             ),
           fu.FBadge(
-            style: _isOverdue(project) ? fu.FBadgeStyle.destructive() : fu.FBadgeStyle.secondary(),
+            style: project.deadline?.isOverdue ?? false
+                ? fu.FBadgeStyle.destructive()
+                : fu.FBadgeStyle.secondary(),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
                   padding: const EdgeInsets.only(bottom: 2),
-                  child: Icon(fu.FIcons.calendarCheck, size: 12),
+                  child: Icon(
+                    fu.FIcons.calendarCheck,
+                    size: AppConstants.size.icon.small,
+                  ),
                 ),
                 const SizedBox(width: 4),
-                Text(_formatDeadline(project)),
+                Text(project.deadline?.toRelativeDueString() ?? 'No deadline'),
               ],
             ),
           ),
-          fu.FButton.icon(onPress: onTap, child: Icon(fu.FIcons.arrowRight)),
+          fu.FButton.icon(
+            onPress: onTap,
+            child: Icon(
+              fu.FIcons.arrowRight,
+              size: AppConstants.size.icon.regular,
+            ),
+          ),
         ],
       ),
     );
-  }
-
-  String _formatDeadline(Project p) {
-    if (p.deadline == null) return 'No deadline';
-    final days = p.deadline!.difference(DateTime.now()).inDays;
-    if (days < 0) return 'Overdue ${days.abs()}d';
-    if (days == 0) return 'Due today';
-    if (days == 1) return 'Due tomorrow';
-    return 'Due in ${days}d';
-  }
-
-  bool _isOverdue(Project p) {
-    if (p.deadline == null) return false;
-    return p.deadline!.isBefore(DateTime.now());
   }
 }

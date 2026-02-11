@@ -1,9 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:flutter/foundation.dart';
 import '../../../../core/di/injection.dart';
+import '../../../tasks/presentation/providers/task_provider.dart';
 import '../../domain/entities/project.dart';
 import '../../domain/entities/project_extensions.dart';
+import '../../domain/entities/project_progress.dart';
 import '../../domain/repositories/i_project_repository.dart';
 import 'project_list_filter_state.dart';
 
@@ -60,6 +63,37 @@ final filteredProjectListProvider = StreamProvider<List<Project>>((ref) {
     sortOrder: filter.sortOrder,
   );
 });
+
+@Riverpod(keepAlive: true)
+Future<ProjectProgress> projectProgress(Ref ref, String projectId) async {
+  final tasksAsync = ref.watch(tasksByProjectProvider(projectId));
+
+  return tasksAsync.when(
+    data: (tasks) async {
+      if (tasks.isEmpty) return ProjectProgress.empty();
+      return compute(_calculateProgress, tasks);
+    },
+    loading: () => ProjectProgress.empty(),
+    error: (_, __) => ProjectProgress.empty(),
+  );
+}
+
+ProjectProgress _calculateProgress(List<dynamic> tasks) {
+  // Use dynamic to avoid type issues with compute if it's strict about list types
+  // but better to use the specific type if possible.
+  // Drift entities are usually fine.
+  final total = tasks.length;
+  final completed = tasks
+      .where((t) => (t as dynamic).isCompleted == true)
+      .length;
+  final progress = total > 0 ? completed / total : 0.0;
+  final percent = (progress * 100).round();
+  return ProjectProgress(
+    progress: progress,
+    percent: percent,
+    label: '$completed of $total tasks',
+  );
+}
 
 @Riverpod(keepAlive: true)
 class ProjectNotifier extends _$ProjectNotifier {

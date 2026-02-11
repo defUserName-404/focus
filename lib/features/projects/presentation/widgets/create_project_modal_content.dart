@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
+import '../../../../core/common/utils/widget_extensions.dart';
 import '../../../../core/common/widgets/base_modal_form.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../providers/project_provider.dart';
@@ -34,30 +35,27 @@ class _CreateProjectModalContentState extends ConsumerState<CreateProjectModalCo
         FTextField(
           control: FTextFieldControl.managed(controller: _titleController),
           hint: 'Project Title',
-          label: Text('Title'),
+          label: const Text('Title'),
         ),
-        SizedBox(height: AppConstants.spacing.regular),
         FTextField(
           control: FTextFieldControl.managed(controller: _descriptionController),
           hint: 'Project Description (Optional)',
-          label: Text('Description'),
+          label: const Text('Description'),
           maxLines: 3,
         ),
-        SizedBox(height: AppConstants.spacing.regular),
         FDateField.calendar(
-          label: Text('Start Date'),
+          label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
           control: FDateFieldControl.managed(onChange: (date) => _startDate = date),
           clearable: true,
         ),
-        SizedBox(height: AppConstants.spacing.regular),
         FDateField.calendar(
-          label: Text('Deadline'),
+          label: const Text('Deadline'),
           hint: 'Select Deadline (Optional)',
           control: FDateFieldControl.managed(onChange: (date) => _deadline = date),
           clearable: true,
         ),
-      ],
+      ].withSpacing(AppConstants.spacing.regular),
       onCancel: () => Navigator.pop(context),
       onSubmit: () async {
         if (_titleController.text.isNotEmpty) {
