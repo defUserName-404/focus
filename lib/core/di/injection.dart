@@ -1,5 +1,7 @@
 import 'package:get_it/get_it.dart';
 
+import '../../features/focus/data/repositories/focus_session_repository_impl.dart';
+import '../../features/focus/domain/repositories/i_focus_session_repository.dart';
 import '../../features/projects/data/datasources/project_local_datasource.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/i_project_repository.dart';
@@ -21,4 +23,7 @@ Future<void> setupDependencyInjection() async {
   // Repositories
   getIt.registerLazySingleton<IProjectRepository>(() => ProjectRepositoryImpl(getIt<IProjectLocalDataSource>()));
   getIt.registerLazySingleton<ITaskRepository>(() => TaskRepositoryImpl(getIt<ITaskLocalDataSource>()));
+  getIt.registerLazySingleton<IFocusSessionRepository>(
+    () => FocusSessionRepositoryImpl(getIt<AppDatabase>()),
+  );
 }

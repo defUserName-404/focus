@@ -21,6 +21,14 @@ Stream<List<Task>> tasksByProject(Ref ref, String projectId) {
   return repository.watchTasksByProjectId(BigInt.parse(projectId));
 }
 
+@Riverpod(keepAlive: true)
+Future<Task> taskById(Ref ref, String taskId) async {
+  final repository = ref.watch(taskRepositoryProvider);
+  final task = await repository.getTaskById(BigInt.parse(taskId));
+  if (task == null) throw Exception('Task not found: $taskId');
+  return task;
+}
+
 // ── Filter state provider (per-project family) ─────────────────────────────
 @Riverpod(keepAlive: true)
 class TaskListFilter extends _$TaskListFilter {

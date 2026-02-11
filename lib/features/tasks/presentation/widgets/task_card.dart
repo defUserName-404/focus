@@ -4,6 +4,8 @@ import 'package:focus/core/common/utils/date_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/common/presentation/providers/expansion_provider.dart';
+import 'package:focus/features/focus/presentation/providers/focus_session_provider.dart';
+import 'package:focus/features/focus/presentation/screens/focus_session_screen.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:forui/forui.dart' as fu;
@@ -40,7 +42,20 @@ class TaskCard extends ConsumerWidget {
     final isOverdue = task.endDate?.isOverdue ?? false;
 
     return AppCard(
-      onTap: onTaskTap,
+      onTap: () async {
+        await ref
+            .read(focusTimerProvider.notifier)
+            .startNewSession(
+              taskId: task.id!,
+              focusMinutes: 25,
+              breakMinutes: 5,
+            );
+        if (context.mounted) {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const FocusSessionScreen()));
+        }
+      },
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
@@ -53,6 +68,12 @@ class TaskCard extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           TaskPriorityBadge(priority: task.priority),
+          SizedBox(width: AppConstants.spacing.extraSmall),
+          Icon(
+            fu.FIcons.timer,
+            size: AppConstants.size.icon.small,
+            color: context.colors.mutedForeground.withOpacity(0.5),
+          ),
           SizedBox(width: AppConstants.spacing.extraSmall),
           ActionMenuButton(
             onEdit: () => TaskCommands.edit(context, task),
@@ -105,9 +126,23 @@ class TaskCard extends ConsumerWidget {
                     onToggle: () => ref
                         .read(taskProvider(projectIdString).notifier)
                         .toggleTaskCompletion(st),
-                    onTap: onSubtaskTap != null
-                        ? () => onSubtaskTap!(st)
-                        : null,
+                    onTap: () async {
+                      await ref
+                          .read(focusTimerProvider.notifier)
+                          .startNewSession(
+                            taskId: st.id!,
+                            focusMinutes: 25,
+                            breakMinutes: 5,
+                          );
+                      if (context.mounted) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const FocusSessionScreen(),
+                          ),
+                        );
+                      }
+                      if (onSubtaskTap != null) onSubtaskTap!(st);
+                    },
                     onEdit: () => TaskCommands.edit(context, st),
                     onDelete: () =>
                         TaskCommands.delete(context, ref, st, projectIdString),
