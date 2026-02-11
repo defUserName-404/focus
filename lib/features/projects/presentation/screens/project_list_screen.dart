@@ -12,7 +12,7 @@ import '../widgets/create_project_modal_content.dart';
 import '../widgets/edit_project_modal_content.dart';
 import '../widgets/project_card.dart';
 import '../widgets/project_search_bar.dart';
-import '../widgets/project_sort_order_selector.dart';
+import '../../../../core/common/widgets/sort_order_selector.dart';
 import 'project_detail_screen.dart';
 
 class ProjectListScreen extends ConsumerWidget {
@@ -58,11 +58,12 @@ class ProjectListScreen extends ConsumerWidget {
             children: [
               SizedBox(
                 width: 120.0,
-                child: ProjectSortOrderSelector(
+                child: SortOrderSelector<ProjectSortOrder>(
                   selectedOrder: filter.sortOrder,
                   onChanged: (order) {
                     ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
                   },
+                  orderOptions: ProjectSortOrder.values,
                 ),
               ),
               Expanded(

@@ -1,4 +1,5 @@
 import '../../../../core/common/sort_criteria.dart';
+import '../../../../core/common/sort_order.dart';
 
 /// Sort criteria for the project list.
 enum ProjectSortCriteria implements SortCriteria {
@@ -15,11 +16,12 @@ enum ProjectSortCriteria implements SortCriteria {
 }
 
 /// Sort order for the project list.
-enum ProjectSortOrder {
+enum ProjectSortOrder implements SortOrder {
   none('None'),
   ascending('Ascending'),
   descending('Descending');
 
+  @override
   final String label;
 
   const ProjectSortOrder(this.label);

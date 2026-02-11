@@ -29,8 +29,18 @@ class TaskListFilter extends _$TaskListFilter {
     return const TaskListFilterState();
   }
 
-  void updateFilter({String? searchQuery, TaskSortCriteria? sortCriteria, TaskPriority? priorityFilter}) {
-    state = state.copyWith(searchQuery: searchQuery, sortCriteria: sortCriteria, priorityFilter: priorityFilter);
+  void updateFilter({
+    String? searchQuery,
+    TaskSortCriteria? sortCriteria,
+    TaskSortOrder? sortOrder,
+    TaskPriority? priorityFilter,
+  }) {
+    state = state.copyWith(
+      searchQuery: searchQuery,
+      sortCriteria: sortCriteria,
+      sortOrder: sortOrder,
+      priorityFilter: priorityFilter,
+    );
   }
 }
 
@@ -44,6 +54,7 @@ final filteredTasksProvider = StreamProvider.family<List<Task>, String>((ref, pr
     projectId: BigInt.parse(projectId),
     searchQuery: filter.searchQuery,
     sortCriteria: filter.sortCriteria,
+    sortOrder: filter.sortOrder,
     priorityFilter: filter.priorityFilter,
   );
 });

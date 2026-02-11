@@ -57,6 +57,7 @@ class TaskRepositoryImpl implements ITaskRepository {
     required BigInt projectId,
     String searchQuery = '',
     TaskSortCriteria sortCriteria = TaskSortCriteria.recentlyModified,
+    TaskSortOrder sortOrder = TaskSortOrder.none,
     TaskPriority? priorityFilter,
   }) {
     return _local

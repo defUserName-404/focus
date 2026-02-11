@@ -8,7 +8,9 @@ import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/common/widgets/filter_select.dart';
 import '../../../../core/common/widgets/sort_filter_chips.dart';
+import '../../../../core/common/widgets/sort_order_selector.dart';
 import '../../../tasks/presentation/providers/task_filter_state.dart';
 import '../../domain/entities/project.dart';
 import '../providers/project_provider.dart';
@@ -121,13 +123,27 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                   children: [
                     SizedBox(
                       width: 120,
-                      child: _PriorityFilterSelect(
+                      child: FilterSelect<TaskPriority?>(
                         selected: filter.priorityFilter,
                         onChanged: (priority) {
                           ref
                               .read(taskListFilterProvider(_projectIdString).notifier)
                               .updateFilter(priorityFilter: priority);
                         },
+                        options: TaskPriority.values,
+                        hint: 'Priority',
+                        allLabel: 'All',
+                      ),
+                    ),
+                    SizedBox(width: AppConstants.spacing.small), // Add some spacing
+                    SizedBox(
+                      width: 120, // Give it a similar width to the priority filter
+                      child: SortOrderSelector<TaskSortOrder>(
+                        selectedOrder: filter.sortOrder,
+                        onChanged: (order) {
+                          ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(sortOrder: order);
+                        },
+                        orderOptions: TaskSortOrder.values,
                       ),
                     ),
                     Expanded(
@@ -248,26 +264,6 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-// ── Priority filter FSelect widget ──────────────────────────────────────────
-
-class _PriorityFilterSelect extends StatelessWidget {
-  final TaskPriority? selected;
-  final ValueChanged<TaskPriority?> onChanged;
-
-  const _PriorityFilterSelect({required this.selected, required this.onChanged});
-
-  static final Map<String, TaskPriority?> _items = {'All': null, for (final p in TaskPriority.values) p.label: p};
-
-  @override
-  Widget build(BuildContext context) {
-    return fu.FSelect<TaskPriority?>(
-      items: _items,
-      hint: 'Priority',
-      control: fu.FSelectControl.managed(initial: selected, onChange: (value) => onChanged(value)),
     );
   }
 }
