@@ -38,8 +38,16 @@ class ProjectCard extends StatelessWidget {
               style: fu.FBadgeStyle.outline(),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(fu.FIcons.calendarClock, size: 12, color: context.colors.mutedForeground),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Icon(
+                      fu.FIcons.calendarClock,
+                      size: 12,
+                      color: context.colors.mutedForeground,
+                    ),
+                  ),
                   const SizedBox(width: 4),
                   Text('Start: ${DateTimeFormatter.formatDate(project.startDate!)}'),
                 ],
@@ -49,8 +57,12 @@ class ProjectCard extends StatelessWidget {
             style: _isOverdue(project) ? fu.FBadgeStyle.destructive() : fu.FBadgeStyle.secondary(),
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(fu.FIcons.calendarCheck, size: 12),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Icon(fu.FIcons.calendarCheck, size: 12),
+                ),
                 const SizedBox(width: 4),
                 Text(_formatDeadline(project)),
               ],

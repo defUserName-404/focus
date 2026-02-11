@@ -48,9 +48,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
-        onChange: (_) => ref
-            .read(taskProvider(widget.projectIdString).notifier)
-            .toggleTaskCompletion(task),
+        onChange: (_) => ref.read(taskProvider(widget.projectIdString).notifier).toggleTaskCompletion(task),
       ),
       title: Text(task.title),
       trailing: Row(
@@ -60,8 +58,7 @@ class _TaskCardState extends ConsumerState<TaskCard> {
           const SizedBox(width: 2),
           ActionMenuButton(
             onEdit: () => TaskCommands.edit(context, task),
-            onDelete: () =>
-                TaskCommands.delete(context, ref, task, widget.projectIdString),
+            onDelete: () => TaskCommands.delete(context, ref, task, widget.projectIdString),
           ),
         ],
       ),
@@ -70,17 +67,10 @@ class _TaskCardState extends ConsumerState<TaskCard> {
               task.description!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: context.typography.sm.copyWith(
-                color: context.colors.mutedForeground,
-                height: 1.4,
-              ),
+              style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.4),
             )
           : null,
-      content: TaskDateRow(
-        startDate: task.startDate,
-        deadline: task.endDate,
-        isOverdue: _isOverdue,
-      ),
+      content: TaskDateRow(startDate: task.startDate, deadline: task.endDate, isOverdue: _isOverdue),
       footerActions: [
         _AddSubtaskChip(
           onPressed: () => TaskCommands.create(
@@ -91,46 +81,29 @@ class _TaskCardState extends ConsumerState<TaskCard> {
             depth: widget.task.depth + 1,
           ),
         ),
+        const SizedBox(width: 8),
         if (subtasks.isNotEmpty)
           _SubtaskCountChip(
             count: subtasks.length,
             expanded: _subtasksExpanded,
-            onToggle: () =>
-                setState(() => _subtasksExpanded = !_subtasksExpanded),
+            onToggle: () => setState(() => _subtasksExpanded = !_subtasksExpanded),
           ),
       ],
       children: [
         if (_subtasksExpanded && subtasks.isNotEmpty)
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: context.colors.muted.withOpacity(0.3),
-              border: Border(
-                top: BorderSide(color: context.colors.border, width: 0.5),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: subtasks
-                  .map(
-                    (st) => SubtaskRow(
-                      subtask: st,
-                      onToggle: () => ref
-                          .read(taskProvider(widget.projectIdString).notifier)
-                          .toggleTaskCompletion(st),
-                      onTap: widget.onSubtaskTap != null
-                          ? () => widget.onSubtaskTap!(st)
-                          : null,
-                      onEdit: () => TaskCommands.edit(context, st),
-                      onDelete: () => TaskCommands.delete(
-                        context,
-                        ref,
-                        st,
-                        widget.projectIdString,
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: subtasks
+                .map(
+                  (st) => SubtaskRow(
+                    subtask: st,
+                    onToggle: () => ref.read(taskProvider(widget.projectIdString).notifier).toggleTaskCompletion(st),
+                    onTap: widget.onSubtaskTap != null ? () => widget.onSubtaskTap!(st) : null,
+                    onEdit: () => TaskCommands.edit(context, st),
+                    onDelete: () => TaskCommands.delete(context, ref, st, widget.projectIdString),
+                  ),
+                )
+                .toList(),
           ),
       ],
     );
@@ -146,14 +119,11 @@ class _AddSubtaskChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 32, // Increased height to prevent cropping
-      child: fu.FButton(
-        style: fu.FButtonStyle.outline(),
-        onPress: onPressed,
-        prefix: Icon(fu.FIcons.plus, size: 14),
-        child: Text('subtask', style: context.typography.xs),
-      ),
+    return fu.FButton(
+      style: fu.FButtonStyle.outline(),
+      onPress: onPressed,
+      prefix: Icon(fu.FIcons.plus, size: 14),
+      child: Text('subtask', style: context.typography.xs),
     );
   }
 }
@@ -169,17 +139,11 @@ class _SubtaskCountChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 32, // Increased height to prevent cropping
-      child: fu.FButton(
-        style: fu.FButtonStyle.outline(),
-        onPress: onToggle,
-        suffix: Icon(
-          expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight,
-          size: 14,
-        ),
-        child: Text('$count', style: context.typography.xs),
-      ),
+    return fu.FButton(
+      style: fu.FButtonStyle.outline(),
+      onPress: onToggle,
+      suffix: Icon(expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight, size: 14),
+      child: Text('$count', style: context.typography.xs),
     );
   }
 }

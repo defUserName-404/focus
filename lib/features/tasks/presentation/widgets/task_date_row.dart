@@ -26,7 +26,14 @@ class TaskDateRow extends StatelessWidget {
             : _fmt(startDate!);
 
     children.addAll([
-      Icon(fu.FIcons.calendar, size: 12, color: context.colors.mutedForeground),
+      Padding(
+        padding: const EdgeInsets.only(bottom: 2), // Vertical lift
+        child: Icon(
+          fu.FIcons.calendar,
+          size: 12,
+          color: context.colors.mutedForeground,
+        ),
+      ),
       const SizedBox(width: 4),
       Text(dateText, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
     ]);
@@ -39,7 +46,14 @@ class TaskDateRow extends StatelessWidget {
       if (isOverdue || days < 0) {
         children.addAll([
           const SizedBox(width: 6),
-          Icon(fu.FIcons.triangleAlert, color: context.colors.destructive, size: 12),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Icon(
+              fu.FIcons.triangleAlert,
+              color: context.colors.destructive,
+              size: 12,
+            ),
+          ),
           const SizedBox(width: 3),
           Text(
             'Overdue ${days.abs()}d',
@@ -49,7 +63,10 @@ class TaskDateRow extends StatelessWidget {
       } else if (days <= 3) {
         children.addAll([
           const SizedBox(width: 6),
-          Icon(fu.FIcons.clock, color: Colors.orange, size: 12),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Icon(fu.FIcons.clock, color: Colors.orange, size: 12),
+          ),
           const SizedBox(width: 3),
           Text(
             days == 0
@@ -63,6 +80,9 @@ class TaskDateRow extends StatelessWidget {
       }
     }
 
-    return Row(children: children);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center, // Vertical alignment fix
+      children: children,
+    );
   }
 }

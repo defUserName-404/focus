@@ -29,50 +29,86 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const double leadingWidth = 32.0;
+
     return GestureDetector(
       onTap: onTap,
       child: fu.FCard(
         child: Column(
-          mainAxisSize: .min,
-          crossAxisAlignment: .start,
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: .center,
-              mainAxisSize: .max,
-              spacing: AppConstants.spacing.small,
-              children: [
-                if (leading != null) ...[leading!],
-                Expanded(
-                  child: DefaultTextStyle(
-                    style: context.typography.base.copyWith(
-                      fontWeight: isCompleted ? FontWeight.w400 : FontWeight.w600,
-                      color: isCompleted ? context.colors.mutedForeground : context.colors.foreground,
-                      decoration: isCompleted ? TextDecoration.lineThrough : null,
-                    ),
-                    maxLines: 1,
-                    overflow: .ellipsis,
-                    child: title,
+            Padding(
+              padding: EdgeInsets.all(AppConstants.spacing.regular),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // --- Header Row: Checkbox + Title + Trailing ---
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (leading != null)
+                        SizedBox(width: leadingWidth, child: leading!),
+                      Expanded(
+                        child: DefaultTextStyle(
+                          style: context.typography.base.copyWith(
+                            fontWeight: isCompleted
+                                ? FontWeight.w400
+                                : FontWeight.w600,
+                            color: isCompleted
+                                ? context.colors.mutedForeground
+                                : context.colors.foreground,
+                            decoration: isCompleted
+                                ? TextDecoration.lineThrough
+                                : null,
+                          ),
+                          child: title,
+                        ),
+                      ),
+                      if (trailing != null) ...[
+                        const SizedBox(width: 8),
+                        trailing!,
+                      ],
+                    ],
                   ),
-                ),
-                if (trailing != null) ...[trailing!],
-              ],
-            ),
 
-            // Subtitle (e.g., Description)
-            if (subtitle != null) ...[
-              const SizedBox(height: 4),
-              Padding(
-                padding: EdgeInsets.only(left: leading != null ? 34 : 0),
-                child: subtitle!,
+                  // --- Body Content Indented below Title ---
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: leading != null ? leadingWidth : 0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Subtitle / Description
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 2), // Reduced gap
+                          subtitle!,
+                        ],
+
+                        // Content (e.g., Date Row)
+                        if (content != null) ...[
+                          const SizedBox(height: 6), // Reduced gap
+                          content!,
+                        ],
+
+                        // Footer Actions row
+                        if (footerActions != null &&
+                            footerActions!.isNotEmpty) ...[
+                          const SizedBox(height: 10), // Reduced gap
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: footerActions!,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-
-            // Main Content (e.g., Date Row)
-            if (content != null) ...[content!],
-            // Footer Actions (e.g., Chips)
-            if (footerActions != null && footerActions!.isNotEmpty) ...[
-              Row(mainAxisAlignment: .end, children: [...footerActions!]),
-            ],
+            ),
             if (children != null) ...children!,
           ],
         ),
