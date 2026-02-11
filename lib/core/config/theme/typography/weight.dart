@@ -4,8 +4,8 @@ part of '../app_theme.dart';
 ///
 /// Standard font weight values from 100 (thin) to 900 (black).
 /// Used with [FontVariation] for dynamic weight control.
-final class _ThemeWeight {
-  const _ThemeWeight();
+final class _AppTypographyWeight {
+  const _AppTypographyWeight();
 
   final thin = 100.0;
   final extralight = 200.0;

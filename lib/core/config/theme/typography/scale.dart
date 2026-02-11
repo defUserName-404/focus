@@ -1,10 +1,10 @@
 part of '../app_theme.dart';
 
 /// Typography scale constants based on Tailwind CSS
-/// 
+///
 /// Provides font sizes (xs → xl6) and line heights for consistent typography.
-final class _ThemeScale {
-  const _ThemeScale();
+final class _AppTypographyScale {
+  const _AppTypographyScale();
 
   // Font sizes (pixels)
   final double xs = 12;

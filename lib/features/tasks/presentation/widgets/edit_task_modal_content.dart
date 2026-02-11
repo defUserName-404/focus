@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/constants/layout_constants.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_extensions.dart';
 import '../../domain/entities/task_priority.dart';
@@ -53,27 +53,27 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
     return Container(
       color: Theme.of(context).canvasColor,
       child: Padding(
-        padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+        padding: EdgeInsets.all(AppConstants.spacing.regular),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text('Edit Task', textAlign: TextAlign.center),
-              SizedBox(height: LayoutConstants.spacing.paddingLarge),
+              SizedBox(height: AppConstants.spacing.large),
               FTextField(
                 control: FTextFieldControl.managed(controller: _titleController),
                 hint: 'Task Title',
                 label: const Text('Title'),
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FTextField(
                 control: FTextFieldControl.managed(controller: _descriptionController),
                 hint: 'Task Description (Optional)',
                 label: const Text('Description'),
                 maxLines: 3,
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FSelect<TaskPriority>(
                 control: FSelectControl.managed(
                   initial: _priority,
@@ -84,27 +84,21 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
                 items: _priorityItems,
                 label: const Text('Priority'),
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FDateField.calendar(
                 label: const Text('Start Date'),
                 hint: _startDate != null ? _fmtDate(_startDate) : 'Select Start Date (Optional)',
-                control: FDateFieldControl.managed(
-                  initial: _startDate,
-                  onChange: (date) => _startDate = date,
-                ),
+                control: FDateFieldControl.managed(initial: _startDate, onChange: (date) => _startDate = date),
                 clearable: true,
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FDateField.calendar(
                 label: const Text('End Date'),
                 hint: _endDate != null ? _fmtDate(_endDate) : 'Select End Date (Optional)',
-                control: FDateFieldControl.managed(
-                  initial: _endDate,
-                  onChange: (date) => _endDate = date,
-                ),
+                control: FDateFieldControl.managed(initial: _endDate, onChange: (date) => _endDate = date),
                 clearable: true,
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingLarge),
+              SizedBox(height: AppConstants.spacing.large),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -113,10 +107,7 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
                     style: FButtonStyle.ghost(),
                     child: const Text('Cancel'),
                   ),
-                  FButton(
-                    onPress: _submit,
-                    child: const Text('Save'),
-                  ),
+                  FButton(onPress: _submit, child: const Text('Save')),
                 ],
               ),
             ],

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/constants/layout_constants.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';
 import '../../domain/entities/project_extensions.dart';
 import '../providers/project_provider.dart';
@@ -46,27 +46,27 @@ class _EditProjectModalContentState extends ConsumerState<EditProjectModalConten
     return Container(
       color: Theme.of(context).canvasColor,
       child: Padding(
-        padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+        padding: EdgeInsets.all(AppConstants.spacing.regular),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text('Edit Project', textAlign: TextAlign.center),
-              SizedBox(height: LayoutConstants.spacing.paddingLarge),
+              SizedBox(height: AppConstants.spacing.large),
               FTextField(
                 control: FTextFieldControl.managed(controller: _titleController),
                 hint: 'Project Title',
                 label: const Text('Title'),
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FTextField(
                 control: FTextFieldControl.managed(controller: _descriptionController),
                 hint: 'Project Description (Optional)',
                 label: const Text('Description'),
                 maxLines: 3,
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FDateField.calendar(
                 label: const Text('Start Date'),
                 hint: _startDate != null ? _fmtDate(_startDate) : 'Select Start Date (Optional)',
@@ -76,7 +76,7 @@ class _EditProjectModalContentState extends ConsumerState<EditProjectModalConten
                 ),
                 clearable: true,
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FDateField.calendar(
                 label: const Text('Deadline'),
                 hint: _deadline != null ? _fmtDate(_deadline) : 'Select Deadline (Optional)',
@@ -86,7 +86,7 @@ class _EditProjectModalContentState extends ConsumerState<EditProjectModalConten
                 ),
                 clearable: true,
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingLarge),
+              SizedBox(height: AppConstants.spacing.large),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -95,10 +95,7 @@ class _EditProjectModalContentState extends ConsumerState<EditProjectModalConten
                     style: FButtonStyle.ghost(),
                     child: const Text('Cancel'),
                   ),
-                  FButton(
-                    onPress: _submit,
-                    child: const Text('Save'),
-                  ),
+                  FButton(onPress: _submit, child: const Text('Save')),
                 ],
               ),
             ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-import '../../../../core/constants/layout_constants.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../providers/project_list_filter_state.dart';
 
 /// Widget displaying filter chips for sort criteria selection
@@ -14,14 +14,11 @@ class ProjectSortFilterChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: LayoutConstants.spacing.paddingRegular,
-        vertical: LayoutConstants.spacing.paddingSmall,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular, vertical: AppConstants.spacing.small),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          spacing: LayoutConstants.spacing.paddingSmall,
+          spacing: AppConstants.spacing.small,
           children: [
             for (final criteria in ProjectSortCriteria.values)
               FButton(

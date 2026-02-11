@@ -3,7 +3,7 @@ import 'package:forui/forui.dart' as fu;
 import 'package:intl/intl.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
-import '../../../../core/constants/layout_constants.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';
 
 class ProjectCard extends StatelessWidget {
@@ -19,12 +19,12 @@ class ProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: LayoutConstants.spacing.marginRegular),
+      padding: EdgeInsets.only(bottom: AppConstants.spacing.regular),
       child: GestureDetector(
         onTap: onTap,
         child: fu.FCard(
           child: Padding(
-            padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+            padding: EdgeInsets.all(AppConstants.spacing.regular),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -51,7 +51,7 @@ class ProjectCard extends StatelessWidget {
 
                 // Description
                 if (project.description != null && project.description!.isNotEmpty) ...[
-                  SizedBox(height: LayoutConstants.spacing.paddingSmall),
+                  SizedBox(height: AppConstants.spacing.small),
                   Text(
                     project.description!,
                     maxLines: 2,
@@ -60,12 +60,12 @@ class ProjectCard extends StatelessWidget {
                   ),
                 ],
 
-                SizedBox(height: LayoutConstants.spacing.paddingRegular),
+                SizedBox(height: AppConstants.spacing.regular),
 
                 // Date badges row
                 Wrap(
-                  spacing: LayoutConstants.spacing.paddingSmall,
-                  runSpacing: LayoutConstants.spacing.paddingSmall,
+                  spacing: AppConstants.spacing.small,
+                  runSpacing: AppConstants.spacing.small,
                   children: [
                     if (project.startDate != null)
                       fu.FBadge(

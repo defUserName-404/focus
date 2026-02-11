@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/constants/layout_constants.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';
 import '../providers/project_provider.dart';
 import '../widgets/create_project_modal_content.dart';
@@ -28,7 +28,7 @@ class ProjectListScreen extends ConsumerWidget {
         title: Text('Projects', style: context.typography.lg),
       ),
       footer: Padding(
-        padding: EdgeInsets.all(LayoutConstants.spacing.paddingLarge),
+        padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(
           child: const Text('Create New Project'),
           onPress: () async {
@@ -81,7 +81,7 @@ class ProjectListScreen extends ConsumerWidget {
               data: (projects) => projects.isEmpty
                   ? const Center(child: Text('No projects found'))
                   : ListView.builder(
-                      padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+                      padding: EdgeInsets.all(AppConstants.spacing.regular),
                       itemCount: projects.length,
                       itemBuilder: (context, index) {
                         final project = projects[index];

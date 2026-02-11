@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
-import '../../../../core/constants/layout_constants.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/task_priority.dart';
 import '../providers/task_provider.dart';
 
@@ -40,27 +40,27 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
     return Container(
       color: Theme.of(context).canvasColor,
       child: Padding(
-        padding: EdgeInsets.all(LayoutConstants.spacing.paddingRegular),
+        padding: EdgeInsets.all(AppConstants.spacing.regular),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: .min,
             crossAxisAlignment: .stretch,
             children: [
               Text(widget.parentTaskId != null ? 'Create Subtask' : 'Create New Task', textAlign: .center),
-              SizedBox(height: LayoutConstants.spacing.paddingLarge),
+              SizedBox(height: AppConstants.spacing.large),
               FTextField(
                 control: FTextFieldControl.managed(controller: _titleController),
                 hint: 'Task Title',
                 label: const Text('Title'),
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FTextField(
                 control: FTextFieldControl.managed(controller: _descriptionController),
                 hint: 'Task Description (Optional)',
                 label: const Text('Description'),
                 maxLines: 3,
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FSelect<TaskPriority>(
                 control: FSelectControl.managed(
                   initial: _priority,
@@ -73,25 +73,21 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
                 items: _priorityItems,
                 label: const Text('Priority'),
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FDateField.calendar(
                 label: const Text('Start Date'),
                 hint: 'Select Start Date (Optional)',
-                control: FDateFieldControl.managed(
-                  onChange: (date) => _startDate = date,
-                ),
+                control: FDateFieldControl.managed(onChange: (date) => _startDate = date),
                 clearable: true,
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingRegular),
+              SizedBox(height: AppConstants.spacing.regular),
               FDateField.calendar(
                 label: const Text('End Date'),
                 hint: 'Select End Date (Optional)',
-                control: FDateFieldControl.managed(
-                  onChange: (date) => _endDate = date,
-                ),
+                control: FDateFieldControl.managed(onChange: (date) => _endDate = date),
                 clearable: true,
               ),
-              SizedBox(height: LayoutConstants.spacing.paddingLarge),
+              SizedBox(height: AppConstants.spacing.large),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

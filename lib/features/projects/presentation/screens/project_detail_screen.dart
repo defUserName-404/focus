@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
-import 'package:focus/core/constants/layout_constants.dart';
+import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
@@ -69,7 +69,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         ],
       ),
       footer: Padding(
-        padding: EdgeInsets.all(LayoutConstants.spacing.paddingLarge),
+        padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(
           child: const Text('Create New Task'),
           onPress: () async {
@@ -102,7 +102,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
 
               // ── Search bar ──
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: LayoutConstants.spacing.paddingRegular),
+                padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
                 child: ProjectSearchBar(
                   focusNode: _searchFocusNode,
                   onChanged: (query) {
@@ -113,11 +113,11 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 ),
               ),
 
-              SizedBox(height: LayoutConstants.spacing.paddingSmall),
+              SizedBox(height: AppConstants.spacing.small),
 
               // ── Priority filter (FSelect) + Sort chips ──
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: LayoutConstants.spacing.paddingRegular),
+                padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
                 child: Row(
                   children: [
                     SizedBox(
@@ -176,7 +176,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
 
                     return ListView.builder(
                       controller: _scrollController,
-                      padding: EdgeInsets.symmetric(horizontal: LayoutConstants.spacing.paddingRegular, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular, vertical: 4),
                       itemCount: rootTasks.length,
                       itemBuilder: (context, index) {
                         final task = rootTasks[index];

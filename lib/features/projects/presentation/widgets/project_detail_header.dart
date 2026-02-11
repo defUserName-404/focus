@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
-import 'package:focus/core/constants/layout_constants.dart';
+import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:forui/forui.dart' as fu;
@@ -19,12 +19,7 @@ class ProjectDetailHeader extends StatelessWidget {
     final completed = tasks.where((t) => t.isCompleted).length;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        LayoutConstants.spacing.paddingLarge,
-        0,
-        LayoutConstants.spacing.paddingLarge,
-        0,
-      ),
+      padding: EdgeInsets.fromLTRB(AppConstants.spacing.large, 0, AppConstants.spacing.large, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -33,26 +28,23 @@ class ProjectDetailHeader extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               project.description!,
-              style: context.typography.sm.copyWith(
-                color: context.colors.mutedForeground,
-                height: 1.5,
-              ),
+              style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.5),
             ),
           ],
 
-          SizedBox(height: LayoutConstants.spacing.paddingLarge),
+          SizedBox(height: AppConstants.spacing.large),
 
           // Progress bar
           ProjectProgressBar(completed: completed, total: tasks.length),
 
-          SizedBox(height: LayoutConstants.spacing.paddingRegular),
+          SizedBox(height: AppConstants.spacing.regular),
 
           // Collapsible metadata chips
           ProjectMetaSection(project: project),
 
           // Divider
           fu.FDivider(),
-          SizedBox(height: LayoutConstants.spacing.paddingSmall),
+          SizedBox(height: AppConstants.spacing.small),
         ],
       ),
     );

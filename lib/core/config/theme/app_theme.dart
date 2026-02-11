@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-part 'typography/typography.dart';
-part 'typography/scale.dart';
-part 'typography/weight.dart';
+import '../../constants/app_constants.dart';
+
 part 'theme_builder.dart';
+part 'typography/scale.dart';
+part 'typography/typography.dart';
+part 'typography/weight.dart';
 
 /// Main theme configuration class following the pattern of [LayoutConstants]
 ///
@@ -14,8 +16,6 @@ part 'theme_builder.dart';
 /// - AppTheme.builder - Theme building utilities
 abstract final class AppTheme {
   const AppTheme._();
-
-  static const typography = _AppTypography();
   static const builder = _ThemeBuilder();
 }
 
