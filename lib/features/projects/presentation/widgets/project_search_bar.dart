@@ -14,7 +14,7 @@ class ProjectSearchBar extends StatefulWidget {
     this.controller,
     this.focusNode,
     required this.onChanged,
-    this.debounceDuration = const Duration(seconds: 2),
+    this.debounceDuration = const Duration(milliseconds: 300),
   });
 
   @override

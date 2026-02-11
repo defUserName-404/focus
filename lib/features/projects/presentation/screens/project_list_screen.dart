@@ -113,21 +113,22 @@ class ProjectListScreen extends ConsumerWidget {
   }
 
   void _confirmDelete(BuildContext context, WidgetRef ref, Project project) {
-    showAdaptiveDialog(
+    fu.showFDialog(
       context: context,
-      builder: (ctx) => AlertDialog.adaptive(
+      builder: (ctx, _, _) => fu.FDialog(
         title: const Text('Delete Project'),
-        content: Text('Are you sure you want to delete "${project.title}"? All tasks will also be deleted.'),
+        body: Text('Are you sure you want to delete "${project.title}"? All tasks will also be deleted.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
+          fu.FButton(onPress: () => Navigator.pop(ctx), style: fu.FButtonStyle.ghost(), child: const Text('Cancel')),
+          fu.FButton(
+            onPress: () {
               Navigator.pop(ctx);
               if (project.id != null) {
                 ref.read(projectProvider.notifier).deleteProject(project.id!);
               }
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            style: fu.FButtonStyle.destructive(),
+            child: const Text('Delete'),
           ),
         ],
       ),

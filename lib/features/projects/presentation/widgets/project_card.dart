@@ -93,7 +93,7 @@ class ProjectCard extends StatelessWidget {
                       )
                     else
                       fu.FBadge(style: fu.FBadgeStyle.outline(), child: const Text('No deadline')),
-                    const Spacer(),
+
                     fu.FButton.icon(onPress: onTap, child: Icon(fu.FIcons.arrowRight)),
                   ],
                 ),

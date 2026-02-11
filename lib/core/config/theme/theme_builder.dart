@@ -24,7 +24,7 @@ final class _ThemeBuilder {
     final typography = _AppTypography()._buildTypography(colors: colors, fontFamily: fontFamily);
     final style = FStyle(
       borderRadius: BorderRadius.all(Radius.circular(AppConstants.border.radius.regular)),
-      borderWidth: AppConstants.border.radius.regular,
+      borderWidth: AppConstants.border.width.regular,
       formFieldStyle: FFormFieldStyle.inherit(colors: colors, typography: typography),
       focusedOutlineStyle: FFocusedOutlineStyle(
         color: colors.primary,
