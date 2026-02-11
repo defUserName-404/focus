@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:focus/core/common/utils/widget_extensions.dart';
+import 'package:focus/core/constants/app_constants.dart';
+import 'package:focus/features/projects/presentation/screens/project_detail_screen.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/common/widgets/app_search_bar.dart';
 import '../../../../core/common/widgets/sort_filter_chips.dart';
 import '../../../../core/common/widgets/sort_order_selector.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/config/theme/app_theme.dart';
 import '../commands/project_commands.dart';
 import '../providers/project_list_filter_state.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
-import 'project_detail_screen.dart';
 
 class ProjectListScreen extends ConsumerWidget {
   const ProjectListScreen({super.key});
@@ -28,10 +29,7 @@ class ProjectListScreen extends ConsumerWidget {
       ),
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
-        child: fu.FButton(
-          child: const Text('Create New Project'),
-          onPress: () => ProjectCommands.create(context, ref),
-        ),
+        child: fu.FButton(child: const Text('Create New Project'), onPress: () => ProjectCommands.create(context, ref)),
       ),
       child: Column(
         children: [
@@ -68,33 +66,46 @@ class ProjectListScreen extends ConsumerWidget {
             child: filteredAsync.when(
               loading: () => const Center(child: fu.FCircularProgress()),
               error: (err, _) => Center(child: Text('Error: $err')),
-              data: (projects) => projects.isEmpty
-                  ? const Center(child: Text('No projects found'))
-                  : ListView.builder(
-                      padding: EdgeInsets.all(AppConstants.spacing.regular),
-                      itemCount: projects.length,
-                      itemBuilder: (context, index) {
-                        final project = projects[index];
-                        return ProjectCard(
-                          project: project,
-                          onTap: () => project.id != null
-                              ? Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => ProjectDetailScreen(
-                                      projectId: project.id!,
-                                    ),
-                                  ),
-                                )
-                              : null,
-                          onEdit: () => ProjectCommands.edit(context, project),
-                          onDelete: () =>
-                              ProjectCommands.delete(context, ref, project),
-                        );
-                      },
+              data: (projects) {
+                if (projects.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(fu.FIcons.folderOpen, size: 48, color: Theme.of(context).disabledColor),
+                        const SizedBox(height: 16),
+                        const Text('No projects found'),
+                        const SizedBox(height: 8),
+                        fu.FButton(
+                          onPress: () => ProjectCommands.create(context, ref),
+                          child: const Text('Create Project'),
+                        ),
+                      ],
                     ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: EdgeInsets.all(AppConstants.spacing.regular),
+                  itemCount: projects.length,
+                  itemBuilder: (context, index) {
+                    final project = projects[index];
+                    return ProjectCard(
+                      project: project,
+                      onTap: () => project.id != null
+                          ? Navigator.of(
+                              context,
+                            ).push(MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: project.id!)))
+                          : null,
+                      onEdit: () => ProjectCommands.edit(context, project),
+                      onDelete: () => ProjectCommands.delete(context, ref, project),
+                    );
+                  },
+                );
+              },
             ),
           ),
-        ],
+        ].withSpacing(AppConstants.spacing.regular),
       ),
     );
   }

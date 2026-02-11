@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus/core/common/utils/date_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:focus/core/constants/app_constants.dart';
+import 'package:focus/features/common/presentation/providers/expansion_provider.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:forui/forui.dart' as fu;
@@ -12,7 +15,7 @@ import 'subtask_row.dart';
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
 
-class TaskCard extends ConsumerStatefulWidget {
+class TaskCard extends ConsumerWidget {
   final Task task;
   final List<Task> subtasks;
   final String projectIdString;
@@ -29,36 +32,32 @@ class TaskCard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<TaskCard> createState() => _TaskCardState();
-}
-
-class _TaskCardState extends ConsumerState<TaskCard> {
-  bool _subtasksExpanded = true;
-
-  bool get _isOverdue =>
-      widget.task.endDate != null && widget.task.endDate!.isBefore(DateTime.now()) && !widget.task.isCompleted;
-
-  @override
-  Widget build(BuildContext context) {
-    final task = widget.task;
-    final subtasks = widget.subtasks;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final taskId = task.id!.toString();
+    final isExpanded = ref.watch(
+      expansionProvider.select((map) => map[taskId] ?? true),
+    );
+    final isOverdue = task.endDate?.isOverdue ?? false;
 
     return AppCard(
-      onTap: widget.onTaskTap,
+      onTap: onTaskTap,
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
-        onChange: (_) => ref.read(taskProvider(widget.projectIdString).notifier).toggleTaskCompletion(task),
+        onChange: (_) => ref
+            .read(taskProvider(projectIdString).notifier)
+            .toggleTaskCompletion(task),
       ),
       title: Text(task.title),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           TaskPriorityBadge(priority: task.priority),
-          const SizedBox(width: 2),
+          SizedBox(width: AppConstants.spacing.extraSmall),
           ActionMenuButton(
             onEdit: () => TaskCommands.edit(context, task),
-            onDelete: () => TaskCommands.delete(context, ref, task, widget.projectIdString),
+            onDelete: () =>
+                TaskCommands.delete(context, ref, task, projectIdString),
           ),
         ],
       ),
@@ -70,37 +69,48 @@ class _TaskCardState extends ConsumerState<TaskCard> {
               style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.4),
             )
           : null,
-      content: TaskDateRow(startDate: task.startDate, deadline: task.endDate, isOverdue: _isOverdue),
+      content: TaskDateRow(
+        startDate: task.startDate,
+        deadline: task.endDate,
+        isOverdue: isOverdue && !task.isCompleted,
+      ),
       footerActions: [
         _AddSubtaskChip(
           onPressed: () => TaskCommands.create(
             context,
             ref,
-            projectId: widget.task.projectId,
-            parentTaskId: widget.task.id,
-            depth: widget.task.depth + 1,
+            projectId: task.projectId,
+            parentTaskId: task.id,
+            depth: task.depth + 1,
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: AppConstants.spacing.regular),
         if (subtasks.isNotEmpty)
           _SubtaskCountChip(
             count: subtasks.length,
-            expanded: _subtasksExpanded,
-            onToggle: () => setState(() => _subtasksExpanded = !_subtasksExpanded),
+            expanded: isExpanded,
+            onToggle: () => ref
+                .read(expansionProvider.notifier)
+                .toggle(task.id!.toString(), defaultValue: true),
           ),
       ],
       children: [
-        if (_subtasksExpanded && subtasks.isNotEmpty)
+        if (isExpanded && subtasks.isNotEmpty)
           Column(
             mainAxisSize: MainAxisSize.min,
             children: subtasks
                 .map(
                   (st) => SubtaskRow(
                     subtask: st,
-                    onToggle: () => ref.read(taskProvider(widget.projectIdString).notifier).toggleTaskCompletion(st),
-                    onTap: widget.onSubtaskTap != null ? () => widget.onSubtaskTap!(st) : null,
+                    onToggle: () => ref
+                        .read(taskProvider(projectIdString).notifier)
+                        .toggleTaskCompletion(st),
+                    onTap: onSubtaskTap != null
+                        ? () => onSubtaskTap!(st)
+                        : null,
                     onEdit: () => TaskCommands.edit(context, st),
-                    onDelete: () => TaskCommands.delete(context, ref, st, widget.projectIdString),
+                    onDelete: () =>
+                        TaskCommands.delete(context, ref, st, projectIdString),
                   ),
                 )
                 .toList(),
@@ -122,7 +132,7 @@ class _AddSubtaskChip extends StatelessWidget {
     return fu.FButton(
       style: fu.FButtonStyle.outline(),
       onPress: onPressed,
-      prefix: Icon(fu.FIcons.plus, size: 14),
+      prefix: Icon(fu.FIcons.plus, size: AppConstants.size.icon.small),
       child: Text('subtask', style: context.typography.xs),
     );
   }
@@ -142,7 +152,10 @@ class _SubtaskCountChip extends StatelessWidget {
     return fu.FButton(
       style: fu.FButtonStyle.outline(),
       onPress: onToggle,
-      suffix: Icon(expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight, size: 14),
+      suffix: Icon(
+        expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight,
+        size: AppConstants.size.icon.small,
+      ),
       child: Text('$count', style: context.typography.xs),
     );
   }

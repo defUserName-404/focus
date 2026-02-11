@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:focus/core/common/utils/date_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:focus/core/constants/app_constants.dart';
 import 'package:forui/forui.dart' as fu;
-import 'package:intl/intl.dart';
 
 class TaskDateRow extends StatelessWidget {
   final DateTime? startDate;
@@ -10,79 +11,81 @@ class TaskDateRow extends StatelessWidget {
 
   const TaskDateRow({super.key, this.startDate, this.deadline, this.isOverdue = false});
 
-  String _fmt(DateTime dt) => DateFormat('MMM d').format(dt);
-
   @override
   Widget build(BuildContext context) {
     if (startDate == null && deadline == null) return const SizedBox.shrink();
 
-    final children = <Widget>[];
-
-    // Date text
-    final dateText = startDate != null && deadline != null
-        ? '${_fmt(startDate!)} – ${_fmt(deadline!)}'
-        : deadline != null
-            ? _fmt(deadline!)
-            : _fmt(startDate!);
-
-    children.addAll([
-      Padding(
-        padding: const EdgeInsets.only(bottom: 2), // Vertical lift
-        child: Icon(
-          fu.FIcons.calendar,
-          size: 12,
-          color: context.colors.mutedForeground,
-        ),
-      ),
-      const SizedBox(width: 4),
-      Text(dateText, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
-    ]);
-
-    // Overdue / approaching label
-    if (deadline != null) {
-      final now = DateTime.now();
-      final days = deadline!.difference(now).inDays;
-
-      if (isOverdue || days < 0) {
-        children.addAll([
-          const SizedBox(width: 6),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: Icon(
-              fu.FIcons.triangleAlert,
-              color: context.colors.destructive,
-              size: 12,
-            ),
-          ),
-          const SizedBox(width: 3),
-          Text(
-            'Overdue ${days.abs()}d',
-            style: context.typography.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.destructive),
-          ),
-        ]);
-      } else if (days <= 3) {
-        children.addAll([
-          const SizedBox(width: 6),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: Icon(fu.FIcons.clock, color: Colors.orange, size: 12),
-          ),
-          const SizedBox(width: 3),
-          Text(
-            days == 0
-                ? 'Due today'
-                : days == 1
-                    ? 'Due tomorrow'
-                    : 'Due in ${days}d',
-            style: context.typography.xs.copyWith(fontWeight: FontWeight.w600, color: Colors.orange),
-          ),
-        ]);
-      }
-    }
-
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center, // Vertical alignment fix
-      children: children,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                bottom: 2,
+              ), // Slight lift for optical alignment
+              child: Icon(
+                fu.FIcons.calendar,
+                size: AppConstants.size.icon.small,
+                color: context.colors.mutedForeground,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _buildDateText(),
+              style: context.typography.xs.copyWith(
+                color: context.colors.mutedForeground,
+              ),
+            ),
+          ],
+        ),
+        if (deadline != null &&
+            (isOverdue || deadline!.isOverdue || _isApproaching(deadline!)))
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(width: AppConstants.spacing.regular),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Icon(
+                  _isActuallyOverdue(deadline!)
+                      ? fu.FIcons.triangleAlert
+                      : fu.FIcons.clock,
+                  color: _getStatusColor(context, deadline!),
+                  size: AppConstants.size.icon.small,
+                ),
+              ),
+              const SizedBox(width: 3),
+              Text(
+                deadline!.toRelativeDueString(),
+                style: context.typography.xs.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: _getStatusColor(context, deadline!),
+                ),
+              ),
+            ],
+          ),
+      ],
     );
+  }
+
+  String _buildDateText() {
+    if (startDate != null && deadline != null) {
+      return '${startDate!.toShortDateString()} – ${deadline!.toShortDateString()}';
+    }
+    return (deadline ?? startDate)!.toShortDateString();
+  }
+
+  bool _isApproaching(DateTime dt) => dt.difference(DateTime.now()).inDays <= 3;
+
+  bool _isActuallyOverdue(DateTime dt) => isOverdue || dt.isOverdue;
+
+  Color _getStatusColor(BuildContext context, DateTime dt) {
+    if (_isActuallyOverdue(dt)) return context.colors.destructive;
+    return Colors
+        .orange; // Should ideally be in context.colors if theme supports it
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import '../../../../core/common/utils/date_formatter.dart';
+import '../../../../core/common/utils/widget_extensions.dart';
 import '../../../../core/common/widgets/base_modal_form.dart';
 import '../../../../core/common/widgets/filter_select.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -73,18 +74,17 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
         SizedBox(height: AppConstants.spacing.regular),
         FDateField.calendar(
           label: const Text('Start Date'),
-          hint: _startDate != null ? DateTimeFormatter.formatDate(_startDate!) : 'Select Start Date (Optional)',
+          hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
           control: FDateFieldControl.managed(initial: _startDate, onChange: (date) => _startDate = date),
           clearable: true,
         ),
-        SizedBox(height: AppConstants.spacing.regular),
         FDateField.calendar(
           label: const Text('End Date'),
-          hint: _endDate != null ? DateTimeFormatter.formatDate(_endDate!) : 'Select End Date (Optional)',
+          hint: _endDate?.toDateString() ?? 'Select End Date (Optional)',
           control: FDateFieldControl.managed(initial: _endDate, onChange: (date) => _endDate = date),
           clearable: true,
         ),
-      ],
+      ].withSpacing(AppConstants.spacing.regular),
       onCancel: () => Navigator.pop(context),
       onSubmit: _submit,
       submitButtonText: 'Save',
