@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 
-/// GitHub-style activity heatmap showing daily focus minutes.
+/// GitHub-style activity heatmap showing daily completed sessions.
 ///
-/// Each cell represents one day. Color intensity reflects the amount
-/// of focus time logged on that day. Shows the last [weeksToShow] weeks.
+/// Each cell represents one day. Color intensity reflects the number
+/// of completed focus sessions on that day. Shows the last [weeksToShow] weeks.
 class TaskActivityGraph extends StatelessWidget {
-  final Map<DateTime, int> dailyFocusMinutes;
+  final Map<DateTime, int> dailyCompletedSessions;
   final int weeksToShow;
 
   const TaskActivityGraph({
     super.key,
-    required this.dailyFocusMinutes,
+    required this.dailyCompletedSessions,
     this.weeksToShow = 16,
   });
 
@@ -39,7 +39,7 @@ class TaskActivityGraph extends StatelessWidget {
               return CustomPaint(
                 size: Size(constraints.maxWidth, _graphHeight),
                 painter: _ActivityGraphPainter(
-                  data: dailyFocusMinutes,
+                  data: dailyCompletedSessions,
                   weeksToShow: weeksToShow,
                   cellColor: context.colors.primary,
                   emptyColor:
@@ -162,14 +162,14 @@ class _ActivityGraphPainter extends CustomPainter {
 
         final dayKey =
             DateTime(date.year, date.month, date.day);
-        final minutes = data[dayKey] ?? 0;
+        final sessions = data[dayKey] ?? 0;
 
         final x = labelWidth + week * (cellSize + cellGap);
         final y = day * (cellSize + cellGap);
 
-        final color = minutes == 0
+        final color = sessions == 0
             ? emptyColor
-            : cellColor.withValues(alpha: _intensityForMinutes(minutes));
+            : cellColor.withValues(alpha: _intensityForSessions(sessions));
 
         canvas.drawRRect(
           RRect.fromRectAndRadius(
@@ -182,11 +182,11 @@ class _ActivityGraphPainter extends CustomPainter {
     }
   }
 
-  double _intensityForMinutes(int minutes) {
-    if (minutes <= 0) return 0;
-    if (minutes <= 15) return 0.25;
-    if (minutes <= 30) return 0.50;
-    if (minutes <= 60) return 0.75;
+  double _intensityForSessions(int sessions) {
+    if (sessions <= 0) return 0;
+    if (sessions == 1) return 0.25;
+    if (sessions == 2) return 0.50;
+    if (sessions <= 4) return 0.75;
     return 1.0;
   }
 

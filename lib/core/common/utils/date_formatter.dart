@@ -1,6 +1,15 @@
 import 'package:intl/intl.dart';
 
 extension DateTimeFormatting on DateTime {
+  /// Strips time components, returning midnight of the same date.
+  DateTime toDateOnly() => DateTime(year, month, day);
+
+  /// Converts epoch seconds (as stored by Drift) to a date-only DateTime.
+  static DateTime fromEpochSecondsToDateOnly(int epochSeconds) {
+    final dt = DateTime.fromMillisecondsSinceEpoch(epochSeconds * 1000);
+    return DateTime(dt.year, dt.month, dt.day);
+  }
+
   String toDateString() => DateFormat('MMM d, yyyy').format(this);
 
   String toShortDateString() => DateFormat('MMM d').format(this);

@@ -11,8 +11,9 @@ import '../../../focus/presentation/commands/focus_commands.dart';
 import '../../../focus/presentation/providers/focus_session_provider.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../domain/entities/task.dart';
+import '../../domain/entities/task_stats.dart';
 import '../commands/task_commands.dart';
-import '../providers/task_detail_provider.dart';
+import '../providers/task_stats_provider.dart';
 import '../providers/task_provider.dart';
 import '../widgets/recent_sessions_section.dart';
 import '../widgets/task_activity_graph.dart';
@@ -38,7 +39,8 @@ class TaskDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final allTasksAsync = ref.watch(tasksByProjectProvider(_projectIdString));
     final projectAsync = ref.watch(projectByIdProvider(_projectIdString));
-    final statsAsync = ref.watch(taskDetailStatsProvider(_taskIdString));
+    final statsAsync = ref.watch(taskStatsProvider(_taskIdString));
+    final recentAsync = ref.watch(recentSessionsProvider(_taskIdString));
 
     return allTasksAsync.when(
       loading: () => const fu.FScaffold(child: Center(child: fu.FCircularProgress())),
@@ -57,7 +59,8 @@ class TaskDetailScreen extends ConsumerWidget {
         }
 
         final subtasks = allTasks.where((t) => t.parentTaskId == taskId).toList();
-        final stats = statsAsync.value ?? TaskDetailStats.empty;
+        final stats = statsAsync.value ?? TaskStats.empty;
+        final recentSessions = recentAsync.value ?? [];
         final project = projectAsync.value;
         final activeSession = ref.watch(focusTimerProvider);
         final hasActiveSession =
@@ -102,7 +105,7 @@ class TaskDetailScreen extends ConsumerWidget {
                 SizedBox(height: AppConstants.spacing.extraLarge),
 
                 // ── Activity Graph ──
-                TaskActivityGraph(dailyFocusMinutes: stats.dailyFocusMinutes),
+                TaskActivityGraph(dailyCompletedSessions: stats.dailyCompletedSessions),
 
                 SizedBox(height: AppConstants.spacing.extraLarge),
 
@@ -112,7 +115,7 @@ class TaskDetailScreen extends ConsumerWidget {
                 SizedBox(height: AppConstants.spacing.extraLarge),
 
                 // ── Recent Sessions ──
-                RecentSessionsSection(sessions: stats.recentSessions),
+                RecentSessionsSection(sessions: recentSessions),
 
                 SizedBox(height: AppConstants.spacing.extraLarge),
 

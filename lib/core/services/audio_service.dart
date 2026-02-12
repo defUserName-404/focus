@@ -7,9 +7,6 @@ class AudioService {
   final AudioPlayer _alarmPlayer = AudioPlayer();
   final AudioPlayer _bgPlayer = AudioPlayer();
 
-  /// The currently active ambience preset, if any.
-  SoundPreset? _currentAmbience;
-
   /// Play an alarm sound. Uses [preset] or falls back to [AudioAssets.defaultAlarm].
   Future<void> playAlarm([SoundPreset? preset]) async {
     final sound = preset ?? AudioAssets.defaultAlarm;
@@ -22,7 +19,6 @@ class AudioService {
   Future<void> startAmbience([SoundPreset? preset]) async {
     final sound = preset ?? AudioAssets.defaultAmbience;
     try {
-      _currentAmbience = sound;
       await _bgPlayer.setReleaseMode(ReleaseMode.loop);
       await _bgPlayer.play(AssetSource('audio/${sound.assetPath}'));
     } catch (e) {
@@ -42,7 +38,6 @@ class AudioService {
 
   /// Stop the ambient sound completely.
   Future<void> stopAmbience() async {
-    _currentAmbience = null;
     await _bgPlayer.stop();
   }
 

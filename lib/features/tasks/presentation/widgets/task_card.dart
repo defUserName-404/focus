@@ -55,12 +55,6 @@ class TaskCard extends ConsumerWidget {
         children: [
           TaskPriorityBadge(priority: task.priority),
           SizedBox(width: AppConstants.spacing.extraSmall),
-          Icon(
-            fu.FIcons.timer,
-            size: AppConstants.size.icon.small,
-            color: context.colors.mutedForeground.withOpacity(0.5),
-          ),
-          SizedBox(width: AppConstants.spacing.extraSmall),
           ActionMenuButton(
             onEdit: () => TaskCommands.edit(context, task),
             onDelete: () => TaskCommands.delete(context, ref, task, projectIdString),
