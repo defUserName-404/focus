@@ -1,8 +1,8 @@
 import 'session_state.dart';
 
 class FocusSession {
-  final String id;
-  final String taskId;
+  final BigInt? id;
+  final BigInt taskId;
   final int focusDurationMinutes;
   final int breakDurationMinutes;
   final DateTime startTime;
@@ -11,7 +11,7 @@ class FocusSession {
   final int elapsedSeconds;
 
   FocusSession({
-    required this.id,
+    this.id,
     required this.taskId,
     required this.focusDurationMinutes,
     required this.breakDurationMinutes,

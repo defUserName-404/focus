@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/common/utils/date_formatter.dart';
-import 'package:focus/core/config/theme/app_theme.dart';
-import 'package:focus/core/constants/app_constants.dart';
-import 'package:focus/features/common/presentation/providers/expansion_provider.dart';
-import 'package:focus/features/projects/domain/entities/project.dart';
 import 'package:forui/forui.dart' as fu;
+
+import '../../../../core/common/providers/expansion_provider.dart';
+import '../../../../core/common/utils/date_formatter.dart';
+import '../../../../core/config/theme/app_theme.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../domain/entities/project.dart';
 
 class ProjectMetaSection extends ConsumerWidget {
   final Project project;
@@ -16,9 +17,7 @@ class ProjectMetaSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final project = this.project;
     final expansionKey = 'project_meta_${project.id}';
-    final isExpanded = ref.watch(
-      expansionProvider.select((map) => map[expansionKey] ?? false),
-    );
+    final isExpanded = ref.watch(expansionProvider.select((map) => map[expansionKey] ?? false));
     final hasAnyMeta = project.startDate != null || project.deadline != null;
 
     if (!hasAnyMeta) return const SizedBox.shrink();
@@ -29,8 +28,7 @@ class ProjectMetaSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
-          onTap: () =>
-              ref.read(expansionProvider.notifier).toggle(expansionKey),
+          onTap: () => ref.read(expansionProvider.notifier).toggle(expansionKey),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -85,9 +83,7 @@ class ProjectMetaSection extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        'Started: ${project.startDate!.toShortDateString()}',
-                      ),
+                      Text('Started: ${project.startDate!.toShortDateString()}'),
                     ],
                   ),
                 ),
@@ -101,9 +97,7 @@ class ProjectMetaSection extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 2),
                         child: Icon(
-                          isOverdue
-                              ? fu.FIcons.triangleAlert
-                              : fu.FIcons.calendarCheck,
+                          isOverdue ? fu.FIcons.triangleAlert : fu.FIcons.calendarCheck,
                           size: AppConstants.size.icon.small,
                         ),
                       ),

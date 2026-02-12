@@ -34,6 +34,11 @@ final class _ThemeBuilder {
       tappableStyle: FTappableStyle(),
     );
 
-    return FThemeData(colors: colors, typography: typography, style: style);
+    return FThemeData(
+      colors: colors,
+      typography: typography,
+      style: style,
+      cardStyle: cardStyle(colors: colors, typography: typography, style: style),
+    );
   }
 }

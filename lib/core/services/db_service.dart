@@ -1,18 +1,20 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:focus/features/focus/data/models/focus_session_model.dart';
 import 'package:focus/features/tasks/data/models/task_model.dart';
 
+import '../../features/focus/domain/entities/session_state.dart';
 import '../../features/projects/data/models/project_model.dart';
 import '../../features/tasks/domain/entities/task_priority.dart';
 
 part 'db_service.g.dart';
 
-@DriftDatabase(tables: [ProjectTable, TaskTable])
+@DriftDatabase(tables: [ProjectTable, TaskTable, FocusSessionTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -44,6 +46,10 @@ class AppDatabase extends _$AppDatabase {
         await m.createIndex(taskDeadlineIdx);
         await m.createIndex(taskCompletedIdx);
         await m.createIndex(taskUpdatedAtIdx);
+      }
+      // Version 6: Added focus session table
+      if (from < 6) {
+        await m.createTable(focusSessionTable);
       }
     },
   );

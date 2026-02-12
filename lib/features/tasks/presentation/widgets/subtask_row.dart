@@ -39,63 +39,66 @@ class SubtaskRow extends StatelessWidget {
 
             // Content
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header Row: Checkbox + Title + Priority + Menu
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: leadingWidth,
-                        child: fu.FCheckbox(value: subtask.isCompleted, onChange: (_) => onToggle()),
-                      ),
-                      Expanded(
-                        child: Text(
-                          subtask.title,
-                          style: context.typography.sm.copyWith(
-                            fontWeight: subtask.isCompleted ? FontWeight.w400 : FontWeight.w500,
-                            color: subtask.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
-                            decoration: subtask.isCompleted ? TextDecoration.lineThrough : null,
-                            decorationColor: context.colors.mutedForeground,
+              child: GestureDetector(
+                onTap: onTap,
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header Row: Checkbox + Title + Priority + Menu
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: leadingWidth,
+                          child: fu.FCheckbox(value: subtask.isCompleted, onChange: (_) => onToggle()),
+                        ),
+                        Expanded(
+                          child: Text(
+                            subtask.title,
+                            style: context.typography.sm.copyWith(
+                              fontWeight: subtask.isCompleted ? FontWeight.w400 : FontWeight.w500,
+                              color: subtask.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
+                              decoration: subtask.isCompleted ? TextDecoration.lineThrough : null,
+                              decorationColor: context.colors.mutedForeground,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      TaskPriorityBadge(priority: subtask.priority),
-                      const SizedBox(width: 2),
-                      if (onEdit != null || onDelete != null) ActionMenuButton(onEdit: onEdit, onDelete: onDelete),
-                    ],
-                  ),
-
-                  // Body Content Indented below Title
-                  Padding(
-                    padding: const EdgeInsets.only(left: leadingWidth),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Description (max 2 lines)
-                        if (subtask.description != null && subtask.description!.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            subtask.description!,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: context.typography.xs.copyWith(color: context.colors.mutedForeground, height: 1.3),
-                          ),
-                        ],
-
-                        // Date row
-                        if (subtask.endDate != null || subtask.startDate != null) ...[
-                          const SizedBox(height: 4),
-                          TaskDateRow(startDate: subtask.startDate, deadline: subtask.endDate, isOverdue: _isOverdue),
-                        ],
+                        const SizedBox(width: 4),
+                        TaskPriorityBadge(priority: subtask.priority),
+                        const SizedBox(width: 2),
+                        if (onEdit != null || onDelete != null) ActionMenuButton(onEdit: onEdit, onDelete: onDelete),
                       ],
                     ),
-                  ),
-                ],
+                    // ... rest of the content (indented below Title)
+                    Padding(
+                      padding: const EdgeInsets.only(left: leadingWidth),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Description (max 2 lines)
+                          if (subtask.description != null && subtask.description!.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtask.description!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.typography.xs.copyWith(color: context.colors.mutedForeground, height: 1.3),
+                            ),
+                          ],
+
+                          // Date row
+                          if (subtask.endDate != null || subtask.startDate != null) ...[
+                            const SizedBox(height: 4),
+                            TaskDateRow(startDate: subtask.startDate, deadline: subtask.endDate, isOverdue: _isOverdue),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

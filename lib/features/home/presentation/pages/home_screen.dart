@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart' as fu;
-import 'package:intl/intl.dart';
+import 'package:focus/core/common/utils/date_formatter.dart';
 
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../../projects/presentation/screens/project_detail_screen.dart';
@@ -30,7 +30,7 @@ class HomeScreen extends ConsumerWidget {
                     Text('Focus', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 2),
                     Text(
-                      DateFormat.yMMMMEEEEd().format(DateTime.now()),
+                      DateTime.now().toDateString(),
                       style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
                     ),
                   ],
@@ -115,7 +115,7 @@ class HomeScreen extends ConsumerWidget {
                               Icon(fu.FIcons.calendar, size: 13, color: context.colors.mutedForeground),
                               const SizedBox(width: 4),
                               Text(
-                                DateFormat.yMMMd().format(project.deadline!),
+                                project.deadline!.toDateString(),
                                 style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
                               ),
                             ],
