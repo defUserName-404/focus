@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/common/utils/date_formatter.dart';
-import 'package:focus/core/config/theme/app_theme.dart';
-import 'package:focus/core/constants/app_constants.dart';
-import 'package:focus/features/common/presentation/providers/expansion_provider.dart';
-import 'package:focus/features/tasks/domain/entities/task.dart';
-import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/common/providers/expansion_provider.dart';
+import '../../../../core/common/utils/date_formatter.dart';
 import '../../../../core/common/widgets/action_menu_button.dart';
 import '../../../../core/common/widgets/app_card.dart';
+import '../../../../core/config/theme/app_theme.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../domain/entities/task.dart';
 import '../commands/task_commands.dart';
+import '../providers/task_provider.dart';
 import '../screens/task_detail_screen.dart';
 import 'subtask_row.dart';
 import 'task_date_row.dart';
@@ -35,26 +35,19 @@ class TaskCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taskId = task.id!.toString();
-    final isExpanded = ref.watch(
-      expansionProvider.select((map) => map[taskId] ?? true),
-    );
+    final isExpanded = ref.watch(expansionProvider.select((map) => map[taskId] ?? true));
     final isOverdue = task.endDate?.isOverdue ?? false;
 
     return AppCard(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => TaskDetailScreen(
-            taskId: task.id!,
-            projectId: task.projectId,
-          ),
+          builder: (_) => TaskDetailScreen(taskId: task.id!, projectId: task.projectId),
         ),
       ),
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
-        onChange: (_) => ref
-            .read(taskProvider(projectIdString).notifier)
-            .toggleTaskCompletion(task),
+        onChange: (_) => ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(task),
       ),
       title: Text(task.title),
       trailing: Row(
@@ -70,8 +63,7 @@ class TaskCard extends ConsumerWidget {
           SizedBox(width: AppConstants.spacing.extraSmall),
           ActionMenuButton(
             onEdit: () => TaskCommands.edit(context, task),
-            onDelete: () =>
-                TaskCommands.delete(context, ref, task, projectIdString),
+            onDelete: () => TaskCommands.delete(context, ref, task, projectIdString),
           ),
         ],
       ),
@@ -103,9 +95,7 @@ class TaskCard extends ConsumerWidget {
           _SubtaskCountChip(
             count: subtasks.length,
             expanded: isExpanded,
-            onToggle: () => ref
-                .read(expansionProvider.notifier)
-                .toggle(task.id!.toString(), defaultValue: true),
+            onToggle: () => ref.read(expansionProvider.notifier).toggle(task.id!.toString(), defaultValue: true),
           ),
       ],
       children: [
@@ -116,23 +106,17 @@ class TaskCard extends ConsumerWidget {
                 .map(
                   (st) => SubtaskRow(
                     subtask: st,
-                    onToggle: () => ref
-                        .read(taskProvider(projectIdString).notifier)
-                        .toggleTaskCompletion(st),
+                    onToggle: () => ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(st),
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => TaskDetailScreen(
-                            taskId: st.id!,
-                            projectId: st.projectId,
-                          ),
+                          builder: (_) => TaskDetailScreen(taskId: st.id!, projectId: st.projectId),
                         ),
                       );
                       if (onSubtaskTap != null) onSubtaskTap!(st);
                     },
                     onEdit: () => TaskCommands.edit(context, st),
-                    onDelete: () =>
-                        TaskCommands.delete(context, ref, st, projectIdString),
+                    onDelete: () => TaskCommands.delete(context, ref, st, projectIdString),
                   ),
                 )
                 .toList(),
@@ -174,10 +158,7 @@ class _SubtaskCountChip extends StatelessWidget {
     return fu.FButton(
       style: fu.FButtonStyle.outline(),
       onPress: onToggle,
-      suffix: Icon(
-        expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight,
-        size: AppConstants.size.icon.small,
-      ),
+      suffix: Icon(expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight, size: AppConstants.size.icon.small),
       child: Text('$count', style: context.typography.xs),
     );
   }
