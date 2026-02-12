@@ -41,10 +41,7 @@ class _StreakBadgeState extends State<StreakBadge> with SingleTickerProviderStat
     final amberColor = context.colors.primary.withOpacity(0.8);
 
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppConstants.spacing.regular,
-        vertical: AppConstants.spacing.small,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular, vertical: AppConstants.spacing.small),
       decoration: BoxDecoration(
         color: primaryColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
