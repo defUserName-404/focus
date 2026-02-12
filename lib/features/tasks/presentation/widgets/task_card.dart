@@ -8,10 +8,11 @@ import '../../../../core/common/widgets/action_menu_button.dart';
 import '../../../../core/common/widgets/app_card.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/route_constants.dart'; // Added import
 import '../../domain/entities/task.dart';
 import '../commands/task_commands.dart';
 import '../providers/task_provider.dart';
-import '../screens/task_detail_screen.dart';
+// Removed unused import: TaskDetailScreen
 import 'subtask_row.dart';
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
@@ -39,10 +40,9 @@ class TaskCard extends ConsumerWidget {
     final isOverdue = task.endDate?.isOverdue ?? false;
 
     return AppCard(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => TaskDetailScreen(taskId: task.id!, projectId: task.projectId),
-        ),
+      onTap: () => Navigator.of(context).pushNamed(
+        RouteConstants.taskDetailRoute,
+        arguments: {'taskId': task.id!, 'projectId': task.projectId},
       ),
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
@@ -102,10 +102,9 @@ class TaskCard extends ConsumerWidget {
                     subtask: st,
                     onToggle: () => ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(st),
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => TaskDetailScreen(taskId: st.id!, projectId: st.projectId),
-                        ),
+                      Navigator.of(context).pushNamed(
+                        RouteConstants.taskDetailRoute,
+                        arguments: {'taskId': st.id!, 'projectId': st.projectId},
                       );
                       if (onSubtaskTap != null) onSubtaskTap!(st);
                     },

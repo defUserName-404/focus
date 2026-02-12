@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/common/widgets/confirmation_dialog.dart';
+import '../../../../core/constants/route_constants.dart';
 import '../../domain/entities/session_state.dart';
 import '../providers/focus_session_provider.dart';
-import '../screens/focus_session_screen.dart';
 
-/// Centralized focus session commands
 class FocusCommands {
   /// Navigate to the focus session screen for a given task.
   ///
@@ -22,35 +21,24 @@ class FocusCommands {
     final existing = ref.read(focusTimerProvider);
 
     // If a session is already active, just show it.
-    if (existing != null &&
-        existing.state != SessionState.completed &&
-        existing.state != SessionState.cancelled) {
+    if (existing != null && existing.state != SessionState.completed && existing.state != SessionState.cancelled) {
       if (context.mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const FocusSessionScreen()),
-        );
+        Navigator.of(context).pushNamed(RouteConstants.focusSessionRoute);
       }
       return;
     }
 
-    await ref.read(focusTimerProvider.notifier).createSession(
-      taskId: taskId,
-      focusMinutes: focusMinutes,
-      breakMinutes: breakMinutes,
-    );
+    await ref
+        .read(focusTimerProvider.notifier)
+        .createSession(taskId: taskId, focusMinutes: focusMinutes, breakMinutes: breakMinutes);
 
     if (context.mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const FocusSessionScreen()),
-      );
+      Navigator.of(context).pushNamed(RouteConstants.focusSessionRoute);
     }
   }
 
   /// Show a confirmation dialog before ending the session.
-  static Future<void> confirmEnd(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  static Future<void> confirmEnd(BuildContext context, WidgetRef ref) async {
     await ConfirmationDialog.show(
       context,
       title: 'End session?',
@@ -59,7 +47,7 @@ class FocusCommands {
       cancelLabel: 'Keep going',
       onConfirm: () {
         ref.read(focusTimerProvider.notifier).cancelSession();
-        Navigator.of(context).pop(); // pop session screen
+        Navigator.of(context).pop();
       },
     );
   }
@@ -71,12 +59,8 @@ class FocusCommands {
     required int currentFocusMinutes,
     required int currentBreakMinutes,
   }) async {
-    final focusController = TextEditingController(
-      text: currentFocusMinutes.toString(),
-    );
-    final breakController = TextEditingController(
-      text: currentBreakMinutes.toString(),
-    );
+    final focusController = TextEditingController(text: currentFocusMinutes.toString());
+    final breakController = TextEditingController(text: currentBreakMinutes.toString());
 
     await showDialog(
       context: context,
@@ -99,19 +83,15 @@ class FocusCommands {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           TextButton(
             onPressed: () {
               final focus = int.tryParse(focusController.text);
               final brk = int.tryParse(breakController.text);
               if (focus != null && focus > 0) {
-                ref.read(focusTimerProvider.notifier).updateDuration(
-                  focusMinutes: focus,
-                  breakMinutes: (brk != null && brk > 0) ? brk : null,
-                );
+                ref
+                    .read(focusTimerProvider.notifier)
+                    .updateDuration(focusMinutes: focus, breakMinutes: (brk != null && brk > 0) ? brk : null);
               }
               Navigator.pop(ctx);
             },

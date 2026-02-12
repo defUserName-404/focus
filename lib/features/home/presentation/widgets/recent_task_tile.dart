@@ -3,9 +3,11 @@ import 'package:focus/core/common/utils/date_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
-import 'package:focus/features/tasks/presentation/screens/task_detail_screen.dart';
+// Removed unused import: TaskDetailScreen
 import 'package:focus/features/tasks/presentation/widgets/task_priority_badge.dart';
 import 'package:forui/forui.dart' as fu;
+
+import '../../../../core/constants/route_constants.dart'; // Added import
 
 class RecentTaskTile extends StatelessWidget {
   final Task task;
@@ -19,11 +21,10 @@ class RecentTaskTile extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.only(bottom: AppConstants.spacing.regular),
         child: GestureDetector(
-          onTap: () => Navigator.push(
+          onTap: () => Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder: (_) => TaskDetailScreen(taskId: task.id!, projectId: task.projectId),
-            ),
+            RouteConstants.taskDetailRoute,
+            arguments: {'taskId': task.id!, 'projectId': task.projectId},
           ),
           child: fu.FCard(
             child: Padding(

@@ -12,10 +12,9 @@ import 'package:focus/features/home/presentation/widgets/today_summary_card.dart
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/route_constants.dart';
 import '../../../projects/domain/entities/project.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
-import '../../../projects/presentation/screens/project_detail_screen.dart';
-import '../../../projects/presentation/screens/project_list_screen.dart';
 import '../../../tasks/domain/entities/global_stats.dart';
 import '../../../tasks/presentation/providers/task_stats_provider.dart';
 import '../widgets/year_activity_graph.dart';
@@ -69,7 +68,12 @@ class HomeScreen extends ConsumerWidget {
             // ── Recent Tasks ──
             SectionHeader(
               title: 'Recent Tasks',
-              onViewAll: () => _navigateToFirstProject(context, projectsAsync.value),
+              onViewAll: () {
+                final projects = projectsAsync.value;
+                if (projects != null && projects.isNotEmpty) {
+                  Navigator.pushNamed(context, RouteConstants.projectDetailRoute, arguments: projects.first.id!);
+                }
+              },
             ),
             recentTasksAsync.when(
               loading: () => const Center(child: fu.FCircularProgress()),
@@ -88,7 +92,7 @@ class HomeScreen extends ConsumerWidget {
             // ── Recent Projects ──
             SectionHeader(
               title: 'Projects',
-              onViewAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProjectListScreen())),
+              onViewAll: () => Navigator.pushNamed(context, RouteConstants.projectListRoute),
             ),
             projectsAsync.when(
               loading: () => const Center(child: fu.FCircularProgress()),
@@ -109,11 +113,5 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  void _navigateToFirstProject(BuildContext context, List<Project>? projects) {
-    if (projects != null && projects.isNotEmpty) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: projects.first.id!)));
-    }
   }
 }

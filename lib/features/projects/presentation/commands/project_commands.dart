@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/common/widgets/confirmation_dialog.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
 import 'package:focus/features/projects/presentation/providers/project_provider.dart';
-import 'package:focus/features/projects/presentation/screens/project_detail_screen.dart';
+// Removed unused import: ProjectDetailScreen
 import 'package:focus/features/projects/presentation/widgets/create_project_modal_content.dart';
 import 'package:focus/features/projects/presentation/widgets/edit_project_modal_content.dart';
 import 'package:forui/forui.dart' as fu;
+
+import '../../../../core/constants/route_constants.dart'; // Added import
 
 class ProjectCommands {
   static Future<void> create(BuildContext context, WidgetRef ref) async {
@@ -17,9 +19,7 @@ class ProjectCommands {
     );
 
     if (newProject != null && newProject.id != null && context.mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: newProject.id!)),
-      );
+      Navigator.of(context).pushNamed(RouteConstants.projectDetailRoute, arguments: newProject.id!);
     }
   }
 
