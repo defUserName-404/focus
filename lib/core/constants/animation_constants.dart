@@ -6,4 +6,5 @@ final class _Animation {
   final short = const Duration(milliseconds: 150);
   final medium = const Duration(milliseconds: 300);
   final long = const Duration(milliseconds: 500);
+  final extraLong = const Duration(milliseconds: 900);
 }

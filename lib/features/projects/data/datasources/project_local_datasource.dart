@@ -1,16 +1,23 @@
 import 'package:drift/drift.dart';
 
 import '../../../../core/services/db_service.dart';
-import '../../presentation/providers/project_list_filter_state.dart';
+import '../../domain/entities/project_list_filter_state.dart';
 
-abstract class IProjectLocalDataSource {
+abstract interface class IProjectLocalDataSource {
   Future<List<ProjectTableData>> getAllProjects();
+
   Future<ProjectTableData?> getProjectById(BigInt id);
+
   Future<int> createProject(ProjectTableCompanion companion);
+
   Future<void> updateProject(ProjectTableCompanion companion);
+
   Future<void> deleteProject(BigInt id);
+
   Stream<ProjectTableData?> watchProjectById(BigInt id);
+
   Stream<List<ProjectTableData>> watchAllProjects();
+
   Stream<List<ProjectTableData>> watchFilteredProjects({
     String searchQuery,
     ProjectSortCriteria sortCriteria,
@@ -41,9 +48,7 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
 
   @override
   Future<void> updateProject(ProjectTableCompanion companion) async {
-    await (_db.update(_db.projectTable)
-          ..where((t) => t.id.equals(companion.id.value)))
-        .write(companion);
+    await (_db.update(_db.projectTable)..where((t) => t.id.equals(companion.id.value))).write(companion);
   }
 
   @override
@@ -55,9 +60,7 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
 
   @override
   Stream<ProjectTableData?> watchProjectById(BigInt id) {
-    return (_db.select(
-      _db.projectTable,
-    )..where((t) => t.id.equals(id))).watchSingleOrNull();
+    return (_db.select(_db.projectTable)..where((t) => t.id.equals(id))).watchSingleOrNull();
   }
 
   @override
@@ -75,14 +78,11 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
 
     final q = searchQuery.trim().toLowerCase();
     if (q.isNotEmpty) {
-      query.where(
-        (t) => t.title.lower().like('%$q%') | t.description.lower().like('%$q%'),
-      );
+      query.where((t) => t.title.lower().like('%$q%') | t.description.lower().like('%$q%'));
     }
 
     if (sortOrder != ProjectSortOrder.none) {
-      final mode =
-          sortOrder == ProjectSortOrder.ascending ? OrderingMode.asc : OrderingMode.desc;
+      final mode = sortOrder == ProjectSortOrder.ascending ? OrderingMode.asc : OrderingMode.desc;
       query.orderBy([
         (t) {
           switch (sortCriteria) {
