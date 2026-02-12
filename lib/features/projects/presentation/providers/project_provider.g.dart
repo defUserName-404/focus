@@ -273,7 +273,7 @@ final class ProjectProgressProvider
   }
 }
 
-String _$projectProgressHash() => r'41c17722da5bbf58a576031b29fc81638b6617f6';
+String _$projectProgressHash() => r'd2f2f77e7c5e213a13221903a6ba8ed2a8b59158';
 
 final class ProjectProgressFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<ProjectProgress>, String> {

@@ -1,11 +1,6 @@
-import 'package:dart_mappable/dart_mappable.dart';
-
 import 'session_state.dart';
 
-part 'focus_session.mapper.dart';
-
-@MappableClass()
-class FocusSession with FocusSessionMappable {
+class FocusSession {
   final BigInt? id;
   final BigInt taskId;
   final int focusDurationMinutes;

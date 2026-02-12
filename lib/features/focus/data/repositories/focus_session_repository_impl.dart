@@ -1,92 +1,46 @@
-import 'package:drift/drift.dart';
-
-import '../../../../core/services/db_service.dart';
 import '../../domain/entities/focus_session.dart';
-import '../../domain/entities/session_state.dart';
+import '../../domain/entities/focus_session_extensions.dart';
 import '../../domain/repositories/i_focus_session_repository.dart';
+import '../datasources/focus_local_datasource.dart';
+import '../mappers/focus_session_mappers.dart';
 
 class FocusSessionRepositoryImpl implements IFocusSessionRepository {
-  final AppDatabase _db;
+  final IFocusLocalDataSource _local;
 
-  FocusSessionRepositoryImpl(this._db);
+  FocusSessionRepositoryImpl(this._local);
 
   @override
   Future<FocusSession> startSession(FocusSession session) async {
-    final companion = _toCompanion(session);
-    final id = await _db.into(_db.focusSessionTable).insert(companion);
+    final companion = session.toCompanion();
+    final id = await _local.createSession(companion);
     return session.copyWith(id: BigInt.from(id));
   }
 
   @override
   Future<void> updateSession(FocusSession session) async {
     if (session.id == null) return;
-    final companion = _toCompanion(session);
-    await (_db.update(
-      _db.focusSessionTable,
-    )..where((t) => t.id.equals(session.id!))).write(companion);
+    final companion = session.toCompanion();
+    await _local.updateSession(companion);
   }
 
   @override
   Future<FocusSession?> getActiveSession() async {
-    final query = _db.select(_db.focusSessionTable)
-      ..where(
-        (t) => t.state.isIn([
-          SessionState.running.index,
-          SessionState.paused.index,
-          SessionState.onBreak.index,
-        ]),
-      )
-      ..limit(1);
-
-    final data = await query.getSingleOrNull();
-    return data != null ? _toEntity(data) : null;
+    final data = await _local.getActiveSession();
+    return data?.toDomain();
   }
 
   @override
   Stream<List<FocusSession>> watchSessionsByTask(BigInt taskId) {
-    return (_db.select(_db.focusSessionTable)
-          ..where((t) => t.taskId.equals(taskId)))
-        .watch()
-        .map((list) => list.map(_toEntity).toList());
+    return _local.watchSessionsByTask(taskId).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
   @override
   Stream<List<FocusSession>> watchAllSessions() {
-    return _db
-        .select(_db.focusSessionTable)
-        .watch()
-        .map((list) => list.map(_toEntity).toList());
+    return _local.watchAllSessions().map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
   @override
   Future<void> deleteSession(BigInt id) async {
-    await (_db.delete(
-      _db.focusSessionTable,
-    )..where((t) => t.id.equals(id))).go();
-  }
-
-  FocusSession _toEntity(FocusSessionData data) {
-    return FocusSession(
-      id: data.id,
-      taskId: data.taskId,
-      focusDurationMinutes: data.focusDurationMinutes,
-      breakDurationMinutes: data.breakDurationMinutes,
-      startTime: data.startTime,
-      endTime: data.endTime,
-      state: data.state,
-      elapsedSeconds: data.elapsedSeconds,
-    );
-  }
-
-  FocusSessionTableCompanion _toCompanion(FocusSession session) {
-    return FocusSessionTableCompanion(
-      taskId: Value(session.taskId),
-      focusDurationMinutes: Value(session.focusDurationMinutes),
-      breakDurationMinutes: Value(session.breakDurationMinutes),
-      startTime: Value(session.startTime),
-      endTime: Value(session.endTime),
-      state: Value(session.state),
-      elapsedSeconds: Value(session.elapsedSeconds),
-    );
+    await _local.deleteSession(id);
   }
 }

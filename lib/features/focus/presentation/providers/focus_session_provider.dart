@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/focus_session.dart';
+import '../../domain/entities/focus_session_extensions.dart';
 import '../../domain/entities/session_state.dart';
 import '../../domain/repositories/i_focus_session_repository.dart';
 
@@ -57,10 +58,10 @@ class FocusTimer extends _$FocusTimer {
     final current = state;
     if (current == null || current.state != SessionState.running) return;
 
+    _stopTimer();
     final updated = current.copyWith(state: SessionState.paused);
     state = updated;
     _repository.updateSession(updated);
-    _stopTimer();
   }
 
   void resumeSession() {
@@ -73,20 +74,36 @@ class FocusTimer extends _$FocusTimer {
     _startTimer();
   }
 
+  /// Premature end: save as cancelled (not deleted).
   void cancelSession() {
     final current = state;
     if (current == null) return;
 
     _stopTimer();
-    _repository.deleteSession(current.id!);
+    final updated = current.copyWith(
+      state: SessionState.cancelled,
+      endTime: DateTime.now(),
+    );
+    _repository.updateSession(updated);
     state = null;
+  }
+
+  /// Update focus/break duration while paused.
+  void updateDuration({int? focusMinutes, int? breakMinutes}) {
+    final current = state;
+    if (current == null || current.state != SessionState.paused) return;
+
+    final updated = current.copyWith(
+      focusDurationMinutes: focusMinutes,
+      breakDurationMinutes: breakMinutes,
+    );
+    state = updated;
+    _repository.updateSession(updated);
   }
 
   void _startTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _tick();
-    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
 
   void _stopTimer() {

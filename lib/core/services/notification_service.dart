@@ -1,21 +1,15 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
-  final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings();
 
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+    const initSettings = InitializationSettings(android: androidSettings, iOS: iosSettings);
 
-    await _notifications.initialize(initSettings);
+    await _notifications.initialize(settings: initSettings);
   }
 
   Future<void> showSessionNotification({
@@ -37,26 +31,14 @@ class NotificationService {
       usesChronometer: isPersistent,
     );
 
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
+    const iosDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
 
-    final details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
+    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
-    await _notifications.show(
-      id: id,
-      title: title,
-      body: body,
-      notificationDetails: details,
-    );
+    await _notifications.show(id: id, title: title, body: body, notificationDetails: details);
   }
 
   Future<void> cancelSessionNotification(int id) async {
-    await _notifications.cancel(id);
+    await _notifications.cancel(id: id);
   }
 }

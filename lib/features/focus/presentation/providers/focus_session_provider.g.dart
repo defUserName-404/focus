@@ -41,7 +41,7 @@ final class FocusTimerProvider
   }
 }
 
-String _$focusTimerHash() => r'ed1a994c09ba584d0849469d84daafbd935af63e';
+String _$focusTimerHash() => r'2b3b2498b45c1e48f9b8de15c96d6542db2a3129';
 
 abstract class _$FocusTimer extends $Notifier<FocusSession?> {
   FocusSession? build();
