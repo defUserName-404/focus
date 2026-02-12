@@ -16,7 +16,6 @@ import '../commands/task_commands.dart';
 import '../providers/task_stats_provider.dart';
 import '../providers/task_provider.dart';
 import '../widgets/recent_sessions_section.dart';
-import '../widgets/task_activity_graph.dart';
 import '../widgets/task_priority_badge.dart';
 import '../widgets/task_quick_actions.dart';
 import '../widgets/task_stats_row.dart';
@@ -101,11 +100,6 @@ class TaskDetailScreen extends ConsumerWidget {
 
                 // ── Stats Row ──
                 TaskStatsRow(stats: stats),
-
-                SizedBox(height: AppConstants.spacing.extraLarge),
-
-                // ── Activity Graph ──
-                TaskActivityGraph(dailyCompletedSessions: stats.dailyCompletedSessions),
 
                 SizedBox(height: AppConstants.spacing.extraLarge),
 
