@@ -68,4 +68,9 @@ class DateTimeExtensions {
   static String shortMonth(int month) {
     return DateTimeConstants.shortMonthNames[month - 1];
   }
+
+  static String shortDateString(String dateKey) {
+    final date = DateTime.parse(dateKey);
+    return DateFormat('MMM d').format(date);
+  }
 }

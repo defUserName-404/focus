@@ -13,7 +13,7 @@ abstract final class ActivityGraphConstants {
   static const Duration tooltipDuration = Duration(seconds: 2);
 
   static const int startYear = 2020;
-  static const double yearDropdownHeight = 30;
+  static const double yearDropdownWidth = 100;
   static const double yearDropdownIconSize = 16;
 
   static const double legendCellSize = 10;

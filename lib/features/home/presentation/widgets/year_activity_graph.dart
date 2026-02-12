@@ -5,6 +5,7 @@ import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/home/presentation/providers/activity_graph_providers.dart';
 import 'package:focus/features/home/presentation/widgets/year_grid_painter.dart';
 import 'package:focus/features/tasks/presentation/providers/task_stats_provider.dart';
+import 'package:forui/forui.dart';
 
 import '../../../../core/common/utils/date_formatter.dart';
 import '../utils/activity_graph_constants.dart';
@@ -66,20 +67,17 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
         return Positioned(
           left: dx,
           top: dy,
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: ActivityGraphConstants.tooltipWidth,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: context.colors.foreground,
-                borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
-              ),
-              child: Text(
-                '$sessions session${sessions == 1 ? '' : 's'} on $dateKey',
-                textAlign: TextAlign.center,
-                style: context.typography.xs.copyWith(color: context.colors.background, fontWeight: FontWeight.w500),
-              ),
+          child: Container(
+            width: ActivityGraphConstants.tooltipWidth,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: context.colors.foreground,
+              borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+            ),
+            child: Text(
+              '$sessions session${sessions == 1 ? '' : 's'} on ${DateTimeExtensions.shortDateString(dateKey)}',
+              textAlign: TextAlign.center,
+              style: context.typography.xs.copyWith(color: context.colors.background, fontWeight: FontWeight.w500),
             ),
           ),
         );
@@ -116,36 +114,28 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
     final totalWeeks = DateTimeExtensions.weekIndex(dec31, jan1) + 1;
     final gridWidth = ActivityGraphConstants.dayLabelWidth + totalWeeks * ActivityGraphConstants.cellStep;
 
-    return Material(
-      color: Colors.transparent,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Activity',
-                style: context.typography.sm.copyWith(fontWeight: FontWeight.w600, color: context.colors.foreground),
-              ),
-              const Spacer(),
-              _buildLegend(context),
-            ],
-          ),
-          SizedBox(height: AppConstants.spacing.regular),
-          SizedBox(
-            height: ActivityGraphConstants.yearDropdownHeight,
-            child: DropdownButton<int>(
-              value: selectedYear,
-              underline: const SizedBox.shrink(),
-              isDense: true,
-              style: context.typography.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.foreground),
-              icon: Icon(
-                Icons.keyboard_arrow_down,
-                size: ActivityGraphConstants.yearDropdownIconSize,
-                color: context.colors.mutedForeground,
-              ),
-              items: years.map((y) => DropdownMenuItem(value: y, child: Text('$y'))).toList(),
-              onChanged: (y) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Activity',
+              style: context.typography.sm.copyWith(fontWeight: FontWeight.w600, color: context.colors.foreground),
+            ),
+            const Spacer(),
+            _buildLegend(context),
+          ],
+        ),
+        SizedBox(height: AppConstants.spacing.regular),
+        SizedBox(
+          width: ActivityGraphConstants.yearDropdownWidth,
+          child: FSelect<int>(
+            items: {for (var y in years) '$y': y},
+            hint: selectedYear.toString(),
+            control: FSelectControl.managed(
+              initial: selectedYear,
+              onChange: (y) {
                 if (y != null && y != selectedYear) {
                   _removeTooltip();
                   ref.read(selectedYearProvider.notifier).setYear(y);
@@ -160,43 +150,40 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
               },
             ),
           ),
-          SizedBox(height: AppConstants.spacing.regular),
-          SizedBox(
-            height: ActivityGraphConstants.monthLabelHeight + ActivityGraphConstants.graphHeight,
-            child: asyncData.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err')),
-              data: (stats) {
-                final lookup = <String, int>{for (final s in stats) s.date: s.completedSessions};
-                return SingleChildScrollView(
-                  controller: _scrollController,
-                  scrollDirection: Axis.horizontal,
-                  child: GestureDetector(
-                    onTapUp: (details) =>
-                        _onCellTap(context, details.localPosition, details.globalPosition, lookup, jan1),
-                    child: CustomPaint(
-                      size: Size(
-                        gridWidth,
-                        ActivityGraphConstants.monthLabelHeight + ActivityGraphConstants.graphHeight,
-                      ),
-                      painter: YearGridPainter(
-                        year: selectedYear,
-                        lookup: lookup,
-                        cellColor: context.colors.primary,
-                        emptyColor: context.colors.mutedForeground.withValues(alpha: 0.12),
-                        textColor: context.colors.mutedForeground,
-                        textStyle: context.typography.xs,
-                        highlightDateKey: tappedDateKey,
-                        highlightColor: context.colors.foreground,
-                      ),
+        ),
+        SizedBox(height: AppConstants.spacing.regular),
+        SizedBox(
+          height: ActivityGraphConstants.monthLabelHeight + ActivityGraphConstants.graphHeight,
+          child: asyncData.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => Center(child: Text('Error: $err')),
+            data: (stats) {
+              final lookup = <String, int>{for (final s in stats) s.date: s.completedSessions};
+              return SingleChildScrollView(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                child: GestureDetector(
+                  onTapUp: (details) =>
+                      _onCellTap(context, details.localPosition, details.globalPosition, lookup, jan1),
+                  child: CustomPaint(
+                    size: Size(gridWidth, ActivityGraphConstants.monthLabelHeight + ActivityGraphConstants.graphHeight),
+                    painter: YearGridPainter(
+                      year: selectedYear,
+                      lookup: lookup,
+                      cellColor: context.colors.primary,
+                      emptyColor: context.colors.mutedForeground.withValues(alpha: 0.12),
+                      textColor: context.colors.mutedForeground,
+                      textStyle: context.typography.xs,
+                      highlightDateKey: tappedDateKey,
+                      highlightColor: context.colors.foreground,
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
