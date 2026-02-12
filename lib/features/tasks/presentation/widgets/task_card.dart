@@ -4,14 +4,14 @@ import 'package:focus/core/common/utils/date_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/common/presentation/providers/expansion_provider.dart';
-import 'package:focus/features/focus/presentation/commands/focus_commands.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/common/widgets/action_menu_button.dart';
 import '../../../../core/common/widgets/app_card.dart';
-import '../../../tasks/presentation/commands/task_commands.dart';
+import '../commands/task_commands.dart';
+import '../screens/task_detail_screen.dart';
 import 'subtask_row.dart';
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
@@ -41,7 +41,14 @@ class TaskCard extends ConsumerWidget {
     final isOverdue = task.endDate?.isOverdue ?? false;
 
     return AppCard(
-      onTap: () => FocusCommands.start(context, ref, taskId: task.id!),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => TaskDetailScreen(
+            taskId: task.id!,
+            projectId: task.projectId,
+          ),
+        ),
+      ),
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
@@ -113,7 +120,14 @@ class TaskCard extends ConsumerWidget {
                         .read(taskProvider(projectIdString).notifier)
                         .toggleTaskCompletion(st),
                     onTap: () {
-                      FocusCommands.start(context, ref, taskId: st.id!);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => TaskDetailScreen(
+                            taskId: st.id!,
+                            projectId: st.projectId,
+                          ),
+                        ),
+                      );
                       if (onSubtaskTap != null) onSubtaskTap!(st);
                     },
                     onEdit: () => TaskCommands.edit(context, st),

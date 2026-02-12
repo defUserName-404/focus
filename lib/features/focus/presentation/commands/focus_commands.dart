@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/common/widgets/confirmation_dialog.dart';
+import '../../domain/entities/session_state.dart';
 import '../providers/focus_session_provider.dart';
 import '../screens/focus_session_screen.dart';
 
 /// Centralized focus session commands
 class FocusCommands {
   /// Navigate to the focus session screen for a given task.
-  /// Creates a session in [idle] state — timer not started yet.
+  ///
+  /// If there is already an active (non-completed/cancelled) session,
+  /// navigates to it instead of creating a new one.
   static Future<void> start(
     BuildContext context,
     WidgetRef ref, {
@@ -16,6 +19,20 @@ class FocusCommands {
     int focusMinutes = 25,
     int breakMinutes = 5,
   }) async {
+    final existing = ref.read(focusTimerProvider);
+
+    // If a session is already active, just show it.
+    if (existing != null &&
+        existing.state != SessionState.completed &&
+        existing.state != SessionState.cancelled) {
+      if (context.mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const FocusSessionScreen()),
+        );
+      }
+      return;
+    }
+
     await ref.read(focusTimerProvider.notifier).createSession(
       taskId: taskId,
       focusMinutes: focusMinutes,

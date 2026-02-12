@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
+import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../commands/focus_commands.dart';
 import '../providers/focus_session_provider.dart';
 import '../widgets/circular_timer.dart';
 import '../widgets/focus_controls.dart';
@@ -24,36 +24,11 @@ class FocusSessionScreen extends ConsumerWidget {
     }
 
     return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-
-        final progress = progressAsync.value;
-        if (progress != null && progress.isRunning) {
-          await FocusCommands.confirmEnd(context, ref);
-        } else {
-          if (context.mounted) {
-            Navigator.of(context).pop();
-          }
-        }
-      },
+      canPop: true,
       child: FScaffold(
         header: FHeader.nested(
           title: const Text('Focus'),
-          prefixes: [
-            FHeaderAction.back(
-              onPress: () async {
-                final progress = progressAsync.value;
-                if (progress != null && progress.isRunning) {
-                  await FocusCommands.confirmEnd(context, ref);
-                } else {
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                  }
-                }
-              },
-            ),
-          ],
+          prefixes: [FHeaderAction.back(onPress: () => Navigator.of(context).pop())],
         ),
         child: Center(
           child: Padding(
@@ -62,6 +37,21 @@ class FocusSessionScreen extends ConsumerWidget {
               children: [
                 const Spacer(flex: 1),
                 const FocusTaskInfo(),
+                SizedBox(height: AppConstants.spacing.small),
+                // Phase indicator
+                progressAsync.when(
+                  skipLoadingOnReload: true,
+                  data: (progress) {
+                    if (progress == null) return const SizedBox.shrink();
+                    final label = progress.isFocusPhase ? 'Focus' : 'Break';
+                    final color = progress.isFocusPhase ? context.colors.primary : context.colors.mutedForeground;
+                    return FBadge(
+                      child: Text(label, style: TextStyle(color: color)),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
+                ),
                 const Spacer(flex: 2),
                 const CircularTimer(),
                 SizedBox(height: AppConstants.spacing.extraLarge),

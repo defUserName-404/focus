@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../commands/focus_commands.dart';
 import '../providers/focus_session_provider.dart';
 
-/// Pause/Resume + End session buttons.
+/// Focus session controls: Play/Pause and Complete Task.
+///
+/// "Complete Task" marks both the session as completed and the task as done.
 class FocusControls extends ConsumerWidget {
   const FocusControls({super.key});
 
@@ -21,9 +22,10 @@ class FocusControls extends ConsumerWidget {
 
         final notifier = ref.read(focusTimerProvider.notifier);
 
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            // ── Play / Pause ───────────────────────────────────────────
             if (progress.isPaused)
               FButton(
                 onPress: () => notifier.resumeSession(),
@@ -42,18 +44,23 @@ class FocusControls extends ConsumerWidget {
                 prefix: const Icon(FIcons.play),
                 child: const Text('Start'),
               ),
-            SizedBox(width: AppConstants.spacing.large),
-            FButton(
-              style: FButtonStyle.destructive(),
-              onPress: () => FocusCommands.confirmEnd(context, ref),
-              prefix: const Icon(FIcons.square),
-              child: const Text('End'),
-            ),
+            SizedBox(height: AppConstants.spacing.large),
+            // ── Complete Task (completes session + task) ────────────────
+            if (!progress.isIdle && !progress.isCompleted)
+              FButton(
+                style: FButtonStyle.outline(),
+                onPress: () {
+                  notifier.completeTaskAndSession();
+                  Navigator.of(context).pop();
+                },
+                prefix: const Icon(FIcons.checkCheck),
+                child: const Text('Complete Task'),
+              ),
           ],
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }

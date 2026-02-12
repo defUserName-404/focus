@@ -49,6 +49,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/audio/alarms/
+    - assets/audio/ambience/
+
   fonts:
     - family: Manrope
       fonts:

@@ -1,13 +1,53 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
+
+import '../constants/audio_assets.dart';
 
 class AudioService {
-  final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _alarmPlayer = AudioPlayer();
   final AudioPlayer _bgPlayer = AudioPlayer();
 
-  Future<void> playNotification() async {
-    await _player.play(AssetSource('audio/notification.mp3'));
+  /// The currently active ambience preset, if any.
+  SoundPreset? _currentAmbience;
+
+  /// Play an alarm sound. Uses [preset] or falls back to [AudioAssets.defaultAlarm].
+  Future<void> playAlarm([SoundPreset? preset]) async {
+    final sound = preset ?? AudioAssets.defaultAlarm;
+    await _alarmPlayer.stop();
+    await _alarmPlayer.play(AssetSource('audio/${sound.assetPath}'));
   }
 
+  /// Start looping an ambient/focus sound from a [SoundPreset].
+  /// If no [preset] is given, uses the first available ambience or does nothing.
+  Future<void> startAmbience([SoundPreset? preset]) async {
+    final sound = preset ?? AudioAssets.defaultAmbience;
+    if (sound == null) return;
+    try {
+      _currentAmbience = sound;
+      await _bgPlayer.setReleaseMode(ReleaseMode.loop);
+      await _bgPlayer.play(AssetSource('audio/${sound.assetPath}'));
+    } catch (e) {
+      debugPrint('AudioService: Failed to start ambience: $e');
+    }
+  }
+
+  /// Pause the ambient sound (can be resumed later).
+  Future<void> pauseAmbience() async {
+    await _bgPlayer.pause();
+  }
+
+  /// Resume a previously paused ambient sound.
+  Future<void> resumeAmbience() async {
+    await _bgPlayer.resume();
+  }
+
+  /// Stop the ambient sound completely.
+  Future<void> stopAmbience() async {
+    _currentAmbience = null;
+    await _bgPlayer.stop();
+  }
+
+  /// Start looping a noise file by relative path (legacy).
   Future<void> startNoise(String noiseAsset) async {
     await _bgPlayer.setReleaseMode(ReleaseMode.loop);
     await _bgPlayer.play(AssetSource('audio/$noiseAsset'));
@@ -22,7 +62,7 @@ class AudioService {
   }
 
   void dispose() {
-    _player.dispose();
+    _alarmPlayer.dispose();
     _bgPlayer.dispose();
   }
 }
