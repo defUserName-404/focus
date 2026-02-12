@@ -9,12 +9,13 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../focus/domain/entities/session_state.dart';
 import '../../../focus/presentation/commands/focus_commands.dart';
 import '../../../focus/presentation/providers/focus_session_provider.dart';
+import '../../../home/presentation/widgets/section_header.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_stats.dart';
 import '../commands/task_commands.dart';
-import '../providers/task_stats_provider.dart';
 import '../providers/task_provider.dart';
+import '../providers/task_stats_provider.dart';
 import '../widgets/recent_sessions_section.dart';
 import '../widgets/task_priority_badge.dart';
 import '../widgets/task_quick_actions.dart';
@@ -91,22 +92,18 @@ class TaskDetailScreen extends ConsumerWidget {
           child: SingleChildScrollView(
             padding: EdgeInsets.all(AppConstants.spacing.large),
             child: Column(
+              spacing: AppConstants.spacing.extraLarge,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Summary ──
                 _TaskSummary(task: task, projectName: project?.title),
 
-                SizedBox(height: AppConstants.spacing.extraLarge),
-
                 // ── Stats Row ──
+                SectionHeader(title: 'Stats'),
                 TaskStatsRow(stats: stats),
-
-                SizedBox(height: AppConstants.spacing.extraLarge),
 
                 // ── Quick Actions ──
                 TaskQuickActions(task: task, projectId: projectId),
-
-                SizedBox(height: AppConstants.spacing.extraLarge),
 
                 // ── Recent Sessions ──
                 RecentSessionsSection(sessions: recentSessions),
@@ -191,8 +188,6 @@ class _TaskSummary extends StatelessWidget {
               ),
           ],
         ),
-
-        SizedBox(height: AppConstants.spacing.large),
         const fu.FDivider(),
       ],
     );

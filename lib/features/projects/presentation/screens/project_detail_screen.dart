@@ -79,9 +79,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(
+          prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Task'),
-          onPress: () =>
-              TaskCommands.create(context, ref, projectId: widget.projectId),
+          onPress: () => TaskCommands.create(context, ref, projectId: widget.projectId),
         ),
       ),
       child: projectAsync.when(
@@ -114,69 +114,49 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                       focusNode: _searchFocusNode,
                       hint: 'Search tasks...',
                       onChanged: (query) {
-                        ref
-                            .read(
-                              taskListFilterProvider(_projectIdString).notifier,
-                            )
-                            .updateFilter(searchQuery: query);
+                        ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(searchQuery: query);
                       },
                     ),
                     Row(
-                      children:
-                          [
-                            SizedBox(
-                              width: 120,
-                              child: FilterSelect<TaskPriority?>(
-                                selected: filter.priorityFilter,
-                                onChanged: (priority) {
-                                  ref
-                                      .read(
-                                        taskListFilterProvider(
-                                          _projectIdString,
-                                        ).notifier,
-                                      )
-                                      .updateFilter(priorityFilter: priority);
-                                },
-                                options: TaskPriority.values,
-                                hint: 'Priority',
-                                allLabel: 'All',
-                              ),
-                            ),
-                            SizedBox(
-                              width: 100,
-                              child: SortOrderSelector<TaskSortOrder>(
-                                selectedOrder: filter.sortOrder,
-                                onChanged: (order) {
-                                  ref
-                                      .read(
-                                        taskListFilterProvider(
-                                          _projectIdString,
-                                        ).notifier,
-                                      )
-                                      .updateFilter(sortOrder: order);
-                                },
-                                orderOptions: TaskSortOrder.values,
-                              ),
-                            ),
-                            Expanded(
-                              child: SortFilterChips<TaskSortCriteria>(
-                                selectedCriteria: filter.sortCriteria,
-                                onChanged: (criteria) {
-                                  ref
-                                      .read(
-                                        taskListFilterProvider(
-                                          _projectIdString,
-                                        ).notifier,
-                                      )
-                                      .updateFilter(sortCriteria: criteria);
-                                },
-                                criteriaOptions: TaskSortCriteria.values,
-                              ),
-                            ),
-                          ].withSpacing(
-                            AppConstants.spacing.small,
-                            vertical: false,
+                      children: [
+                        SizedBox(
+                          width: 120,
+                          child: FilterSelect<TaskPriority?>(
+                            selected: filter.priorityFilter,
+                            onChanged: (priority) {
+                              ref
+                                  .read(taskListFilterProvider(_projectIdString).notifier)
+                                  .updateFilter(priorityFilter: priority);
+                            },
+                            options: TaskPriority.values,
+                            hint: 'Priority',
+                            allLabel: 'All',
                           ),
+                        ),
+                        SizedBox(
+                          width: 100,
+                          child: SortOrderSelector<TaskSortOrder>(
+                            selectedOrder: filter.sortOrder,
+                            onChanged: (order) {
+                              ref
+                                  .read(taskListFilterProvider(_projectIdString).notifier)
+                                  .updateFilter(sortOrder: order);
+                            },
+                            orderOptions: TaskSortOrder.values,
+                          ),
+                        ),
+                        Expanded(
+                          child: SortFilterChips<TaskSortCriteria>(
+                            selectedCriteria: filter.sortCriteria,
+                            onChanged: (criteria) {
+                              ref
+                                  .read(taskListFilterProvider(_projectIdString).notifier)
+                                  .updateFilter(sortCriteria: criteria);
+                            },
+                            criteriaOptions: TaskSortCriteria.values,
+                          ),
+                        ),
+                      ].withSpacing(AppConstants.spacing.small, vertical: false),
                     ),
                   ].withSpacing(AppConstants.spacing.small),
                 ),
@@ -194,21 +174,16 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                       return Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
+                          spacing: AppConstants.spacing.regular,
                           children: [
                             Icon(
                               fu.FIcons.clipboardList,
-                              size: 48,
+                              size: AppConstants.size.icon.extraExtraLarge,
                               color: context.colors.mutedForeground,
                             ),
-                            const SizedBox(height: 12),
                             Text(
                               'No tasks yet',
                               style: context.typography.base.copyWith(color: context.colors.mutedForeground),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Create one to get started',
-                              style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
                             ),
                           ],
                         ),

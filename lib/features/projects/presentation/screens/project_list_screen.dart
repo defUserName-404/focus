@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/common/utils/widget_extensions.dart';
 import 'package:focus/core/constants/app_constants.dart';
+
 // Removed unused import: ProjectDetailScreen
 import 'package:forui/forui.dart' as fu;
 
@@ -30,7 +31,11 @@ class ProjectListScreen extends ConsumerWidget {
       ),
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
-        child: fu.FButton(child: const Text('Create New Project'), onPress: () => ProjectCommands.create(context, ref)),
+        child: fu.FButton(
+          prefix: Icon(fu.FIcons.plus),
+          child: const Text('Create New Project'),
+          onPress: () => ProjectCommands.create(context, ref),
+        ),
       ),
       child: Column(
         children: [

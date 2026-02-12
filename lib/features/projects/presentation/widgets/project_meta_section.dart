@@ -108,7 +108,6 @@ class ProjectMetaSection extends ConsumerWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 12),
         ],
       ],
     );

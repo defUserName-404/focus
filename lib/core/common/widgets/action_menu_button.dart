@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart' as fu;
+
+import '../../config/theme/app_theme.dart';
 
 class ActionMenuButton extends StatelessWidget {
   final VoidCallback? onEdit;
@@ -30,23 +31,27 @@ class ActionMenuButton extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return PopupMenuButton<String>(
-      icon: Icon(icon, size: iconSize, color: iconColor ?? context.colors.mutedForeground),
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
-      position: position ?? PopupMenuPosition.over,
-      itemBuilder: (_) => [
-        if (onEdit != null) PopupMenuItem(value: 'edit', child: Text(editLabel)),
-        if (onDelete != null)
-          PopupMenuItem(
-            value: 'delete',
-            child: Text(deleteLabel, style: const TextStyle(color: Colors.red)),
-          ),
+    return fu.FPopoverMenu(
+      autofocus: true,
+      menuAnchor: Alignment.topRight,
+      childAnchor: Alignment.bottomRight,
+      menu: [
+        fu.FItemGroup(
+          children: [
+            fu.FItem(prefix: const Icon(fu.FIcons.pencil), title: const Text('Edit'), onPress: () => onEdit?.call()),
+            fu.FItem(
+              prefix: Icon(fu.FIcons.trash, color: context.colors.destructive),
+              title: Text('Delete', style: context.typography.base.copyWith(color: context.colors.destructive)),
+              onPress: () => onDelete?.call(),
+            ),
+          ],
+        ),
       ],
-      onSelected: (value) {
-        if (value == 'edit') onEdit?.call();
-        if (value == 'delete') onDelete?.call();
-      },
+      builder: (_, controller, _) => fu.FButton(
+        onPress: controller.toggle,
+        style: fu.FButtonStyle.ghost(),
+        child: const Icon(fu.FIcons.ellipsis, size: 20),
+      ),
     );
   }
 }
