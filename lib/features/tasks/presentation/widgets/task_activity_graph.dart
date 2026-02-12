@@ -7,8 +7,10 @@ import '../../../../core/constants/app_constants.dart';
 ///
 /// Each cell represents one day. Color intensity reflects the number
 /// of completed focus sessions on that day. Shows the last [weeksToShow] weeks.
+///
+/// [dailyCompletedSessions] uses ISO date string keys (`YYYY-MM-DD`).
 class TaskActivityGraph extends StatelessWidget {
-  final Map<DateTime, int> dailyCompletedSessions;
+  final Map<String, int> dailyCompletedSessions;
   final int weeksToShow;
 
   const TaskActivityGraph({
@@ -104,7 +106,7 @@ class TaskActivityGraph extends StatelessWidget {
 // ── Custom Painter ──────────────────────────────────────────────────────────
 
 class _ActivityGraphPainter extends CustomPainter {
-  final Map<DateTime, int> data;
+  final Map<String, int> data;
   final int weeksToShow;
   final Color cellColor;
   final Color emptyColor;
@@ -161,7 +163,7 @@ class _ActivityGraphPainter extends CustomPainter {
         if (date.isAfter(today)) continue;
 
         final dayKey =
-            DateTime(date.year, date.month, date.day);
+            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
         final sessions = data[dayKey] ?? 0;
 
         final x = labelWidth + week * (cellSize + cellGap);

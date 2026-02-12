@@ -1,16 +1,16 @@
 /// Aggregated statistics for a single task's focus sessions.
 ///
 /// All computation is performed at the ORM/SQL level for performance.
-/// [dailyCompletedSessions] maps date-only DateTimes to the number of
-/// completed sessions on that day, powering the activity heatmap.
+/// [dailyCompletedSessions] maps ISO date strings (`YYYY-MM-DD`) to the
+/// number of completed sessions on that day, powering the activity heatmap.
 class TaskStats {
   final int totalFocusMinutes;
   final int totalSessions;
   final int completedSessions;
   final double avgSessionMinutes;
 
-  /// Date (day granularity) → number of completed sessions on that day.
-  final Map<DateTime, int> dailyCompletedSessions;
+  /// ISO date string (`YYYY-MM-DD`) → completed session count.
+  final Map<String, int> dailyCompletedSessions;
 
   const TaskStats({
     required this.totalFocusMinutes,

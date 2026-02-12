@@ -45,17 +45,27 @@ class FocusLocalDataSourceImpl implements IFocusLocalDataSource {
 
   @override
   Future<int> createSession(FocusSessionTableCompanion companion) async {
-    return await _db.into(_db.focusSessionTable).insert(companion);
+    final id = await _db.into(_db.focusSessionTable).insert(companion);
+    // Keep daily stats table in sync.
+    await _recalcForCompanion(companion);
+    return id;
   }
 
   @override
   Future<void> updateSession(FocusSessionTableCompanion companion) async {
     await (_db.update(_db.focusSessionTable)..where((t) => t.id.equals(companion.id.value))).write(companion);
+    // Keep daily stats table in sync.
+    await _recalcForCompanion(companion);
   }
 
   @override
   Future<void> deleteSession(BigInt id) async {
+    // Fetch the session first so we know which date to recalculate.
+    final session = await getSessionById(id);
     await (_db.delete(_db.focusSessionTable)..where((t) => t.id.equals(id))).go();
+    if (session != null) {
+      await _db.recalculateDailyStatsForDate(session.startTime);
+    }
   }
 
   @override
@@ -66,5 +76,13 @@ class FocusLocalDataSourceImpl implements IFocusLocalDataSource {
   @override
   Stream<List<FocusSessionData>> watchAllSessions() {
     return _db.select(_db.focusSessionTable).watch();
+  }
+
+  /// Derives the session's start time from the companion and recalculates
+  /// the daily stats row for that date.
+  Future<void> _recalcForCompanion(FocusSessionTableCompanion companion) async {
+    if (companion.startTime case final start when start.present) {
+      await _db.recalculateDailyStatsForDate(start.value);
+    }
   }
 }

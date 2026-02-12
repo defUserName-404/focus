@@ -1,5 +1,6 @@
 import '../../../focus/data/mappers/focus_session_mappers.dart';
 import '../../../focus/domain/entities/focus_session.dart';
+import '../../domain/entities/daily_session_stats.dart';
 import '../../domain/entities/global_stats.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_stats.dart';
@@ -30,8 +31,27 @@ class TaskStatsRepositoryImpl implements ITaskStatsRepository {
   }
 
   @override
-  Stream<Map<DateTime, int>> watchGlobalDailyCompletedSessions() {
+  Stream<Map<String, int>> watchGlobalDailyCompletedSessions() {
     return _local.watchGlobalDailyCompletedSessions();
+  }
+
+  @override
+  Stream<List<DailySessionStats>> watchDailyStatsForRange(
+    String startDate,
+    String endDate,
+  ) {
+    return _local.watchDailyStatsForRange(startDate, endDate).map(
+      (rows) => rows
+          .map(
+            (r) => DailySessionStats(
+              date: r.date,
+              completedSessions: r.completedSessions,
+              totalSessions: r.totalSessions,
+              focusSeconds: r.focusSeconds,
+            ),
+          )
+          .toList(),
+    );
   }
 
   @override

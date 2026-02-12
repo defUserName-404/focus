@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus/core/common/utils/date_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart' as fu;
-import 'package:focus/core/common/utils/date_formatter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../projects/domain/entities/project.dart';
@@ -13,8 +13,8 @@ import '../../../tasks/domain/entities/global_stats.dart';
 import '../../../tasks/domain/entities/task.dart';
 import '../../../tasks/presentation/providers/task_stats_provider.dart';
 import '../../../tasks/presentation/screens/task_detail_screen.dart';
-import '../../../tasks/presentation/widgets/task_activity_graph.dart';
 import '../../../tasks/presentation/widgets/task_priority_badge.dart';
+import '../widgets/year_activity_graph.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -22,7 +22,6 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsAsync = ref.watch(projectListProvider);
-    final dailySessionsAsync = ref.watch(globalDailyCompletedSessionsProvider);
     final globalStatsAsync = ref.watch(globalStatsProvider);
     final recentTasksAsync = ref.watch(recentTasksProvider);
 
@@ -51,28 +50,7 @@ class HomeScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                if (stats.currentStreak > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: context.colors.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(fu.FIcons.flame, size: 14, color: context.colors.primary),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${stats.currentStreak}d streak',
-                          style: context.typography.xs.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: context.colors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                if (stats.currentStreak > 0) _StreakBadge(streak: stats.currentStreak),
               ],
             ),
           ),
@@ -98,7 +76,7 @@ class HomeScreen extends ConsumerWidget {
           // ── Activity Graph ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TaskActivityGraph(dailyCompletedSessions: dailySessionsAsync.value ?? {}),
+            child: const YearActivityGraph(),
           ),
 
           SizedBox(height: AppConstants.spacing.extraLarge),
@@ -511,6 +489,84 @@ class _RecentProjectTile extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Streak Badge with Fire Animation ────────────────────────────────────────
+
+class _StreakBadge extends StatefulWidget {
+  final int streak;
+
+  const _StreakBadge({required this.streak});
+
+  @override
+  State<_StreakBadge> createState() => _StreakBadgeState();
+}
+
+class _StreakBadgeState extends State<_StreakBadge> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+  late final Animation<double> _opacity;
+
+  static const _fireOrange = Color(0xFFF97316);
+  static const _fireAmber = Color(0xFFFBBF24);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
+
+    _scale = Tween<double>(begin: 1.0, end: 1.2).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _opacity = Tween<double>(
+      begin: 0.85,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: _fireOrange.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+        border: Border.all(color: _fireOrange.withValues(alpha: 0.25), width: AppConstants.border.width.small),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _scale.value,
+                child: Opacity(opacity: _opacity.value, child: child),
+              );
+            },
+            child: ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [_fireOrange, _fireAmber],
+              ).createShader(bounds),
+              blendMode: BlendMode.srcIn,
+              child: const Icon(fu.FIcons.flame, size: 14, color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '${widget.streak}d streak',
+            style: context.typography.xs.copyWith(fontWeight: FontWeight.w600, color: _fireOrange),
+          ),
+        ],
       ),
     );
   }

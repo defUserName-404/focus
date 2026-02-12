@@ -7,8 +7,8 @@ class TaskStatsModel {
   final int totalSessions;
   final int completedSessions;
 
-  /// Date-only DateTime → number of completed sessions on that day.
-  final Map<DateTime, int> dailyCompletedSessions;
+  /// ISO date string (`YYYY-MM-DD`) → number of completed sessions on that day.
+  final Map<String, int> dailyCompletedSessions;
 
   const TaskStatsModel({
     required this.totalSeconds,

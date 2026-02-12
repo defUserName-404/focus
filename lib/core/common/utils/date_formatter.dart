@@ -5,9 +5,13 @@ extension DateTimeFormatting on DateTime {
   DateTime toDateOnly() => DateTime(year, month, day);
 
   /// Converts epoch seconds (as stored by Drift) to a date-only DateTime.
+  ///
+  /// Returns a UTC midnight [DateTime] using the local-timezone calendar date.
+  /// UTC normalisation guarantees consistent [==] / [hashCode] when used as
+  /// [Map] keys, avoiding subtle DST-related mismatches.
   static DateTime fromEpochSecondsToDateOnly(int epochSeconds) {
     final dt = DateTime.fromMillisecondsSinceEpoch(epochSeconds * 1000);
-    return DateTime(dt.year, dt.month, dt.day);
+    return DateTime.utc(dt.year, dt.month, dt.day);
   }
 
   String toDateString() => DateFormat('MMM d, yyyy').format(this);

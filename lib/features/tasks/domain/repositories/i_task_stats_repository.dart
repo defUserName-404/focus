@@ -1,3 +1,4 @@
+import '../entities/daily_session_stats.dart';
 import '../entities/global_stats.dart';
 import '../entities/task_stats.dart';
 import '../entities/task.dart';
@@ -11,7 +12,15 @@ abstract class ITaskStatsRepository {
   Stream<List<FocusSession>> watchRecentSessions(BigInt taskId, {int limit = 10});
 
   /// Watches daily completed sessions across all tasks.
-  Stream<Map<DateTime, int>> watchGlobalDailyCompletedSessions();
+  /// Keys are ISO date strings (`YYYY-MM-DD`).
+  Stream<Map<String, int>> watchGlobalDailyCompletedSessions();
+
+  /// Watches pre-aggregated daily stats for a date range (inclusive).
+  /// [startDate] and [endDate] are ISO `YYYY-MM-DD` strings.
+  Stream<List<DailySessionStats>> watchDailyStatsForRange(
+    String startDate,
+    String endDate,
+  );
 
   /// Watches aggregated global stats across all tasks and sessions.
   Stream<GlobalStats> watchGlobalStats();
