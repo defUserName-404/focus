@@ -21,7 +21,6 @@ class AudioService {
   /// If no [preset] is given, uses the first available ambience or does nothing.
   Future<void> startAmbience([SoundPreset? preset]) async {
     final sound = preset ?? AudioAssets.defaultAmbience;
-    if (sound == null) return;
     try {
       _currentAmbience = sound;
       await _bgPlayer.setReleaseMode(ReleaseMode.loop);

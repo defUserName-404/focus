@@ -25,21 +25,21 @@ abstract final class AudioAssets {
   // ── Alarm Sounds ──────────────────────────────────────────────────────────
 
   static const List<SoundPreset> alarms = [
-    SoundPreset(id: 'gentle_bell', label: 'Gentle Bell', assetPath: 'alarms/gentle_bell.mp3', type: SoundType.alarm),
     SoundPreset(
       id: 'digital_alarm',
       label: 'Digital Alarm',
       assetPath: 'alarms/digital_alarm.mp3',
       type: SoundType.alarm,
     ),
+    SoundPreset(id: 'gentle_bell', label: 'Gentle Bell', assetPath: 'alarms/gentle_bell.mp3', type: SoundType.alarm),
     SoundPreset(id: 'chime', label: 'Chime', assetPath: 'alarms/chime.mp3', type: SoundType.alarm),
   ];
 
   // ── Ambient / Focus Sounds ────────────────────────────────────────────────
 
   static const List<SoundPreset> ambience = [
-    SoundPreset(id: 'rain', label: 'Rain', assetPath: 'ambience/rain.mp3', type: SoundType.ambience),
     SoundPreset(id: 'forest', label: 'Forest', assetPath: 'ambience/forest.mp3', type: SoundType.ambience),
+    SoundPreset(id: 'rain', label: 'Rain', assetPath: 'ambience/rain.mp3', type: SoundType.ambience),
     SoundPreset(
       id: 'white_noise',
       label: 'White Noise',
@@ -55,16 +55,10 @@ abstract final class AudioAssets {
   ];
 
   /// Default alarm preset used when no preference is set.
-  static const SoundPreset defaultAlarm = SoundPreset(
-    id: 'gentle_bell',
-    label: 'Gentle Bell',
-    assetPath: 'alarms/gentle_bell.mp3',
-    type: SoundType.alarm,
-  );
+  static SoundPreset get defaultAlarm => alarms.first;
 
   /// Default ambience preset. Returns the first available, or null if empty.
-  static SoundPreset? get defaultAmbience =>
-      ambience.isNotEmpty ? ambience.first : null;
+  static SoundPreset get defaultAmbience => ambience.first;
 
   /// Find a preset by its ID across all categories.
   static SoundPreset? findById(String id) {
