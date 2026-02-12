@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/injection.dart';
@@ -18,47 +19,84 @@ class FocusTimer extends _$FocusTimer {
   @override
   FocusSession? build() {
     _repository = ref.watch(focusSessionRepositoryProvider);
-    _loadActiveSession();
+    // Fire-and-forget cleanup. Do NOT await this, as we want to start null.
+    _cleanupAbandonedSessions();
     return null;
   }
 
-  Future<void> _loadActiveSession() async {
-    final active = await _repository.getActiveSession();
-    if (active != null) {
-      state = active;
-      if (active.state == SessionState.running ||
-          active.state == SessionState.onBreak) {
-        _startTimer();
+  /// Finds any session that was left running/paused from a previous app run
+  /// and marks it as cancelled.
+  ///
+  /// This is race-condition safe: if the user starts a NEW session while this
+  /// is querying, we check [state] to ensure we don't cancel the new session.
+  Future<void> _cleanupAbandonedSessions() async {
+    try {
+      final active = await _repository.getActiveSession();
+      if (active == null) return;
+
+      // If the user has already started a session in this instance, [state] will be non-null.
+      final currentUserSession = state;
+
+      // If the active session in DB matches our current user session, DO NOT cancel it.
+      if (currentUserSession != null && currentUserSession.id == active.id) {
+        return;
       }
+
+      // If the found session is running, paused, or on break, it's abandoned.
+      if (active.state == SessionState.running ||
+          active.state == SessionState.onBreak ||
+          active.state == SessionState.paused) {
+        final updated = active.copyWith(
+          state: SessionState.cancelled,
+          endTime: DateTime.now(),
+        );
+        await _repository.updateSession(updated);
+      }
+    } catch (e) {
+      debugPrint('Error cleaning up abandoned session: $e');
     }
   }
 
-  Future<void> startNewSession({
+  /// Create a new session in [idle] state (timer not started yet).
+  Future<void> createSession({
     required BigInt taskId,
     required int focusMinutes,
     required int breakMinutes,
   }) async {
-    _stopTimer();
+    _stopTicking();
 
     final session = FocusSession(
       taskId: taskId,
       focusDurationMinutes: focusMinutes,
       breakDurationMinutes: breakMinutes,
       startTime: DateTime.now(),
-      state: SessionState.running,
+      state: SessionState.idle,
       elapsedSeconds: 0,
     );
 
     final saved = await _repository.startSession(session);
     state = saved;
-    _startTimer();
+  }
+
+  /// User taps the ring / presses play → transition idle→running or paused→running.
+  void startTimer() {
+    final current = state;
+    if (current == null) return;
+
+    if (current.state == SessionState.idle ||
+        current.state == SessionState.paused) {
+      final updated = current.copyWith(state: SessionState.running);
+      state = updated;
+      _repository.updateSession(updated);
+      _startTicking();
+    }
   }
 
   void pauseSession() {
     final current = state;
     if (current == null || current.state != SessionState.running) return;
 
-    _stopTimer();
+    _stopTicking();
     final updated = current.copyWith(state: SessionState.paused);
     state = updated;
     _repository.updateSession(updated);
@@ -71,7 +109,24 @@ class FocusTimer extends _$FocusTimer {
     final updated = current.copyWith(state: SessionState.running);
     state = updated;
     _repository.updateSession(updated);
-    _startTimer();
+    _startTicking();
+  }
+
+  /// Toggle play/pause from ring tap.
+  void togglePlayPause() {
+    final current = state;
+    if (current == null) return;
+
+    switch (current.state) {
+      case SessionState.idle:
+      case SessionState.paused:
+        startTimer();
+      case SessionState.running:
+      case SessionState.onBreak:
+        pauseSession();
+      default:
+        break;
+    }
   }
 
   /// Premature end: save as cancelled (not deleted).
@@ -79,7 +134,7 @@ class FocusTimer extends _$FocusTimer {
     final current = state;
     if (current == null) return;
 
-    _stopTimer();
+    _stopTicking();
     final updated = current.copyWith(
       state: SessionState.cancelled,
       endTime: DateTime.now(),
@@ -88,10 +143,14 @@ class FocusTimer extends _$FocusTimer {
     state = null;
   }
 
-  /// Update focus/break duration while paused.
+  /// Update focus/break duration while paused or idle.
   void updateDuration({int? focusMinutes, int? breakMinutes}) {
     final current = state;
-    if (current == null || current.state != SessionState.paused) return;
+    if (current == null) return;
+    if (current.state != SessionState.paused &&
+        current.state != SessionState.idle) {
+      return;
+    }
 
     final updated = current.copyWith(
       focusDurationMinutes: focusMinutes,
@@ -101,12 +160,14 @@ class FocusTimer extends _$FocusTimer {
     _repository.updateSession(updated);
   }
 
-  void _startTimer() {
+  // ── Internal tick logic ───────────────────────────────────────────────────
+
+  void _startTicking() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
 
-  void _stopTimer() {
+  void _stopTicking() {
     _timer?.cancel();
     _timer = null;
   }
@@ -114,7 +175,7 @@ class FocusTimer extends _$FocusTimer {
   void _tick() {
     final current = state;
     if (current == null) {
-      _stopTimer();
+      _stopTicking();
       return;
     }
 
@@ -126,9 +187,7 @@ class FocusTimer extends _$FocusTimer {
         _handleFocusCompleted();
       } else {
         state = current.copyWith(elapsedSeconds: newElapsed);
-        if (newElapsed % 10 == 0) {
-          _repository.updateSession(state!);
-        }
+        if (newElapsed % 10 == 0) _repository.updateSession(state!);
       }
     } else if (current.state == SessionState.onBreak) {
       final totalBreakSeconds = current.breakDurationMinutes * 60;
@@ -136,9 +195,7 @@ class FocusTimer extends _$FocusTimer {
         _handleSessionCompleted();
       } else {
         state = current.copyWith(elapsedSeconds: newElapsed);
-        if (newElapsed % 10 == 0) {
-          _repository.updateSession(state!);
-        }
+        if (newElapsed % 10 == 0) _repository.updateSession(state!);
       }
     }
   }
@@ -156,7 +213,7 @@ class FocusTimer extends _$FocusTimer {
     final current = state;
     if (current == null) return;
 
-    _stopTimer();
+    _stopTicking();
     final updated = current.copyWith(
       state: SessionState.completed,
       endTime: DateTime.now(),
@@ -169,4 +226,99 @@ class FocusTimer extends _$FocusTimer {
 @riverpod
 IFocusSessionRepository focusSessionRepository(Ref ref) {
   return getIt<IFocusSessionRepository>();
+}
+
+// ── Progress Logic (Merged) ────────────────────────────────────────────────
+
+/// Data class to hold parameters for progress calculation in an isolate.
+class _ProgressParams {
+  final SessionState state;
+  final int focusDurationMinutes;
+  final int breakDurationMinutes;
+  final int elapsedSeconds;
+
+  _ProgressParams({
+    required this.state,
+    required this.focusDurationMinutes,
+    required this.breakDurationMinutes,
+    required this.elapsedSeconds,
+  });
+}
+
+/// Computed progress data derived from the raw [FocusSession].
+/// Holds all display-ready values.
+class FocusProgress {
+  final double progress;
+  final int remainingMinutes;
+  final int remainingSeconds;
+  final bool isFocusPhase;
+  final bool isIdle;
+  final bool isPaused;
+  final bool isRunning;
+  final bool isCompleted;
+
+  const FocusProgress({
+    required this.progress,
+    required this.remainingMinutes,
+    required this.remainingSeconds,
+    required this.isFocusPhase,
+    required this.isIdle,
+    required this.isPaused,
+    required this.isRunning,
+    required this.isCompleted,
+  });
+
+  String get formattedTime =>
+      '${remainingMinutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+}
+
+/// Top-level function for [compute] to perform mathematical derivation.
+FocusProgress _calculateProgress(_ProgressParams params) {
+  final isFocus =
+      params.state == SessionState.running ||
+      params.state == SessionState.paused ||
+      params.state == SessionState.idle;
+
+  final totalSeconds = isFocus
+      ? params.focusDurationMinutes * 60
+      : params.breakDurationMinutes * 60;
+
+  final elapsedInPhase = isFocus
+      ? params.elapsedSeconds
+      : params.elapsedSeconds - (params.focusDurationMinutes * 60);
+
+  final remaining = (totalSeconds - elapsedInPhase).clamp(0, totalSeconds);
+  final progress = totalSeconds > 0
+      ? (elapsedInPhase / totalSeconds).clamp(0.0, 1.0)
+      : 0.0;
+
+  return FocusProgress(
+    progress: progress,
+    remainingMinutes: (remaining / 60).floor(),
+    remainingSeconds: remaining % 60,
+    isFocusPhase: isFocus,
+    isIdle: params.state == SessionState.idle,
+    isPaused: params.state == SessionState.paused,
+    isRunning:
+        params.state == SessionState.running ||
+        params.state == SessionState.onBreak,
+    isCompleted: params.state == SessionState.completed,
+  );
+}
+
+@riverpod
+Future<FocusProgress?> focusProgress(Ref ref) async {
+  final session = ref.watch(focusTimerProvider);
+  if (session == null) return null;
+
+  // Use compute to offload math from the main thread
+  return compute(
+    _calculateProgress,
+    _ProgressParams(
+      state: session.state,
+      focusDurationMinutes: session.focusDurationMinutes,
+      breakDurationMinutes: session.breakDurationMinutes,
+      elapsedSeconds: session.elapsedSeconds,
+    ),
+  );
 }

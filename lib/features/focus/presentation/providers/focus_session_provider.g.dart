@@ -41,7 +41,7 @@ final class FocusTimerProvider
   }
 }
 
-String _$focusTimerHash() => r'2b3b2498b45c1e48f9b8de15c96d6542db2a3129';
+String _$focusTimerHash() => r'6fda00a095ce643fc27e0fc1d58b6fbb4ee1f00b';
 
 abstract class _$FocusTimer extends $Notifier<FocusSession?> {
   FocusSession? build();
@@ -108,3 +108,42 @@ final class FocusSessionRepositoryProvider
 
 String _$focusSessionRepositoryHash() =>
     r'c99f6a30413b6fc286777bf90fd2097437fa16fe';
+
+@ProviderFor(focusProgress)
+final focusProgressProvider = FocusProgressProvider._();
+
+final class FocusProgressProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<FocusProgress?>,
+          FocusProgress?,
+          FutureOr<FocusProgress?>
+        >
+    with $FutureModifier<FocusProgress?>, $FutureProvider<FocusProgress?> {
+  FocusProgressProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'focusProgressProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$focusProgressHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<FocusProgress?> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<FocusProgress?> create(Ref ref) {
+    return focusProgress(ref);
+  }
+}
+
+String _$focusProgressHash() => r'dddeecba10eef6dddbca575bbb5f374e8d3eac7f';
