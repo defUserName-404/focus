@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
-import 'package:intl/intl.dart';
+import 'package:focus/core/common/utils/date_formatter.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -39,8 +39,6 @@ class RecentSessionsSection extends StatelessWidget {
     );
   }
 }
-
-// ── Session tile ────────────────────────────────────────────────────────────
 
 class _SessionTile extends StatelessWidget {
   final FocusSession session;
@@ -102,7 +100,7 @@ class _SessionTile extends StatelessWidget {
                     ),
                     SizedBox(height: AppConstants.spacing.extraSmall),
                     Text(
-                      _formatRelativeDate(session.startTime),
+                      session.startTime.toShortDateString(),
                       style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
                     ),
                   ],
@@ -112,35 +110,12 @@ class _SessionTile extends StatelessWidget {
               // State badge
               fu.FBadge(
                 style: isCompleted ? fu.FBadgeStyle.primary() : fu.FBadgeStyle.outline(),
-                child: Text(_stateLabel(session.state), style: context.typography.xs),
+                child: Text(session.state.label, style: context.typography.xs),
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  String _stateLabel(SessionState state) {
-    return switch (state) {
-      SessionState.completed => 'Completed',
-      SessionState.cancelled => 'Cancelled',
-      SessionState.running => 'Running',
-      SessionState.paused => 'Paused',
-      SessionState.onBreak => 'On Break',
-      SessionState.idle => 'Idle',
-    };
-  }
-
-  String _formatRelativeDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}min ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays == 1) return 'Yesterday';
-    if (diff.inDays < 7) return '${diff.inDays} days ago';
-    return DateFormat.MMMd().format(date);
   }
 }

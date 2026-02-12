@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/injection.dart';
@@ -52,7 +53,8 @@ final taskDetailStatsProvider =
   final taskId = BigInt.parse(taskIdString);
   final repository = getIt<IFocusSessionRepository>();
 
-  return repository.watchSessionsByTask(taskId).map(_computeStats);
+  return repository.watchSessionsByTask(taskId).asyncMap((sessions) =>
+      compute(_computeStats, sessions));
 });
 
 TaskDetailStats _computeStats(List<FocusSession> sessions) {

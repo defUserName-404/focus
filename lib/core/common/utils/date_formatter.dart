@@ -38,3 +38,18 @@ extension DateTimeFormatting on DateTime {
     return 'Start: ${toShortDateString()}';
   }
 }
+
+extension MinutesFormatting on int {
+  /// Formats minutes as 'Xm' or 'Yh Zm' if >= 60.
+  String toHourMinuteString() {
+    if (this < 60) return '${this}m';
+    final hours = this ~/ 60;
+    final mins = this % 60;
+    return mins > 0 ? '${hours}h ${mins}m' : '${hours}h';
+  }
+}
+
+extension DoubleMinutesFormatting on double {
+  /// Formats double minutes as rounded 'Xm'.
+  String toMinuteString() => '${round()}m';
+}

@@ -48,36 +48,24 @@ class AppCard extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      if (leading != null)
-                        SizedBox(width: leadingWidth, child: leading!),
+                      if (leading != null) SizedBox(width: leadingWidth, child: leading!),
                       Expanded(
                         child: DefaultTextStyle(
                           style: context.typography.base.copyWith(
-                            fontWeight: isCompleted
-                                ? FontWeight.w400
-                                : FontWeight.w600,
-                            color: isCompleted
-                                ? context.colors.mutedForeground
-                                : context.colors.foreground,
-                            decoration: isCompleted
-                                ? TextDecoration.lineThrough
-                                : null,
+                            fontWeight: isCompleted ? FontWeight.w400 : FontWeight.w600,
+                            color: isCompleted ? context.colors.mutedForeground : context.colors.foreground,
+                            decoration: isCompleted ? TextDecoration.lineThrough : null,
                           ),
                           child: title,
                         ),
                       ),
-                      if (trailing != null) ...[
-                        const SizedBox(width: 8),
-                        trailing!,
-                      ],
+                      if (trailing != null) ...[const SizedBox(width: 8), trailing!],
                     ],
                   ),
 
                   // --- Body Content Indented below Title ---
                   Padding(
-                    padding: EdgeInsets.only(
-                      left: leading != null ? leadingWidth : 0,
-                    ),
+                    padding: EdgeInsets.only(left: leading != null ? leadingWidth : 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -95,13 +83,9 @@ class AppCard extends StatelessWidget {
                         ],
 
                         // Footer Actions row
-                        if (footerActions != null &&
-                            footerActions!.isNotEmpty) ...[
+                        if (footerActions != null && footerActions!.isNotEmpty) ...[
                           const SizedBox(height: 10), // Reduced gap
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: footerActions!,
-                          ),
+                          Row(mainAxisAlignment: MainAxisAlignment.end, children: footerActions!),
                         ],
                       ],
                     ),
