@@ -51,10 +51,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     return fu.FScaffold(
       header: fu.FHeader.nested(
         prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
-        title: projectAsync.maybeWhen(
-          data: (project) => Text(project?.title ?? 'Project', style: context.typography.lg),
-          orElse: () => const Text('Project'),
-        ),
+        title: Text('Project Details'),
         suffixes: [
           fu.FHeaderAction(
             icon: Icon(fu.FIcons.search),
@@ -94,7 +91,6 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Project header ──
               allTasksAsync.when(
                 data: (allTasks) {
                   final rootTasks = allTasks.where((t) => t.parentTaskId == null).toList();
@@ -104,7 +100,6 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 error: (_, _) => const SizedBox.shrink(),
               ),
 
-              // ── Filters & Search ──
               Column(
                 children: [
                   AppSearchBar(

@@ -20,6 +20,17 @@ class ProjectDetailHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: AppConstants.spacing.regular,
       children: [
+        Row(
+          crossAxisAlignment: .center,
+          spacing: AppConstants.spacing.regular,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: AppConstants.spacing.small),
+              child: Icon(fu.FIcons.folderOpenDot, color: context.colors.mutedForeground),
+            ),
+            Text(project.title, style: context.typography.lg),
+          ],
+        ),
         if (project.description != null && project.description!.isNotEmpty)
           Text(
             project.description!,

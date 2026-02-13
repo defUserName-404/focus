@@ -35,7 +35,7 @@ class TaskSummarySection extends StatelessWidget {
               task.title,
               style: context.typography.lg.copyWith(fontWeight: FontWeight.bold),
               maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              overflow: .ellipsis,
             ),
             if (projectName != null) ...[
               SizedBox(width: AppConstants.spacing.regular),
@@ -59,11 +59,7 @@ class TaskSummarySection extends StatelessWidget {
           spacing: AppConstants.spacing.regular,
           children: [
             TaskPriorityBadge(priority: task.priority),
-            if (task.isCompleted)
-              fu.FBadge(
-                style: fu.FBadgeStyle.primary(),
-                child: Text('Completed', style: context.typography.xs),
-              ),
+            if (task.isCompleted) fu.FBadge(style: fu.FBadgeStyle.primary(), child: Text('Completed')),
           ],
         ),
 

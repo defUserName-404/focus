@@ -26,7 +26,7 @@ class ProjectListScreen extends ConsumerWidget {
     return fu.FScaffold(
       header: fu.FHeader.nested(
         prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
-        title: Text('Projects', style: context.typography.lg),
+        title: Text('Projects'),
       ),
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
