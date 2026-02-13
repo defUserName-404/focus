@@ -22,35 +22,33 @@ Focus is a fully offline, privacy-first productivity app for managing your proje
   </tr>
   <tr>
     <td><b>Home Screen</b><br><i>Overview of your projects and tasks</i></td>
-    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%201.png" alt="iPhone Home" width="200"></td>
-    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%201.png" alt="Samsung Home" width="200"></td>
+    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%201.png" alt="iPhone Home" width="200"></td>
+    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%201.png" alt="Samsung Home" width="200"></td>
   </tr>
   <tr>
     <td><b>Focus Session</b><br><i>Timer, ambience, and session controls</i></td>
-    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%202.png" alt="iPhone Focus" width="200"></td>
-    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%202.png" alt="Samsung Focus" width="200"></td>
+    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%202.png" alt="iPhone Focus" width="200"></td>
+    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%202.png" alt="Samsung Focus" width="200"></td>
   </tr>
   <tr>
     <td><b>Tasks List</b><br><i>Organize and filter your tasks</i></td>
-    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%203.png" alt="iPhone Tasks" width="200"></td>
-    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%203.png" alt="Samsung Tasks" width="200"></td>
+    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%203.png" alt="iPhone Tasks" width="200"></td>
+    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%203.png" alt="Samsung Tasks" width="200"></td>
   </tr>
   <tr>
     <td><b>Task Details</b><br><i>Subtasks, progress, and metadata</i></td>
-    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%204.png" alt="iPhone Details" width="200"></td>
-    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%204.png" alt="Samsung Details" width="200"></td>
+    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%204.png" alt="iPhone Details" width="200"></td>
+    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%204.png" alt="Samsung Details" width="200"></td>
   </tr>
   <tr>
     <td><b>Live Notifications</b><br><i>Real-time session and task updates</i></td>
-    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%205.png" alt="iPhone Notifications" width="200"></td>
-    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%205.png" alt="Samsung Notifications" width="200"></td>
+    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%205.png" alt="iPhone Notifications" width="200"></td>
+    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%205.png" alt="Samsung Notifications" width="200"></td>
   </tr>
 </table>
 
 ## Documentation
-For full project documentation and the complete user guide, see the <a href="docs/wiki/README.md">docs/wiki</a> section.
-
-- **CI/CD**: Automated Android/iOS builds and GitHub releases are triggered on version tags from the main branch.
+Please visit the [GitHub Wiki](https://github.com/defUserName-404/focus/wiki) for the latest guides, usage instructions, and developer information.
 
 ## Getting Started
 See <a href="docs/wiki/getting_started.md">docs/wiki/getting_started.md</a> for setup instructions.
