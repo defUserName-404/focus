@@ -76,3 +76,50 @@ abstract class _$AmbienceMute extends $Notifier<bool> {
     element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(ambienceMarquee)
+final ambienceMarqueeProvider = AmbienceMarqueeProvider._();
+
+final class AmbienceMarqueeProvider
+    extends
+        $FunctionalProvider<
+          AmbienceMarqueeState,
+          AmbienceMarqueeState,
+          AmbienceMarqueeState
+        >
+    with $Provider<AmbienceMarqueeState> {
+  AmbienceMarqueeProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ambienceMarqueeProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ambienceMarqueeHash();
+
+  @$internal
+  @override
+  $ProviderElement<AmbienceMarqueeState> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AmbienceMarqueeState create(Ref ref) {
+    return ambienceMarquee(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AmbienceMarqueeState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AmbienceMarqueeState>(value),
+    );
+  }
+}
+
+String _$ambienceMarqueeHash() => r'8ed893f4ae1d26e8d7c44655fb2321011846994f';

@@ -5,8 +5,6 @@ import 'package:forui/forui.dart';
 import '../../../../core/common/widgets/marquee_text.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/audio_assets.dart';
-import '../../../settings/presentation/providers/settings_provider.dart';
 import '../providers/ambience_mute_provider.dart';
 import '../providers/focus_session_provider.dart';
 import '../widgets/circular_timer.dart';
@@ -299,57 +297,34 @@ class _CircleIconButton extends StatelessWidget {
 
 /// Row showing a scrolling ambience sound name and a mute/unmute button.
 ///
-/// The marquee pauses when the session is paused or muted, and hides
-/// entirely during the break phase.
+/// All logic lives in [ambienceMarqueeProvider]; this widget only renders.
 class _AmbienceMarqueeRow extends ConsumerWidget {
   const _AmbienceMarqueeRow();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isMuted = ref.watch(ambienceMuteProvider);
-    final prefsAsync = ref.watch(audioPreferencesProvider);
-    final progressAsync = ref.watch(focusProgressProvider);
+    final state = ref.watch(ambienceMarqueeProvider);
 
-    final soundLabel = prefsAsync.whenOrNull(
-      data: (prefs) {
-        if (!prefs.ambienceEnabled) return null;
-        SoundPreset? preset;
-        if (prefs.ambienceSoundId != null) {
-          preset = AudioAssets.findById(prefs.ambienceSoundId!);
-        }
-        preset ??= AudioAssets.defaultAmbience;
-        return preset.label;
-      },
-    );
+    if (state.isHidden) return const SizedBox.shrink();
 
-    if (soundLabel == null) return const SizedBox.shrink();
-
-    // Determine whether the marquee should animate.
-    final progress = progressAsync.whenOrNull(data: (p) => p);
-    final isBreak = progress != null && !progress.isFocusPhase && !progress.isIdle;
-    final isPaused = progress != null && progress.isPaused;
-
-    // Hide during break phase (ambience is stopped).
-    if (isBreak) return const SizedBox.shrink();
-
-    final isScrolling = !isMuted && !isPaused;
-    final mutedColor = context.colors.mutedForeground;
+    final dimmedColor = context.colors.mutedForeground;
     final activeColor = context.colors.foreground;
+    final color = state.isDimmed ? dimmedColor : activeColor;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FIcons.music2, size: 14, color: isMuted || isPaused ? mutedColor : activeColor),
+          Icon(FIcons.music2, size: 14, color: color),
           SizedBox(width: AppConstants.spacing.small),
           Flexible(
             child: SizedBox(
               height: 20,
               child: MarqueeText(
-                text: soundLabel,
-                isAnimating: isScrolling,
-                style: context.typography.sm.copyWith(color: isMuted || isPaused ? mutedColor : activeColor),
+                text: state.soundLabel!,
+                isAnimating: state.isScrolling,
+                style: context.typography.sm.copyWith(color: color),
               ),
             ),
           ),
@@ -359,10 +334,10 @@ class _AmbienceMarqueeRow extends ConsumerWidget {
             child: AnimatedSwitcher(
               duration: AppConstants.animation.short,
               child: Icon(
-                isMuted ? FIcons.volumeOff : FIcons.volume2,
-                key: ValueKey(isMuted),
+                state.isMuted ? FIcons.volumeOff : FIcons.volume2,
+                key: ValueKey(state.isMuted),
                 size: 20,
-                color: isMuted || isPaused ? mutedColor : activeColor,
+                color: color,
               ),
             ),
           ),
