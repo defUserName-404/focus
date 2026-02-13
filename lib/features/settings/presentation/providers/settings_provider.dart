@@ -70,4 +70,18 @@ class SettingsNotifier extends _$SettingsNotifier {
     }
     return AudioAssets.defaultAmbience;
   }
+
+  Future<void> setFocusDuration(int minutes) async {
+    await _repository.setValue(SettingsKeys.focusDurationMinutes, minutes.toString());
+  }
+
+  Future<void> setBreakDuration(int minutes) async {
+    await _repository.setValue(SettingsKeys.breakDurationMinutes, minutes.toString());
+  }
 }
+
+/// Watches timer preferences (focus/break duration) reactively.
+final timerSettingsProvider = StreamProvider<TimerPreferences>((ref) {
+  final repository = ref.watch(settingsRepositoryProvider);
+  return repository.watchTimerPreferences();
+});

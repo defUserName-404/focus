@@ -13,6 +13,12 @@ abstract final class SettingsKeys {
 
   /// Whether ambience should auto-play when a focus session starts.
   static const String ambienceEnabled = 'ambience_enabled';
+
+  /// Focus (Pomodoro) duration in minutes.
+  static const String focusDurationMinutes = 'focus_duration_minutes';
+
+  /// Break duration in minutes.
+  static const String breakDurationMinutes = 'break_duration_minutes';
 }
 
 /// Domain entity representing a user preference.
@@ -48,6 +54,27 @@ class AudioPreferences {
       ambienceSoundId: ambienceSoundId ?? this.ambienceSoundId,
       ambienceVolume: ambienceVolume ?? this.ambienceVolume,
       ambienceEnabled: ambienceEnabled ?? this.ambienceEnabled,
+    );
+  }
+}
+
+/// Convenience wrapper for Pomodoro timer durations.
+class TimerPreferences {
+  final int focusDurationMinutes;
+  final int breakDurationMinutes;
+
+  const TimerPreferences({
+    this.focusDurationMinutes = 25,
+    this.breakDurationMinutes = 5,
+  });
+
+  TimerPreferences copyWith({
+    int? focusDurationMinutes,
+    int? breakDurationMinutes,
+  }) {
+    return TimerPreferences(
+      focusDurationMinutes: focusDurationMinutes ?? this.focusDurationMinutes,
+      breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,
     );
   }
 }

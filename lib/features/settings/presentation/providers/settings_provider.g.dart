@@ -81,7 +81,7 @@ final class SettingsNotifierProvider
   SettingsNotifier create() => SettingsNotifier();
 }
 
-String _$settingsNotifierHash() => r'cc6f0c60d66686a7b0725704e0cd206b35b76f2e';
+String _$settingsNotifierHash() => r'c2c2b4e4138f0aff2fb8a9450e58ec839915bd3a';
 
 abstract class _$SettingsNotifier extends $AsyncNotifier<AudioPreferences> {
   FutureOr<AudioPreferences> build();

@@ -20,24 +20,23 @@ class FocusTaskInfo extends ConsumerWidget {
 
     return taskAsync.when(
       data: (task) {
-        final projectAsync = ref.watch(
-          projectByIdProvider(task.projectId.toString()),
-        );
-        return Column(
+        final projectAsync = ref.watch(projectByIdProvider(task.projectId.toString()));
+        return Row(
+          mainAxisAlignment: .center,
+          crossAxisAlignment: .center,
+          spacing: AppConstants.spacing.regular,
           children: [
             Text(
               task.title,
-              style: context.typography.xl2.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: context.typography.xl2.copyWith(fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: AppConstants.spacing.small),
             projectAsync.when(
-              data: (project) => Text(
-                project?.title ?? '',
-                style: context.typography.base.copyWith(
-                  color: context.colors.mutedForeground,
+              data: (project) => Padding(
+                padding: EdgeInsetsGeometry.only(top: AppConstants.spacing.regular),
+                child: Text(
+                  project?.title ?? '',
+                  style: context.typography.base.copyWith(color: context.colors.mutedForeground),
                 ),
               ),
               loading: () => const SizedBox.shrink(),

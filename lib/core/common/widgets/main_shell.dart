@@ -39,21 +39,15 @@ class _MainShellState extends ConsumerState<MainShell> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-
-        // If the current tab's navigator can pop, pop it.
         final navState = _navigatorKeys[currentIndex].currentState;
         if (navState != null && navState.canPop()) {
           navState.pop();
           return;
         }
-
-        // If not on home tab, go back to home.
         if (currentIndex != 0) {
           ref.read(bottomNavIndexProvider.notifier).goHome();
           return;
         }
-
-        // On home tab root — show exit confirmation.
         if (!context.mounted) return;
         await ConfirmationDialog.show(
           context,
@@ -68,7 +62,13 @@ class _MainShellState extends ConsumerState<MainShell> {
         childPad: false,
         footer: fu.FBottomNavigationBar(
           index: currentIndex,
-          onChange: (index) => ref.read(bottomNavIndexProvider.notifier).setIndex(index),
+          onChange: (index) {
+            if (index == currentIndex) {
+              _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+            } else {
+              ref.read(bottomNavIndexProvider.notifier).setIndex(index);
+            }
+          },
           children: [
             fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.house), label: const Text('Home')),
             fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.squareCheck), label: const Text('Tasks')),
@@ -97,7 +97,6 @@ class _MainShellState extends ConsumerState<MainShell> {
 class _TabNavigator extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   final WidgetBuilder rootBuilder;
-
   const _TabNavigator({required this.navigatorKey, required this.rootBuilder});
 
   @override

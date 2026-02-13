@@ -21,4 +21,5 @@ abstract final class NotificationConstants {
   static const String actionPause = 'focus_pause';
   static const String actionResume = 'focus_resume';
   static const String actionStop = 'focus_stop';
+  static const String actionSkip = 'focus_skip';
 }
