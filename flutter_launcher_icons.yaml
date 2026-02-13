@@ -1,0 +1,19 @@
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/focus_app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#09090b"
+  adaptive_icon_foreground: "assets/images/focus_app_icon.png"
+  web:
+    generate: true
+    image_path: "assets/images/focus_app_icon.png"
+    background_color: "#09090b"
+    theme_color: "#fafafa"
+  windows:
+    generate: true
+    image_path: "assets/images/focus_app_icon.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/images/focus_app_icon.png"
