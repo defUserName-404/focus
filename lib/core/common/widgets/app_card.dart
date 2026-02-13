@@ -35,63 +35,46 @@ class AppCard extends StatelessWidget {
       onTap: onTap,
       child: fu.FCard(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: .min,
           children: [
-            Padding(
-              padding: EdgeInsets.all(AppConstants.spacing.regular),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // --- Header Row: Checkbox + Title + Trailing ---
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      if (leading != null) SizedBox(width: leadingWidth, child: leading!),
-                      Expanded(
-                        child: DefaultTextStyle(
-                          style: context.typography.base.copyWith(
-                            fontWeight: isCompleted ? FontWeight.w400 : FontWeight.w600,
-                            color: isCompleted ? context.colors.mutedForeground : context.colors.foreground,
-                            decoration: isCompleted ? TextDecoration.lineThrough : null,
-                          ),
-                          child: title,
+            Column(
+              crossAxisAlignment: .start,
+              mainAxisSize: .min,
+              children: [
+                Row(
+                  crossAxisAlignment: .center,
+                  children: [
+                    if (leading != null) SizedBox(width: leadingWidth, child: leading!),
+                    Expanded(
+                      child: DefaultTextStyle(
+                        style: context.typography.base.copyWith(
+                          fontWeight: isCompleted ? FontWeight.w400 : FontWeight.w600,
+                          color: isCompleted ? context.colors.mutedForeground : context.colors.foreground,
+                          decoration: isCompleted ? TextDecoration.lineThrough : null,
                         ),
+                        child: title,
                       ),
-                      if (trailing != null) ...[const SizedBox(width: 8), trailing!],
+                    ),
+                    if (trailing != null) ...[SizedBox(width: AppConstants.spacing.regular), trailing!],
+                  ],
+                ),
+
+                Padding(
+                  padding: EdgeInsets.only(left: leading != null ? leadingWidth : 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (subtitle != null) ...[SizedBox(height: AppConstants.spacing.extraSmall), subtitle!],
+                      if (content != null) ...[SizedBox(height: AppConstants.spacing.regular), content!],
+                      if (footerActions != null && footerActions!.isNotEmpty) ...[
+                        SizedBox(height: AppConstants.spacing.regular),
+                        Row(mainAxisAlignment: .end, children: footerActions!),
+                      ],
                     ],
                   ),
-
-                  // --- Body Content Indented below Title ---
-                  Padding(
-                    padding: EdgeInsets.only(left: leading != null ? leadingWidth : 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Subtitle / Description
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 2), // Reduced gap
-                          subtitle!,
-                        ],
-
-                        // Content (e.g., Date Row)
-                        if (content != null) ...[
-                          const SizedBox(height: 6), // Reduced gap
-                          content!,
-                        ],
-
-                        // Footer Actions row
-                        if (footerActions != null && footerActions!.isNotEmpty) ...[
-                          const SizedBox(height: 10), // Reduced gap
-                          Row(mainAxisAlignment: MainAxisAlignment.end, children: footerActions!),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
             if (children != null) ...children!,
           ],

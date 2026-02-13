@@ -1,7 +1,7 @@
 import '../../domain/entities/project.dart';
 import '../../domain/entities/project_extensions.dart';
 import '../../domain/repositories/i_project_repository.dart';
-import '../../presentation/providers/project_list_filter_state.dart';
+import '../../domain/entities/project_list_filter_state.dart';
 import '../datasources/project_local_datasource.dart';
 import '../mappers/project_extensions.dart';
 
@@ -57,11 +57,7 @@ class ProjectRepositoryImpl implements IProjectRepository {
     ProjectSortOrder sortOrder = ProjectSortOrder.none,
   }) {
     return _localDataSource
-        .watchFilteredProjects(
-          searchQuery: searchQuery,
-          sortCriteria: sortCriteria,
-          sortOrder: sortOrder,
-        )
+        .watchFilteredProjects(searchQuery: searchQuery, sortCriteria: sortCriteria, sortOrder: sortOrder)
         .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 }

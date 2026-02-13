@@ -7,8 +7,11 @@ import '../../features/projects/data/datasources/project_local_datasource.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/i_project_repository.dart';
 import '../../features/tasks/data/datasources/task_local_datasource.dart';
+import '../../features/tasks/data/datasources/task_stats_local_datasource.dart';
 import '../../features/tasks/data/repositories/task_repository_impl.dart';
+import '../../features/tasks/data/repositories/task_stats_repository_impl.dart';
 import '../../features/tasks/domain/repositories/i_task_repository.dart';
+import '../../features/tasks/domain/repositories/i_task_stats_repository.dart';
 import '../services/audio_service.dart';
 import '../services/db_service.dart';
 import '../services/notification_service.dart';
@@ -34,6 +37,9 @@ Future<void> setupDependencyInjection() async {
   getIt.registerLazySingleton<IFocusLocalDataSource>(
     () => FocusLocalDataSourceImpl(getIt<AppDatabase>()),
   );
+  getIt.registerLazySingleton<ITaskStatsLocalDataSource>(
+    () => TaskStatsLocalDataSourceImpl(getIt<AppDatabase>()),
+  );
 
   // ── Repositories ──
   getIt.registerLazySingleton<IProjectRepository>(
@@ -44,5 +50,8 @@ Future<void> setupDependencyInjection() async {
   );
   getIt.registerLazySingleton<IFocusSessionRepository>(
     () => FocusSessionRepositoryImpl(getIt<IFocusLocalDataSource>()),
+  );
+  getIt.registerLazySingleton<ITaskStatsRepository>(
+    () => TaskStatsRepositoryImpl(getIt<ITaskStatsLocalDataSource>()),
   );
 }

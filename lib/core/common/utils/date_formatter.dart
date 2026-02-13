@@ -1,6 +1,7 @@
+import 'package:focus/core/constants/date_time_constants.dart';
 import 'package:intl/intl.dart';
 
-extension DateTimeFormatting on DateTime {
+extension DateTimeFormattingExtensions on DateTime {
   String toDateString() => DateFormat('MMM d, yyyy').format(this);
 
   String toShortDateString() => DateFormat('MMM d').format(this);
@@ -14,9 +15,7 @@ extension DateTimeFormatting on DateTime {
 
   bool get isTomorrow {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
-    return year == tomorrow.year &&
-        month == tomorrow.month &&
-        day == tomorrow.day;
+    return year == tomorrow.year && month == tomorrow.month && day == tomorrow.day;
   }
 
   String toRelativeDueString() {
@@ -52,4 +51,26 @@ extension MinutesFormatting on int {
 extension DoubleMinutesFormatting on double {
   /// Formats double minutes as rounded 'Xm'.
   String toMinuteString() => '${round()}m';
+}
+
+class DateTimeExtensions {
+  static int weekIndex(DateTime date, DateTime jan1) {
+    final firstMonday = jan1.subtract(Duration(days: (jan1.weekday - 1) % 7));
+    return date.difference(firstMonday).inDays ~/ 7;
+  }
+
+  static DateTime getFirstMonday(int year) {
+    final jan1 = DateTime(year, 1, 1);
+    return jan1.subtract(Duration(days: (jan1.weekday - 1) % 7));
+  }
+
+  /// gets the short name for the month
+  static String shortMonth(int month) {
+    return DateTimeConstants.shortMonthNames[month - 1];
+  }
+
+  static String shortDateString(String dateKey) {
+    final date = DateTime.parse(dateKey);
+    return DateFormat('MMM d').format(date);
+  }
 }

@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
-import '../../../../core/common/utils/widget_extensions.dart';
 import '../../../../core/common/widgets/base_modal_form.dart';
 import '../../../../core/common/widgets/filter_select.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/task_priority.dart';
 import '../providers/task_provider.dart';
 
@@ -70,7 +68,7 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
           control: FDateFieldControl.managed(onChange: (date) => _endDate = date),
           clearable: true,
         ),
-      ].withSpacing(AppConstants.spacing.regular),
+      ],
       onCancel: () => Navigator.pop(context),
       onSubmit: _submit,
       submitButtonText: 'Create',

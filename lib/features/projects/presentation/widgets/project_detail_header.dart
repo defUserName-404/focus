@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:focus/core/common/utils/widget_extensions.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
@@ -17,24 +16,19 @@ class ProjectDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (project.description != null && project.description!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                project.description!,
-                style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.5),
-              ),
-            ),
-          ProjectProgressBar(projectId: project.id!.toString()),
-          ProjectMetaSection(project: project),
-          fu.FDivider(),
-        ].withSpacing(AppConstants.spacing.regular),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: AppConstants.spacing.regular,
+      children: [
+        if (project.description != null && project.description!.isNotEmpty)
+          Text(
+            project.description!,
+            style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.5),
+          ),
+        ProjectProgressBar(projectId: project.id!.toString()),
+        ProjectMetaSection(project: project),
+        fu.FDivider(),
+      ],
     );
   }
 }

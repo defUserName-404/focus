@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
-import '../../../../core/common/utils/widget_extensions.dart';
 import '../../../../core/common/widgets/base_modal_form.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../providers/project_provider.dart';
 
 class CreateProjectModalContent extends ConsumerStatefulWidget {
@@ -55,7 +53,7 @@ class _CreateProjectModalContentState extends ConsumerState<CreateProjectModalCo
           control: FDateFieldControl.managed(onChange: (date) => _deadline = date),
           clearable: true,
         ),
-      ].withSpacing(AppConstants.spacing.regular),
+      ],
       onCancel: () => Navigator.pop(context),
       onSubmit: () async {
         if (_titleController.text.isNotEmpty) {

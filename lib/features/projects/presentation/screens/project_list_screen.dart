@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/common/utils/widget_extensions.dart';
 import 'package:focus/core/constants/app_constants.dart';
-import 'package:focus/features/projects/presentation/screens/project_detail_screen.dart';
+
+// Removed unused import: ProjectDetailScreen
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/common/widgets/app_search_bar.dart';
 import '../../../../core/common/widgets/sort_filter_chips.dart';
 import '../../../../core/common/widgets/sort_order_selector.dart';
 import '../../../../core/config/theme/app_theme.dart';
+import '../../../../core/constants/route_constants.dart'; // Added import
+import '../../domain/entities/project_list_filter_state.dart';
 import '../commands/project_commands.dart';
-import '../providers/project_list_filter_state.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
 
@@ -29,7 +30,11 @@ class ProjectListScreen extends ConsumerWidget {
       ),
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
-        child: fu.FButton(child: const Text('Create New Project'), onPress: () => ProjectCommands.create(context, ref)),
+        child: fu.FButton(
+          prefix: Icon(fu.FIcons.plus),
+          child: const Text('Create New Project'),
+          onPress: () => ProjectCommands.create(context, ref),
+        ),
       ),
       child: Column(
         children: [
@@ -71,14 +76,16 @@ class ProjectListScreen extends ConsumerWidget {
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      spacing: AppConstants.spacing.regular,
                       children: [
-                        Icon(fu.FIcons.folderOpen, size: 48, color: Theme.of(context).disabledColor),
-                        const SizedBox(height: 16),
-                        const Text('No projects found'),
-                        const SizedBox(height: 8),
-                        fu.FButton(
-                          onPress: () => ProjectCommands.create(context, ref),
-                          child: const Text('Create Project'),
+                        Icon(
+                          fu.FIcons.folderOpen,
+                          size: AppConstants.size.icon.extraExtraLarge,
+                          color: Theme.of(context).disabledColor,
+                        ),
+                        Text(
+                          'No projects found',
+                          style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
                         ),
                       ],
                     ),
@@ -86,16 +93,14 @@ class ProjectListScreen extends ConsumerWidget {
                 }
 
                 return ListView.builder(
-                  padding: EdgeInsets.all(AppConstants.spacing.regular),
+                  padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
                   itemCount: projects.length,
                   itemBuilder: (context, index) {
                     final project = projects[index];
                     return ProjectCard(
                       project: project,
                       onTap: () => project.id != null
-                          ? Navigator.of(
-                              context,
-                            ).push(MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: project.id!)))
+                          ? Navigator.of(context).pushNamed(RouteConstants.projectDetailRoute, arguments: project.id!)
                           : null,
                       onEdit: () => ProjectCommands.edit(context, project),
                       onDelete: () => ProjectCommands.delete(context, ref, project),
@@ -105,7 +110,7 @@ class ProjectListScreen extends ConsumerWidget {
               },
             ),
           ),
-        ].withSpacing(AppConstants.spacing.regular),
+        ],
       ),
     );
   }

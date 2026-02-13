@@ -1709,6 +1709,339 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
   }
 }
 
+class $DailySessionStatsTableTable extends DailySessionStatsTable
+    with TableInfo<$DailySessionStatsTableTable, DailySessionStatsData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DailySessionStatsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _completedSessionsMeta = const VerificationMeta(
+    'completedSessions',
+  );
+  @override
+  late final GeneratedColumn<int> completedSessions = GeneratedColumn<int>(
+    'completed_sessions',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _totalSessionsMeta = const VerificationMeta(
+    'totalSessions',
+  );
+  @override
+  late final GeneratedColumn<int> totalSessions = GeneratedColumn<int>(
+    'total_sessions',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _focusSecondsMeta = const VerificationMeta(
+    'focusSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> focusSeconds = GeneratedColumn<int>(
+    'focus_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    date,
+    completedSessions,
+    totalSessions,
+    focusSeconds,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'daily_session_stats_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DailySessionStatsData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('completed_sessions')) {
+      context.handle(
+        _completedSessionsMeta,
+        completedSessions.isAcceptableOrUnknown(
+          data['completed_sessions']!,
+          _completedSessionsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_sessions')) {
+      context.handle(
+        _totalSessionsMeta,
+        totalSessions.isAcceptableOrUnknown(
+          data['total_sessions']!,
+          _totalSessionsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('focus_seconds')) {
+      context.handle(
+        _focusSecondsMeta,
+        focusSeconds.isAcceptableOrUnknown(
+          data['focus_seconds']!,
+          _focusSecondsMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {date};
+  @override
+  DailySessionStatsData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DailySessionStatsData(
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      completedSessions: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}completed_sessions'],
+      )!,
+      totalSessions: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_sessions'],
+      )!,
+      focusSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}focus_seconds'],
+      )!,
+    );
+  }
+
+  @override
+  $DailySessionStatsTableTable createAlias(String alias) {
+    return $DailySessionStatsTableTable(attachedDatabase, alias);
+  }
+}
+
+class DailySessionStatsData extends DataClass
+    implements Insertable<DailySessionStatsData> {
+  /// ISO-8601 local date, e.g. `'2026-02-12'`. Acts as the primary key.
+  final String date;
+  final int completedSessions;
+  final int totalSessions;
+  final int focusSeconds;
+  const DailySessionStatsData({
+    required this.date,
+    required this.completedSessions,
+    required this.totalSessions,
+    required this.focusSeconds,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['date'] = Variable<String>(date);
+    map['completed_sessions'] = Variable<int>(completedSessions);
+    map['total_sessions'] = Variable<int>(totalSessions);
+    map['focus_seconds'] = Variable<int>(focusSeconds);
+    return map;
+  }
+
+  DailySessionStatsTableCompanion toCompanion(bool nullToAbsent) {
+    return DailySessionStatsTableCompanion(
+      date: Value(date),
+      completedSessions: Value(completedSessions),
+      totalSessions: Value(totalSessions),
+      focusSeconds: Value(focusSeconds),
+    );
+  }
+
+  factory DailySessionStatsData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DailySessionStatsData(
+      date: serializer.fromJson<String>(json['date']),
+      completedSessions: serializer.fromJson<int>(json['completedSessions']),
+      totalSessions: serializer.fromJson<int>(json['totalSessions']),
+      focusSeconds: serializer.fromJson<int>(json['focusSeconds']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'date': serializer.toJson<String>(date),
+      'completedSessions': serializer.toJson<int>(completedSessions),
+      'totalSessions': serializer.toJson<int>(totalSessions),
+      'focusSeconds': serializer.toJson<int>(focusSeconds),
+    };
+  }
+
+  DailySessionStatsData copyWith({
+    String? date,
+    int? completedSessions,
+    int? totalSessions,
+    int? focusSeconds,
+  }) => DailySessionStatsData(
+    date: date ?? this.date,
+    completedSessions: completedSessions ?? this.completedSessions,
+    totalSessions: totalSessions ?? this.totalSessions,
+    focusSeconds: focusSeconds ?? this.focusSeconds,
+  );
+  DailySessionStatsData copyWithCompanion(
+    DailySessionStatsTableCompanion data,
+  ) {
+    return DailySessionStatsData(
+      date: data.date.present ? data.date.value : this.date,
+      completedSessions: data.completedSessions.present
+          ? data.completedSessions.value
+          : this.completedSessions,
+      totalSessions: data.totalSessions.present
+          ? data.totalSessions.value
+          : this.totalSessions,
+      focusSeconds: data.focusSeconds.present
+          ? data.focusSeconds.value
+          : this.focusSeconds,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DailySessionStatsData(')
+          ..write('date: $date, ')
+          ..write('completedSessions: $completedSessions, ')
+          ..write('totalSessions: $totalSessions, ')
+          ..write('focusSeconds: $focusSeconds')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(date, completedSessions, totalSessions, focusSeconds);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DailySessionStatsData &&
+          other.date == this.date &&
+          other.completedSessions == this.completedSessions &&
+          other.totalSessions == this.totalSessions &&
+          other.focusSeconds == this.focusSeconds);
+}
+
+class DailySessionStatsTableCompanion
+    extends UpdateCompanion<DailySessionStatsData> {
+  final Value<String> date;
+  final Value<int> completedSessions;
+  final Value<int> totalSessions;
+  final Value<int> focusSeconds;
+  final Value<int> rowid;
+  const DailySessionStatsTableCompanion({
+    this.date = const Value.absent(),
+    this.completedSessions = const Value.absent(),
+    this.totalSessions = const Value.absent(),
+    this.focusSeconds = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DailySessionStatsTableCompanion.insert({
+    required String date,
+    this.completedSessions = const Value.absent(),
+    this.totalSessions = const Value.absent(),
+    this.focusSeconds = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : date = Value(date);
+  static Insertable<DailySessionStatsData> custom({
+    Expression<String>? date,
+    Expression<int>? completedSessions,
+    Expression<int>? totalSessions,
+    Expression<int>? focusSeconds,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (date != null) 'date': date,
+      if (completedSessions != null) 'completed_sessions': completedSessions,
+      if (totalSessions != null) 'total_sessions': totalSessions,
+      if (focusSeconds != null) 'focus_seconds': focusSeconds,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DailySessionStatsTableCompanion copyWith({
+    Value<String>? date,
+    Value<int>? completedSessions,
+    Value<int>? totalSessions,
+    Value<int>? focusSeconds,
+    Value<int>? rowid,
+  }) {
+    return DailySessionStatsTableCompanion(
+      date: date ?? this.date,
+      completedSessions: completedSessions ?? this.completedSessions,
+      totalSessions: totalSessions ?? this.totalSessions,
+      focusSeconds: focusSeconds ?? this.focusSeconds,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (completedSessions.present) {
+      map['completed_sessions'] = Variable<int>(completedSessions.value);
+    }
+    if (totalSessions.present) {
+      map['total_sessions'] = Variable<int>(totalSessions.value);
+    }
+    if (focusSeconds.present) {
+      map['focus_seconds'] = Variable<int>(focusSeconds.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DailySessionStatsTableCompanion(')
+          ..write('date: $date, ')
+          ..write('completedSessions: $completedSessions, ')
+          ..write('totalSessions: $totalSessions, ')
+          ..write('focusSeconds: $focusSeconds, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1716,6 +2049,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TaskTableTable taskTable = $TaskTableTable(this);
   late final $FocusSessionTableTable focusSessionTable =
       $FocusSessionTableTable(this);
+  late final $DailySessionStatsTableTable dailySessionStatsTable =
+      $DailySessionStatsTableTable(this);
   late final Index projectCreatedAtIdx = Index(
     'project_created_at_idx',
     'CREATE INDEX project_created_at_idx ON project_table (created_at)',
@@ -1756,6 +2091,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'focus_session_start_time_idx',
     'CREATE INDEX focus_session_start_time_idx ON focus_session_table (start_time)',
   );
+  late final Index dailyStatsDateIdx = Index(
+    'daily_stats_date_idx',
+    'CREATE INDEX daily_stats_date_idx ON daily_session_stats_table (date)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1764,6 +2103,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     projectTable,
     taskTable,
     focusSessionTable,
+    dailySessionStatsTable,
     projectCreatedAtIdx,
     projectUpdatedAtIdx,
     taskProjectIdIdx,
@@ -1774,6 +2114,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     taskUpdatedAtIdx,
     focusSessionTaskIdIdx,
     focusSessionStartTimeIdx,
+    dailyStatsDateIdx,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2968,6 +3309,212 @@ typedef $$FocusSessionTableTableProcessedTableManager =
       FocusSessionData,
       PrefetchHooks Function({bool taskId})
     >;
+typedef $$DailySessionStatsTableTableCreateCompanionBuilder =
+    DailySessionStatsTableCompanion Function({
+      required String date,
+      Value<int> completedSessions,
+      Value<int> totalSessions,
+      Value<int> focusSeconds,
+      Value<int> rowid,
+    });
+typedef $$DailySessionStatsTableTableUpdateCompanionBuilder =
+    DailySessionStatsTableCompanion Function({
+      Value<String> date,
+      Value<int> completedSessions,
+      Value<int> totalSessions,
+      Value<int> focusSeconds,
+      Value<int> rowid,
+    });
+
+class $$DailySessionStatsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $DailySessionStatsTableTable> {
+  $$DailySessionStatsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get completedSessions => $composableBuilder(
+    column: $table.completedSessions,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalSessions => $composableBuilder(
+    column: $table.totalSessions,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get focusSeconds => $composableBuilder(
+    column: $table.focusSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DailySessionStatsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $DailySessionStatsTableTable> {
+  $$DailySessionStatsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get completedSessions => $composableBuilder(
+    column: $table.completedSessions,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalSessions => $composableBuilder(
+    column: $table.totalSessions,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get focusSeconds => $composableBuilder(
+    column: $table.focusSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DailySessionStatsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DailySessionStatsTableTable> {
+  $$DailySessionStatsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get completedSessions => $composableBuilder(
+    column: $table.completedSessions,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalSessions => $composableBuilder(
+    column: $table.totalSessions,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get focusSeconds => $composableBuilder(
+    column: $table.focusSeconds,
+    builder: (column) => column,
+  );
+}
+
+class $$DailySessionStatsTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DailySessionStatsTableTable,
+          DailySessionStatsData,
+          $$DailySessionStatsTableTableFilterComposer,
+          $$DailySessionStatsTableTableOrderingComposer,
+          $$DailySessionStatsTableTableAnnotationComposer,
+          $$DailySessionStatsTableTableCreateCompanionBuilder,
+          $$DailySessionStatsTableTableUpdateCompanionBuilder,
+          (
+            DailySessionStatsData,
+            BaseReferences<
+              _$AppDatabase,
+              $DailySessionStatsTableTable,
+              DailySessionStatsData
+            >,
+          ),
+          DailySessionStatsData,
+          PrefetchHooks Function()
+        > {
+  $$DailySessionStatsTableTableTableManager(
+    _$AppDatabase db,
+    $DailySessionStatsTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DailySessionStatsTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$DailySessionStatsTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$DailySessionStatsTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> date = const Value.absent(),
+                Value<int> completedSessions = const Value.absent(),
+                Value<int> totalSessions = const Value.absent(),
+                Value<int> focusSeconds = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DailySessionStatsTableCompanion(
+                date: date,
+                completedSessions: completedSessions,
+                totalSessions: totalSessions,
+                focusSeconds: focusSeconds,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String date,
+                Value<int> completedSessions = const Value.absent(),
+                Value<int> totalSessions = const Value.absent(),
+                Value<int> focusSeconds = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DailySessionStatsTableCompanion.insert(
+                date: date,
+                completedSessions: completedSessions,
+                totalSessions: totalSessions,
+                focusSeconds: focusSeconds,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DailySessionStatsTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DailySessionStatsTableTable,
+      DailySessionStatsData,
+      $$DailySessionStatsTableTableFilterComposer,
+      $$DailySessionStatsTableTableOrderingComposer,
+      $$DailySessionStatsTableTableAnnotationComposer,
+      $$DailySessionStatsTableTableCreateCompanionBuilder,
+      $$DailySessionStatsTableTableUpdateCompanionBuilder,
+      (
+        DailySessionStatsData,
+        BaseReferences<
+          _$AppDatabase,
+          $DailySessionStatsTableTable,
+          DailySessionStatsData
+        >,
+      ),
+      DailySessionStatsData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2978,4 +3525,9 @@ class $AppDatabaseManager {
       $$TaskTableTableTableManager(_db, _db.taskTable);
   $$FocusSessionTableTableTableManager get focusSessionTable =>
       $$FocusSessionTableTableTableManager(_db, _db.focusSessionTable);
+  $$DailySessionStatsTableTableTableManager get dailySessionStatsTable =>
+      $$DailySessionStatsTableTableTableManager(
+        _db,
+        _db.dailySessionStatsTable,
+      );
 }

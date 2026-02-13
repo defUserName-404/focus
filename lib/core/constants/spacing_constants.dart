@@ -7,5 +7,6 @@ final class _Spacing {
   final small = 4.0;
   final regular = 8.0;
   final large = 16.0;
+  final extraLarge2 = 20.0;
   final extraLarge = 24.0;
 }

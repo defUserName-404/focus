@@ -33,52 +33,24 @@ class ProjectCard extends StatelessWidget {
               )
             : null,
         footerActions: [
-          if (project.startDate != null)
-            fu.FBadge(
-              style: fu.FBadgeStyle.outline(),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: Icon(
-                      fu.FIcons.calendarClock,
-                      size: AppConstants.size.icon.small,
-                      color: context.colors.mutedForeground,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(project.startDate!.toShortDateString()),
-                ],
-              ),
-            ),
           fu.FBadge(
-            style: project.deadline?.isOverdue ?? false
-                ? fu.FBadgeStyle.destructive()
-                : fu.FBadgeStyle.secondary(),
+            style: project.deadline?.isOverdue ?? false ? fu.FBadgeStyle.destructive() : fu.FBadgeStyle.secondary(),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
                   padding: const EdgeInsets.only(bottom: 2),
-                  child: Icon(
-                    fu.FIcons.calendarCheck,
-                    size: AppConstants.size.icon.small,
-                  ),
+                  child: Icon(fu.FIcons.calendarCheck, size: AppConstants.size.icon.small),
                 ),
                 const SizedBox(width: 4),
                 Text(project.deadline?.toRelativeDueString() ?? 'No deadline'),
               ],
             ),
           ),
+          Spacer(),
           fu.FButton.icon(
             onPress: onTap,
-            child: Icon(
-              fu.FIcons.arrowRight,
-              size: AppConstants.size.icon.regular,
-            ),
+            child: Icon(fu.FIcons.arrowRight, size: AppConstants.size.icon.regular),
           ),
         ],
       ),

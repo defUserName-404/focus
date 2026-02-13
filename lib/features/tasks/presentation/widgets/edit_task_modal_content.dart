@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import '../../../../core/common/utils/date_formatter.dart';
-import '../../../../core/common/utils/widget_extensions.dart';
 import '../../../../core/common/widgets/base_modal_form.dart';
 import '../../../../core/common/widgets/filter_select.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -84,7 +83,7 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
           control: FDateFieldControl.managed(initial: _endDate, onChange: (date) => _endDate = date),
           clearable: true,
         ),
-      ].withSpacing(AppConstants.spacing.regular),
+      ],
       onCancel: () => Navigator.pop(context),
       onSubmit: _submit,
       submitButtonText: 'Save',

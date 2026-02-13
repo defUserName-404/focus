@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import '../../../../core/common/utils/date_formatter.dart';
-import '../../../../core/common/utils/widget_extensions.dart';
 import '../../../../core/common/widgets/base_modal_form.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';
@@ -74,7 +73,7 @@ class _EditProjectModalContentState extends ConsumerState<EditProjectModalConten
           control: FDateFieldControl.managed(initial: _deadline, onChange: (date) => setState(() => _deadline = date)),
           clearable: true,
         ),
-      ].withSpacing(AppConstants.spacing.regular),
+      ],
       onCancel: () => Navigator.pop(context),
       onSubmit: _submit,
       submitButtonText: 'Save',

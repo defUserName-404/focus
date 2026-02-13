@@ -9,7 +9,7 @@ import '../../domain/entities/project.dart';
 import '../../domain/entities/project_extensions.dart';
 import '../../domain/entities/project_progress.dart';
 import '../../domain/repositories/i_project_repository.dart';
-import 'project_list_filter_state.dart';
+import '../../domain/entities/project_list_filter_state.dart';
 
 part 'project_provider.g.dart';
 

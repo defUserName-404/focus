@@ -16,8 +16,6 @@ extension DbProjectToDomain on ProjectTableData {
 }
 
 extension DomainProjectToCompanion on Project {
-  /// Returns an insert companion (no id) for new rows,
-  /// or a full companion (with id) for updates.
   ProjectTableCompanion toCompanion() {
     if (id != null) {
       return ProjectTableCompanion(

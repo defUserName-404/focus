@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../providers/task_detail_provider.dart';
+import '../../domain/entities/task_stats.dart';
 
 /// Row of three stat cards: Total time, Sessions, Average.
 class TaskStatsRow extends StatelessWidget {
-  final TaskDetailStats stats;
+  final TaskStats stats;
 
   const TaskStatsRow({super.key, required this.stats});
 
