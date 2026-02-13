@@ -1,7 +1,6 @@
-[![Build & Release](https://github.com/defUserName-404/focus/actions/workflows/release.yml/badge.svg)](https://github.com/defUserName-404/focus/actions/workflows/release.yml)
-[![Docs to Wiki](https://github.com/defUserName-404/focus/actions/workflows/docs-to-wiki.yml/badge.svg)](https://github.com/defUserName-404/focus/actions/workflows/docs-to-wiki.yml)
+# Focus
 
-Focus is a cross-platform productivity app for deep work, project, task, and session management. It features advanced data modeling, modular UI, robust state management, and real-time notifications/ambience.
+Focus is a fully offline, privacy-first productivity app for managing your projects, tasks, and deep work sessions. Designed for makers, students, and professionals, Focus helps you organize your work, track progress, and maintain flow—all without ever needing an internet connection. Your data stays 100% on your device.
 
 ## What this app offers
 - **You own your data**: This is a full offline app. All features work without an internet connection. Your data stays on your device.
@@ -13,23 +12,48 @@ Focus is a cross-platform productivity app for deep work, project, task, and ses
 - **Cross-Platform**: Use Focus on Android, iOS, Linux, macOS, Windows, and Web—all from a single codebase.
 - **Open Source & Extensible**: Built with Riverpod state management and Drift ORM, the codebase is clean, modular, and easy to contribute to or extend.
 
-## Documentation
-For full project documentation and the complete user guide, see the [docs/wiki](docs/wiki/README.md) section.
+## App Showcase
 
-- CI/CD: Automated Android/iOS builds and GitHub releases are triggered on version tags from main branch.
-- Docs Sync: The docs/wiki folder is automatically synced to the GitHub project wiki on every push to main.
+<table>
+  <tr>
+    <th>Feature</th>
+    <th>iOS (iPhone 16 Pro Max)</th>
+    <th>Android (Samsung S21 Ultra)</th>
+  </tr>
+  <tr>
+    <td><b>Home Screen</b><br><i>Overview of your projects and tasks</i></td>
+    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%201.png" alt="iPhone Home" width="200"></td>
+    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%201.png" alt="Samsung Home" width="200"></td>
+  </tr>
+  <tr>
+    <td><b>Focus Session</b><br><i>Timer, ambience, and session controls</i></td>
+    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%202.png" alt="iPhone Focus" width="200"></td>
+    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%202.png" alt="Samsung Focus" width="200"></td>
+  </tr>
+  <tr>
+    <td><b>Tasks List</b><br><i>Organize and filter your tasks</i></td>
+    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%203.png" alt="iPhone Tasks" width="200"></td>
+    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%203.png" alt="Samsung Tasks" width="200"></td>
+  </tr>
+  <tr>
+    <td><b>Task Details</b><br><i>Subtasks, progress, and metadata</i></td>
+    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%204.png" alt="iPhone Details" width="200"></td>
+    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%204.png" alt="Samsung Details" width="200"></td>
+  </tr>
+  <tr>
+    <td><b>Live Notifications</b><br><i>Real-time session and task updates</i></td>
+    <td><img src="docs/screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%205.png" alt="iPhone Notifications" width="200"></td>
+    <td><img src="docs/screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%205.png" alt="Samsung Notifications" width="200"></td>
+  </tr>
+</table>
+
+## Documentation
+For full project documentation and the complete user guide, see the <a href="docs/wiki/README.md">docs/wiki</a> section.
+
+- **CI/CD**: Automated Android/iOS builds and GitHub releases are triggered on version tags from the main branch.
 
 ## Getting Started
-See [docs/wiki/getting_started.md](docs/wiki/getting_started.md) for setup instructions.
-
-## App Showcase
-You can add screenshots, GIFs, or demo videos to this section to showcase the app. For example:
-
-![Focus App Screenshot](docs/wiki/screenshots/main_screen.png)
-
-Or embed a YouTube demo:
-
-[![Watch the demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+See <a href="docs/wiki/getting_started.md">docs/wiki/getting_started.md</a> for setup instructions.
 
 ## License
 This project is open source. See LICENSE for details.
