@@ -11,7 +11,12 @@ Focus is a cross-platform productivity app for managing projects, tasks, and foc
 - **Notifications & Ambience**: Custom notification actions, real-time updates, ambience mute/unmute, marquee animation.
 - **Command Pattern**: Standardized actions for project/task operations.
 - **Platform Support**: Android, iOS, Linux, macOS, Windows, Web.
-- **CI/CD & Docs**: Automated Android/iOS builds and GitHub releases on version tags; docs/wiki auto-synced to GitHub Wiki.
+
+## CI/CD
+Focus uses GitHub Actions for continuous integration and delivery:
+- Automated Android and iOS builds are triggered on version tags pushed to the main branch.
+- GitHub Releases are created with build artifacts for easy distribution.
+- See `.github/workflows/release.yml` for workflow details.
 
 ## Architecture
 See [architecture.md](architecture.md) for a full breakdown.

@@ -1,5 +1,6 @@
-
 # Architecture (Deep)
+
+Focus is designed as a fully offline, privacy-first productivity app. All user data is stored locally on the device—no cloud, no external sync, and no internet required for any core feature. This architecture ensures maximum privacy, reliability, and speed.
 
 ## Layered Structure
 - **Core**: Utilities, constants, services (db, notification, audio)
@@ -12,6 +13,7 @@
 - Schema migrations, indexing (@TableIndex)
 - Efficient querying: watchProjectById, sort/filter at ORM level
 - Migration strategy for schemaVersion bumps
+- **Offline-first**: All data is stored and managed locally; no network dependency
 
 ## State Management
 - Riverpod (generator, computed providers)
