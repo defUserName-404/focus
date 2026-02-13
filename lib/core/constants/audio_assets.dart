@@ -22,34 +22,65 @@ class SoundPreset {
 /// Place audio files under `assets/audio/alarms/` and `assets/audio/ambience/`.
 /// Register new presets here to make them available throughout the app.
 abstract final class AudioAssets {
-  // ── Alarm Sounds ──────────────────────────────────────────────────────────
-
+  // Alarm Sounds
   static const List<SoundPreset> alarms = [
     SoundPreset(
       id: 'digital_alarm',
       label: 'Digital Alarm',
-      assetPath: 'alarms/digital_alarm.mp3',
+      assetPath: 'alarms/digital_alarm.ogg',
       type: SoundType.alarm,
     ),
-    SoundPreset(id: 'gentle_bell', label: 'Gentle Bell', assetPath: 'alarms/gentle_bell.mp3', type: SoundType.alarm),
-    SoundPreset(id: 'chime', label: 'Chime', assetPath: 'alarms/chime.mp3', type: SoundType.alarm),
+    SoundPreset(id: 'bell_alarm', label: 'Gentle Bell', assetPath: 'alarms/bell_alarm.ogg', type: SoundType.alarm),
+    SoundPreset(
+      id: 'old_mechanical_bell',
+      label: 'Old Mechanical Bell',
+      assetPath: 'alarms/old_mechanical_bell.ogg',
+      type: SoundType.alarm,
+    ),
   ];
 
-  // ── Ambient / Focus Sounds ────────────────────────────────────────────────
-
+  // Ambient / Focus Sounds
   static const List<SoundPreset> ambience = [
-    SoundPreset(id: 'forest', label: 'Forest', assetPath: 'ambience/forest.mp3', type: SoundType.ambience),
-    SoundPreset(id: 'rain', label: 'Rain', assetPath: 'ambience/rain.mp3', type: SoundType.ambience),
     SoundPreset(
-      id: 'white_noise',
-      label: 'White Noise',
-      assetPath: 'ambience/white_noise.mp3',
+      id: 'brown_noise',
+      label: 'Brown Noise',
+      assetPath: 'ambience/brown_noise.ogg',
       type: SoundType.ambience,
     ),
+    SoundPreset(id: 'campfire', label: 'Campfire', assetPath: 'ambience/campfire.ogg', type: SoundType.ambience),
     SoundPreset(
       id: 'coffee_shop',
       label: 'Coffee Shop',
-      assetPath: 'ambience/coffee_shop.mp3',
+      assetPath: 'ambience/coffee_shop.ogg',
+      type: SoundType.ambience,
+    ),
+    SoundPreset(id: 'forest_sound', label: 'Forest', assetPath: 'ambience/forest.ogg', type: SoundType.ambience),
+    SoundPreset(
+      id: 'ocean_waves',
+      label: 'Ocean Waves',
+      assetPath: 'ambience/ocean_waves.ogg',
+      type: SoundType.ambience,
+    ),
+    SoundPreset(id: 'office_sound', label: 'Office', assetPath: 'ambience/office.ogg', type: SoundType.ambience),
+    SoundPreset(id: 'pink_noise', label: 'Pink Noise', assetPath: 'ambience/pink_noise.ogg', type: SoundType.ambience),
+    SoundPreset(
+      id: 'rain_wind_thunder',
+      label: 'Rain, Wind & Thunder',
+      assetPath: 'ambience/rain_wind_and_thunder.ogg',
+      type: SoundType.ambience,
+    ),
+    SoundPreset(id: 'rain', label: 'Rain', assetPath: 'ambience/rain.ogg', type: SoundType.ambience),
+    SoundPreset(id: 'river_sound', label: 'River', assetPath: 'ambience/river.ogg', type: SoundType.ambience),
+    SoundPreset(
+      id: 'white_noise',
+      label: 'White Noise',
+      assetPath: 'ambience/white_noise.ogg',
+      type: SoundType.ambience,
+    ),
+    SoundPreset(
+      id: 'forest_night',
+      label: 'Forest Night',
+      assetPath: 'ambience/forest_night.ogg',
       type: SoundType.ambience,
     ),
   ];
