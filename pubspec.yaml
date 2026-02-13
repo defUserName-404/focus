@@ -53,6 +53,7 @@ flutter:
   assets:
     - assets/audio/alarms/
     - assets/audio/ambience/
+    - assets/animations/
 
   fonts:
     - family: Manrope
