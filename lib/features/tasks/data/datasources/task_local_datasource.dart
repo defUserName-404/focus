@@ -3,6 +3,8 @@ import 'package:focus/core/services/db_service.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/presentation/providers/task_filter_state.dart';
 
+import '../../../all_tasks/domain/entities/all_tasks_filter_state.dart';
+
 abstract class ITaskLocalDataSource {
   Future<List<TaskTableData>> getTasksByProjectId(BigInt projectId);
   Future<TaskTableData?> getTaskById(BigInt id);
@@ -17,6 +19,15 @@ abstract class ITaskLocalDataSource {
     TaskSortCriteria sortCriteria,
     TaskSortOrder sortOrder,
     TaskPriority? priorityFilter,
+  });
+
+  /// Watch ALL tasks across all projects with filtering/sorting.
+  Stream<List<TaskTableData>> watchAllFilteredTasks({
+    String searchQuery,
+    AllTasksSortCriteria sortCriteria,
+    AllTasksSortOrder sortOrder,
+    TaskPriority? priorityFilter,
+    TaskCompletionFilter completionFilter,
   });
 }
 
@@ -112,6 +123,62 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
       ]);
     } else {
       // Default: recently modified descending
+      query.orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
+    }
+
+    return query.watch();
+  }
+
+  @override
+  Stream<List<TaskTableData>> watchAllFilteredTasks({
+    String searchQuery = '',
+    AllTasksSortCriteria sortCriteria = AllTasksSortCriteria.recentlyModified,
+    AllTasksSortOrder sortOrder = AllTasksSortOrder.none,
+    TaskPriority? priorityFilter,
+    TaskCompletionFilter completionFilter = TaskCompletionFilter.all,
+  }) {
+    final query = _db.select(_db.taskTable)
+      ..where((t) => t.depth.equals(0)); // root tasks only
+
+    final q = searchQuery.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      query.where(
+        (t) => t.title.lower().like('%$q%') | t.description.lower().like('%$q%'),
+      );
+    }
+
+    if (priorityFilter != null) {
+      query.where((t) => t.priority.equalsValue(priorityFilter));
+    }
+
+    switch (completionFilter) {
+      case TaskCompletionFilter.completed:
+        query.where((t) => t.isCompleted.equals(true));
+      case TaskCompletionFilter.incomplete:
+        query.where((t) => t.isCompleted.equals(false));
+      case TaskCompletionFilter.all:
+        break;
+    }
+
+    if (sortOrder != AllTasksSortOrder.none) {
+      final mode = sortOrder == AllTasksSortOrder.ascending ? OrderingMode.asc : OrderingMode.desc;
+      query.orderBy([
+        (t) {
+          switch (sortCriteria) {
+            case AllTasksSortCriteria.recentlyModified:
+              return OrderingTerm(expression: t.updatedAt, mode: mode);
+            case AllTasksSortCriteria.deadline:
+              return OrderingTerm(expression: t.endDate, mode: mode);
+            case AllTasksSortCriteria.priority:
+              return OrderingTerm(expression: t.priority, mode: mode);
+            case AllTasksSortCriteria.title:
+              return OrderingTerm(expression: t.title, mode: mode);
+            case AllTasksSortCriteria.createdDate:
+              return OrderingTerm(expression: t.createdAt, mode: mode);
+          }
+        },
+      ]);
+    } else {
       query.orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
     }
 

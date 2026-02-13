@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus/core/common/utils/form_validators.dart';
+import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart';
 
 import '../../../../core/common/widgets/base_modal_form.dart';
@@ -37,16 +39,22 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
     return BaseModalForm(
       title: widget.parentTaskId != null ? 'Create Subtask' : 'Create New Task',
       fields: [
-        FTextField(
+        FTextFormField(
           control: FTextFieldControl.managed(controller: _titleController),
           hint: 'Task Title',
           label: const Text('Title'),
+          validator: (value) => AppFormValidator.isNotEmpty(value),
+          autovalidateMode: .onUnfocus,
         ),
         FTextField(
           control: FTextFieldControl.managed(controller: _descriptionController),
           hint: 'Task Description (Optional)',
           label: const Text('Description'),
           maxLines: 3,
+        ),
+        Align(
+          alignment: .centerLeft,
+          child: Text('Priority', style: context.typography.sm.copyWith(fontWeight: .w600)),
         ),
         FilterSelect<TaskPriority>(
           selected: _priority,
@@ -65,7 +73,11 @@ class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent>
         FDateField.calendar(
           label: const Text('End Date'),
           hint: 'Select End Date (Optional)',
-          control: FDateFieldControl.managed(onChange: (date) => _endDate = date),
+          control: FDateFieldControl.managed(
+            onChange: (date) => _endDate = date,
+            validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
+          ),
+          autovalidateMode: .onUnfocus,
           clearable: true,
         ),
       ],

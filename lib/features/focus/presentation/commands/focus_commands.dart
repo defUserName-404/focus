@@ -23,7 +23,7 @@ class FocusCommands {
     // If a session is already active, just show it.
     if (existing != null && existing.state != SessionState.completed && existing.state != SessionState.cancelled) {
       if (context.mounted) {
-        Navigator.of(context).pushNamed(RouteConstants.focusSessionRoute);
+        Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.focusSessionRoute);
       }
       return;
     }
@@ -33,7 +33,7 @@ class FocusCommands {
         .createSession(taskId: taskId, focusMinutes: focusMinutes, breakMinutes: breakMinutes);
 
     if (context.mounted) {
-      Navigator.of(context).pushNamed(RouteConstants.focusSessionRoute);
+      Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.focusSessionRoute);
     }
   }
 

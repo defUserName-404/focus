@@ -3,6 +3,7 @@ import '../../domain/entities/task_extensions.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/repositories/i_task_repository.dart';
 import '../../presentation/providers/task_filter_state.dart';
+import '../../../all_tasks/domain/entities/all_tasks_filter_state.dart';
 import '../datasources/task_local_datasource.dart';
 import '../mappers/task_extensions.dart';
 
@@ -67,6 +68,25 @@ class TaskRepositoryImpl implements ITaskRepository {
           sortCriteria: sortCriteria,
           sortOrder: sortOrder,
           priorityFilter: priorityFilter,
+        )
+        .map((rows) => rows.map((r) => r.toDomain()).toList());
+  }
+
+  @override
+  Stream<List<Task>> watchAllFilteredTasks({
+    String searchQuery = '',
+    AllTasksSortCriteria sortCriteria = AllTasksSortCriteria.recentlyModified,
+    AllTasksSortOrder sortOrder = AllTasksSortOrder.none,
+    TaskPriority? priorityFilter,
+    TaskCompletionFilter completionFilter = TaskCompletionFilter.all,
+  }) {
+    return _local
+        .watchAllFilteredTasks(
+          searchQuery: searchQuery,
+          sortCriteria: sortCriteria,
+          sortOrder: sortOrder,
+          priorityFilter: priorityFilter,
+          completionFilter: completionFilter,
         )
         .map((rows) => rows.map((r) => r.toDomain()).toList());
   }

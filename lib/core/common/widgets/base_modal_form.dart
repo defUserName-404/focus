@@ -28,7 +28,7 @@ class BaseModalForm extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: .min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: AppConstants.spacing.small,
             children: [
               Text(title, textAlign: TextAlign.center),
               SizedBox(height: AppConstants.spacing.large),
@@ -38,7 +38,7 @@ class BaseModalForm extends StatelessWidget {
                 mainAxisAlignment: .end,
                 children: [
                   fu.FButton(onPress: onCancel, style: fu.FButtonStyle.ghost(), child: const Text('Cancel')),
-                  fu.FButton(onPress: onSubmit, child: Text(submitButtonText)),
+                  fu.FButton(prefix: Icon(fu.FIcons.check), onPress: onSubmit, child: Text(submitButtonText)),
                 ],
               ),
             ],

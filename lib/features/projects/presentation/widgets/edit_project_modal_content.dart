@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import '../../../../core/common/utils/date_formatter.dart';
+import '../../../../core/common/utils/form_validators.dart';
 import '../../../../core/common/widgets/base_modal_form.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';
 import '../../domain/entities/project_extensions.dart';
 import '../providers/project_provider.dart';
@@ -45,19 +45,19 @@ class _EditProjectModalContentState extends ConsumerState<EditProjectModalConten
     return BaseModalForm(
       title: 'Edit Project',
       fields: [
-        FTextField(
+        FTextFormField(
           control: FTextFieldControl.managed(controller: _titleController),
           hint: 'Project Title',
           label: const Text('Title'),
+          validator: (value) => AppFormValidator.isNotEmpty(value),
+          autovalidateMode: .onUnfocus,
         ),
-        SizedBox(height: AppConstants.spacing.regular),
         FTextField(
           control: FTextFieldControl.managed(controller: _descriptionController),
           hint: 'Project Description (Optional)',
           label: const Text('Description'),
           maxLines: 3,
         ),
-        SizedBox(height: AppConstants.spacing.regular),
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
@@ -70,7 +70,11 @@ class _EditProjectModalContentState extends ConsumerState<EditProjectModalConten
         FDateField.calendar(
           label: const Text('Deadline'),
           hint: _deadline?.toDateString() ?? 'Select Deadline (Optional)',
-          control: FDateFieldControl.managed(initial: _deadline, onChange: (date) => setState(() => _deadline = date)),
+          control: FDateFieldControl.managed(
+            onChange: (date) => _deadline = date,
+            validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
+          ),
+          autovalidateMode: .onUnfocus,
           clearable: true,
         ),
       ],

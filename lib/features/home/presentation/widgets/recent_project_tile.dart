@@ -3,8 +3,9 @@ import 'package:focus/core/common/utils/date_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
-import 'package:focus/features/projects/presentation/screens/project_detail_screen.dart';
 import 'package:forui/forui.dart' as fu;
+
+import '../../../../core/constants/route_constants.dart';
 
 class RecentProjectTile extends StatelessWidget {
   final Project project;
@@ -16,7 +17,7 @@ class RecentProjectTile extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (project.id != null) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: project.id!)));
+          Navigator.pushNamed(context, RouteConstants.projectDetailRoute, arguments: project.id!);
         }
       },
       child: fu.FCard(
