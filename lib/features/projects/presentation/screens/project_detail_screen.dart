@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/common/utils/widget_extensions.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
@@ -106,63 +105,57 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               ),
 
               // ── Filters & Search ──
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
-                child: Column(
-                  children: [
-                    AppSearchBar(
-                      focusNode: _searchFocusNode,
-                      hint: 'Search tasks...',
-                      onChanged: (query) {
-                        ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(searchQuery: query);
-                      },
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 120,
-                          child: FilterSelect<TaskPriority?>(
-                            selected: filter.priorityFilter,
-                            onChanged: (priority) {
-                              ref
-                                  .read(taskListFilterProvider(_projectIdString).notifier)
-                                  .updateFilter(priorityFilter: priority);
-                            },
-                            options: TaskPriority.values,
-                            hint: 'Priority',
-                            allLabel: 'All',
-                          ),
+              Column(
+                children: [
+                  AppSearchBar(
+                    focusNode: _searchFocusNode,
+                    hint: 'Search tasks...',
+                    onChanged: (query) {
+                      ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(searchQuery: query);
+                    },
+                  ),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 120,
+                        child: FilterSelect<TaskPriority?>(
+                          selected: filter.priorityFilter,
+                          onChanged: (priority) {
+                            ref
+                                .read(taskListFilterProvider(_projectIdString).notifier)
+                                .updateFilter(priorityFilter: priority);
+                          },
+                          options: TaskPriority.values,
+                          hint: 'Priority',
+                          allLabel: 'All',
                         ),
-                        SizedBox(
-                          width: 100,
-                          child: SortOrderSelector<TaskSortOrder>(
-                            selectedOrder: filter.sortOrder,
-                            onChanged: (order) {
-                              ref
-                                  .read(taskListFilterProvider(_projectIdString).notifier)
-                                  .updateFilter(sortOrder: order);
-                            },
-                            orderOptions: TaskSortOrder.values,
-                          ),
+                      ),
+                      SizedBox(
+                        width: 100,
+                        child: SortOrderSelector<TaskSortOrder>(
+                          selectedOrder: filter.sortOrder,
+                          onChanged: (order) {
+                            ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(sortOrder: order);
+                          },
+                          orderOptions: TaskSortOrder.values,
                         ),
-                        Expanded(
-                          child: SortFilterChips<TaskSortCriteria>(
-                            selectedCriteria: filter.sortCriteria,
-                            onChanged: (criteria) {
-                              ref
-                                  .read(taskListFilterProvider(_projectIdString).notifier)
-                                  .updateFilter(sortCriteria: criteria);
-                            },
-                            criteriaOptions: TaskSortCriteria.values,
-                          ),
+                      ),
+                      Expanded(
+                        child: SortFilterChips<TaskSortCriteria>(
+                          selectedCriteria: filter.sortCriteria,
+                          onChanged: (criteria) {
+                            ref
+                                .read(taskListFilterProvider(_projectIdString).notifier)
+                                .updateFilter(sortCriteria: criteria);
+                          },
+                          criteriaOptions: TaskSortCriteria.values,
                         ),
-                      ].withSpacing(AppConstants.spacing.small, vertical: false),
-                    ),
-                  ].withSpacing(AppConstants.spacing.small),
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
 
-              // ── Task list ──
               Expanded(
                 child: filteredAsync.when(
                   loading: () => const Center(child: fu.FCircularProgress()),
@@ -192,7 +185,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
 
                     return ListView.builder(
                       controller: _scrollController,
-                      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular, vertical: 4),
+                      padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.small),
                       itemCount: rootTasks.length,
                       itemBuilder: (context, index) {
                         final task = rootTasks[index];
@@ -203,7 +196,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                   },
                 ),
               ),
-            ].withSpacing(AppConstants.spacing.small),
+            ],
           );
         },
       ),

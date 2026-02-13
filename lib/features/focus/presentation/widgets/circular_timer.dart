@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
+import 'package:forui/assets.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -16,7 +16,6 @@ class CircularTimer extends ConsumerWidget {
   /// Ring size derived from spacing constants (240px)
   static final double _ringSize = AppConstants.spacing.extraLarge * 10;
 
-  /// Stroke width using standard small spacing (4px)
   static final double _strokeWidth = AppConstants.spacing.small;
 
   @override
@@ -58,23 +57,29 @@ class CircularTimer extends ConsumerWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Play icon when idle
-                        if (progress.isIdle)
-                          Icon(FIcons.play, size: AppConstants.size.icon.large, color: context.colors.mutedForeground),
-
-                        // Time display using largest standard typography (60px)
                         Text(
                           progress.formattedTime,
                           style: context.typography.xl6.copyWith(fontWeight: FontWeight.w100),
                         ),
-
                         // Hint text
                         if (canEdit)
                           Padding(
-                            padding: EdgeInsets.only(top: AppConstants.spacing.small),
-                            child: Text(
-                              progress.isIdle ? 'tap to start' : 'double-tap to edit',
-                              style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
+                            padding: EdgeInsets.only(top: AppConstants.spacing.regular),
+                            child: Row(
+                              mainAxisAlignment: .center,
+                              spacing: AppConstants.spacing.small,
+                              children: [
+                                if (progress.isIdle)
+                                  Icon(
+                                    FIcons.play,
+                                    size: AppConstants.size.icon.large,
+                                    color: context.colors.mutedForeground,
+                                  ),
+                                Text(
+                                  progress.isIdle ? 'tap to start' : 'double-tap to edit',
+                                  style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
+                                ),
+                              ],
                             ),
                           ),
                       ],

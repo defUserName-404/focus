@@ -12,6 +12,7 @@ import '../../../../core/constants/route_constants.dart'; // Added import
 import '../../domain/entities/task.dart';
 import '../commands/task_commands.dart';
 import '../providers/task_provider.dart';
+
 // Removed unused import: TaskDetailScreen
 import 'subtask_row.dart';
 import 'task_date_row.dart';
@@ -40,10 +41,9 @@ class TaskCard extends ConsumerWidget {
     final isOverdue = task.endDate?.isOverdue ?? false;
 
     return AppCard(
-      onTap: () => Navigator.of(context).pushNamed(
-        RouteConstants.taskDetailRoute,
-        arguments: {'taskId': task.id!, 'projectId': task.projectId},
-      ),
+      onTap: () => Navigator.of(
+        context,
+      ).pushNamed(RouteConstants.taskDetailRoute, arguments: {'taskId': task.id!, 'projectId': task.projectId}),
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
@@ -51,7 +51,7 @@ class TaskCard extends ConsumerWidget {
       ),
       title: Text(task.title),
       trailing: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           TaskPriorityBadge(priority: task.priority),
           SizedBox(width: AppConstants.spacing.extraSmall),
@@ -95,7 +95,7 @@ class TaskCard extends ConsumerWidget {
       children: [
         if (isExpanded && subtasks.isNotEmpty)
           Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: .min,
             children: subtasks
                 .map(
                   (st) => SubtaskRow(
@@ -119,8 +119,6 @@ class TaskCard extends ConsumerWidget {
   }
 }
 
-// ── Private: "+ subtask" chip ────────────────────────────────────────────────
-
 class _AddSubtaskChip extends StatelessWidget {
   final VoidCallback onPressed;
 
@@ -136,8 +134,6 @@ class _AddSubtaskChip extends StatelessWidget {
     );
   }
 }
-
-// ── Private: subtask count + expand chip ────────────────────────────────────
 
 class _SubtaskCountChip extends StatelessWidget {
   final int count;

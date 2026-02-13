@@ -49,7 +49,6 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
       child: SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: AppConstants.spacing.extraLarge * 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: AppConstants.spacing.regular,

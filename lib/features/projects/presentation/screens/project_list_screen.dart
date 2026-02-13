@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/common/utils/widget_extensions.dart';
 import 'package:focus/core/constants/app_constants.dart';
 
 // Removed unused import: ProjectDetailScreen
@@ -94,7 +93,7 @@ class ProjectListScreen extends ConsumerWidget {
                 }
 
                 return ListView.builder(
-                  padding: EdgeInsets.all(AppConstants.spacing.regular),
+                  padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
                   itemCount: projects.length,
                   itemBuilder: (context, index) {
                     final project = projects[index];
@@ -111,7 +110,7 @@ class ProjectListScreen extends ConsumerWidget {
               },
             ),
           ),
-        ].withSpacing(AppConstants.spacing.regular),
+        ],
       ),
     );
   }

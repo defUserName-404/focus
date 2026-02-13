@@ -16,22 +16,19 @@ class ProjectDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: AppConstants.spacing.regular,
-        children: [
-          if (project.description != null && project.description!.isNotEmpty)
-            Text(
-              project.description!,
-              style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.5),
-            ),
-          ProjectProgressBar(projectId: project.id!.toString()),
-          ProjectMetaSection(project: project),
-          fu.FDivider(),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: AppConstants.spacing.regular,
+      children: [
+        if (project.description != null && project.description!.isNotEmpty)
+          Text(
+            project.description!,
+            style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.5),
+          ),
+        ProjectProgressBar(projectId: project.id!.toString()),
+        ProjectMetaSection(project: project),
+        fu.FDivider(),
+      ],
     );
   }
 }

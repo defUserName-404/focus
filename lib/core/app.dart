@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
+import '../features/focus/presentation/screens/focus_session_screen.dart';
 import '../features/home/presentation/pages/home_screen.dart';
 import '../features/projects/presentation/screens/project_detail_screen.dart';
 import '../features/projects/presentation/screens/project_list_screen.dart';
-import '../features/focus/presentation/screens/focus_session_screen.dart';
 import '../features/tasks/presentation/screens/task_detail_screen.dart';
-
 import 'config/theme/app_theme.dart';
 import 'constants/route_constants.dart';
 
@@ -28,7 +27,7 @@ class FocusApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case RouteConstants.homeRoute:
-            return MaterialPageRoute(builder: (_) => const FScaffold(child: HomeScreen()));
+            return MaterialPageRoute(builder: (_) => HomeScreen());
           case RouteConstants.projectListRoute:
             return MaterialPageRoute(builder: (_) => const ProjectListScreen());
           case RouteConstants.projectDetailRoute:
