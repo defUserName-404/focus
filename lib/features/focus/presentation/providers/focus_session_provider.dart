@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show StreamProvider;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/constants/audio_assets.dart';
@@ -8,6 +9,7 @@ import '../../../../core/constants/notification_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../settings/domain/entities/setting.dart';
 import '../../../settings/domain/repositories/i_settings_repository.dart';
 import '../../../tasks/domain/entities/task_extensions.dart';
 import '../../../tasks/domain/repositories/i_task_repository.dart';
@@ -34,7 +36,7 @@ class FocusTimer extends _$FocusTimer {
     _notificationService = getIt<NotificationService>();
     _settingsRepository = getIt<ISettingsRepository>();
 
-    // Listen for notification action taps (pause/resume/stop).
+    // Listen for notification action taps (pause/resume/stop/skip).
     _notificationActionSub?.cancel();
     _notificationActionSub = NotificationService.actionStream.listen(_handleNotificationAction);
 
@@ -43,7 +45,7 @@ class FocusTimer extends _$FocusTimer {
       _stopTicking();
     });
 
-    // Fire-and-forget cleanup. Do NOT await this, as we want to start null.
+    // Mark abandoned sessions as incomplete on startup.
     _cleanupAbandonedSessions();
     return null;
   }
@@ -56,32 +58,30 @@ class FocusTimer extends _$FocusTimer {
         resumeSession();
       case NotificationConstants.actionStop:
         stopCycle();
+      case NotificationConstants.actionSkip:
+        skipToNextPhase();
     }
   }
 
-  /// Finds any session that was left running/paused from a previous app run
-  /// and marks it as cancelled.
-  ///
-  /// This is race-condition safe: if the user starts a NEW session while this
-  /// is querying, we check [state] to ensure we don't cancel the new session.
+  /// Finds any session that was left running / paused from a previous app run
+  /// and marks it as **incomplete** (not "cancelled" — that's user-initiated).
   Future<void> _cleanupAbandonedSessions() async {
     try {
       final active = await _repository.getActiveSession();
       if (active == null) return;
 
-      // If the user has already started a session in this instance, [state] will be non-null.
       final currentUserSession = state;
-
-      // If the active session in DB matches our current user session, DO NOT cancel it.
       if (currentUserSession != null && currentUserSession.id == active.id) {
         return;
       }
 
-      // If the found session is running, paused, or on break, it's abandoned.
       if (active.state == SessionState.running ||
           active.state == SessionState.onBreak ||
           active.state == SessionState.paused) {
-        final updated = active.copyWith(state: SessionState.cancelled, endTime: DateTime.now());
+        final updated = active.copyWith(
+          state: SessionState.incomplete,
+          endTime: DateTime.now(),
+        );
         await _repository.updateSession(updated);
       }
     } catch (e) {
@@ -89,8 +89,15 @@ class FocusTimer extends _$FocusTimer {
     }
   }
 
-  /// Create a new session in [idle] state (timer not started yet).
-  Future<void> createSession({required BigInt taskId, required int focusMinutes, required int breakMinutes}) async {
+  /// Create a new session in [idle] state.
+  ///
+  /// **Does NOT persist to DB** — the session is only held in-memory until
+  /// the user actually starts the timer, at which point it gets saved.
+  Future<void> createSession({
+    required BigInt taskId,
+    required int focusMinutes,
+    required int breakMinutes,
+  }) async {
     _stopTicking();
 
     final session = FocusSession(
@@ -102,34 +109,42 @@ class FocusTimer extends _$FocusTimer {
       elapsedSeconds: 0,
     );
 
-    final saved = await _repository.startSession(session);
-    state = saved;
+    // Only hold in-memory — no DB write for idle sessions.
+    state = session;
   }
 
-  /// User taps the ring / presses play → transition idle→running or paused→running.
-  void startTimer() {
+  /// User taps play → idle→running (persists to DB), paused→running.
+  Future<void> startTimer() async {
     final current = state;
     if (current == null) return;
 
-    if (current.state == SessionState.idle || current.state == SessionState.paused) {
+    if (current.state == SessionState.idle) {
+      // Now persist the session for the first time.
+      final running = current.copyWith(
+        state: SessionState.running,
+        startTime: DateTime.now(),
+      );
+      final saved = await _repository.startSession(running);
+      state = saved;
+      _startTicking();
+      _updateSessionNotification();
+      _startConfiguredAmbience();
+    } else if (current.state == SessionState.paused) {
       final updated = current.copyWith(state: SessionState.running);
       state = updated;
       _repository.updateSession(updated);
       _startTicking();
       _updateSessionNotification();
-
-      // Start ambient sound when session begins, using configured preset.
-      if (current.state == SessionState.idle) {
-        _startConfiguredAmbience();
-      } else {
-        _audioService.resumeAmbience();
-      }
+      _audioService.resumeAmbience();
     }
   }
 
   void pauseSession() {
     final current = state;
-    if (current == null || current.state != SessionState.running) return;
+    if (current == null ||
+        (current.state != SessionState.running && current.state != SessionState.onBreak)) {
+      return;
+    }
 
     _stopTicking();
     _audioService.pauseAmbience();
@@ -172,21 +187,39 @@ class FocusTimer extends _$FocusTimer {
     }
   }
 
+  /// Skip to the next phase (focus→break or break→next cycle).
+  void skipToNextPhase() {
+    final current = state;
+    if (current == null) return;
+
+    if (current.state == SessionState.running) {
+      _handleFocusCompleted();
+    } else if (current.state == SessionState.onBreak) {
+      _handleSessionCompleted();
+    }
+  }
+
   /// Premature end: save as cancelled (not deleted).
+  /// Only persists if the session was already saved to DB (has an id).
   void cancelSession() {
     final current = state;
     if (current == null) return;
 
     _stopTicking();
     _audioService.stopAmbience();
-    final updated = current.copyWith(state: SessionState.cancelled, endTime: DateTime.now());
-    _repository.updateSession(updated);
+
+    if (current.id != null) {
+      final updated = current.copyWith(
+        state: SessionState.cancelled,
+        endTime: DateTime.now(),
+      );
+      _repository.updateSession(updated);
+    }
     state = null;
     _notificationService.cancelFocusNotification();
   }
 
-  /// Complete the current focus session early (before the timer runs out).
-  /// Saves actual elapsed time and marks the session as completed.
+  /// Complete the current focus session early.
   void completeSessionEarly() {
     final current = state;
     if (current == null) return;
@@ -197,16 +230,23 @@ class FocusTimer extends _$FocusTimer {
     _stopTicking();
     _audioService.stopAmbience();
     final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
-    _repository.updateSession(updated);
+
+    if (current.id != null) {
+      _repository.updateSession(updated);
+    } else {
+      _repository.startSession(updated);
+    }
     state = updated;
 
     _playConfiguredAlarm();
     _notificationService.cancelFocusNotification();
-    _notificationService.showAlarmNotification(title: 'Session Complete!', body: 'Completed early — great focus!');
+    _notificationService.showAlarmNotification(
+      title: 'Session Complete!',
+      body: 'Completed early — great focus!',
+    );
   }
 
   /// Complete the session AND mark the associated task as completed.
-  /// This is the primary action from the focus screen.
   Future<void> completeTaskAndSession() async {
     final current = state;
     if (current == null) return;
@@ -217,7 +257,12 @@ class FocusTimer extends _$FocusTimer {
     _stopTicking();
     _audioService.stopAmbience();
     final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
-    _repository.updateSession(updated);
+
+    if (current.id != null) {
+      _repository.updateSession(updated);
+    } else {
+      await _repository.startSession(updated);
+    }
     state = updated;
 
     // Mark the task as completed.
@@ -238,19 +283,6 @@ class FocusTimer extends _$FocusTimer {
       title: 'Task Complete!',
       body: 'Great work — session and task both done.',
     );
-  }
-
-  /// Update focus/break duration while paused or idle.
-  void updateDuration({int? focusMinutes, int? breakMinutes}) {
-    final current = state;
-    if (current == null) return;
-    if (current.state != SessionState.paused && current.state != SessionState.idle) {
-      return;
-    }
-
-    final updated = current.copyWith(focusDurationMinutes: focusMinutes, breakDurationMinutes: breakMinutes);
-    state = updated;
-    _repository.updateSession(updated);
   }
 
   // ── Internal tick logic ───────────────────────────────────────────────────
@@ -300,11 +332,19 @@ class FocusTimer extends _$FocusTimer {
     if (current == null) return;
 
     _audioService.stopAmbience();
-    final updated = current.copyWith(state: SessionState.onBreak);
+    // Set elapsed to exactly the focus total so break phase counting starts correctly.
+    final totalFocusSeconds = current.focusDurationMinutes * 60;
+    final updated = current.copyWith(
+      state: SessionState.onBreak,
+      elapsedSeconds: totalFocusSeconds,
+    );
     state = updated;
     _repository.updateSession(updated);
 
-    // Play configured alarm and notify the user that focus phase ended.
+    // Ensure the timer is running for the break phase.
+    _startTicking();
+    _updateSessionNotification();
+
     _playConfiguredAlarm();
     _notificationService.showAlarmNotification(
       title: 'Break Time!',
@@ -316,22 +356,18 @@ class FocusTimer extends _$FocusTimer {
     final current = state;
     if (current == null) return;
 
-    // Save the completed session.
     final completed = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
     _repository.updateSession(completed);
 
-    // Play configured alarm and notify the user that break is over.
     _playConfiguredAlarm();
     _notificationService.showAlarmNotification(
       title: 'Break Over!',
       body: 'Starting next focus session automatically.',
     );
 
-    // Auto-start the next Pomodoro cycle: create a new session and begin.
     _startNextCycle(current.taskId, current.focusDurationMinutes, current.breakDurationMinutes);
   }
 
-  /// Automatically begin the next focus cycle for Pomodoro auto-resume.
   Future<void> _startNextCycle(BigInt taskId, int focusMinutes, int breakMinutes) async {
     final session = FocusSession(
       taskId: taskId,
@@ -351,7 +387,6 @@ class FocusTimer extends _$FocusTimer {
 
   // ── Configured audio helpers ──────────────────────────────────────────────
 
-  /// Start ambience using user-configured preset and volume.
   Future<void> _startConfiguredAmbience() async {
     try {
       final prefs = await _settingsRepository.getAudioPreferences();
@@ -370,7 +405,6 @@ class FocusTimer extends _$FocusTimer {
     }
   }
 
-  /// Play the alarm using user-configured preset.
   Future<void> _playConfiguredAlarm() async {
     try {
       final prefs = await _settingsRepository.getAudioPreferences();
@@ -386,16 +420,18 @@ class FocusTimer extends _$FocusTimer {
     }
   }
 
-  /// Manually stop the Pomodoro cycle after the current session.
-  /// Completes the session and does NOT auto-cycle.
+  /// Manually stop the Pomodoro cycle.
   void stopCycle() {
     final current = state;
     if (current == null) return;
 
     _stopTicking();
     _audioService.stopAmbience();
-    final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
-    _repository.updateSession(updated);
+
+    if (current.id != null) {
+      final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
+      _repository.updateSession(updated);
+    }
     state = null;
 
     _notificationService.cancelFocusNotification();
@@ -407,7 +443,6 @@ class FocusTimer extends _$FocusTimer {
 
   // ── Notification helpers ────────────────────────────────────────────────
 
-  /// Update the persistent background notification with current progress.
   void _updateSessionNotification() {
     final current = state;
     if (current == null) return;
@@ -417,17 +452,24 @@ class FocusTimer extends _$FocusTimer {
 
     int remaining;
     String phase;
+    int progressMax;
+    int progressCurrent;
 
     if (isFocusPhase) {
       remaining = totalFocusSeconds - current.elapsedSeconds;
       phase = 'Focus';
+      progressMax = totalFocusSeconds;
+      progressCurrent = current.elapsedSeconds;
     } else {
       final totalBreakSeconds = current.breakDurationMinutes * 60;
       remaining = (totalFocusSeconds + totalBreakSeconds) - current.elapsedSeconds;
       phase = 'Break';
+      progressMax = totalBreakSeconds;
+      progressCurrent = current.elapsedSeconds - totalFocusSeconds;
     }
 
     remaining = remaining.clamp(0, 99999);
+    progressCurrent = progressCurrent.clamp(0, progressMax);
     final minutes = remaining ~/ 60;
     final seconds = remaining % 60;
 
@@ -435,6 +477,8 @@ class FocusTimer extends _$FocusTimer {
       title: '$phase Session',
       body: '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')} remaining',
       isRunning: current.state == SessionState.running || current.state == SessionState.onBreak,
+      progressMax: progressMax,
+      progressCurrent: progressCurrent,
     );
   }
 }
@@ -444,9 +488,14 @@ IFocusSessionRepository focusSessionRepository(Ref ref) {
   return getIt<IFocusSessionRepository>();
 }
 
-// ── Progress Logic (Merged) ────────────────────────────────────────────────
+/// Watches timer preferences (focus / break duration) from settings.
+final timerPreferencesProvider = StreamProvider<TimerPreferences>((ref) {
+  final repository = getIt<ISettingsRepository>();
+  return repository.watchTimerPreferences();
+});
 
-/// Data class to hold parameters for progress calculation in an isolate.
+// ── Progress Logic ─────────────────────────────────────────────────────────
+
 class _ProgressParams {
   final SessionState state;
   final int focusDurationMinutes;
@@ -462,7 +511,6 @@ class _ProgressParams {
 }
 
 /// Computed progress data derived from the raw [FocusSession].
-/// Holds all display-ready values.
 class FocusProgress {
   final double progress;
   final int remainingMinutes;
@@ -488,7 +536,6 @@ class FocusProgress {
       '${remainingMinutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
 }
 
-/// Top-level function for [compute] to perform mathematical derivation.
 FocusProgress _calculateProgress(_ProgressParams params) {
   final isFocus =
       params.state == SessionState.running || params.state == SessionState.paused || params.state == SessionState.idle;
@@ -517,7 +564,6 @@ Future<FocusProgress?> focusProgress(Ref ref) async {
   final session = ref.watch(focusTimerProvider);
   if (session == null) return null;
 
-  // Use compute to offload math from the main thread
   return compute(
     _calculateProgress,
     _ProgressParams(

@@ -13,6 +13,7 @@ import '../providers/settings_provider.dart';
 import '../widgets/ambience_toggle_card.dart';
 import '../widgets/section_title.dart';
 import '../widgets/sound_items_list.dart';
+import '../widgets/timer_settings_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -20,6 +21,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefsAsync = ref.watch(settingsProvider);
+    final timerAsync = ref.watch(timerSettingsProvider);
 
     return fu.FScaffold(
       header: fu.FHeader.nested(
@@ -39,7 +41,10 @@ class SettingsScreen extends ConsumerWidget {
       child: prefsAsync.when(
         loading: () => const Center(child: fu.FCircularProgress()),
         error: (err, _) => Center(child: Text('Error: $err')),
-        data: (prefs) => _SettingsContent(prefs: prefs),
+        data: (prefs) => _SettingsContent(
+          prefs: prefs,
+          timerPrefs: timerAsync.value ?? const TimerPreferences(),
+        ),
       ),
     );
   }
@@ -47,8 +52,9 @@ class SettingsScreen extends ConsumerWidget {
 
 class _SettingsContent extends ConsumerStatefulWidget {
   final AudioPreferences prefs;
+  final TimerPreferences timerPrefs;
 
-  const _SettingsContent({required this.prefs});
+  const _SettingsContent({required this.prefs, required this.timerPrefs});
 
   @override
   ConsumerState<_SettingsContent> createState() => _SettingsContentState();
@@ -125,6 +131,32 @@ class _SettingsContentState extends ConsumerState<_SettingsContent> {
               ),
             ),
           ],
+        ),
+        SizedBox(height: AppConstants.spacing.extraLarge),
+
+        // ── Timer Duration Settings ────────────────────────────────
+        SectionTitle(title: 'Pomodoro Timer'),
+        SizedBox(height: AppConstants.spacing.regular),
+
+        TimerSettingsCard(
+          title: 'Focus Duration',
+          subtitle: 'How long each focus session lasts',
+          value: widget.timerPrefs.focusDurationMinutes,
+          min: 5,
+          max: 120,
+          step: 5,
+          onChanged: (v) => ref.read(settingsProvider.notifier).setFocusDuration(v),
+        ),
+        SizedBox(height: AppConstants.spacing.regular),
+
+        TimerSettingsCard(
+          title: 'Break Duration',
+          subtitle: 'Rest time between focus sessions',
+          value: widget.timerPrefs.breakDurationMinutes,
+          min: 1,
+          max: 30,
+          step: 1,
+          onChanged: (v) => ref.read(settingsProvider.notifier).setBreakDuration(v),
         ),
         SizedBox(height: AppConstants.spacing.extraLarge),
       ],

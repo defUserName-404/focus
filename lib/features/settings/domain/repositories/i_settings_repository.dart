@@ -21,4 +21,10 @@ abstract class ISettingsRepository {
 
   /// Convenience: watch decoded audio preferences reactively.
   Stream<AudioPreferences> watchAudioPreferences();
+
+  /// Convenience: get decoded timer (Pomodoro) preferences.
+  Future<TimerPreferences> getTimerPreferences();
+
+  /// Convenience: watch decoded timer preferences reactively.
+  Stream<TimerPreferences> watchTimerPreferences();
 }

@@ -68,7 +68,14 @@ class _MainShellState extends ConsumerState<MainShell> {
         childPad: false,
         footer: fu.FBottomNavigationBar(
           index: currentIndex,
-          onChange: (index) => ref.read(bottomNavIndexProvider.notifier).setIndex(index),
+          onChange: (index) {
+            if (index == currentIndex) {
+              // Re-tap same tab → pop nested navigator to root.
+              _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+            } else {
+              ref.read(bottomNavIndexProvider.notifier).setIndex(index);
+            }
+          },
           children: [
             fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.house), label: const Text('Home')),
             fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.squareCheck), label: const Text('Tasks')),
@@ -97,7 +104,6 @@ class _MainShellState extends ConsumerState<MainShell> {
 class _TabNavigator extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   final WidgetBuilder rootBuilder;
-
   const _TabNavigator({required this.navigatorKey, required this.rootBuilder});
 
   @override

@@ -4,11 +4,13 @@ enum SessionState {
   paused,
   onBreak,
   completed,
-  cancelled;
+  cancelled,
+  incomplete;
 
   String get label => switch (this) {
     SessionState.completed => 'Completed',
     SessionState.cancelled => 'Cancelled',
+    SessionState.incomplete => 'Incomplete',
     SessionState.running => 'Running',
     SessionState.paused => 'Paused',
     SessionState.onBreak => 'On Break',

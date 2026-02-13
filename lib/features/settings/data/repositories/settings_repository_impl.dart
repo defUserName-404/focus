@@ -33,12 +33,32 @@ class SettingsRepositoryImpl implements ISettingsRepository {
     return _local.watchAll().map(_decodePreferences);
   }
 
+  @override
+  Future<TimerPreferences> getTimerPreferences() async {
+    final all = await _local.getAll();
+    return _decodeTimerPreferences(all);
+  }
+
+  @override
+  Stream<TimerPreferences> watchTimerPreferences() {
+    return _local.watchAll().map(_decodeTimerPreferences);
+  }
+
   AudioPreferences _decodePreferences(Map<String, String> all) {
     return AudioPreferences(
       alarmSoundId: all[SettingsKeys.alarmSoundId],
       ambienceSoundId: all[SettingsKeys.ambienceSoundId],
       ambienceVolume: double.tryParse(all[SettingsKeys.ambienceVolume] ?? '') ?? 0.5,
       ambienceEnabled: (all[SettingsKeys.ambienceEnabled] ?? 'true') == 'true',
+    );
+  }
+
+  TimerPreferences _decodeTimerPreferences(Map<String, String> all) {
+    return TimerPreferences(
+      focusDurationMinutes:
+          int.tryParse(all[SettingsKeys.focusDurationMinutes] ?? '') ?? 25,
+      breakDurationMinutes:
+          int.tryParse(all[SettingsKeys.breakDurationMinutes] ?? '') ?? 5,
     );
   }
 }

@@ -40,11 +40,14 @@ class NotificationService {
     }
   }
 
-  /// Show the persistent focus session notification with play/pause controls.
+  /// Show the persistent focus session notification with media-style controls
+  /// and an optional progress bar.
   Future<void> showFocusNotification({
     required String title,
     required String body,
     required bool isRunning,
+    int progressMax = 0,
+    int progressCurrent = 0,
   }) async {
     final actions = <AndroidNotificationAction>[
       if (isRunning)
@@ -60,11 +63,18 @@ class NotificationService {
           showsUserInterface: false,
         ),
       const AndroidNotificationAction(
+        NotificationConstants.actionSkip,
+        'Skip',
+        showsUserInterface: false,
+      ),
+      const AndroidNotificationAction(
         NotificationConstants.actionStop,
         'Stop',
         showsUserInterface: false,
       ),
     ];
+
+    final showProgress = progressMax > 0;
 
     final androidDetails = AndroidNotificationDetails(
       NotificationConstants.focusChannelId,
@@ -77,6 +87,10 @@ class NotificationService {
       onlyAlertOnce: true,
       showWhen: true,
       usesChronometer: true,
+      showProgress: showProgress,
+      maxProgress: showProgress ? progressMax : 0,
+      progress: showProgress ? progressCurrent : 0,
+      category: AndroidNotificationCategory.progress,
       actions: actions,
     );
 
