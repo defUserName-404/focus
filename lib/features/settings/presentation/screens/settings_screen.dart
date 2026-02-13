@@ -20,10 +20,17 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final prefsAsync = ref.watch(settingsProvider);
 
+    final canPop = Navigator.of(context).canPop();
+
     return fu.FScaffold(
-      header: fu.FHeader(
-        title: Text('Settings', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-      ),
+      header: canPop
+          ? fu.FHeader.nested(
+              prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
+              title: Text('Settings'),
+            )
+          : fu.FHeader(
+              title: Text('Settings', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+            ),
       child: prefsAsync.when(
         loading: () => const Center(child: fu.FCircularProgress()),
         error: (err, _) => Center(child: Text('Error: $err')),

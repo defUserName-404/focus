@@ -22,10 +22,17 @@ class AllTasksScreen extends ConsumerWidget {
     final filteredAsync = ref.watch(filteredAllTasksProvider);
     final filter = ref.watch(allTasksFilterProvider);
 
+    final canPop = Navigator.of(context).canPop();
+
     return fu.FScaffold(
-      header: fu.FHeader(
-        title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-      ),
+      header: canPop
+          ? fu.FHeader.nested(
+              prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
+              title: Text('Tasks'),
+            )
+          : fu.FHeader(
+              title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+            ),
       child: Column(
         children: [
           AppSearchBar(
