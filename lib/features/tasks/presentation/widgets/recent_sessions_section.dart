@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart' as fu;
 import 'package:focus/core/common/utils/date_formatter.dart';
+import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -109,8 +109,8 @@ class _SessionTile extends StatelessWidget {
 
               // State badge
               fu.FBadge(
-                style: isCompleted ? fu.FBadgeStyle.primary() : fu.FBadgeStyle.outline(),
-                child: Text(session.state.label, style: context.typography.xs),
+                style: isCompleted ? fu.FBadgeStyle.secondary() : fu.FBadgeStyle.outline(),
+                child: Text(session.state.label, style: context.typography.sm),
               ),
             ],
           ),

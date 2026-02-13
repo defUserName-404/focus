@@ -39,21 +39,15 @@ class _MainShellState extends ConsumerState<MainShell> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-
-        // If the current tab's navigator can pop, pop it.
         final navState = _navigatorKeys[currentIndex].currentState;
         if (navState != null && navState.canPop()) {
           navState.pop();
           return;
         }
-
-        // If not on home tab, go back to home.
         if (currentIndex != 0) {
           ref.read(bottomNavIndexProvider.notifier).goHome();
           return;
         }
-
-        // On home tab root — show exit confirmation.
         if (!context.mounted) return;
         await ConfirmationDialog.show(
           context,
@@ -70,7 +64,6 @@ class _MainShellState extends ConsumerState<MainShell> {
           index: currentIndex,
           onChange: (index) {
             if (index == currentIndex) {
-              // Re-tap same tab → pop nested navigator to root.
               _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
             } else {
               ref.read(bottomNavIndexProvider.notifier).setIndex(index);

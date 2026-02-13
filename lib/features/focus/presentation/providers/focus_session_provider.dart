@@ -130,7 +130,12 @@ class FocusTimer extends _$FocusTimer {
       _updateSessionNotification();
       _startConfiguredAmbience();
     } else if (current.state == SessionState.paused) {
-      final updated = current.copyWith(state: SessionState.running);
+      // Resume into the correct phase based on elapsed time.
+      final totalFocusSeconds = current.focusDurationMinutes * 60;
+      final wasOnBreak = current.elapsedSeconds >= totalFocusSeconds;
+      final resumeState = wasOnBreak ? SessionState.onBreak : SessionState.running;
+
+      final updated = current.copyWith(state: resumeState);
       state = updated;
       _repository.updateSession(updated);
       _startTicking();
@@ -162,7 +167,12 @@ class FocusTimer extends _$FocusTimer {
     final current = state;
     if (current == null || current.state != SessionState.paused) return;
 
-    final updated = current.copyWith(state: SessionState.running);
+    // Determine the correct phase to resume into based on elapsed time.
+    final totalFocusSeconds = current.focusDurationMinutes * 60;
+    final wasOnBreak = current.elapsedSeconds >= totalFocusSeconds;
+    final resumeState = wasOnBreak ? SessionState.onBreak : SessionState.running;
+
+    final updated = current.copyWith(state: resumeState);
     state = updated;
     _repository.updateSession(updated);
     _startTicking();
@@ -188,13 +198,29 @@ class FocusTimer extends _$FocusTimer {
   }
 
   /// Skip to the next phase (focus→break or break→next cycle).
+  /// Works in running, onBreak, AND paused states.
   void skipToNextPhase() {
     final current = state;
     if (current == null) return;
 
-    if (current.state == SessionState.running) {
+    // Determine the phase — when paused, infer from elapsed seconds.
+    final totalFocusSeconds = current.focusDurationMinutes * 60;
+    final bool isInFocusPhase;
+
+    switch (current.state) {
+      case SessionState.running:
+        isInFocusPhase = true;
+      case SessionState.onBreak:
+        isInFocusPhase = false;
+      case SessionState.paused:
+        isInFocusPhase = current.elapsedSeconds < totalFocusSeconds;
+      default:
+        return; // idle / completed / cancelled / incomplete
+    }
+
+    if (isInFocusPhase) {
       _handleFocusCompleted();
-    } else if (current.state == SessionState.onBreak) {
+    } else {
       _handleSessionCompleted();
     }
   }
@@ -537,10 +563,17 @@ class FocusProgress {
 }
 
 FocusProgress _calculateProgress(_ProgressParams params) {
-  final isFocus =
-      params.state == SessionState.running || params.state == SessionState.paused || params.state == SessionState.idle;
+  final totalFocusSeconds = params.focusDurationMinutes * 60;
 
-  final totalSeconds = isFocus ? params.focusDurationMinutes * 60 : params.breakDurationMinutes * 60;
+  // Determine phase: when paused, infer from elapsed time rather than assuming focus.
+  final bool isFocus;
+  if (params.state == SessionState.paused) {
+    isFocus = params.elapsedSeconds < totalFocusSeconds;
+  } else {
+    isFocus = params.state == SessionState.running || params.state == SessionState.idle;
+  }
+
+  final totalSeconds = isFocus ? totalFocusSeconds : params.breakDurationMinutes * 60;
 
   final elapsedInPhase = isFocus ? params.elapsedSeconds : params.elapsedSeconds - (params.focusDurationMinutes * 60);
 
