@@ -17,6 +17,7 @@ import '../../domain/entities/focus_session.dart';
 import '../../domain/entities/focus_session_extensions.dart';
 import '../../domain/entities/session_state.dart';
 import '../../domain/repositories/i_focus_session_repository.dart';
+import 'ambience_mute_provider.dart';
 
 part 'focus_session_provider.g.dart';
 
@@ -156,11 +157,7 @@ class FocusTimer extends _$FocusTimer {
     final updated = current.copyWith(state: SessionState.paused);
     state = updated;
     _repository.updateSession(updated);
-    _notificationService.showFocusNotification(
-      title: 'Focus Session (Paused)',
-      body: 'Tap Resume to continue.',
-      isRunning: false,
-    );
+    _updateSessionNotification();
   }
 
   void resumeSession() {
@@ -233,6 +230,7 @@ class FocusTimer extends _$FocusTimer {
 
     _stopTicking();
     _audioService.stopAmbience();
+    _resetMute();
 
     if (current.id != null) {
       final updated = current.copyWith(
@@ -255,6 +253,7 @@ class FocusTimer extends _$FocusTimer {
 
     _stopTicking();
     _audioService.stopAmbience();
+    _resetMute();
     final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
 
     if (current.id != null) {
@@ -282,6 +281,7 @@ class FocusTimer extends _$FocusTimer {
 
     _stopTicking();
     _audioService.stopAmbience();
+    _resetMute();
     final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
 
     if (current.id != null) {
@@ -339,7 +339,7 @@ class FocusTimer extends _$FocusTimer {
       } else {
         state = current.copyWith(elapsedSeconds: newElapsed);
         if (newElapsed % 10 == 0) _repository.updateSession(state!);
-        if (newElapsed % 5 == 0) _updateSessionNotification();
+        _updateSessionNotification();
       }
     } else if (current.state == SessionState.onBreak) {
       final totalBreakSeconds = current.breakDurationMinutes * 60;
@@ -348,7 +348,7 @@ class FocusTimer extends _$FocusTimer {
       } else {
         state = current.copyWith(elapsedSeconds: newElapsed);
         if (newElapsed % 10 == 0) _repository.updateSession(state!);
-        if (newElapsed % 5 == 0) _updateSessionNotification();
+        _updateSessionNotification();
       }
     }
   }
@@ -453,6 +453,7 @@ class FocusTimer extends _$FocusTimer {
 
     _stopTicking();
     _audioService.stopAmbience();
+    _resetMute();
 
     if (current.id != null) {
       final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
@@ -467,14 +468,31 @@ class FocusTimer extends _$FocusTimer {
     );
   }
 
+  // ── Mute helper ──────────────────────────────────────────────────────────
+
+  void _resetMute() {
+    try {
+      ref.read(ambienceMuteProvider.notifier).reset();
+    } catch (_) {
+      // Provider may not be initialised yet — safe to ignore.
+    }
+  }
+
   // ── Notification helpers ────────────────────────────────────────────────
 
   void _updateSessionNotification() {
     final current = state;
     if (current == null) return;
 
-    final isFocusPhase = current.state == SessionState.running || current.state == SessionState.paused;
     final totalFocusSeconds = current.focusDurationMinutes * 60;
+
+    // When paused, infer the phase from elapsed time (not state).
+    final bool isFocusPhase;
+    if (current.state == SessionState.paused) {
+      isFocusPhase = current.elapsedSeconds < totalFocusSeconds;
+    } else {
+      isFocusPhase = current.state == SessionState.running;
+    }
 
     int remaining;
     String phase;
@@ -499,8 +517,11 @@ class FocusTimer extends _$FocusTimer {
     final minutes = remaining ~/ 60;
     final seconds = remaining % 60;
 
+    final isPaused = current.state == SessionState.paused;
+    final pausedSuffix = isPaused ? ' (Paused)' : '';
+
     _notificationService.showFocusNotification(
-      title: '$phase Session',
+      title: '$phase Session$pausedSuffix',
       body: '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')} remaining',
       isRunning: current.state == SessionState.running || current.state == SessionState.onBreak,
       progressMax: progressMax,
