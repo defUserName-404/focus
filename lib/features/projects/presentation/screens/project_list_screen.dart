@@ -11,6 +11,7 @@ import '../../../../core/common/widgets/sort_order_selector.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/route_constants.dart'; // Added import
 import '../../domain/entities/project_list_filter_state.dart';
+import '../../../../core/common/providers/navigation_provider.dart';
 import '../commands/project_commands.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
@@ -23,17 +24,21 @@ class ProjectListScreen extends ConsumerWidget {
     final filteredAsync = ref.watch(filteredProjectListProvider);
     final filter = ref.watch(projectListFilterProvider);
 
-    final canPop = Navigator.of(context).canPop();
-
     return fu.FScaffold(
-      header: canPop
-          ? fu.FHeader.nested(
-              prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
-              title: Text('Projects'),
-            )
-          : fu.FHeader(
-              title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-            ),
+      header: fu.FHeader.nested(
+        prefixes: [
+          fu.FHeaderAction.back(
+            onPress: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                ref.read(bottomNavIndexProvider.notifier).goHome();
+              }
+            },
+          ),
+        ],
+        title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+      ),
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(

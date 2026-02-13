@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../features/all_tasks/presentation/screens/all_tasks_screen.dart';
 import '../../../features/home/presentation/pages/home_screen.dart';
-import '../../../features/projects/presentation/screens/project_detail_screen.dart';
 import '../../../features/projects/presentation/screens/project_list_screen.dart';
 import '../../../features/settings/presentation/screens/settings_screen.dart';
-import '../../../features/tasks/presentation/screens/task_detail_screen.dart';
-import '../../constants/route_constants.dart';
+import '../../routing/app_router.dart';
+import '../providers/navigation_provider.dart';
 import 'confirmation_dialog.dart';
 
 /// Root shell with bottom navigation.
@@ -16,16 +16,16 @@ import 'confirmation_dialog.dart';
 /// Uses a nested [Navigator] per tab so that sub-pages (e.g. project
 /// detail, task detail) render inside the shell and the bottom bar
 /// stays visible.
-class MainShell extends StatefulWidget {
+///
+/// Tab index state is managed via Riverpod ([bottomNavIndexProvider]).
+class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
-  int _currentIndex = 0;
-
+class _MainShellState extends ConsumerState<MainShell> {
   final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
     4,
     (_) => GlobalKey<NavigatorState>(),
@@ -33,21 +33,23 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(bottomNavIndexProvider);
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
 
         // If the current tab's navigator can pop, pop it.
-        final navState = _navigatorKeys[_currentIndex].currentState;
+        final navState = _navigatorKeys[currentIndex].currentState;
         if (navState != null && navState.canPop()) {
           navState.pop();
           return;
         }
 
-        // If not on the home tab, go to home first.
-        if (_currentIndex != 0) {
-          setState(() => _currentIndex = 0);
+        // If not on home tab, go back to home.
+        if (currentIndex != 0) {
+          ref.read(bottomNavIndexProvider.notifier).goHome();
           return;
         }
 
@@ -65,8 +67,8 @@ class _MainShellState extends State<MainShell> {
       child: fu.FScaffold(
         childPad: false,
         footer: fu.FBottomNavigationBar(
-          index: _currentIndex,
-          onChange: (index) => setState(() => _currentIndex = index),
+          index: currentIndex,
+          onChange: (index) => ref.read(bottomNavIndexProvider.notifier).setIndex(index),
           children: [
             fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.house), label: const Text('Home')),
             fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.squareCheck), label: const Text('Tasks')),
@@ -75,7 +77,7 @@ class _MainShellState extends State<MainShell> {
           ],
         ),
         child: IndexedStack(
-          index: _currentIndex,
+          index: currentIndex,
           children: [
             _TabNavigator(navigatorKey: _navigatorKeys[0], rootBuilder: (_) => const HomeScreen()),
             _TabNavigator(navigatorKey: _navigatorKeys[1], rootBuilder: (_) => const AllTasksScreen()),
@@ -90,6 +92,8 @@ class _MainShellState extends State<MainShell> {
 
 /// A per-tab nested navigator that handles sub-routes (detail screens)
 /// while keeping the bottom navigation bar visible.
+///
+/// Delegates route generation to [AppRouter.generateTabRoute].
 class _TabNavigator extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   final WidgetBuilder rootBuilder;
@@ -101,21 +105,12 @@ class _TabNavigator extends StatelessWidget {
     return Navigator(
       key: navigatorKey,
       onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case RouteConstants.projectDetailRoute:
-            final projectId = settings.arguments as BigInt;
-            return MaterialPageRoute(builder: (_) => ProjectDetailScreen(projectId: projectId));
-          case RouteConstants.taskDetailRoute:
-            final args = settings.arguments as Map<String, dynamic>;
-            final taskId = args['taskId'] as BigInt;
-            final projectId = args['projectId'] as BigInt;
-            return MaterialPageRoute(builder: (_) => TaskDetailScreen(taskId: taskId, projectId: projectId));
-          case RouteConstants.projectListRoute:
-            return MaterialPageRoute(builder: (_) => const ProjectListScreen());
-          default:
-            // Root screen for this tab.
-            return MaterialPageRoute(builder: rootBuilder);
-        }
+        // Try the shared tab router first.
+        final route = AppRouter.generateTabRoute(settings);
+        if (route != null) return route;
+
+        // Fall back to the tab's root screen.
+        return MaterialPageRoute(builder: rootBuilder);
       },
     );
   }

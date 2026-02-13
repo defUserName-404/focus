@@ -7,6 +7,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
+import '../../../../core/common/providers/navigation_provider.dart';
 import '../../domain/entities/setting.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/ambience_toggle_card.dart';
@@ -20,17 +21,21 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final prefsAsync = ref.watch(settingsProvider);
 
-    final canPop = Navigator.of(context).canPop();
-
     return fu.FScaffold(
-      header: canPop
-          ? fu.FHeader.nested(
-              prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
-              title: Text('Settings'),
-            )
-          : fu.FHeader(
-              title: Text('Settings', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-            ),
+      header: fu.FHeader.nested(
+        prefixes: [
+          fu.FHeaderAction.back(
+            onPress: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                ref.read(bottomNavIndexProvider.notifier).goHome();
+              }
+            },
+          ),
+        ],
+        title: Text('Settings', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+      ),
       child: prefsAsync.when(
         loading: () => const Center(child: fu.FCircularProgress()),
         error: (err, _) => Center(child: Text('Error: $err')),

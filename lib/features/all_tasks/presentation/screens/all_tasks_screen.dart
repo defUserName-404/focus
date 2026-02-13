@@ -11,6 +11,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
 import '../../domain/entities/all_tasks_filter_state.dart';
+import '../../../../core/common/providers/navigation_provider.dart';
 import '../providers/all_tasks_provider.dart';
 import '../widgets/all_task_card.dart';
 
@@ -22,17 +23,21 @@ class AllTasksScreen extends ConsumerWidget {
     final filteredAsync = ref.watch(filteredAllTasksProvider);
     final filter = ref.watch(allTasksFilterProvider);
 
-    final canPop = Navigator.of(context).canPop();
-
     return fu.FScaffold(
-      header: canPop
-          ? fu.FHeader.nested(
-              prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
-              title: Text('Tasks'),
-            )
-          : fu.FHeader(
-              title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-            ),
+      header: fu.FHeader.nested(
+        prefixes: [
+          fu.FHeaderAction.back(
+            onPress: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                ref.read(bottomNavIndexProvider.notifier).goHome();
+              }
+            },
+          ),
+        ],
+        title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+      ),
       child: Column(
         children: [
           AppSearchBar(
