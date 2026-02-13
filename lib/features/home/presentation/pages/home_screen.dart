@@ -54,17 +54,13 @@ class HomeScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: AppConstants.spacing.regular,
           children: [
-            // ── Today's Summary ──
             TodaySummaryCard(stats: stats),
             SizedBox(height: AppConstants.spacing.regular),
-            // ── Stats Row ──
             SectionHeader(title: 'Overall Stats'),
             GlobalStatsRow(stats: stats),
             SizedBox(height: AppConstants.spacing.regular),
-            // ── Activity Graph ──
             const YearActivityGraph(),
             SizedBox(height: AppConstants.spacing.regular),
-            // ── Recent Tasks ──
             SectionHeader(
               title: 'Recent Tasks',
               onViewAll: () {
@@ -88,7 +84,6 @@ class HomeScreen extends ConsumerWidget {
               },
             ),
             SizedBox(height: AppConstants.spacing.regular),
-            // ── Recent Projects ──
             SectionHeader(
               title: 'Projects',
               onViewAll: () => Navigator.pushNamed(context, RouteConstants.projectListRoute),
