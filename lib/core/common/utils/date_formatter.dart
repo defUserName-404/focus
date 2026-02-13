@@ -1,10 +1,15 @@
 import 'package:focus/core/constants/date_time_constants.dart';
-import 'package:intl/intl.dart';
 
 extension DateTimeFormattingExtensions on DateTime {
-  String toDateString() => DateFormat('MMM d, yyyy').format(this);
+  String toDateString() {
+    final m = DateTimeConstants.shortMonthNames[month - 1];
+    return '$m $day, $year';
+  }
 
-  String toShortDateString() => DateFormat('MMM d').format(this);
+  String toShortDateString() {
+    final m = DateTimeConstants.shortMonthNames[month - 1];
+    return '$m $day';
+  }
 
   bool get isOverdue => isBefore(DateTime.now()) && !isToday;
 
@@ -71,6 +76,7 @@ class DateTimeExtensions {
 
   static String shortDateString(String dateKey) {
     final date = DateTime.parse(dateKey);
-    return DateFormat('MMM d').format(date);
+    final m = DateTimeConstants.shortMonthNames[date.month - 1];
+    return '$m ${date.day}';
   }
 }

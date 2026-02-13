@@ -4,6 +4,17 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../constants/notification_constants.dart';
 
+/// Top-level handler required by flutter_local_notifications for
+/// notification actions received while the app is in the background.
+/// Must be a top-level or static function.
+@pragma('vm:entry-point')
+void _onBackgroundNotificationResponse(NotificationResponse response) {
+  final actionId = response.actionId;
+  if (actionId != null && actionId.isNotEmpty) {
+    NotificationService._actionController.add(actionId);
+  }
+}
+
 class NotificationService {
   final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
@@ -15,7 +26,7 @@ class NotificationService {
 
   Future<void> init() async {
     const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
     const iosSettings = DarwinInitializationSettings();
 
     const initSettings =
@@ -24,6 +35,8 @@ class NotificationService {
     await _notifications.initialize(
       settings: initSettings,
       onDidReceiveNotificationResponse: _onNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse:
+          _onBackgroundNotificationResponse,
     );
 
     // Request notification permission on Android 13+.
@@ -54,23 +67,23 @@ class NotificationService {
         const AndroidNotificationAction(
           NotificationConstants.actionPause,
           'Pause',
-          showsUserInterface: false,
+          showsUserInterface: true,
         )
       else
         const AndroidNotificationAction(
           NotificationConstants.actionResume,
           'Resume',
-          showsUserInterface: false,
+          showsUserInterface: true,
         ),
       const AndroidNotificationAction(
         NotificationConstants.actionSkip,
         'Skip',
-        showsUserInterface: false,
+        showsUserInterface: true,
       ),
       const AndroidNotificationAction(
         NotificationConstants.actionStop,
         'Stop',
-        showsUserInterface: false,
+        showsUserInterface: true,
       ),
     ];
 
