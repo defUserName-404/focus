@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/constants/notification_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../settings/domain/repositories/i_settings_repository.dart';
 import '../../../tasks/domain/entities/task_extensions.dart';
 import '../../../tasks/domain/repositories/i_task_repository.dart';
 import '../../domain/entities/focus_session.dart';
@@ -21,6 +23,7 @@ class FocusTimer extends _$FocusTimer {
   late final IFocusSessionRepository _repository;
   late final AudioService _audioService;
   late final NotificationService _notificationService;
+  late final ISettingsRepository _settingsRepository;
   Timer? _timer;
   StreamSubscription<String>? _notificationActionSub;
 
@@ -29,6 +32,7 @@ class FocusTimer extends _$FocusTimer {
     _repository = ref.watch(focusSessionRepositoryProvider);
     _audioService = getIt<AudioService>();
     _notificationService = getIt<NotificationService>();
+    _settingsRepository = getIt<ISettingsRepository>();
 
     // Listen for notification action taps (pause/resume/stop).
     _notificationActionSub?.cancel();
@@ -114,9 +118,9 @@ class FocusTimer extends _$FocusTimer {
       _startTicking();
       _updateSessionNotification();
 
-      // Start ambient sound when session begins.
+      // Start ambient sound when session begins, using configured preset.
       if (current.state == SessionState.idle) {
-        _audioService.startAmbience();
+        _startConfiguredAmbience();
       } else {
         _audioService.resumeAmbience();
       }
@@ -196,7 +200,7 @@ class FocusTimer extends _$FocusTimer {
     _repository.updateSession(updated);
     state = updated;
 
-    _audioService.playAlarm();
+    _playConfiguredAlarm();
     _notificationService.cancelFocusNotification();
     _notificationService.showAlarmNotification(title: 'Session Complete!', body: 'Completed early — great focus!');
   }
@@ -228,7 +232,7 @@ class FocusTimer extends _$FocusTimer {
       debugPrint('Error completing task: $e');
     }
 
-    _audioService.playAlarm();
+    _playConfiguredAlarm();
     _notificationService.cancelFocusNotification();
     _notificationService.showAlarmNotification(
       title: 'Task Complete!',
@@ -300,8 +304,8 @@ class FocusTimer extends _$FocusTimer {
     state = updated;
     _repository.updateSession(updated);
 
-    // Play alarm and notify the user that focus phase ended.
-    _audioService.playAlarm();
+    // Play configured alarm and notify the user that focus phase ended.
+    _playConfiguredAlarm();
     _notificationService.showAlarmNotification(
       title: 'Break Time!',
       body: 'Focus complete. Take a ${current.breakDurationMinutes}min break.',
@@ -316,8 +320,8 @@ class FocusTimer extends _$FocusTimer {
     final completed = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
     _repository.updateSession(completed);
 
-    // Play alarm and notify the user that break is over.
-    _audioService.playAlarm();
+    // Play configured alarm and notify the user that break is over.
+    _playConfiguredAlarm();
     _notificationService.showAlarmNotification(
       title: 'Break Over!',
       body: 'Starting next focus session automatically.',
@@ -342,7 +346,44 @@ class FocusTimer extends _$FocusTimer {
     state = saved;
     _startTicking();
     _updateSessionNotification();
-    _audioService.startAmbience();
+    _startConfiguredAmbience();
+  }
+
+  // ── Configured audio helpers ──────────────────────────────────────────────
+
+  /// Start ambience using user-configured preset and volume.
+  Future<void> _startConfiguredAmbience() async {
+    try {
+      final prefs = await _settingsRepository.getAudioPreferences();
+      if (!prefs.ambienceEnabled) return;
+
+      SoundPreset? preset;
+      if (prefs.ambienceSoundId != null) {
+        preset = AudioAssets.findById(prefs.ambienceSoundId!);
+      }
+      preset ??= AudioAssets.defaultAmbience;
+
+      await _audioService.setNoiseVolume(prefs.ambienceVolume);
+      await _audioService.startAmbience(preset);
+    } catch (e) {
+      debugPrint('Error starting configured ambience: $e');
+    }
+  }
+
+  /// Play the alarm using user-configured preset.
+  Future<void> _playConfiguredAlarm() async {
+    try {
+      final prefs = await _settingsRepository.getAudioPreferences();
+      SoundPreset? preset;
+      if (prefs.alarmSoundId != null) {
+        preset = AudioAssets.findById(prefs.alarmSoundId!);
+      }
+      preset ??= AudioAssets.defaultAlarm;
+      await _audioService.playAlarm(preset);
+    } catch (e) {
+      debugPrint('Error playing configured alarm: $e');
+      await _audioService.playAlarm();
+    }
   }
 
   /// Manually stop the Pomodoro cycle after the current session.

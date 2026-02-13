@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:focus/features/focus/data/models/focus_session_model.dart';
+import 'package:focus/features/settings/data/models/settings_model.dart';
 import 'package:focus/features/tasks/data/models/daily_session_stats_model.dart';
 import 'package:focus/features/tasks/data/models/task_model.dart';
 
@@ -10,12 +11,12 @@ import '../../features/tasks/domain/entities/task_priority.dart';
 
 part 'db_service.g.dart';
 
-@DriftDatabase(tables: [ProjectTable, TaskTable, FocusSessionTable, DailySessionStatsTable])
+@DriftDatabase(tables: [ProjectTable, TaskTable, FocusSessionTable, DailySessionStatsTable, SettingsTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -93,6 +94,10 @@ class AppDatabase extends _$AppDatabase {
           "FROM focus_session_table "
           "GROUP BY date(start_time, 'unixepoch', 'localtime')",
         );
+      }
+      // Version 8: Added settings table
+      if (from < 8) {
+        await m.createTable(settingsTable);
       }
     },
   );

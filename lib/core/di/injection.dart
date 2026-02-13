@@ -6,6 +6,9 @@ import '../../features/focus/domain/repositories/i_focus_session_repository.dart
 import '../../features/projects/data/datasources/project_local_datasource.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/i_project_repository.dart';
+import '../../features/settings/data/datasources/settings_local_datasource.dart';
+import '../../features/settings/data/repositories/settings_repository_impl.dart';
+import '../../features/settings/domain/repositories/i_settings_repository.dart';
 import '../../features/tasks/data/datasources/task_local_datasource.dart';
 import '../../features/tasks/data/datasources/task_stats_local_datasource.dart';
 import '../../features/tasks/data/repositories/task_repository_impl.dart';
@@ -40,6 +43,9 @@ Future<void> setupDependencyInjection() async {
   getIt.registerLazySingleton<ITaskStatsLocalDataSource>(
     () => TaskStatsLocalDataSourceImpl(getIt<AppDatabase>()),
   );
+  getIt.registerLazySingleton<ISettingsLocalDataSource>(
+    () => SettingsLocalDataSourceImpl(getIt<AppDatabase>()),
+  );
 
   // ── Repositories ──
   getIt.registerLazySingleton<IProjectRepository>(
@@ -53,5 +59,8 @@ Future<void> setupDependencyInjection() async {
   );
   getIt.registerLazySingleton<ITaskStatsRepository>(
     () => TaskStatsRepositoryImpl(getIt<ITaskStatsLocalDataSource>()),
+  );
+  getIt.registerLazySingleton<ISettingsRepository>(
+    () => SettingsRepositoryImpl(getIt<ISettingsLocalDataSource>()),
   );
 }

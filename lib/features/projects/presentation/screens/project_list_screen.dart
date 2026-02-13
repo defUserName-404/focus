@@ -23,11 +23,17 @@ class ProjectListScreen extends ConsumerWidget {
     final filteredAsync = ref.watch(filteredProjectListProvider);
     final filter = ref.watch(projectListFilterProvider);
 
+    final canPop = Navigator.of(context).canPop();
+
     return fu.FScaffold(
-      header: fu.FHeader.nested(
-        prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
-        title: Text('Projects'),
-      ),
+      header: canPop
+          ? fu.FHeader.nested(
+              prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
+              title: Text('Projects'),
+            )
+          : fu.FHeader(
+              title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+            ),
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(
