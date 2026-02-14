@@ -3,34 +3,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/common/widgets/confirmation_dialog.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
-import 'package:focus/features/tasks/presentation/widgets/create_task_modal_content.dart';
-import 'package:focus/features/tasks/presentation/widgets/edit_task_modal_content.dart';
-import 'package:forui/forui.dart' as fu;
+
+import '../../../../core/constants/route_constants.dart';
 
 class TaskCommands {
-  static Future<void> create(
-    BuildContext context,
-    WidgetRef ref, {
+  static void create(
+    BuildContext context, {
     required BigInt projectId,
     BigInt? parentTaskId,
     int depth = 0,
-  }) async {
-    await fu.showFSheet(
-      context: context,
-      side: fu.FLayout.btt,
-      builder: (context) => CreateTaskModalContent(
-        projectId: projectId,
-        parentTaskId: parentTaskId,
-        depth: depth,
-      ),
+  }) {
+    Navigator.of(context, rootNavigator: true).pushNamed(
+      RouteConstants.createTaskRoute,
+      arguments: {
+        'projectId': projectId,
+        'parentTaskId': parentTaskId,
+        'depth': depth,
+      },
     );
   }
 
-  static Future<void> edit(BuildContext context, Task task) async {
-    await fu.showFSheet(
-      context: context,
-      side: fu.FLayout.btt,
-      builder: (context) => EditTaskModalContent(task: task),
+  static void edit(BuildContext context, Task task) {
+    Navigator.of(context, rootNavigator: true).pushNamed(
+      RouteConstants.editTaskRoute,
+      arguments: task,
     );
   }
 

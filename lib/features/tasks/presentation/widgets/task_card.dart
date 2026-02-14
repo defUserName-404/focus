@@ -78,7 +78,6 @@ class TaskCard extends ConsumerWidget {
         _AddSubtaskChip(
           onPressed: () => TaskCommands.create(
             context,
-            ref,
             projectId: task.projectId,
             parentTaskId: task.id,
             depth: task.depth + 1,
