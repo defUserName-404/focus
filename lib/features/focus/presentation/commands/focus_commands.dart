@@ -90,7 +90,8 @@ class FocusCommands {
       cancelLabel: 'Keep going',
       onConfirm: () {
         ref.read(focusTimerProvider.notifier).cancelSession();
-        Navigator.of(context).pop();
+        // No explicit pop — the session screen's auto-pop logic
+        // handles navigation when state becomes null.
       },
     );
   }
