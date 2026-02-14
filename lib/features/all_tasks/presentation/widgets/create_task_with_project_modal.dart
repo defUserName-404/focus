@@ -23,25 +23,41 @@ class CreateTaskWithProjectModal extends ConsumerStatefulWidget {
 }
 
 class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProjectModal> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _projectController = TextEditingController();
+  final TextEditingController _titleController = .new();
+  final TextEditingController _descriptionController = .new();
+  final FAutocompleteController _projectController = .new();
   DateTime? _startDate;
   DateTime? _endDate;
-  TaskPriority _priority = TaskPriority.medium;
-
-  /// The selected existing project, if any.
-  Project? _selectedProject;
-
-  /// Whether the typed project name doesn't match any existing project.
-  bool _isNewProject = false;
+  final ValueNotifier<TaskPriority> _priority = .new(TaskPriority.medium);
+  final ValueNotifier<Project?> _selectedProject = .new(null);
+  final ValueNotifier<bool> _isNewProject = .new(false);
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     _projectController.dispose();
+    _priority.dispose();
+    _selectedProject.dispose();
+    _isNewProject.dispose();
     super.dispose();
+  }
+
+  void _handleProjectQueryChange(String value, List<Project> projects) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      _selectedProject.value = null;
+      _isNewProject.value = false;
+      return;
+    }
+    final match = projects.where((p) => p.title.trim().toLowerCase() == trimmed.toLowerCase());
+    if (match.isNotEmpty) {
+      _selectedProject.value = match.first;
+      _isNewProject.value = false;
+    } else {
+      _selectedProject.value = null;
+      _isNewProject.value = true;
+    }
   }
 
   @override
@@ -56,57 +72,18 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
             controller: _projectController,
             projects: projects,
             onSelected: (project) {
-              setState(() {
-                _selectedProject = project;
-                _isNewProject = false;
-                _projectController.text = project.title;
-              });
+              _selectedProject.value = project;
+              _isNewProject.value = false;
+              _projectController.text = project.title;
             },
-            onChanged: (value) {
-              final trimmed = value.trim();
-              if (trimmed.isEmpty) {
-                setState(() {
-                  _selectedProject = null;
-                  _isNewProject = false;
-                });
-                return;
-              }
-              final match = projects.where((p) => p.title.trim().toLowerCase() == trimmed.toLowerCase());
-              setState(() {
-                if (match.isNotEmpty) {
-                  _selectedProject = match.first;
-                  _isNewProject = false;
-                } else {
-                  _selectedProject = null;
-                  _isNewProject = true;
-                }
-              });
-            },
+            onQueryChanged: (value) => _handleProjectQueryChange(value, projects),
+            isNewProject: _isNewProject,
           ),
           loading: () => const FTextField(hint: 'Loading projects…', enabled: false, label: Text('Project')),
           error: (_, _) => const FTextField(hint: 'Error loading projects', enabled: false, label: Text('Project')),
         ),
-        if (_isNewProject && _projectController.text.trim().isNotEmpty)
-          Padding(
-            padding: EdgeInsets.only(top: AppConstants.spacing.small),
-            child: Row(
-              children: [
-                Icon(FIcons.info, size: 12, color: context.colors.mutedForeground),
-                SizedBox(width: AppConstants.spacing.small),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: AppConstants.spacing.small),
-                    child: Text(
-                      'A new project "${_projectController.text.trim()}" will be created.',
-                      style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
 
-        // ── Task fields (same as CreateTaskModalContent) ───────────────
+        // ── Task fields ───────────────
         FTextFormField(
           control: FTextFieldControl.managed(controller: _titleController),
           hint: 'Task Title',
@@ -121,15 +98,10 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
           maxLines: 3,
         ),
         Align(
-          alignment: .centerLeft,
-          child: Text('Priority', style: context.typography.sm.copyWith(fontWeight: .w600)),
+          alignment: Alignment.centerLeft,
+          child: Text('Priority', style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
         ),
-        FilterSelect<TaskPriority>(
-          selected: _priority,
-          onChanged: (value) => setState(() => _priority = value),
-          options: TaskPriority.values,
-          hint: 'Priority',
-        ),
+        _PrioritySelector(priority: _priority),
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
@@ -160,8 +132,8 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
 
     BigInt projectId;
 
-    if (_selectedProject != null) {
-      projectId = _selectedProject!.id!;
+    if (_selectedProject.value != null) {
+      projectId = _selectedProject.value!.id!;
     } else {
       // Create a new project on the fly.
       final newProject = await ref.read(projectProvider.notifier).createProject(title: projectName);
@@ -174,7 +146,7 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
           projectId: projectId.toString(),
           title: title,
           description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-          priority: _priority,
+          priority: _priority.value,
           startDate: _startDate,
           endDate: _endDate,
           depth: 0,
@@ -186,68 +158,129 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
   }
 }
 
-/// Autocomplete field that suggests existing projects.
-class _ProjectAutocomplete extends StatelessWidget {
-  final TextEditingController controller;
+class _PrioritySelector extends StatelessWidget {
+  final ValueNotifier<TaskPriority> priority;
+
+  const _PrioritySelector({required this.priority});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<TaskPriority>(
+      valueListenable: priority,
+      builder: (context, selected, _) {
+        return FilterSelect<TaskPriority>(
+          selected: selected,
+          onChanged: (value) => priority.value = value,
+          options: TaskPriority.values,
+          hint: 'Priority',
+        );
+      },
+    );
+  }
+}
+
+class _ProjectAutocomplete extends StatefulWidget {
+  final FAutocompleteController controller;
   final List<Project> projects;
   final ValueChanged<Project> onSelected;
-  final ValueChanged<String> onChanged;
+  final ValueChanged<String> onQueryChanged;
+  final ValueNotifier<bool> isNewProject;
 
   const _ProjectAutocomplete({
     required this.controller,
     required this.projects,
     required this.onSelected,
-    required this.onChanged,
+    required this.onQueryChanged,
+    required this.isNewProject,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Autocomplete<Project>(
-      displayStringForOption: (project) => project.title,
-      optionsBuilder: (textEditingValue) {
-        final query = textEditingValue.text.trim().toLowerCase();
-        if (query.isEmpty) return projects;
-        return projects.where((p) => p.title.toLowerCase().contains(query));
-      },
-      onSelected: onSelected,
-      fieldViewBuilder: (context, textController, focusNode, onFieldSubmitted) {
-        // Sync external controller with the Autocomplete field controller.
-        textController.addListener(() {
-          if (controller.text != textController.text) {
-            controller.text = textController.text;
-          }
-          onChanged(textController.text);
-        });
-        // Seed from external if needed.
-        if (textController.text != controller.text) {
-          textController.text = controller.text;
-        }
+  State<_ProjectAutocomplete> createState() => _ProjectAutocompleteState();
+}
 
-        return FTextField(
-          control: FTextFieldControl.managed(controller: textController),
-          focusNode: focusNode,
+class _ProjectAutocompleteState extends State<_ProjectAutocomplete> {
+  String _lastText = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _lastText = widget.controller.text;
+    widget.controller.addListener(_onControllerChanged);
+  }
+
+  void _onControllerChanged() {
+    final text = widget.controller.text;
+    // Avoid duplicate processing
+    if (text == _lastText) return;
+    _lastText = text;
+    // Notify parent to handle project matching logic
+    widget.onQueryChanged(text);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onControllerChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FAutocomplete.builder(
+          control: FAutocompleteControl.managed(controller: widget.controller),
           hint: 'Search or type a project name',
           label: const Text('Project'),
-        );
-      },
-      optionsViewBuilder: (context, onSelect, options) {
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            elevation: 4,
-            borderRadius: BorderRadius.circular(8),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 200),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                itemCount: options.length,
-                itemBuilder: (context, index) {
-                  final project = options.elementAt(index);
-                  return ListTile(dense: true, title: Text(project.title), onTap: () => onSelect(project));
-                },
+          validator: (value) => AppFormValidator.isNotEmpty(value),
+          filter: (query) {
+            final trimmed = query.trim().toLowerCase();
+            if (trimmed.isEmpty) return widget.projects.map((p) => p.title);
+            return widget.projects.where((p) => p.title.toLowerCase().contains(trimmed)).map((p) => p.title);
+          },
+          contentBuilder: (context, query, values) => [
+            for (final title in values) FAutocompleteItem(value: title, title: Text(title)),
+          ],
+        ),
+        _NewProjectHint(isNewProject: widget.isNewProject, controller: widget.controller),
+      ],
+    );
+  }
+}
+
+class _NewProjectHint extends StatelessWidget {
+  final ValueNotifier<bool> isNewProject;
+  final FAutocompleteController controller;
+
+  const _NewProjectHint({required this.isNewProject, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    // Listen to both isNewProject AND controller text changes
+    return AnimatedBuilder(
+      animation: Listenable.merge([isNewProject, controller]),
+      builder: (context, _) {
+        final isNew = isNewProject.value;
+        final projectName = controller.text.trim();
+        if (!isNew || projectName.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: EdgeInsets.only(top: AppConstants.spacing.small),
+          child: Row(
+            children: [
+              Icon(FIcons.info, size: 12, color: context.colors.mutedForeground),
+              SizedBox(width: AppConstants.spacing.small),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(top: AppConstants.spacing.small),
+                  child: Text(
+                    'A new project "$projectName" will be created.',
+                    style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         );
       },
