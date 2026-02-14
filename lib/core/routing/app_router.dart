@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../features/all_tasks/presentation/screens/create_task_with_project_screen.dart';
 import '../../features/focus/presentation/screens/focus_session_screen.dart';
+import '../../features/projects/presentation/screens/create_project_screen.dart';
+import '../../features/projects/presentation/screens/edit_project_screen.dart';
 import '../../features/projects/presentation/screens/project_detail_screen.dart';
 import '../../features/projects/presentation/screens/project_list_screen.dart';
+import '../../features/tasks/presentation/screens/create_task_screen.dart';
+import '../../features/tasks/presentation/screens/edit_task_screen.dart';
 import '../../features/tasks/presentation/screens/task_detail_screen.dart';
 import '../constants/route_constants.dart';
 
@@ -49,6 +54,38 @@ abstract final class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const FocusSessionScreen(),
+        );
+      case RouteConstants.createProjectRoute:
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const CreateProjectScreen(),
+        );
+      case RouteConstants.editProjectRoute:
+        final project = settings.arguments as dynamic;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => EditProjectScreen(project: project),
+        );
+      case RouteConstants.createTaskRoute:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => CreateTaskScreen(
+            projectId: args['projectId'] as BigInt,
+            parentTaskId: args['parentTaskId'] as BigInt?,
+            depth: args['depth'] as int? ?? 0,
+          ),
+        );
+      case RouteConstants.editTaskRoute:
+        final task = settings.arguments as dynamic;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => EditTaskScreen(task: task),
+        );
+      case RouteConstants.createTaskWithProjectRoute:
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const CreateTaskWithProjectScreen(),
         );
       default:
         return null;

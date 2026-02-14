@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../features/all_tasks/presentation/screens/all_tasks_screen.dart';
+import '../../../features/focus/presentation/widgets/mini_player_overlay.dart';
 import '../../../features/home/presentation/pages/home_screen.dart';
 import '../../../features/projects/presentation/screens/project_list_screen.dart';
 import '../../../features/settings/presentation/screens/settings_screen.dart';
@@ -47,20 +48,27 @@ class _MainShellState extends ConsumerState<MainShell> {
       },
       child: fu.FScaffold(
         childPad: false,
-        footer: fu.FBottomNavigationBar(
-          index: currentIndex,
-          onChange: (index) {
-            if (index == currentIndex) {
-              _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
-            } else {
-              ref.read(bottomNavIndexProvider.notifier).setIndex(index);
-            }
-          },
+        footer: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.house), label: const Text('Home')),
-            fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.squareCheck), label: const Text('Tasks')),
-            fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.folderOpen), label: const Text('Projects')),
-            fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.settings), label: const Text('Settings')),
+            // Mini-player bar — visible when a focus session is active.
+            const MiniPlayerOverlay(),
+            fu.FBottomNavigationBar(
+              index: currentIndex,
+              onChange: (index) {
+                if (index == currentIndex) {
+                  _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+                } else {
+                  ref.read(bottomNavIndexProvider.notifier).setIndex(index);
+                }
+              },
+              children: [
+                fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.house), label: const Text('Home')),
+                fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.squareCheck), label: const Text('Tasks')),
+                fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.folderOpen), label: const Text('Projects')),
+                fu.FBottomNavigationBarItem(icon: const Icon(fu.FIcons.settings), label: const Text('Settings')),
+              ],
+            ),
           ],
         ),
         child: IndexedStack(
