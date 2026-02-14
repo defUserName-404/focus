@@ -22,32 +22,29 @@ class FocusControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(focusProgressProvider);
+    final progress = ref.watch(focusProgressProvider);
 
-    return progressAsync.when(
-      skipLoadingOnReload: true,
-      data: (progress) {
-        if (progress == null) return const SizedBox.shrink();
+    if (progress == null) return const SizedBox.shrink();
 
-        final notifier = ref.read(focusTimerProvider.notifier);
-        final showTransport = !progress.isIdle && !progress.isCompleted;
+    final notifier = ref.read(focusTimerProvider.notifier);
+    final showTransport = !progress.isIdle && !progress.isCompleted;
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Transport controls (stack) ───────────────────────
-            SizedBox(
-              height: _centerSize + 8,
-              child: Stack(
-                alignment: Alignment.center,
-                clipBehavior: Clip.none,
-                children: [
-                  // Left: Stop button (slightly elevated)
-                  if (showTransport)
-                    Positioned(
-                      left: 0,
-                      top: _sideElevation,
-                      child: _CircleIconButton(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Transport controls (stack) ───────────────────────
+        SizedBox(
+          height: _centerSize + 8,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              // Left: Stop button (slightly elevated)
+              if (showTransport)
+                Positioned(
+                  left: 0,
+                  top: _sideElevation,
+                  child: _CircleIconButton(
                         icon: FIcons.square,
                         size: _sideSize,
                         color: context.colors.mutedForeground,
@@ -96,10 +93,6 @@ class FocusControls extends ConsumerWidget {
               ),
           ],
         );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
-    );
   }
 
   IconData _centerIcon(FocusProgress progress) {

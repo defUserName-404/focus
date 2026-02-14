@@ -122,4 +122,4 @@ final class AmbienceMarqueeProvider
   }
 }
 
-String _$ambienceMarqueeHash() => r'8ed893f4ae1d26e8d7c44655fb2321011846994f';
+String _$ambienceMarqueeHash() => r'e40167084c48750bf67c4ff6216331130edbd8b0';

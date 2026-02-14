@@ -30,17 +30,23 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
 
   void _onAnimationDone() {
     if (mounted) {
+      ref.read(focusTimerProvider.notifier).clearCompletedSession();
       Navigator.of(context).pop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final progressAsync = ref.watch(focusProgressProvider);
+    final progress = ref.watch(focusProgressProvider);
     final session = ref.watch(focusTimerProvider);
 
+    // Auto-pop when the session is cleared (e.g. completeSessionEarly,
+    // cancelSession). Skip if the completion animation is playing.
     if (session == null && !_showCompletion) {
-      return const FScaffold(child: Center(child: Text('No active session')));
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).pop();
+      });
+      return const FScaffold(child: Center(child: CircularProgressIndicator()));
     }
 
     return PopScope(
@@ -48,20 +54,15 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
       child: Stack(
         children: [
           FScaffold(
-            header: FHeader.nested(
-              title: const Text('Focus'),
-              prefixes: [FHeaderAction.back(onPress: () => Navigator.of(context).pop())],
-            ),
+            header: FHeader.nested(prefixes: [FHeaderAction.back(onPress: () => Navigator.of(context).pop())]),
             child: Center(
               child: Column(
                 children: [
                   const FocusTaskInfo(),
                   SizedBox(height: AppConstants.spacing.small),
                   // Phase indicator with animated transition
-                  progressAsync.when(
-                    skipLoadingOnReload: true,
-                    data: (progress) {
-                      if (progress == null) return const SizedBox.shrink();
+                  if (progress != null) ...[
+                    (() {
                       final label = progress.isFocusPhase ? 'FOCUS' : 'BREAK';
                       return AnimatedSwitcher(
                         duration: AppConstants.animation.medium,
@@ -69,10 +70,8 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
                         switchOutCurve: Curves.easeIn,
                         child: FBadge(key: ValueKey(label), style: FBadgeStyle.secondary(), child: Text(label)),
                       );
-                    },
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, _) => const SizedBox.shrink(),
-                  ),
+                    })(),
+                  ],
                   SizedBox(height: AppConstants.spacing.regular),
                   // Ambience sound marquee + mute button
                   const _AmbienceMarqueeRow(),
@@ -106,120 +105,117 @@ class _FocusControlsWithCallback extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(focusProgressProvider);
+    final progress = ref.watch(focusProgressProvider);
+    final session = ref.watch(focusTimerProvider);
+    final isQuickSession = session?.isQuickSession ?? false;
 
-    return progressAsync.when(
-      skipLoadingOnReload: true,
-      data: (progress) {
-        if (progress == null) return const SizedBox.shrink();
+    if (progress == null) return const SizedBox.shrink();
 
-        final notifier = ref.read(focusTimerProvider.notifier);
-        final showTransport = !progress.isIdle && !progress.isCompleted;
+    final notifier = ref.read(focusTimerProvider.notifier);
+    final showTransport = !progress.isIdle && !progress.isCompleted;
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Transport controls (stack) ───────────────────────
-            SizedBox(
-              width: 240,
-              height: 72,
-              child: Stack(
-                alignment: Alignment.center,
-                clipBehavior: Clip.none,
-                children: [
-                  // Left: Stop button — animated in/out
-                  AnimatedPositioned(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Transport controls (stack) ───────────────────────
+        SizedBox(
+          width: 240,
+          height: 72,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              // Left: Stop button — animated in/out
+              AnimatedPositioned(
+                duration: AppConstants.animation.medium,
+                curve: Curves.easeInOut,
+                left: showTransport ? 0 : 98,
+                // slide toward center when hidden
+                top: -8,
+                child: AnimatedOpacity(
+                  duration: AppConstants.animation.medium,
+                  opacity: showTransport ? 1.0 : 0.0,
+                  child: AnimatedScale(
                     duration: AppConstants.animation.medium,
-                    curve: Curves.easeInOut,
-                    left: showTransport ? 0 : 98,
-                    // slide toward center when hidden
-                    top: -8,
-                    child: AnimatedOpacity(
-                      duration: AppConstants.animation.medium,
-                      opacity: showTransport ? 1.0 : 0.0,
-                      child: AnimatedScale(
-                        duration: AppConstants.animation.medium,
-                        scale: showTransport ? 1.0 : 0.0,
-                        child: IgnorePointer(
-                          ignoring: !showTransport,
-                          child: _CircleIconButton(
-                            icon: FIcons.square,
-                            size: 44,
-                            color: context.colors.mutedForeground,
-                            backgroundColor: context.colors.muted,
-                            onTap: () => _confirmEnd(context, ref),
-                          ),
-                        ),
+                    scale: showTransport ? 1.0 : 0.0,
+                    child: IgnorePointer(
+                      ignoring: !showTransport,
+                      child: _CircleIconButton(
+                        icon: FIcons.square,
+                        size: 44,
+                        color: context.colors.mutedForeground,
+                        backgroundColor: context.colors.muted,
+                        onTap: () => _confirmEnd(context, ref),
                       ),
                     ),
                   ),
-
-                  AnimatedPositioned(
-                    duration: AppConstants.animation.medium,
-                    curve: Curves.easeInOut,
-                    right: showTransport ? 0 : 98,
-                    // slide toward center when hidden
-                    top: -8,
-                    child: AnimatedOpacity(
-                      duration: AppConstants.animation.medium,
-                      opacity: showTransport ? 1.0 : 0.0,
-                      child: AnimatedScale(
-                        duration: AppConstants.animation.medium,
-                        scale: showTransport ? 1.0 : 0.0,
-                        child: IgnorePointer(
-                          ignoring: !showTransport,
-                          child: _CircleIconButton(
-                            icon: FIcons.skipForward,
-                            size: 44,
-                            color: context.colors.mutedForeground,
-                            backgroundColor: context.colors.muted,
-                            onTap: () => notifier.skipToNextPhase(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Center: Play / Pause (largest) — icon crossfades
-                  _CircleIconButton(
-                    icon: _centerIcon(progress),
-                    size: 64,
-                    color: context.colors.primaryForeground,
-                    backgroundColor: context.colors.primary,
-                    onTap: () => notifier.togglePlayPause(),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: AppConstants.spacing.extraLarge),
-
-            AnimatedSwitcher(
-              duration: AppConstants.animation.medium,
-              switchInCurve: Curves.easeOut,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(animation),
-                  child: child,
                 ),
               ),
-              child: showTransport
-                  ? FButton(
-                      key: const ValueKey('complete-btn'),
-                      style: FButtonStyle.outline(),
-                      onPress: onCompleteTask,
-                      prefix: const Icon(FIcons.checkCheck),
-                      child: const Text('Complete Task'),
-                    )
-                  : const SizedBox.shrink(key: ValueKey('empty-btn')),
+
+              AnimatedPositioned(
+                duration: AppConstants.animation.medium,
+                curve: Curves.easeInOut,
+                right: showTransport ? 0 : 98,
+                // slide toward center when hidden
+                top: -8,
+                child: AnimatedOpacity(
+                  duration: AppConstants.animation.medium,
+                  opacity: showTransport ? 1.0 : 0.0,
+                  child: AnimatedScale(
+                    duration: AppConstants.animation.medium,
+                    scale: showTransport ? 1.0 : 0.0,
+                    child: IgnorePointer(
+                      ignoring: !showTransport,
+                      child: _CircleIconButton(
+                        icon: FIcons.skipForward,
+                        size: 44,
+                        color: context.colors.mutedForeground,
+                        backgroundColor: context.colors.muted,
+                        onTap: () => notifier.skipToNextPhase(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Center: Play / Pause (largest) — icon crossfades
+              _CircleIconButton(
+                icon: _centerIcon(progress),
+                size: 64,
+                color: context.colors.primaryForeground,
+                backgroundColor: context.colors.primary,
+                onTap: () => notifier.togglePlayPause(),
+              ),
+            ],
+          ),
+        ),
+
+        SizedBox(height: AppConstants.spacing.extraLarge),
+
+        AnimatedSwitcher(
+          duration: AppConstants.animation.medium,
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          transitionBuilder: (child, animation) => FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(animation),
+              child: child,
             ),
-          ],
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
+          ),
+          child: showTransport
+              ? FButton(
+                  key: const ValueKey('complete-btn'),
+                  style: FButtonStyle.outline(),
+                  onPress: isQuickSession
+                      ? () => ref.read(focusTimerProvider.notifier).completeSessionEarly()
+                      : onCompleteTask,
+                  prefix: Icon(isQuickSession ? FIcons.check : FIcons.checkCheck),
+                  child: Text(isQuickSession ? 'End Session' : 'Complete Task'),
+                )
+              : const SizedBox.shrink(key: ValueKey('empty-btn')),
+        ),
+      ],
     );
   }
 

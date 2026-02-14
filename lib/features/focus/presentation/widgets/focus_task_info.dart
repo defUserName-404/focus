@@ -8,6 +8,7 @@ import '../../../tasks/presentation/providers/task_provider.dart';
 import '../providers/focus_session_provider.dart';
 
 /// Displays the current task title and its parent project name.
+/// For quick sessions (no task), shows "Quick Session".
 class FocusTaskInfo extends ConsumerWidget {
   const FocusTaskInfo({super.key});
 
@@ -15,6 +16,15 @@ class FocusTaskInfo extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(focusTimerProvider);
     if (session == null) return const SizedBox.shrink();
+
+    // Quick session — no associated task.
+    if (session.isQuickSession) {
+      return Text(
+        'Quick Session',
+        style: context.typography.xl2.copyWith(fontWeight: FontWeight.w600),
+        textAlign: TextAlign.center,
+      );
+    }
 
     final taskAsync = ref.watch(taskByIdProvider(session.taskId.toString()));
 

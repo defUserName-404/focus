@@ -75,8 +75,7 @@ AmbienceMarqueeState ambienceMarquee(Ref ref) {
   });
 
   // Resolve session phase.
-  final progressAsync = ref.watch(focusProgressProvider);
-  final progress = progressAsync.whenOrNull(data: (p) => p);
+  final progress = ref.watch(focusProgressProvider);
   final isBreak = progress != null && !progress.isFocusPhase && !progress.isIdle;
   final isPaused = progress != null && progress.isPaused;
 
