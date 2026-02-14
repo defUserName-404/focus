@@ -28,6 +28,8 @@ dependencies:
 
   # Audio
   audioplayers: ^6.5.1
+  audio_service: ^0.18.17
+  audio_session: ^0.2.2
 
   # Notifications
   flutter_local_notifications: ^20.0.0

@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../constants/notification_constants.dart';
+import '../routing/navigator_key.dart';
 
 /// Top-level handler required by flutter_local_notifications for
 /// notification actions received while the app is in the background.
@@ -16,40 +18,77 @@ void _onBackgroundNotificationResponse(NotificationResponse response) {
 }
 
 class NotificationService {
-  final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
   /// Broadcast stream of notification action IDs (pause, resume, stop).
-  static final StreamController<String> _actionController =
-      StreamController<String>.broadcast();
+  static final StreamController<String> _actionController = StreamController<String>.broadcast();
   static Stream<String> get actionStream => _actionController.stream;
 
+  /// Broadcast stream of notification body taps (payload strings).
+  static final StreamController<String> _tapController = StreamController<String>.broadcast();
+  static Stream<String> get tapStream => _tapController.stream;
+
   Future<void> init() async {
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/launcher_icon');
+    const androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
     const iosSettings = DarwinInitializationSettings();
 
-    const initSettings =
-        InitializationSettings(android: androidSettings, iOS: iosSettings);
+    const initSettings = InitializationSettings(android: androidSettings, iOS: iosSettings);
 
     await _notifications.initialize(
       settings: initSettings,
       onDidReceiveNotificationResponse: _onNotificationResponse,
-      onDidReceiveBackgroundNotificationResponse:
-          _onBackgroundNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationResponse,
     );
 
     // Request notification permission on Android 13+.
-    final androidPlugin = _notifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.requestNotificationsPermission();
+    // Wrapped in try-catch because audio_service's plugin registration
+    // can cause the Android context to be null at this point.
+    try {
+      final androidPlugin = _notifications
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      await androidPlugin?.requestNotificationsPermission();
+    } catch (e) {
+      debugPrint('requestNotificationsPermission failed: $e');
+    }
+
+    // Handle the case where the app was launched by tapping a notification.
+    final launchDetails = await _notifications.getNotificationAppLaunchDetails();
+    if (launchDetails != null && launchDetails.didNotificationLaunchApp) {
+      final payload = launchDetails.notificationResponse?.payload;
+      if (payload != null && payload.isNotEmpty) {
+        // Defer navigation until the widget tree is ready.
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _handleNotificationTapNavigation(payload);
+        });
+      }
+    }
   }
 
   static void _onNotificationResponse(NotificationResponse response) {
+    // Handle button actions.
     final actionId = response.actionId;
     if (actionId != null && actionId.isNotEmpty) {
       _actionController.add(actionId);
+      return;
+    }
+
+    // Handle body tap — navigate to the appropriate screen.
+    final payload = response.payload;
+    if (payload != null && payload.isNotEmpty) {
+      _handleNotificationTapNavigation(payload);
+    }
+  }
+
+  /// Navigate to the correct screen based on the notification payload.
+  static void _handleNotificationTapNavigation(String payload) {
+    if (payload == NotificationConstants.focusSessionPayload) {
+      final nav = rootNavigatorKey.currentState;
+      if (nav != null) {
+        navigateToFocusSession();
+      } else {
+        // Navigator not yet ready — enqueue for later.
+        _tapController.add(payload);
+      }
     }
   }
 
@@ -64,27 +103,11 @@ class NotificationService {
   }) async {
     final actions = <AndroidNotificationAction>[
       if (isRunning)
-        const AndroidNotificationAction(
-          NotificationConstants.actionPause,
-          'Pause',
-          showsUserInterface: true,
-        )
+        const AndroidNotificationAction(NotificationConstants.actionPause, 'Pause', showsUserInterface: true)
       else
-        const AndroidNotificationAction(
-          NotificationConstants.actionResume,
-          'Resume',
-          showsUserInterface: true,
-        ),
-      const AndroidNotificationAction(
-        NotificationConstants.actionSkip,
-        'Skip',
-        showsUserInterface: true,
-      ),
-      const AndroidNotificationAction(
-        NotificationConstants.actionStop,
-        'Stop',
-        showsUserInterface: true,
-      ),
+        const AndroidNotificationAction(NotificationConstants.actionResume, 'Resume', showsUserInterface: true),
+      const AndroidNotificationAction(NotificationConstants.actionSkip, 'Skip', showsUserInterface: true),
+      const AndroidNotificationAction(NotificationConstants.actionStop, 'Stop', showsUserInterface: true),
     ];
 
     final showProgress = progressMax > 0;
@@ -107,28 +130,21 @@ class NotificationService {
       actions: actions,
     );
 
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: false,
-    );
+    const iosDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: false);
 
-    final details =
-        NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _notifications.show(
       id: NotificationConstants.focusSessionId,
       title: title,
       body: body,
       notificationDetails: details,
+      payload: NotificationConstants.focusSessionPayload,
     );
   }
 
   /// Show a one-shot alarm notification (non-persistent).
-  Future<void> showAlarmNotification({
-    required String title,
-    required String body,
-  }) async {
+  Future<void> showAlarmNotification({required String title, required String body}) async {
     final androidDetails = AndroidNotificationDetails(
       NotificationConstants.alarmChannelId,
       NotificationConstants.alarmChannelName,
@@ -139,14 +155,9 @@ class NotificationService {
       autoCancel: true,
     );
 
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
+    const iosDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
 
-    final details =
-        NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _notifications.show(
       id: NotificationConstants.alarmId,
@@ -176,21 +187,11 @@ class NotificationService {
       usesChronometer: isPersistent,
     );
 
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
+    const iosDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
 
-    final details =
-        NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
-    await _notifications.show(
-      id: id,
-      title: title,
-      body: body,
-      notificationDetails: details,
-    );
+    await _notifications.show(id: id, title: title, body: body, notificationDetails: details);
   }
 
   Future<void> cancelFocusNotification() async {
