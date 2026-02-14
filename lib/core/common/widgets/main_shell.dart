@@ -8,7 +8,6 @@ import '../../../features/projects/presentation/screens/project_list_screen.dart
 import '../../../features/settings/presentation/screens/settings_screen.dart';
 import '../../routing/app_router.dart';
 import '../providers/navigation_provider.dart';
-import 'confirmation_dialog.dart';
 
 /// Root shell with bottom navigation.
 ///
@@ -26,10 +25,7 @@ class MainShell extends ConsumerStatefulWidget {
 }
 
 class _MainShellState extends ConsumerState<MainShell> {
-  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
-    4,
-    (_) => GlobalKey<NavigatorState>(),
-  );
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(4, (_) => GlobalKey<NavigatorState>());
 
   @override
   Widget build(BuildContext context) {
@@ -48,15 +44,6 @@ class _MainShellState extends ConsumerState<MainShell> {
           ref.read(bottomNavIndexProvider.notifier).goHome();
           return;
         }
-        if (!context.mounted) return;
-        await ConfirmationDialog.show(
-          context,
-          title: 'Leave Focus?',
-          body: 'Are you sure you want to exit the app?',
-          confirmLabel: 'Exit',
-          confirmStyle: fu.FButtonStyle.destructive(),
-          onConfirm: () => Navigator.of(context).maybePop(),
-        );
       },
       child: fu.FScaffold(
         childPad: false,
