@@ -1206,9 +1206,9 @@ class $FocusSessionTableTable extends FocusSessionTable
   late final GeneratedColumn<BigInt> taskId = GeneratedColumn<BigInt>(
     'task_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.bigInt,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES task_table (id) ON DELETE CASCADE',
     ),
@@ -1307,8 +1307,6 @@ class $FocusSessionTableTable extends FocusSessionTable
         _taskIdMeta,
         taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_taskIdMeta);
     }
     if (data.containsKey('focus_duration_minutes')) {
       context.handle(
@@ -1371,7 +1369,7 @@ class $FocusSessionTableTable extends FocusSessionTable
       taskId: attachedDatabase.typeMapping.read(
         DriftSqlType.bigInt,
         data['${effectivePrefix}task_id'],
-      )!,
+      ),
       focusDurationMinutes: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}focus_duration_minutes'],
@@ -1413,7 +1411,7 @@ class $FocusSessionTableTable extends FocusSessionTable
 class FocusSessionData extends DataClass
     implements Insertable<FocusSessionData> {
   final BigInt id;
-  final BigInt taskId;
+  final BigInt? taskId;
   final int focusDurationMinutes;
   final int breakDurationMinutes;
   final DateTime startTime;
@@ -1422,7 +1420,7 @@ class FocusSessionData extends DataClass
   final int elapsedSeconds;
   const FocusSessionData({
     required this.id,
-    required this.taskId,
+    this.taskId,
     required this.focusDurationMinutes,
     required this.breakDurationMinutes,
     required this.startTime,
@@ -1434,7 +1432,9 @@ class FocusSessionData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<BigInt>(id);
-    map['task_id'] = Variable<BigInt>(taskId);
+    if (!nullToAbsent || taskId != null) {
+      map['task_id'] = Variable<BigInt>(taskId);
+    }
     map['focus_duration_minutes'] = Variable<int>(focusDurationMinutes);
     map['break_duration_minutes'] = Variable<int>(breakDurationMinutes);
     map['start_time'] = Variable<DateTime>(startTime);
@@ -1453,7 +1453,9 @@ class FocusSessionData extends DataClass
   FocusSessionTableCompanion toCompanion(bool nullToAbsent) {
     return FocusSessionTableCompanion(
       id: Value(id),
-      taskId: Value(taskId),
+      taskId: taskId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(taskId),
       focusDurationMinutes: Value(focusDurationMinutes),
       breakDurationMinutes: Value(breakDurationMinutes),
       startTime: Value(startTime),
@@ -1472,7 +1474,7 @@ class FocusSessionData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FocusSessionData(
       id: serializer.fromJson<BigInt>(json['id']),
-      taskId: serializer.fromJson<BigInt>(json['taskId']),
+      taskId: serializer.fromJson<BigInt?>(json['taskId']),
       focusDurationMinutes: serializer.fromJson<int>(
         json['focusDurationMinutes'],
       ),
@@ -1492,7 +1494,7 @@ class FocusSessionData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<BigInt>(id),
-      'taskId': serializer.toJson<BigInt>(taskId),
+      'taskId': serializer.toJson<BigInt?>(taskId),
       'focusDurationMinutes': serializer.toJson<int>(focusDurationMinutes),
       'breakDurationMinutes': serializer.toJson<int>(breakDurationMinutes),
       'startTime': serializer.toJson<DateTime>(startTime),
@@ -1506,7 +1508,7 @@ class FocusSessionData extends DataClass
 
   FocusSessionData copyWith({
     BigInt? id,
-    BigInt? taskId,
+    Value<BigInt?> taskId = const Value.absent(),
     int? focusDurationMinutes,
     int? breakDurationMinutes,
     DateTime? startTime,
@@ -1515,7 +1517,7 @@ class FocusSessionData extends DataClass
     int? elapsedSeconds,
   }) => FocusSessionData(
     id: id ?? this.id,
-    taskId: taskId ?? this.taskId,
+    taskId: taskId.present ? taskId.value : this.taskId,
     focusDurationMinutes: focusDurationMinutes ?? this.focusDurationMinutes,
     breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,
     startTime: startTime ?? this.startTime,
@@ -1584,7 +1586,7 @@ class FocusSessionData extends DataClass
 
 class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
   final Value<BigInt> id;
-  final Value<BigInt> taskId;
+  final Value<BigInt?> taskId;
   final Value<int> focusDurationMinutes;
   final Value<int> breakDurationMinutes;
   final Value<DateTime> startTime;
@@ -1603,15 +1605,14 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
   });
   FocusSessionTableCompanion.insert({
     this.id = const Value.absent(),
-    required BigInt taskId,
+    this.taskId = const Value.absent(),
     required int focusDurationMinutes,
     required int breakDurationMinutes,
     required DateTime startTime,
     this.endTime = const Value.absent(),
     required SessionState state,
     this.elapsedSeconds = const Value.absent(),
-  }) : taskId = Value(taskId),
-       focusDurationMinutes = Value(focusDurationMinutes),
+  }) : focusDurationMinutes = Value(focusDurationMinutes),
        breakDurationMinutes = Value(breakDurationMinutes),
        startTime = Value(startTime),
        state = Value(state);
@@ -1641,7 +1642,7 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
 
   FocusSessionTableCompanion copyWith({
     Value<BigInt>? id,
-    Value<BigInt>? taskId,
+    Value<BigInt?>? taskId,
     Value<int>? focusDurationMinutes,
     Value<int>? breakDurationMinutes,
     Value<DateTime>? startTime,
@@ -3132,7 +3133,7 @@ typedef $$TaskTableTableProcessedTableManager =
 typedef $$FocusSessionTableTableCreateCompanionBuilder =
     FocusSessionTableCompanion Function({
       Value<BigInt> id,
-      required BigInt taskId,
+      Value<BigInt?> taskId,
       required int focusDurationMinutes,
       required int breakDurationMinutes,
       required DateTime startTime,
@@ -3143,7 +3144,7 @@ typedef $$FocusSessionTableTableCreateCompanionBuilder =
 typedef $$FocusSessionTableTableUpdateCompanionBuilder =
     FocusSessionTableCompanion Function({
       Value<BigInt> id,
-      Value<BigInt> taskId,
+      Value<BigInt?> taskId,
       Value<int> focusDurationMinutes,
       Value<int> breakDurationMinutes,
       Value<DateTime> startTime,
@@ -3170,9 +3171,9 @@ final class $$FocusSessionTableTableReferences
         $_aliasNameGenerator(db.focusSessionTable.taskId, db.taskTable.id),
       );
 
-  $$TaskTableTableProcessedTableManager get taskId {
-    final $_column = $_itemColumn<BigInt>('task_id')!;
-
+  $$TaskTableTableProcessedTableManager? get taskId {
+    final $_column = $_itemColumn<BigInt>('task_id');
+    if ($_column == null) return null;
     final manager = $$TaskTableTableTableManager(
       $_db,
       $_db.taskTable,
@@ -3416,7 +3417,7 @@ class $$FocusSessionTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<BigInt> id = const Value.absent(),
-                Value<BigInt> taskId = const Value.absent(),
+                Value<BigInt?> taskId = const Value.absent(),
                 Value<int> focusDurationMinutes = const Value.absent(),
                 Value<int> breakDurationMinutes = const Value.absent(),
                 Value<DateTime> startTime = const Value.absent(),
@@ -3436,7 +3437,7 @@ class $$FocusSessionTableTableTableManager
           createCompanionCallback:
               ({
                 Value<BigInt> id = const Value.absent(),
-                required BigInt taskId,
+                Value<BigInt?> taskId = const Value.absent(),
                 required int focusDurationMinutes,
                 required int breakDurationMinutes,
                 required DateTime startTime,

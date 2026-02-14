@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 10;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
       "SELECT ?, "
       "COALESCE(SUM(CASE WHEN state = ${SessionState.completed.index} THEN 1 ELSE 0 END), 0), "
       "COUNT(*), "
-      "COALESCE(SUM(elapsed_seconds), 0) "
+      "COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) "
       "FROM focus_session_table "
       "WHERE date(start_time, 'unixepoch', 'localtime') = ?",
       [dateKey, dateKey],
@@ -90,7 +90,7 @@ class AppDatabase extends _$AppDatabase {
           "SELECT date(start_time, 'unixepoch', 'localtime'), "
           "SUM(CASE WHEN state = ${SessionState.completed.index} THEN 1 ELSE 0 END), "
           "COUNT(*), "
-          "COALESCE(SUM(elapsed_seconds), 0) "
+          "COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) "
           "FROM focus_session_table "
           "GROUP BY date(start_time, 'unixepoch', 'localtime')",
         );
@@ -98,6 +98,53 @@ class AppDatabase extends _$AppDatabase {
       // Version 8: Added settings table
       if (from < 8) {
         await m.createTable(settingsTable);
+      }
+      // Version 9: Make taskId nullable for quick sessions
+      if (from < 9) {
+        // SQLite doesn't support ALTER COLUMN, so we recreate the table.
+        await customStatement(
+          'CREATE TABLE focus_session_table_new ('
+          'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+          'task_id INTEGER REFERENCES task_table(id) ON DELETE CASCADE, '
+          'focus_duration_minutes INTEGER NOT NULL, '
+          'break_duration_minutes INTEGER NOT NULL, '
+          'start_time INTEGER NOT NULL, '
+          'end_time INTEGER, '
+          'state INTEGER NOT NULL, '
+          'elapsed_seconds INTEGER NOT NULL DEFAULT 0'
+          ')',
+        );
+        await customStatement(
+          'INSERT INTO focus_session_table_new '
+          'SELECT id, task_id, focus_duration_minutes, break_duration_minutes, '
+          'start_time, end_time, state, elapsed_seconds '
+          'FROM focus_session_table',
+        );
+        await customStatement('DROP TABLE focus_session_table');
+        await customStatement(
+          'ALTER TABLE focus_session_table_new RENAME TO focus_session_table',
+        );
+        // Re-create indexes.
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS focus_session_task_id_idx '
+          'ON focus_session_table (task_id)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS focus_session_start_time_idx '
+          'ON focus_session_table (start_time)',
+        );
+      }
+      // Version 10: Fix daily stats — recalculate focus_seconds excluding break time
+      if (from < 10) {
+        await customStatement(
+          "INSERT OR REPLACE INTO daily_session_stats_table (date, completed_sessions, total_sessions, focus_seconds) "
+          "SELECT date(start_time, 'unixepoch', 'localtime'), "
+          "SUM(CASE WHEN state = ${SessionState.completed.index} THEN 1 ELSE 0 END), "
+          "COUNT(*), "
+          "COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) "
+          "FROM focus_session_table "
+          "GROUP BY date(start_time, 'unixepoch', 'localtime')",
+        );
       }
     },
   );
