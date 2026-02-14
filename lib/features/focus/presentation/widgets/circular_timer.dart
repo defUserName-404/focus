@@ -23,106 +23,101 @@ class CircularTimer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(focusProgressProvider);
+    final progress = ref.watch(focusProgressProvider);
 
-    return progressAsync.when(
-      skipLoadingOnReload: true,
-      data: (progress) {
-        if (progress == null) return const SizedBox.shrink();
-
-        final progressColor = progress.isFocusPhase
-            ? context.colors.primary
-            : context.colors.mutedForeground;
-
-        return GestureDetector(
-          onTap: () => ref.read(focusTimerProvider.notifier).togglePlayPause(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TweenAnimationBuilder<Color?>(
-                tween: ColorTween(end: progressColor),
-                duration: AppConstants.animation.medium,
-                builder: (context, color, _) {
-                  return SizedBox(
-                    width: _ringSize,
-                    height: _ringSize,
-                    child: CustomPaint(
-                      painter: CircularProgressPainter(
-                        progress: progress.progress,
-                        trackColor: context.colors.border,
-                        progressColor: color ?? progressColor,
-                        strokeWidth: _strokeWidth,
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              progress.formattedTime,
-                              style: context.typography.xl6
-                                  .copyWith(fontWeight: FontWeight.w100),
-                            ),
-                            AnimatedSwitcher(
-                              duration: AppConstants.animation.medium,
-                              switchInCurve: Curves.easeOut,
-                              switchOutCurve: Curves.easeIn,
-                              transitionBuilder: (child, animation) =>
-                                  FadeTransition(
-                                opacity: animation,
-                                child: SizeTransition(
-                                  sizeFactor: animation,
-                                  axisAlignment: -1.0,
-                                  child: child,
-                                ),
-                              ),
-                              child: progress.isIdle
-                                  ? Padding(
-                                      key: const ValueKey('tap-hint'),
-                                      padding: EdgeInsets.only(
-                                          top: AppConstants.spacing.regular),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        spacing: AppConstants.spacing.small,
-                                        children: [
-                                          Icon(
-                                            FIcons.play,
-                                            size:
-                                                AppConstants.size.icon.large,
-                                            color: context
-                                                .colors.mutedForeground,
-                                          ),
-                                          Text(
-                                            'tap to start',
-                                            style: context.typography.xs
-                                                .copyWith(
-                                              color: context
-                                                  .colors.mutedForeground,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  : const SizedBox.shrink(
-                                      key: ValueKey('no-hint')),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
-      loading: () => SizedBox(
+    if (progress == null) {
+      return SizedBox(
         width: _ringSize,
         height: _ringSize,
         child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final progressColor = progress.isFocusPhase
+        ? context.colors.primary
+        : context.colors.mutedForeground;
+
+    return GestureDetector(
+      onTap: () => ref.read(focusTimerProvider.notifier).togglePlayPause(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TweenAnimationBuilder<Color?>(
+            tween: ColorTween(end: progressColor),
+            duration: AppConstants.animation.medium,
+            builder: (context, color, _) {
+              return SizedBox(
+                width: _ringSize,
+                height: _ringSize,
+                child: CustomPaint(
+                  painter: CircularProgressPainter(
+                    progress: progress.progress,
+                    trackColor: context.colors.border,
+                    progressColor: color ?? progressColor,
+                    strokeWidth: _strokeWidth,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          progress.formattedTime,
+                          style: context.typography.xl6
+                              .copyWith(fontWeight: FontWeight.w100),
+                        ),
+                        AnimatedSwitcher(
+                          duration: AppConstants.animation.medium,
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeIn,
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(
+                            opacity: animation,
+                            child: SizeTransition(
+                              sizeFactor: animation,
+                              axisAlignment: -1.0,
+                              child: child,
+                            ),
+                          ),
+                          child: progress.isIdle
+                              ? Padding(
+                                  key: const ValueKey('tap-hint'),
+                                  padding: EdgeInsets.only(
+                                      top: AppConstants.spacing.regular),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    spacing: AppConstants.spacing.small,
+                                    children: [
+                                      Icon(
+                                        FIcons.play,
+                                        size:
+                                            AppConstants.size.icon.large,
+                                        color: context
+                                            .colors.mutedForeground,
+                                      ),
+                                      Text(
+                                        'tap to start',
+                                        style: context.typography.xs
+                                            .copyWith(
+                                          color: context
+                                              .colors.mutedForeground,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : const SizedBox.shrink(
+                                  key: ValueKey('no-hint')),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
-      error: (err, stack) => Text('Error: $err'),
     );
   }
 }

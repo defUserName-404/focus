@@ -77,7 +77,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Task'),
-          onPress: () => TaskCommands.create(context, ref, projectId: widget.projectId),
+          onPress: () => TaskCommands.create(context, projectId: widget.projectId),
         ),
       ),
       child: projectAsync.when(

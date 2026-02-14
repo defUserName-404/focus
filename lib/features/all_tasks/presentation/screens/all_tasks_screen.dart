@@ -14,7 +14,6 @@ import '../../domain/entities/all_tasks_filter_state.dart';
 import '../../../../core/common/providers/navigation_provider.dart';
 import '../providers/all_tasks_provider.dart';
 import '../widgets/all_task_card.dart';
-import '../widgets/create_task_with_project_modal.dart';
 
 class AllTasksScreen extends ConsumerWidget {
   const AllTasksScreen({super.key});
@@ -44,11 +43,8 @@ class AllTasksScreen extends ConsumerWidget {
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Task'),
-          onPress: () => fu.showFSheet(
-            context: context,
-            side: fu.FLayout.btt,
-            builder: (context) => const CreateTaskWithProjectModal(),
-          ),
+          onPress: () => Navigator.of(context, rootNavigator: true)
+              .pushNamed(RouteConstants.createTaskWithProjectRoute),
         ),
       ),
       child: Column(

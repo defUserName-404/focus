@@ -48,7 +48,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
     return _db
         .customSelect(
           'SELECT '
-          'COALESCE(SUM(elapsed_seconds), 0) AS total_seconds, '
+          'COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) AS total_seconds, '
           'COUNT(*) AS total_sessions, '
           'SUM(CASE WHEN state = $_completedState THEN 1 ELSE 0 END) AS completed_sessions '
           'FROM focus_session_table WHERE task_id = ?',
@@ -131,7 +131,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
           'COALESCE(td.today_sessions, 0) AS today_sessions, '
           'COALESCE(td.today_seconds, 0) AS today_seconds '
           'FROM '
-          '(SELECT COALESCE(SUM(elapsed_seconds), 0) AS total_seconds, COUNT(*) AS total_sessions, '
+          '(SELECT COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) AS total_seconds, COUNT(*) AS total_sessions, '
           'SUM(CASE WHEN state = $_completedState THEN 1 ELSE 0 END) AS completed_sessions '
           'FROM focus_session_table) s, '
           '(SELECT COUNT(*) AS total_tasks, '

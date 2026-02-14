@@ -52,7 +52,6 @@ class SubtasksSection extends ConsumerWidget {
               style: fu.FButtonStyle.outline(),
               onPress: () => TaskCommands.create(
                 context,
-                ref,
                 projectId: parentTask.projectId,
                 parentTaskId: parentTask.id,
                 depth: parentTask.depth + 1,

@@ -44,7 +44,7 @@ class ProjectListScreen extends ConsumerWidget {
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Project'),
-          onPress: () => ProjectCommands.create(context, ref),
+          onPress: () => ProjectCommands.create(context),
         ),
       ),
       child: Column(

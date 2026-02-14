@@ -5,6 +5,7 @@ import 'common/widgets/main_shell.dart';
 import 'config/theme/app_theme.dart';
 import 'constants/route_constants.dart';
 import 'routing/app_router.dart';
+import 'routing/navigator_key.dart';
 
 class FocusApp extends StatelessWidget {
   const FocusApp({super.key});
@@ -15,6 +16,7 @@ class FocusApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Focus',
+      navigatorKey: rootNavigatorKey,
       supportedLocales: FLocalizations.supportedLocales,
       localizationsDelegates: const [...FLocalizations.localizationsDelegates],
       debugShowCheckedModeBanner: false,

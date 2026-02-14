@@ -22,4 +22,8 @@ abstract final class NotificationConstants {
   static const String actionResume = 'focus_resume';
   static const String actionStop = 'focus_stop';
   static const String actionSkip = 'focus_skip';
+
+  // ── Notification Payloads (for body tap navigation) ───────────────────
+
+  static const String focusSessionPayload = 'focus_session';
 }

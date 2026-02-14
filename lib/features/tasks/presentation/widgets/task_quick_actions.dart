@@ -37,17 +37,17 @@ class TaskQuickActions extends ConsumerWidget {
           spacing: AppConstants.spacing.regular,
           runSpacing: AppConstants.spacing.regular,
           children: [
-            fu.FButton(
-              onPress: () =>
-                  FocusCommands.start(context, ref, taskId: task.id!),
-              prefix: const Icon(fu.FIcons.play, size: 14),
-              child: const Text('Start Focus'),
-            ),
+            if (!task.isCompleted)
+              fu.FButton(
+                onPress: () =>
+                    FocusCommands.start(context, ref, taskId: task.id!),
+                prefix: const Icon(fu.FIcons.play, size: 14),
+                child: const Text('Start Focus'),
+              ),
             fu.FButton(
               style: fu.FButtonStyle.outline(),
               onPress: () => TaskCommands.create(
                 context,
-                ref,
                 projectId: projectId,
                 parentTaskId: task.id,
                 depth: task.depth + 1,

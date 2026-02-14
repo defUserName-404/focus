@@ -16,7 +16,9 @@ import '../../features/tasks/data/repositories/task_stats_repository_impl.dart';
 import '../../features/tasks/domain/repositories/i_task_repository.dart';
 import '../../features/tasks/domain/repositories/i_task_stats_repository.dart';
 import '../services/audio_service.dart';
+import '../services/audio_session_manager.dart';
 import '../services/db_service.dart';
+import '../services/focus_audio_handler.dart';
 import '../services/notification_service.dart';
 
 final getIt = GetIt.instance;
@@ -26,9 +28,19 @@ Future<void> setupDependencyInjection() async {
   getIt.registerSingleton<AppDatabase>(AppDatabase());
   getIt.registerLazySingleton<AudioService>(() => AudioService());
 
+  // audio_service — MediaStyle notification & lock-screen controls.
+  // Must init BEFORE notification service so the Android plugin context is ready.
+  final audioHandler = await FocusAudioHandler.init();
+  getIt.registerSingleton<FocusAudioHandler>(audioHandler);
+
   final notificationService = NotificationService();
   await notificationService.init();
   getIt.registerSingleton<NotificationService>(notificationService);
+
+  // audio_session — headphone unplug, audio focus interruptions.
+  final audioSessionManager = AudioSessionManager();
+  await audioSessionManager.init();
+  getIt.registerSingleton<AudioSessionManager>(audioSessionManager);
 
   // ── Data Sources ──
   getIt.registerLazySingleton<IProjectLocalDataSource>(

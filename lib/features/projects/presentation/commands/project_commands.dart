@@ -3,31 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/common/widgets/confirmation_dialog.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
 import 'package:focus/features/projects/presentation/providers/project_provider.dart';
-// Removed unused import: ProjectDetailScreen
-import 'package:focus/features/projects/presentation/widgets/create_project_modal_content.dart';
-import 'package:focus/features/projects/presentation/widgets/edit_project_modal_content.dart';
-import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/constants/route_constants.dart'; // Added import
+import '../../../../core/constants/route_constants.dart';
 
 class ProjectCommands {
-  static Future<void> create(BuildContext context, WidgetRef ref) async {
-    final newProject = await fu.showFSheet<Project>(
-      context: context,
-      side: fu.FLayout.btt,
-      builder: (context) => const CreateProjectModalContent(),
-    );
-
-    if (newProject != null && newProject.id != null && context.mounted) {
-      Navigator.of(context).pushNamed(RouteConstants.projectDetailRoute, arguments: newProject.id!);
-    }
+  static void create(BuildContext context) {
+    Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.createProjectRoute);
   }
 
-  static Future<void> edit(BuildContext context, Project project) async {
-    await fu.showFSheet(
-      context: context,
-      side: fu.FLayout.btt,
-      builder: (context) => EditProjectModalContent(project: project),
+  static void edit(BuildContext context, Project project) {
+    Navigator.of(context, rootNavigator: true).pushNamed(
+      RouteConstants.editProjectRoute,
+      arguments: project,
     );
   }
 

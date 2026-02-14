@@ -75,14 +75,16 @@ class TaskDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          footer: Padding(
-            padding: EdgeInsets.all(AppConstants.spacing.large),
-            child: fu.FButton(
-              onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
-              prefix: Icon(hasActiveSession ? fu.FIcons.eye : fu.FIcons.play, size: AppConstants.size.icon.small),
-              child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
-            ),
-          ),
+          footer: task.isCompleted && !hasActiveSession
+              ? null
+              : Padding(
+                  padding: EdgeInsets.all(AppConstants.spacing.large),
+                  child: fu.FButton(
+                    onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
+                    prefix: Icon(hasActiveSession ? fu.FIcons.eye : fu.FIcons.play, size: AppConstants.size.icon.small),
+                    child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
+                  ),
+                ),
           child: SingleChildScrollView(
             padding: EdgeInsets.only(bottom: AppConstants.spacing.extraLarge * 2),
             child: Column(
