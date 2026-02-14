@@ -31,7 +31,7 @@ extension DomainFocusSessionToCompanion on FocusSession {
       );
     }
     return FocusSessionTableCompanion.insert(
-      taskId: taskId,
+      taskId: Value(taskId),
       focusDurationMinutes: focusDurationMinutes,
       breakDurationMinutes: breakDurationMinutes,
       startTime: startTime,

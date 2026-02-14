@@ -10,7 +10,7 @@ class _FocusSessionCopyWithUnset {
 extension FocusSessionCopyWith on FocusSession {
   FocusSession copyWith({
     BigInt? id,
-    BigInt? taskId,
+    Object? taskId = _unset,
     int? focusDurationMinutes,
     int? breakDurationMinutes,
     DateTime? startTime,
@@ -19,7 +19,7 @@ extension FocusSessionCopyWith on FocusSession {
     int? elapsedSeconds,
   }) => FocusSession(
     id: id ?? this.id,
-    taskId: taskId ?? this.taskId,
+    taskId: taskId == _unset ? this.taskId : taskId as BigInt?,
     focusDurationMinutes: focusDurationMinutes ?? this.focusDurationMinutes,
     breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,
     startTime: startTime ?? this.startTime,

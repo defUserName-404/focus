@@ -2,7 +2,7 @@ import 'session_state.dart';
 
 class FocusSession {
   final BigInt? id;
-  final BigInt taskId;
+  final BigInt? taskId;
   final int focusDurationMinutes;
   final int breakDurationMinutes;
   final DateTime startTime;
@@ -10,9 +10,12 @@ class FocusSession {
   final SessionState state;
   final int elapsedSeconds;
 
+  /// Whether this is a quick session (no associated task).
+  bool get isQuickSession => taskId == null;
+
   FocusSession({
     this.id,
-    required this.taskId,
+    this.taskId,
     required this.focusDurationMinutes,
     required this.breakDurationMinutes,
     required this.startTime,
