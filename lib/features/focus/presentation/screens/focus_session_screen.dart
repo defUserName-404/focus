@@ -20,6 +20,7 @@ class FocusSessionScreen extends ConsumerStatefulWidget {
 
 class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
   bool _showCompletion = false;
+  bool _hasPopped = false;
 
   void _onCompleteTask() async {
     await ref.read(focusTimerProvider.notifier).completeTaskAndSession();
@@ -29,7 +30,8 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
   }
 
   void _onAnimationDone() {
-    if (mounted) {
+    if (mounted && !_hasPopped) {
+      _hasPopped = true;
       ref.read(focusTimerProvider.notifier).clearCompletedSession();
       Navigator.of(context).pop();
     }
@@ -42,7 +44,10 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
 
     // Auto-pop when the session is cleared (e.g. completeSessionEarly,
     // cancelSession). Skip if the completion animation is playing.
-    if (session == null && !_showCompletion) {
+    // Guard with _hasPopped to prevent multiple pops (which would pop the
+    // underlying shell route and cause a black screen).
+    if (session == null && !_showCompletion && !_hasPopped) {
+      _hasPopped = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) Navigator.of(context).pop();
       });
@@ -237,7 +242,8 @@ class _FocusControlsWithCallback extends ConsumerWidget {
             onPress: () {
               Navigator.pop(ctx);
               ref.read(focusTimerProvider.notifier).cancelSession();
-              Navigator.of(context).pop();
+              // No explicit pop — auto-pop in build() handles it
+              // when cancelSession sets state to null.
             },
             style: FButtonStyle.destructive(),
             child: const Text('End session'),

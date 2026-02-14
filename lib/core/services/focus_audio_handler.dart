@@ -113,11 +113,12 @@ class FocusAudioHandler extends BaseAudioHandler with SeekHandler {
           androidNotificationChannelId: NotificationConstants.focusChannelId,
           androidNotificationChannelName: NotificationConstants.focusChannelName,
           androidNotificationChannelDescription: NotificationConstants.focusChannelDesc,
+          androidNotificationIcon: 'mipmap/launcher_icon',
           androidNotificationOngoing: true,
           androidStopForegroundOnPause: true,
           androidNotificationClickStartsActivity: true,
           // Show compact: play/pause, skip, stop
-          notificationColor: Color(0xFF000000),
+          notificationColor: const Color(0xFF09090b),
         ),
       );
       return handler;
