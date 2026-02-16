@@ -82,7 +82,49 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION_NUM=${VERSION#v}
+          # Create anchor link (lowercase, replace dots with hyphens)
+          ANCHOR=$(echo "$VERSION_NUM" | tr '[:upper:]' '[:lower:]' | tr '.' '-')
+          
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION_NUM=$VERSION_NUM" >> $GITHUB_OUTPUT
+          echo "ANCHOR=$ANCHOR" >> $GITHUB_OUTPUT
+
+      - name: Fetch changelog from Wiki
+        id: changelog
+        run: |
+          VERSION_NUM=${{ steps.version.outputs.VERSION_NUM }}
+          WIKI_URL="https://raw.githubusercontent.com/wiki/${{ github.repository }}/changelog.md"
+          SECTION_FOUND="false"
+          
+          # Try to fetch the wiki page
+          if curl -f -s "$WIKI_URL" -o changelog.md; then
+            # Extract section for this version
+            CHANGELOG=$(awk "/^## ${VERSION_NUM}/ || /^## \[${VERSION_NUM}\]/{flag=1; next} /^## /{flag=0} flag" changelog.md)
+            
+            # Check if we found content
+            if [ -n "$CHANGELOG" ]; then
+              SECTION_FOUND="true"
+            else
+              CHANGELOG="⚠️ **Changelog for version ${VERSION_NUM} not yet available.**
+          
+          Please check back shortly or view the [full changelog](https://github.com/${{ github.repository }}/wiki/changelog) for other releases."
+            fi
+          else
+            CHANGELOG="⚠️ **Changelog not available.**
+          
+          The changelog wiki page could not be accessed. Please visit the [wiki](https://github.com/${{ github.repository }}/wiki/changelog) directly."
+          fi
+          
+          # Save to output
+          {
+            echo 'NOTES<<EOF'
+            echo "$CHANGELOG"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+          echo "SECTION_FOUND=$SECTION_FOUND" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -90,6 +132,14 @@ jobs:
           tag_name: ${{ steps.version.outputs.VERSION }}
           name: Release ${{ steps.version.outputs.VERSION }}
           body: |
+            ## What's New in ${{ steps.version.outputs.VERSION }}
+            
+            ${{ steps.changelog.outputs.NOTES }}
+            
+            ${{ steps.changelog.outputs.SECTION_FOUND == 'true' && format('📋 **[View Full Changelog](https://github.com/{0}/wiki/changelog#{1})**', github.repository, steps.version.outputs.ANCHOR) || format('📋 **[View Changelog](https://github.com/{0}/wiki/changelog)**', github.repository) }}
+            
+            ---
+            
             ## Download Options
             
             ### Android
