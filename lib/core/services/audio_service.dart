@@ -41,16 +41,6 @@ class AudioService {
     await _bgPlayer.stop();
   }
 
-  /// Start looping a noise file by relative path (legacy).
-  Future<void> startNoise(String noiseAsset) async {
-    await _bgPlayer.setReleaseMode(ReleaseMode.loop);
-    await _bgPlayer.play(AssetSource('audio/$noiseAsset'));
-  }
-
-  Future<void> stopNoise() async {
-    await _bgPlayer.stop();
-  }
-
   Future<void> setNoiseVolume(double volume) async {
     await _bgPlayer.setVolume(volume);
   }

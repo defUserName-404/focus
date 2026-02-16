@@ -4,7 +4,7 @@ import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
-import 'focus_session_provider.dart';
+import 'focus_progress_provider.dart';
 
 part 'ambience_mute_provider.g.dart';
 

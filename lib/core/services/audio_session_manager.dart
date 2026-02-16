@@ -38,20 +38,22 @@ class AudioSessionManager {
       // Configure as a speech session (long-form audio focus, like a podcast).
       // This prevents other media from interrupting and lets the OS know
       // we want to keep audio focus for an extended period.
-      await _session!.configure(const AudioSessionConfiguration(
-        avAudioSessionCategory: AVAudioSessionCategory.playback,
-        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.mixWithOthers,
-        avAudioSessionMode: AVAudioSessionMode.defaultMode,
-        avAudioSessionRouteSharingPolicy:
-            AVAudioSessionRouteSharingPolicy.defaultPolicy,
-        avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
-        androidAudioAttributes: AndroidAudioAttributes(
-          contentType: AndroidAudioContentType.music,
-          usage: AndroidAudioUsage.media,
-        ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-        androidWillPauseWhenDucked: true,
-      ));
+      // await _session!.configure(const AudioSessionConfiguration(
+      //   avAudioSessionCategory: AVAudioSessionCategory.playback,
+      //   avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.none,
+      //   avAudioSessionMode: AVAudioSessionMode.defaultMode,
+      //   avAudioSessionRouteSharingPolicy:
+      //       AVAudioSessionRouteSharingPolicy.defaultPolicy,
+      //   avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+      //   androidAudioAttributes: AndroidAudioAttributes(
+      //     contentType: AndroidAudioContentType.music,
+      //     usage: AndroidAudioUsage.media,
+      //   ),
+      //   androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+      //   androidWillPauseWhenDucked: true,
+      // ));
+
+      await _session!.configure(const AudioSessionConfiguration.music());
 
       _listenForInterruptions();
       _listenForBecomingNoisy();
@@ -68,8 +70,7 @@ class AudioSessionManager {
         onInterruption?.call(true);
       } else {
         // Interruption ended — resume if the system says we may.
-        if (event.type == AudioInterruptionType.pause ||
-            event.type == AudioInterruptionType.unknown) {
+        if (event.type == AudioInterruptionType.pause || event.type == AudioInterruptionType.unknown) {
           onInterruption?.call(false);
         }
       }

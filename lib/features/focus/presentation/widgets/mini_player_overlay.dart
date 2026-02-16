@@ -6,6 +6,7 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/navigator_key.dart';
 import '../providers/focus_session_provider.dart';
+import '../providers/focus_progress_provider.dart';
 import '../../domain/entities/session_state.dart';
 
 /// A compact "mini-player" bar that appears above the bottom navigation

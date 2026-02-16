@@ -7,6 +7,7 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../providers/ambience_mute_provider.dart';
 import '../providers/focus_session_provider.dart';
+import '../providers/focus_progress_provider.dart';
 import '../widgets/circular_timer.dart';
 import '../widgets/completion_overlay.dart';
 import '../widgets/focus_task_info.dart';
