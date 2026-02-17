@@ -1,150 +1,133 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
-import '../../../focus/domain/entities/session_state.dart';
-import '../../../focus/presentation/providers/focus_providers.dart';
-import '../../../focus/presentation/providers/focus_session_provider.dart';
 import '../../domain/entities/setting.dart';
 import '../../domain/repositories/i_settings_repository.dart';
 
 part 'settings_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-ISettingsRepository settingsRepository(Ref ref) {
-  return getIt<ISettingsRepository>();
-}
+ISettingsRepository settingsRepository(Ref ref) => getIt<ISettingsRepository>();
 
-/// Watches audio preferences reactively.
+/// Injected so the notifier never calls getIt directly.
+@Riverpod(keepAlive: true)
+AudioService audioService(Ref ref) => getIt<AudioService>();
+
 final audioPreferencesProvider = StreamProvider<AudioPreferences>((ref) {
-  final repository = ref.watch(settingsRepositoryProvider);
-  return repository.watchAudioPreferences();
+  return ref.watch(settingsRepositoryProvider).watchAudioPreferences();
 });
 
 @riverpod
 class PreviewingIdNotifier extends _$PreviewingIdNotifier {
   @override
-  String? build() {
-    return null;
-  }
+  String? build() => null;
 
-  void set(String? id) {
-    state = id;
-  }
+  void set(String? id) => state = id;
+}
+
+typedef AccordionState = ({bool ambience, bool alarm});
+
+@riverpod
+class AccordionExpandedNotifier extends _$AccordionExpandedNotifier {
+  @override
+  AccordionState build() => (ambience: false, alarm: false);
+
+  void toggleAmbience() => state = (ambience: !state.ambience, alarm: state.alarm);
+
+  void toggleAlarm() => state = (ambience: state.ambience, alarm: !state.alarm);
 }
 
 @Riverpod(keepAlive: true)
 class SettingsNotifier extends _$SettingsNotifier {
   late final ISettingsRepository _repository;
+  late final AudioService _audioService;
+
+  bool _previewCancelled = false;
 
   @override
   FutureOr<AudioPreferences> build() async {
     _repository = ref.watch(settingsRepositoryProvider);
+    _audioService = ref.watch(audioServiceProvider);
     return _repository.getAudioPreferences();
   }
 
   Future<void> setAlarmSound(String soundId) async {
     await _repository.setValue(SettingsKeys.alarmSoundId, soundId);
-    final updated = state.value?.copyWith(alarmSoundId: soundId) ?? AudioPreferences(alarmSoundId: soundId);
-    state = AsyncValue.data(updated);
+    state = AsyncValue.data(state.value?.copyWith(alarmSoundId: soundId) ?? AudioPreferences(alarmSoundId: soundId));
   }
 
   Future<void> setAmbienceSound(String soundId) async {
     await _repository.setValue(SettingsKeys.ambienceSoundId, soundId);
-    final updated = state.value?.copyWith(ambienceSoundId: soundId) ?? AudioPreferences(ambienceSoundId: soundId);
-    state = AsyncValue.data(updated);
+    state = AsyncValue.data(
+      state.value?.copyWith(ambienceSoundId: soundId) ?? AudioPreferences(ambienceSoundId: soundId),
+    );
   }
 
   Future<void> setAmbienceVolume(double volume) async {
     await _repository.setValue(SettingsKeys.ambienceVolume, volume.toString());
-    final updated = state.value?.copyWith(ambienceVolume: volume) ?? AudioPreferences(ambienceVolume: volume);
-    state = AsyncValue.data(updated);
+    state = AsyncValue.data(state.value?.copyWith(ambienceVolume: volume) ?? AudioPreferences(ambienceVolume: volume));
   }
 
   Future<void> setAmbienceEnabled(bool enabled) async {
     await _repository.setValue(SettingsKeys.ambienceEnabled, enabled.toString());
-    final updated = state.value?.copyWith(ambienceEnabled: enabled) ?? AudioPreferences(ambienceEnabled: enabled);
-    state = AsyncValue.data(updated);
+    state = AsyncValue.data(
+      state.value?.copyWith(ambienceEnabled: enabled) ?? AudioPreferences(ambienceEnabled: enabled),
+    );
   }
 
-  /// Resolve the current alarm [SoundPreset] from preferences.
-  SoundPreset getAlarmPreset(AudioPreferences prefs) {
-    if (prefs.alarmSoundId != null) {
-      final found = AudioAssets.findById(prefs.alarmSoundId!);
-      if (found != null) return found;
-    }
-    return AudioAssets.defaultAlarm;
-  }
+  Future<void> setFocusDuration(int minutes) async =>
+      _repository.setValue(SettingsKeys.focusDurationMinutes, minutes.toString());
 
-  /// Resolve the current ambience [SoundPreset] from preferences.
-  SoundPreset getAmbiencePreset(AudioPreferences prefs) {
-    if (prefs.ambienceSoundId != null) {
-      final found = AudioAssets.findById(prefs.ambienceSoundId!);
-      if (found != null) return found;
-    }
-    return AudioAssets.defaultAmbience;
-  }
+  Future<void> setBreakDuration(int minutes) async =>
+      _repository.setValue(SettingsKeys.breakDurationMinutes, minutes.toString());
 
-  Future<void> setFocusDuration(int minutes) async {
-    await _repository.setValue(SettingsKeys.focusDurationMinutes, minutes.toString());
-  }
-
-  Future<void> setBreakDuration(int minutes) async {
-    await _repository.setValue(SettingsKeys.breakDurationMinutes, minutes.toString());
-  }
+  // ---- Preview logic -------------------------------------------------------
+  //
+  // AudioService owns a dedicated _previewPlayer that is completely separate
+  // from _bgPlayer (session ambience). Because of this:
+  //   - Session ambience keeps playing undisturbed during previews.
+  //   - No pause/resume/reloadAmbience calls are needed here.
+  //   - _previewCancelled only guards the delayed set(null) call so rapid
+  //     successive taps don't leave a stale null after the new preview has
+  //     already set its own ID.
 
   Future<void> previewAmbience(SoundPreset preset) async {
+    _previewCancelled = true; // short-circuit any running delay
+    await _audioService.stopPreview(); // stop previous audio immediately
+
+    _previewCancelled = false;
     ref.read(previewingIdProvider.notifier).set(preset.id);
 
-    // Pause session if running
-    final session = ref.read(focusTimerProvider);
-    final wasRunning = session?.state == SessionState.running || session?.state == SessionState.onBreak;
-    if (wasRunning) {
-      ref.read(focusTimerProvider.notifier).pauseSession();
-    }
-
-    getIt<AudioService>().startAmbience(preset);
+    await _audioService.startPreview(preset);
 
     await Future.delayed(const Duration(seconds: 3));
+    if (_previewCancelled) return;
 
-    await getIt<AudioService>().stopAmbience();
+    await _audioService.stopPreview();
     ref.read(previewingIdProvider.notifier).set(null);
-
-    if (wasRunning) {
-      // Resume session. Since we overwrote the bgPlayer track with the preview,
-      // we must force a reload of the correct session ambience.
-      ref.read(focusTimerProvider.notifier).resumeSession();
-      // resumeSession() calls resumeAmbience() which resumes the *preview* track
-      // if we don't fix it. So we reload the correct ambience immediately.
-      ref.read(focusAudioCoordinatorProvider).reloadAmbience();
-    }
   }
 
   Future<void> previewAlarm(SoundPreset preset) async {
+    _previewCancelled = true;
+    await _audioService.stopPreview();
+
+    _previewCancelled = false;
     ref.read(previewingIdProvider.notifier).set(preset.id);
 
-    // Pause session if running (to avoid noise overlap)
-    final session = ref.read(focusTimerProvider);
-    final wasRunning = session?.state == SessionState.running || session?.state == SessionState.onBreak;
-    if (wasRunning) {
-      ref.read(focusTimerProvider.notifier).pauseSession();
-    }
-
-    getIt<AudioService>().playAlarm(preset);
+    await _audioService.startPreview(preset);
 
     await Future.delayed(const Duration(seconds: 2));
-    ref.read(previewingIdProvider.notifier).set(null);
+    if (_previewCancelled) return;
 
-    if (wasRunning) {
-      ref.read(focusTimerProvider.notifier).resumeSession();
-    }
+    ref.read(previewingIdProvider.notifier).set(null);
   }
 }
 
-/// Watches timer preferences (focus/break duration) reactively.
 final timerSettingsProvider = StreamProvider<TimerPreferences>((ref) {
-  final repository = ref.watch(settingsRepositoryProvider);
-  return repository.watchTimerPreferences();
+  return ref.watch(settingsRepositoryProvider).watchTimerPreferences();
 });

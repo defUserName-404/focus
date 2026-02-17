@@ -99,4 +99,20 @@ abstract final class AudioAssets {
     }
     return null;
   }
+
+  static SoundPreset resolveAlarm(String? soundId) {
+    if (soundId != null) {
+      final found = findById(soundId);
+      if (found != null) return found;
+    }
+    return defaultAlarm;
+  }
+
+  static SoundPreset resolveAmbience(String? soundId) {
+    if (soundId != null) {
+      final found = findById(soundId);
+      if (found != null) return found;
+    }
+    return defaultAmbience;
+  }
 }
