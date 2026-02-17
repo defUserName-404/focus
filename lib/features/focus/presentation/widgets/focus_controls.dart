@@ -6,6 +6,7 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../commands/focus_commands.dart';
 import '../providers/focus_session_provider.dart';
+import '../providers/focus_progress_provider.dart';
 
 /// Focus session controls:
 ///

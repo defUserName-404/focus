@@ -41,7 +41,7 @@ final class FocusTimerProvider
   }
 }
 
-String _$focusTimerHash() => r'0c6bcc8a61c4d8706ea44c2258a9df9180de784b';
+String _$focusTimerHash() => r'348a2adcb25e853cf18404dabce2a242f36f8ebd';
 
 abstract class _$FocusTimer extends $Notifier<FocusSession?> {
   FocusSession? build();
@@ -60,92 +60,3 @@ abstract class _$FocusTimer extends $Notifier<FocusSession?> {
     element.handleCreate(ref, build);
   }
 }
-
-@ProviderFor(focusSessionRepository)
-final focusSessionRepositoryProvider = FocusSessionRepositoryProvider._();
-
-final class FocusSessionRepositoryProvider
-    extends
-        $FunctionalProvider<
-          IFocusSessionRepository,
-          IFocusSessionRepository,
-          IFocusSessionRepository
-        >
-    with $Provider<IFocusSessionRepository> {
-  FocusSessionRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'focusSessionRepositoryProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$focusSessionRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<IFocusSessionRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  IFocusSessionRepository create(Ref ref) {
-    return focusSessionRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(IFocusSessionRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<IFocusSessionRepository>(value),
-    );
-  }
-}
-
-String _$focusSessionRepositoryHash() =>
-    r'c99f6a30413b6fc286777bf90fd2097437fa16fe';
-
-@ProviderFor(focusProgress)
-final focusProgressProvider = FocusProgressProvider._();
-
-final class FocusProgressProvider
-    extends $FunctionalProvider<FocusProgress?, FocusProgress?, FocusProgress?>
-    with $Provider<FocusProgress?> {
-  FocusProgressProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'focusProgressProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$focusProgressHash();
-
-  @$internal
-  @override
-  $ProviderElement<FocusProgress?> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  FocusProgress? create(Ref ref) {
-    return focusProgress(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FocusProgress? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<FocusProgress?>(value),
-    );
-  }
-}
-
-String _$focusProgressHash() => r'24b8c695df9e8bdf189bef77e2f17eb1f57ff941';

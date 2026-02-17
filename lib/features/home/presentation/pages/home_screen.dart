@@ -13,10 +13,10 @@ import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
-import '../../../focus/presentation/commands/focus_commands.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../../tasks/domain/entities/global_stats.dart';
 import '../../../tasks/presentation/providers/task_stats_provider.dart';
+import '../widgets/quick_session_button.dart';
 import '../widgets/year_activity_graph.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -54,58 +54,7 @@ class HomeScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: AppConstants.spacing.regular,
           children: [
-            // Quick Session CTA
-            fu.FCard(
-              child: GestureDetector(
-                onTap: () => FocusCommands.startQuickSession(context, ref),
-                behavior: HitTestBehavior.opaque,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: context.colors.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(
-                          AppConstants.border.radius.regular,
-                        ),
-                      ),
-                      child: Icon(
-                        fu.FIcons.play,
-                        color: context.colors.primary,
-                        size: AppConstants.size.icon.regular,
-                      ),
-                    ),
-                    SizedBox(width: AppConstants.spacing.regular),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Quick Session',
-                            style: context.typography.sm.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(height: AppConstants.spacing.extraSmall),
-                          Text(
-                            'Start a focus timer without a task',
-                            style: context.typography.xs.copyWith(
-                              color: context.colors.mutedForeground,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      fu.FIcons.chevronRight,
-                      size: AppConstants.size.icon.extraSmall,
-                      color: context.colors.mutedForeground,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            QuickSessionButton(),
             SizedBox(height: AppConstants.spacing.regular),
             TodaySummaryCard(stats: stats),
             SizedBox(height: AppConstants.spacing.regular),

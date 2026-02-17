@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/common/providers/navigation_provider.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
-import '../../../../core/common/providers/navigation_provider.dart';
+import '../../../focus/domain/entities/session_state.dart';
+import '../../../focus/presentation/providers/focus_providers.dart';
+import '../../../focus/presentation/providers/focus_session_provider.dart';
 import '../../domain/entities/setting.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/ambience_toggle_card.dart';
@@ -41,10 +44,7 @@ class SettingsScreen extends ConsumerWidget {
       child: prefsAsync.when(
         loading: () => const Center(child: fu.FCircularProgress()),
         error: (err, _) => Center(child: Text('Error: $err')),
-        data: (prefs) => _SettingsContent(
-          prefs: prefs,
-          timerPrefs: timerAsync.value ?? const TimerPreferences(),
-        ),
+        data: (prefs) => _SettingsContent(prefs: prefs, timerPrefs: timerAsync.value ?? const TimerPreferences()),
       ),
     );
   }
@@ -67,18 +67,49 @@ class _SettingsContentState extends ConsumerState<_SettingsContent> {
 
   void _previewAmbience(SoundPreset preset) {
     setState(() => _previewingId = preset.id);
+
+    // Pause session if running
+    final session = ref.read(focusTimerProvider);
+    final wasRunning = session?.state == SessionState.running || session?.state == SessionState.onBreak;
+    if (wasRunning) {
+      ref.read(focusTimerProvider.notifier).pauseSession();
+    }
+
     _audio.startAmbience(preset);
-    Future.delayed(const Duration(seconds: 3), () {
-      _audio.stopAmbience();
+
+    Future.delayed(const Duration(seconds: 3), () async {
+      await _audio.stopAmbience();
       if (mounted) setState(() => _previewingId = null);
+
+      if (wasRunning) {
+        // Resume session. Since we overwrote the bgPlayer track with the preview,
+        // we must force a reload of the correct session ambience.
+        ref.read(focusTimerProvider.notifier).resumeSession();
+        // resumeSession() calls resumeAmbience() which resumes the *preview* track
+        // if we don't fix it. So we reload the correct ambience immediately.
+        ref.read(focusAudioCoordinatorProvider).reloadAmbience();
+      }
     });
   }
 
   void _previewAlarm(SoundPreset preset) {
     setState(() => _previewingId = preset.id);
+
+    // Pause session if running (to avoid noise overlap)
+    final session = ref.read(focusTimerProvider);
+    final wasRunning = session?.state == SessionState.running || session?.state == SessionState.onBreak;
+    if (wasRunning) {
+      ref.read(focusTimerProvider.notifier).pauseSession();
+    }
+
     _audio.playAlarm(preset);
+
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _previewingId = null);
+
+      if (wasRunning) {
+        ref.read(focusTimerProvider.notifier).resumeSession();
+      }
     });
   }
 

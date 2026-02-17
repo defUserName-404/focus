@@ -1,10 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/constants/audio_assets.dart';
-import '../../../../core/di/injection.dart';
-import '../../../../core/services/audio_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
-import 'focus_session_provider.dart';
+import 'focus_progress_provider.dart';
+import 'focus_providers.dart';
 
 part 'ambience_mute_provider.g.dart';
 
@@ -18,11 +17,11 @@ class AmbienceMute extends _$AmbienceMute {
   bool build() => false; // not muted by default
 
   void toggle() {
-    final audioService = getIt<AudioService>();
+    final audioCoordinator = ref.read(focusAudioCoordinatorProvider);
     if (state) {
-      audioService.resumeAmbience();
+      audioCoordinator.resumeAmbience();
     } else {
-      audioService.pauseAmbience();
+      audioCoordinator.pauseAmbience();
     }
     state = !state;
   }
@@ -41,12 +40,7 @@ class AmbienceMarqueeState {
   final bool isPaused;
   final bool isBreak;
 
-  const AmbienceMarqueeState({
-    this.soundLabel,
-    this.isMuted = false,
-    this.isPaused = false,
-    this.isBreak = false,
-  });
+  const AmbienceMarqueeState({this.soundLabel, this.isMuted = false, this.isPaused = false, this.isBreak = false});
 
   /// Whether the marquee text should scroll.
   bool get isScrolling => soundLabel != null && !isMuted && !isPaused && !isBreak;
@@ -64,25 +58,22 @@ AmbienceMarqueeState ambienceMarquee(Ref ref) {
 
   // Resolve sound label from audio preferences.
   final prefsAsync = ref.watch(audioPreferencesProvider);
-  final soundLabel = prefsAsync.whenOrNull(data: (prefs) {
-    if (!prefs.ambienceEnabled) return null;
-    SoundPreset? preset;
-    if (prefs.ambienceSoundId != null) {
-      preset = AudioAssets.findById(prefs.ambienceSoundId!);
-    }
-    preset ??= AudioAssets.defaultAmbience;
-    return preset.label;
-  });
+  final soundLabel = prefsAsync.whenOrNull(
+    data: (prefs) {
+      if (!prefs.ambienceEnabled) return null;
+      SoundPreset? preset;
+      if (prefs.ambienceSoundId != null) {
+        preset = AudioAssets.findById(prefs.ambienceSoundId!);
+      }
+      preset ??= AudioAssets.defaultAmbience;
+      return preset.label;
+    },
+  );
 
   // Resolve session phase.
   final progress = ref.watch(focusProgressProvider);
   final isBreak = progress != null && !progress.isFocusPhase && !progress.isIdle;
   final isPaused = progress != null && progress.isPaused;
 
-  return AmbienceMarqueeState(
-    soundLabel: soundLabel,
-    isMuted: isMuted,
-    isPaused: isPaused,
-    isBreak: isBreak,
-  );
+  return AmbienceMarqueeState(soundLabel: soundLabel, isMuted: isMuted, isPaused: isPaused, isBreak: isBreak);
 }

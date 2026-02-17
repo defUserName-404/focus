@@ -55,6 +55,37 @@ class FocusAudioHandler extends BaseAudioHandler with SeekHandler {
     onAction?.call(name);
   }
 
+  @override
+  Future<void> click([MediaButton button = MediaButton.media]) async {
+    switch (button) {
+      case MediaButton.media:
+        // Toggle play/pause - let the UI/Feature layer decide what "toggle" means
+        // We'll reuse the 'play' action or a specific 'toggle' action if we had one.
+        // Since we don't have a 'toggle' constant, we can send a custom one or just logic it out.
+        // But for safe-keeping, let's map it to 'play' which in FocusTimer will check state.
+        // Actually, FocusTimer.togglePlayPause() exists. We need an action for it.
+        // Let's assume sending 'actionResume' implies a desire to play/toggle if paused?
+        // Better yet, let's look at what we have.
+        // We have `NotificationConstants.actionResume`.
+        // If we want a true toggle, we might need a new constant or logic here.
+        // But `click` defaults to `media` (headset hook).
+        // Let's rely on the playback state.
+        final playing = playbackState.value.playing;
+        if (playing) {
+          await pause();
+        } else {
+          await play();
+        }
+        break;
+      case MediaButton.next:
+        await skipToNext();
+        break;
+      case MediaButton.previous:
+        // No previous action in this app
+        break;
+    }
+  }
+
   // ── Helpers for the FocusTimer to call ────────────────────────────────
 
   /// Update the media item shown in the notification.
@@ -86,7 +117,7 @@ class FocusAudioHandler extends BaseAudioHandler with SeekHandler {
           MediaControl.stop,
         ],
         systemActions: const {MediaAction.play, MediaAction.pause, MediaAction.stop, MediaAction.skipToNext},
-        androidCompactActionIndices: const [0, 1, 2],
+        androidCompactActionIndices: const [0, 1],
         processingState: AudioProcessingState.ready,
         playing: isPlaying,
         updatePosition: position,

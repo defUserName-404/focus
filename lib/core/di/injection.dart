@@ -3,6 +3,10 @@ import 'package:get_it/get_it.dart';
 import '../../features/focus/data/datasources/focus_local_datasource.dart';
 import '../../features/focus/data/repositories/focus_session_repository_impl.dart';
 import '../../features/focus/domain/repositories/i_focus_session_repository.dart';
+import '../../features/focus/domain/services/focus_audio_coordinator.dart';
+import '../../features/focus/domain/services/focus_media_session_coordinator.dart';
+import '../../features/focus/domain/services/focus_notification_coordinator.dart';
+import '../../features/focus/domain/services/focus_session_service.dart';
 import '../../features/projects/data/datasources/project_local_datasource.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/i_project_repository.dart';
@@ -74,5 +78,19 @@ Future<void> setupDependencyInjection() async {
   );
   getIt.registerLazySingleton<ISettingsRepository>(
     () => SettingsRepositoryImpl(getIt<ISettingsLocalDataSource>()),
+  );
+
+  // ── Focus Coordinators & Service ──
+  getIt.registerLazySingleton<FocusSessionService>(
+    () => FocusSessionService(getIt<IFocusSessionRepository>(), getIt<ITaskRepository>()),
+  );
+  getIt.registerLazySingleton<FocusAudioCoordinator>(
+    () => FocusAudioCoordinator(getIt<AudioService>(), getIt<ISettingsRepository>()),
+  );
+  getIt.registerLazySingleton<FocusNotificationCoordinator>(
+    () => FocusNotificationCoordinator(getIt<NotificationService>()),
+  );
+  getIt.registerLazySingleton<FocusMediaSessionCoordinator>(
+    () => FocusMediaSessionCoordinator(getIt<FocusAudioHandler>(), getIt<AudioSessionManager>()),
   );
 }
