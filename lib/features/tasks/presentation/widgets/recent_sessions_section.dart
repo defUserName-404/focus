@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:focus/core/common/utils/date_formatter.dart';
+import 'package:focus/core/common/utils/datetime_formatter.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/config/theme/app_theme.dart';

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/common/providers/expansion_provider.dart';
-import '../../../../core/common/utils/date_formatter.dart';
+import '../../../../core/common/utils/datetime_formatter.dart';
 import '../../../../core/common/widgets/action_menu_button.dart';
 import '../../../../core/common/widgets/app_card.dart';
 import '../../../../core/config/theme/app_theme.dart';
@@ -76,12 +76,8 @@ class TaskCard extends ConsumerWidget {
       ),
       footerActions: [
         _AddSubtaskChip(
-          onPressed: () => TaskCommands.create(
-            context,
-            projectId: task.projectId,
-            parentTaskId: task.id,
-            depth: task.depth + 1,
-          ),
+          onPressed: () =>
+              TaskCommands.create(context, projectId: task.projectId, parentTaskId: task.id, depth: task.depth + 1),
         ),
         SizedBox(width: AppConstants.spacing.regular),
         if (subtasks.isNotEmpty)

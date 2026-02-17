@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/common/utils/date_formatter.dart';
+import 'package:focus/core/common/utils/datetime_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/features/home/presentation/widgets/empty_section.dart';
 import 'package:focus/features/home/presentation/widgets/global_stats_row.dart';
