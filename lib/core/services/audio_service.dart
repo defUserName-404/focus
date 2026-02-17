@@ -7,6 +7,30 @@ class AudioService {
   final AudioPlayer _alarmPlayer = AudioPlayer();
   final AudioPlayer _bgPlayer = AudioPlayer();
 
+  AudioService() {
+    // Explicitly configure the global AudioContext for audioplayers locally
+    // to match our AudioSessionManager configuration (music/media).
+    //
+    // We set 'audioFocus: null' or 'generic' so that audioplayers doesn't
+    // aggressively try to manage focus itself, letting our AudioSessionManager
+    // handle the high-level rules (ducking, pausing) via the OS.
+    AudioPlayer.global.setAudioContext(
+      AudioContext(
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.playback,
+          options: {AVAudioSessionOptions.mixWithOthers},
+        ),
+        android: AudioContextAndroid(
+          isSpeakerphoneOn: true,
+          stayAwake: true,
+          contentType: AndroidContentType.music,
+          usageType: AndroidUsageType.media,
+          audioFocus: AndroidAudioFocus.gain, // or none/generic if we want full manual control
+        ),
+      ),
+    );
+  }
+
   /// Play an alarm sound. Uses [preset] or falls back to [AudioAssets.defaultAlarm].
   Future<void> playAlarm([SoundPreset? preset]) async {
     final sound = preset ?? AudioAssets.defaultAlarm;

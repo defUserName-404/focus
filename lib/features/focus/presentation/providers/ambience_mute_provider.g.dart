@@ -52,7 +52,7 @@ final class AmbienceMuteProvider extends $NotifierProvider<AmbienceMute, bool> {
   }
 }
 
-String _$ambienceMuteHash() => r'9fbd393dcc336a8a36f1c6c7f1e2d8458ea2a394';
+String _$ambienceMuteHash() => r'8bdb0a07448da919589dfe6f71e8187e2c9ec16e';
 
 /// Whether the focus-session ambience audio is currently muted.
 ///
