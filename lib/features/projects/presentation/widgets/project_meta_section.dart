@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/common/providers/expansion_provider.dart';
-import '../../../../core/common/utils/date_formatter.dart';
+import '../../../../core/common/utils/datetime_formatter.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';

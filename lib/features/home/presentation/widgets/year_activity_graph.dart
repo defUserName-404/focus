@@ -7,7 +7,7 @@ import 'package:focus/features/home/presentation/widgets/year_grid_painter.dart'
 import 'package:focus/features/tasks/presentation/providers/task_stats_provider.dart';
 import 'package:forui/forui.dart';
 
-import '../../../../core/common/utils/date_formatter.dart';
+import '../../../../core/common/utils/datetime_formatter.dart';
 import '../utils/activity_graph_constants.dart';
 import '../utils/activity_graph_utils.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/common/utils/date_formatter.dart';
+import '../../../../core/common/utils/datetime_formatter.dart';
 import '../../../../core/constants/date_time_constants.dart';
 import '../utils/activity_graph_constants.dart';
 import '../utils/activity_graph_utils.dart';

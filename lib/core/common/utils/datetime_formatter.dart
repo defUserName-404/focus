@@ -11,6 +11,10 @@ extension DateTimeFormattingExtensions on DateTime {
     return '$m $day';
   }
 
+  String toShortDateKey() {
+    return '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+  }
+
   bool get isOverdue => isBefore(DateTime.now()) && !isToday;
 
   bool get isToday {
@@ -79,4 +83,8 @@ class DateTimeExtensions {
     final m = DateTimeConstants.shortMonthNames[date.month - 1];
     return '$m ${date.day}';
   }
+}
+
+extension DateMinutesFormatting on int {
+  String get formatMinutesToMinuteAndSeconds => '${toString().padLeft(2, '0')}:${toString().padLeft(2, '0')}';
 }

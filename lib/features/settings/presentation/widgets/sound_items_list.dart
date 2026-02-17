@@ -5,10 +5,10 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/audio_assets.dart';
 
-/// Displays a column of [SoundPreset] items for use inside an [fu.FAccordionItem].
+/// Displays a column of [SoundPreset] items for use inside an expandable section.
 ///
-/// Each item is tappable for preview and shows a check icon when selected.
-/// A spinning indicator is shown for the currently previewing sound.
+/// Uses shrinkWrap so it sizes to its content without needing a fixed height.
+/// The parent is responsible for providing a scrollable context if needed.
 class SoundItemsList extends StatelessWidget {
   final List<SoundPreset> presets;
   final String selectedId;
@@ -25,18 +25,17 @@ class SoundItemsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (int i = 0; i < presets.length; i++) ...[
-          if (i > 0) fu.FDivider(),
-          _SoundItem(
-            preset: presets[i],
-            isSelected: presets[i].id == selectedId,
-            isPreviewing: presets[i].id == previewingId,
-            onTap: () => onTap(presets[i]),
-          ),
-        ],
-      ],
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: presets.length,
+      separatorBuilder: (_, _) => const fu.FDivider(),
+      itemBuilder: (_, i) => _SoundItem(
+        preset: presets[i],
+        isSelected: presets[i].id == selectedId,
+        isPreviewing: presets[i].id == previewingId,
+        onTap: () => onTap(presets[i]),
+      ),
     );
   }
 }
@@ -67,6 +66,7 @@ class _SoundItem extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: AppConstants.spacing.small,
                 children: [
                   Text(
                     preset.label,
@@ -76,14 +76,14 @@ class _SoundItem extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    preset.assetPath.split('/').last,
+                    preset.description,
                     style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
                   ),
                 ],
               ),
             ),
             if (isPreviewing)
-              SizedBox(width: 20, height: 20, child: fu.FCircularProgress())
+              SizedBox(width: 18, height: 18, child: fu.FCircularProgress())
             else if (isSelected)
               Icon(fu.FIcons.check, color: context.colors.primary, size: 18),
           ],

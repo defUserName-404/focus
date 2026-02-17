@@ -8,6 +8,7 @@ import 'package:focus/features/tasks/data/models/task_model.dart';
 import '../../features/focus/domain/entities/session_state.dart';
 import '../../features/projects/data/models/project_model.dart';
 import '../../features/tasks/domain/entities/task_priority.dart';
+import '../common/utils/datetime_formatter.dart';
 
 part 'db_service.g.dart';
 
@@ -16,7 +17,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 1;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -39,9 +40,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Convenience: derives the local date key from a [DateTime] and recalculates.
   Future<void> recalculateDailyStatsForDate(DateTime dt) async {
-    final local = dt.toLocal();
-    final dateKey =
-        '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
+    final dateKey = dt.toLocal().toShortDateKey();
     await recalculateDailyStats(dateKey);
   }
 
@@ -50,102 +49,6 @@ class AppDatabase extends _$AppDatabase {
     onCreate: (m) async {
       await m.createAll();
     },
-    onUpgrade: (m, from, to) async {
-      // Version 2: Added task table
-      if (from < 2) {
-        await m.createTable(taskTable);
-      }
-      // Version 3: Revamped task table (projectId, description)
-      if (from < 3) {
-        await m.deleteTable('task_table');
-        await m.createTable(taskTable);
-      }
-      // Version 4: Revamped task table again (id, dates, parentId)
-      if (from < 4) {
-        await m.deleteTable('task_table');
-        await m.createTable(taskTable);
-      }
-      // Version 5: Added indexes
-      if (from < 5) {
-        await m.createIndex(projectCreatedAtIdx);
-        await m.createIndex(projectUpdatedAtIdx);
-        await m.createIndex(taskProjectIdIdx);
-        await m.createIndex(taskParentIdIdx);
-        await m.createIndex(taskPriorityIdx);
-        await m.createIndex(taskDeadlineIdx);
-        await m.createIndex(taskCompletedIdx);
-        await m.createIndex(taskUpdatedAtIdx);
-      }
-      // Version 6: Added focus session table
-      if (from < 6) {
-        await m.createTable(focusSessionTable);
-      }
-      // Version 7: Added daily_session_stats table with backfill
-      if (from < 7) {
-        await m.createTable(dailySessionStatsTable);
-        // Backfill from existing focus sessions.
-        // date(start_time, 'unixepoch', 'localtime') converts epoch-sec → local date string.
-        await customStatement(
-          "INSERT OR REPLACE INTO daily_session_stats_table (date, completed_sessions, total_sessions, focus_seconds) "
-          "SELECT date(start_time, 'unixepoch', 'localtime'), "
-          "SUM(CASE WHEN state = ${SessionState.completed.index} THEN 1 ELSE 0 END), "
-          "COUNT(*), "
-          "COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) "
-          "FROM focus_session_table "
-          "GROUP BY date(start_time, 'unixepoch', 'localtime')",
-        );
-      }
-      // Version 8: Added settings table
-      if (from < 8) {
-        await m.createTable(settingsTable);
-      }
-      // Version 9: Make taskId nullable for quick sessions
-      if (from < 9) {
-        // SQLite doesn't support ALTER COLUMN, so we recreate the table.
-        await customStatement(
-          'CREATE TABLE focus_session_table_new ('
-          'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-          'task_id INTEGER REFERENCES task_table(id) ON DELETE CASCADE, '
-          'focus_duration_minutes INTEGER NOT NULL, '
-          'break_duration_minutes INTEGER NOT NULL, '
-          'start_time INTEGER NOT NULL, '
-          'end_time INTEGER, '
-          'state INTEGER NOT NULL, '
-          'elapsed_seconds INTEGER NOT NULL DEFAULT 0'
-          ')',
-        );
-        await customStatement(
-          'INSERT INTO focus_session_table_new '
-          'SELECT id, task_id, focus_duration_minutes, break_duration_minutes, '
-          'start_time, end_time, state, elapsed_seconds '
-          'FROM focus_session_table',
-        );
-        await customStatement('DROP TABLE focus_session_table');
-        await customStatement(
-          'ALTER TABLE focus_session_table_new RENAME TO focus_session_table',
-        );
-        // Re-create indexes.
-        await customStatement(
-          'CREATE INDEX IF NOT EXISTS focus_session_task_id_idx '
-          'ON focus_session_table (task_id)',
-        );
-        await customStatement(
-          'CREATE INDEX IF NOT EXISTS focus_session_start_time_idx '
-          'ON focus_session_table (start_time)',
-        );
-      }
-      // Version 10: Fix daily stats — recalculate focus_seconds excluding break time
-      if (from < 10) {
-        await customStatement(
-          "INSERT OR REPLACE INTO daily_session_stats_table (date, completed_sessions, total_sessions, focus_seconds) "
-          "SELECT date(start_time, 'unixepoch', 'localtime'), "
-          "SUM(CASE WHEN state = ${SessionState.completed.index} THEN 1 ELSE 0 END), "
-          "COUNT(*), "
-          "COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) "
-          "FROM focus_session_table "
-          "GROUP BY date(start_time, 'unixepoch', 'localtime')",
-        );
-      }
-    },
+    onUpgrade: (m, from, to) async {},
   );
 }

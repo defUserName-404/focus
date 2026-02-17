@@ -19,11 +19,33 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Configure Signing
+        run: |
+          # 1. Decode the JKS from secrets
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/upload-keystore.jks
+          
+          # 2. Create the key.properties file on the fly
+          cat <<EOF > android/key.properties
+          storePassword=${{ secrets.STORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+
       - name: Get dependencies
         run: flutter pub get
 
       - name: Build APK (split per ABI)
         run: flutter build apk --release --split-per-abi
+
+      - name: Rename APKs with Version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          cd build/app/outputs/flutter-apk/
+          for file in *.apk; do
+            # Renames app-arm64-v8a-release.apk to app-arm64-v8a-release-v1.0.0.apk
+            mv "$file" "${file%.apk}-$VERSION.apk"
+          done
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
@@ -51,19 +73,21 @@ jobs:
       - name: Build iOS (no codesign)
         run: flutter build ios --release --no-codesign
 
-      - name: Create IPA archive
+      - name: Create and Rename IPA
         run: |
+          VERSION=${GITHUB_REF#refs/tags/}
           cd build/ios/iphoneos
           mkdir Payload
           cp -r Runner.app Payload/
-          zip -r Runner.ipa Payload
+          # Names it app-release-v1.0.0.ipa
+          zip -r "app-release-$VERSION.ipa" Payload
           rm -rf Payload
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
-          path: build/ios/iphoneos/Runner.ipa
+          path: build/ios/iphoneos/*.ipa
           retention-days: 7
 
   create-release:
@@ -85,46 +109,8 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           VERSION_NUM=${VERSION#v}
-          # Create anchor link (lowercase, replace dots with hyphens)
-          ANCHOR=$(echo "$VERSION_NUM" | tr '[:upper:]' '[:lower:]' | tr '.' '-')
-          
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "VERSION_NUM=$VERSION_NUM" >> $GITHUB_OUTPUT
-          echo "ANCHOR=$ANCHOR" >> $GITHUB_OUTPUT
-
-      - name: Fetch changelog from Wiki
-        id: changelog
-        run: |
-          VERSION_NUM=${{ steps.version.outputs.VERSION_NUM }}
-          WIKI_URL="https://raw.githubusercontent.com/wiki/${{ github.repository }}/changelog.md"
-          SECTION_FOUND="false"
-          
-          # Try to fetch the wiki page
-          if curl -f -s "$WIKI_URL" -o changelog.md; then
-            # Extract section for this version
-            CHANGELOG=$(awk "/^## ${VERSION_NUM}/ || /^## \[${VERSION_NUM}\]/{flag=1; next} /^## /{flag=0} flag" changelog.md)
-            
-            # Check if we found content
-            if [ -n "$CHANGELOG" ]; then
-              SECTION_FOUND="true"
-            else
-              CHANGELOG="⚠️ **Changelog for version ${VERSION_NUM} not yet available.**
-          
-          Please check back shortly or view the [full changelog](https://github.com/${{ github.repository }}/wiki/changelog) for other releases."
-            fi
-          else
-            CHANGELOG="⚠️ **Changelog not available.**
-          
-          The changelog wiki page could not be accessed. Please visit the [wiki](https://github.com/${{ github.repository }}/wiki/changelog) directly."
-          fi
-          
-          # Save to output
-          {
-            echo 'NOTES<<EOF'
-            echo "$CHANGELOG"
-            echo 'EOF'
-          } >> $GITHUB_OUTPUT
-          echo "SECTION_FOUND=$SECTION_FOUND" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -133,26 +119,19 @@ jobs:
           name: Release ${{ steps.version.outputs.VERSION }}
           body: |
             ## What's New in ${{ steps.version.outputs.VERSION }}
+            🚀 Automatically generated release for version ${{ steps.version.outputs.VERSION }}.
             
-            ${{ steps.changelog.outputs.NOTES }}
+            ### Download Options
+            #### Android
+            - Modern Devices: `app-arm64-v8a-release-${{ steps.version.outputs.VERSION }}.apk`
+            - Older Devices: `app-armeabi-v7a-release-${{ steps.version.outputs.VERSION }}.apk`
             
-            ${{ steps.changelog.outputs.SECTION_FOUND == 'true' && format('📋 **[View Full Changelog](https://github.com/{0}/wiki/changelog#{1})**', github.repository, steps.version.outputs.ANCHOR) || format('📋 **[View Changelog](https://github.com/{0}/wiki/changelog)**', github.repository) }}
-            
-            ---
-            
-            ## Download Options
-            
-            ### Android
-            - **app-arm64-v8a-release.apk** - For most modern devices (64-bit ARM)
-            - **app-armeabi-v7a-release.apk** - For older devices (32-bit ARM)
-            - **app-x86_64-release.apk** - For 64-bit x86 devices/emulators
-            
-            ### iOS
-            - **Runner.ipa** - For iOS devices (requires proper signing for installation)
+            #### iOS
+            - `app-release-${{ steps.version.outputs.VERSION }}.ipa` (Unsigned)
           draft: false
           prerelease: false
           files: |
             ./artifacts/android-apks/*.apk
-            ./artifacts/ios-ipa/Runner.ipa
+            ./artifacts/ios-ipa/*.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

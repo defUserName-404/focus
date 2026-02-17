@@ -34,15 +34,9 @@ class TimerSettingsCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
-                ),
+                Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
                 SizedBox(height: AppConstants.spacing.extraSmall),
-                Text(
-                  subtitle,
-                  style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
-                ),
+                Text(subtitle, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
               ],
             ),
           ),
@@ -55,21 +49,12 @@ class TimerSettingsCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _StepButton(
-                  icon: fu.FIcons.minus,
-                  onTap: value > min ? () => onChanged((value - step).clamp(min, max)) : null,
-                ),
+                _StepButton(icon: fu.FIcons.minus, onTap: value > min ? () => onChanged(value - step) : null),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
-                  child: Text(
-                    '${value}m',
-                    style: context.typography.base.copyWith(fontWeight: FontWeight.w700),
-                  ),
+                  child: Text('${value}m', style: context.typography.base.copyWith(fontWeight: FontWeight.w700)),
                 ),
-                _StepButton(
-                  icon: fu.FIcons.plus,
-                  onTap: value < max ? () => onChanged((value + step).clamp(min, max)) : null,
-                ),
+                _StepButton(icon: fu.FIcons.plus, onTap: value < max ? () => onChanged(value + step) : null),
               ],
             ),
           ),
