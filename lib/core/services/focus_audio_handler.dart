@@ -27,7 +27,7 @@ typedef FocusActionCallback = void Function(String actionId);
 class FocusAudioHandler extends BaseAudioHandler with SeekHandler {
   FocusActionCallback? onAction;
 
-  // ── MediaSession actions ──────────────────────────────────────────────
+  // MediaSession actions
 
   @override
   Future<void> play() async {
@@ -86,7 +86,7 @@ class FocusAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  // ── Helpers for the FocusTimer to call ────────────────────────────────
+  // Helpers for the FocusTimer to call
 
   /// Update the media item shown in the notification.
   void updateSessionMediaItem({required String title, required String artist, required Duration duration}) {

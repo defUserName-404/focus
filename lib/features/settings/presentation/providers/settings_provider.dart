@@ -3,6 +3,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/services/audio_service.dart';
+import '../../../focus/domain/entities/session_state.dart';
+import '../../../focus/presentation/providers/focus_providers.dart';
+import '../../../focus/presentation/providers/focus_session_provider.dart';
 import '../../domain/entities/setting.dart';
 import '../../domain/repositories/i_settings_repository.dart';
 
@@ -18,6 +22,18 @@ final audioPreferencesProvider = StreamProvider<AudioPreferences>((ref) {
   final repository = ref.watch(settingsRepositoryProvider);
   return repository.watchAudioPreferences();
 });
+
+@riverpod
+class PreviewingIdNotifier extends _$PreviewingIdNotifier {
+  @override
+  String? build() {
+    return null;
+  }
+
+  void set(String? id) {
+    state = id;
+  }
+}
 
 @Riverpod(keepAlive: true)
 class SettingsNotifier extends _$SettingsNotifier {
@@ -77,6 +93,53 @@ class SettingsNotifier extends _$SettingsNotifier {
 
   Future<void> setBreakDuration(int minutes) async {
     await _repository.setValue(SettingsKeys.breakDurationMinutes, minutes.toString());
+  }
+
+  Future<void> previewAmbience(SoundPreset preset) async {
+    ref.read(previewingIdProvider.notifier).set(preset.id);
+
+    // Pause session if running
+    final session = ref.read(focusTimerProvider);
+    final wasRunning = session?.state == SessionState.running || session?.state == SessionState.onBreak;
+    if (wasRunning) {
+      ref.read(focusTimerProvider.notifier).pauseSession();
+    }
+
+    getIt<AudioService>().startAmbience(preset);
+
+    await Future.delayed(const Duration(seconds: 3));
+
+    await getIt<AudioService>().stopAmbience();
+    ref.read(previewingIdProvider.notifier).set(null);
+
+    if (wasRunning) {
+      // Resume session. Since we overwrote the bgPlayer track with the preview,
+      // we must force a reload of the correct session ambience.
+      ref.read(focusTimerProvider.notifier).resumeSession();
+      // resumeSession() calls resumeAmbience() which resumes the *preview* track
+      // if we don't fix it. So we reload the correct ambience immediately.
+      ref.read(focusAudioCoordinatorProvider).reloadAmbience();
+    }
+  }
+
+  Future<void> previewAlarm(SoundPreset preset) async {
+    ref.read(previewingIdProvider.notifier).set(preset.id);
+
+    // Pause session if running (to avoid noise overlap)
+    final session = ref.read(focusTimerProvider);
+    final wasRunning = session?.state == SessionState.running || session?.state == SessionState.onBreak;
+    if (wasRunning) {
+      ref.read(focusTimerProvider.notifier).pauseSession();
+    }
+
+    getIt<AudioService>().playAlarm(preset);
+
+    await Future.delayed(const Duration(seconds: 2));
+    ref.read(previewingIdProvider.notifier).set(null);
+
+    if (wasRunning) {
+      ref.read(focusTimerProvider.notifier).resumeSession();
+    }
   }
 }
 
