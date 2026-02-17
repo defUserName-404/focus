@@ -11,16 +11,27 @@ import '../../domain/repositories/i_settings_repository.dart';
 
 part 'settings_provider.g.dart';
 
+// ---------------------------------------------------------------------------
+// Infrastructure
+// ---------------------------------------------------------------------------
+
 @Riverpod(keepAlive: true)
 ISettingsRepository settingsRepository(Ref ref) => getIt<ISettingsRepository>();
 
-/// Injected so the notifier never calls getIt directly.
 @Riverpod(keepAlive: true)
 AudioService audioService(Ref ref) => getIt<AudioService>();
+
+// ---------------------------------------------------------------------------
+// Audio preferences (reactive stream — used outside settings if needed)
+// ---------------------------------------------------------------------------
 
 final audioPreferencesProvider = StreamProvider<AudioPreferences>((ref) {
   return ref.watch(settingsRepositoryProvider).watchAudioPreferences();
 });
+
+// ---------------------------------------------------------------------------
+// Preview state
+// ---------------------------------------------------------------------------
 
 @riverpod
 class PreviewingIdNotifier extends _$PreviewingIdNotifier {
@@ -30,24 +41,20 @@ class PreviewingIdNotifier extends _$PreviewingIdNotifier {
   void set(String? id) => state = id;
 }
 
-typedef AccordionState = ({bool ambience, bool alarm});
-
-@riverpod
-class AccordionExpandedNotifier extends _$AccordionExpandedNotifier {
-  @override
-  AccordionState build() => (ambience: false, alarm: false);
-
-  void toggleAmbience() => state = (ambience: !state.ambience, alarm: state.alarm);
-
-  void toggleAlarm() => state = (ambience: state.ambience, alarm: !state.alarm);
-}
+// ---------------------------------------------------------------------------
+// Settings notifier
+// ---------------------------------------------------------------------------
 
 @Riverpod(keepAlive: true)
 class SettingsNotifier extends _$SettingsNotifier {
   late final ISettingsRepository _repository;
   late final AudioService _audioService;
 
-  bool _previewCancelled = false;
+  /// Incremented at the start of every preview call.
+  /// Each async continuation captures its own generation value and bails out
+  /// if a newer preview has since started — correctly handles any interleaving
+  /// of previewAmbience / previewAlarm calls.
+  int _previewGeneration = 0;
 
   @override
   FutureOr<AudioPreferences> build() async {
@@ -55,6 +62,8 @@ class SettingsNotifier extends _$SettingsNotifier {
     _audioService = ref.watch(audioServiceProvider);
     return _repository.getAudioPreferences();
   }
+
+  // ---- Persistence ---------------------------------------------------------
 
   Future<void> setAlarmSound(String soundId) async {
     await _repository.setValue(SettingsKeys.alarmSoundId, soundId);
@@ -88,45 +97,46 @@ class SettingsNotifier extends _$SettingsNotifier {
 
   // ---- Preview logic -------------------------------------------------------
   //
-  // AudioService owns a dedicated _previewPlayer that is completely separate
-  // from _bgPlayer (session ambience). Because of this:
-  //   - Session ambience keeps playing undisturbed during previews.
-  //   - No pause/resume/reloadAmbience calls are needed here.
-  //   - _previewCancelled only guards the delayed set(null) call so rapid
-  //     successive taps don't leave a stale null after the new preview has
-  //     already set its own ID.
+  // AudioService._previewPlayer is separate from _bgPlayer, so session
+  // ambience is never interrupted. No pause/resume/reloadAmbience needed.
+  //
+  // The generation counter handles all interleaving cases:
+  //   - rapid same-type taps (ambience → ambience)
+  //   - cross-type taps (ambience → alarm)
+  // In every case the older delayed future sees a stale generation and exits
+  // without touching previewingIdProvider.
 
   Future<void> previewAmbience(SoundPreset preset) async {
-    _previewCancelled = true; // short-circuit any running delay
-    await _audioService.stopPreview(); // stop previous audio immediately
+    final generation = ++_previewGeneration;
+    await _audioService.stopPreview();
 
-    _previewCancelled = false;
     ref.read(previewingIdProvider.notifier).set(preset.id);
-
     await _audioService.startPreview(preset);
 
     await Future.delayed(const Duration(seconds: 3));
-    if (_previewCancelled) return;
+    if (_previewGeneration != generation) return;
 
     await _audioService.stopPreview();
     ref.read(previewingIdProvider.notifier).set(null);
   }
 
   Future<void> previewAlarm(SoundPreset preset) async {
-    _previewCancelled = true;
+    final generation = ++_previewGeneration;
     await _audioService.stopPreview();
 
-    _previewCancelled = false;
     ref.read(previewingIdProvider.notifier).set(preset.id);
-
     await _audioService.startPreview(preset);
 
     await Future.delayed(const Duration(seconds: 2));
-    if (_previewCancelled) return;
+    if (_previewGeneration != generation) return;
 
     ref.read(previewingIdProvider.notifier).set(null);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Timer preferences (reactive stream)
+// ---------------------------------------------------------------------------
 
 final timerSettingsProvider = StreamProvider<TimerPreferences>((ref) {
   return ref.watch(settingsRepositoryProvider).watchTimerPreferences();

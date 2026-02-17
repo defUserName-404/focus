@@ -57,17 +57,12 @@ final class SettingsRepositoryProvider
 String _$settingsRepositoryHash() =>
     r'd1aceaa364732510ae079a02406fffff8b81bebd';
 
-/// Injected so the notifier never calls getIt directly.
-
 @ProviderFor(audioService)
 final audioServiceProvider = AudioServiceProvider._();
-
-/// Injected so the notifier never calls getIt directly.
 
 final class AudioServiceProvider
     extends $FunctionalProvider<AudioService, AudioService, AudioService>
     with $Provider<AudioService> {
-  /// Injected so the notifier never calls getIt directly.
   AudioServiceProvider._()
     : super(
         from: null,
@@ -156,59 +151,6 @@ abstract class _$PreviewingIdNotifier extends $Notifier<String?> {
   }
 }
 
-@ProviderFor(AccordionExpandedNotifier)
-final accordionExpandedProvider = AccordionExpandedNotifierProvider._();
-
-final class AccordionExpandedNotifierProvider
-    extends $NotifierProvider<AccordionExpandedNotifier, AccordionState> {
-  AccordionExpandedNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'accordionExpandedProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$accordionExpandedNotifierHash();
-
-  @$internal
-  @override
-  AccordionExpandedNotifier create() => AccordionExpandedNotifier();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AccordionState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AccordionState>(value),
-    );
-  }
-}
-
-String _$accordionExpandedNotifierHash() =>
-    r'8110d2ad75914dfaa14135b566be97f29c82298a';
-
-abstract class _$AccordionExpandedNotifier extends $Notifier<AccordionState> {
-  AccordionState build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref = this.ref as $Ref<AccordionState, AccordionState>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AccordionState, AccordionState>,
-              AccordionState,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
-  }
-}
-
 @ProviderFor(SettingsNotifier)
 final settingsProvider = SettingsNotifierProvider._();
 
@@ -233,7 +175,7 @@ final class SettingsNotifierProvider
   SettingsNotifier create() => SettingsNotifier();
 }
 
-String _$settingsNotifierHash() => r'1d6f2300acc1f0e9541c61b28fd5f9843e5db594';
+String _$settingsNotifierHash() => r'f355413f6ba01ea6a0214f0771c6d02c82bc0017';
 
 abstract class _$SettingsNotifier extends $AsyncNotifier<AudioPreferences> {
   FutureOr<AudioPreferences> build();

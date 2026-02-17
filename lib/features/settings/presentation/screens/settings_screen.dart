@@ -5,7 +5,7 @@ import 'package:forui/forui.dart' as fu;
 import '../../../../core/common/providers/navigation_provider.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../providers/settings_provider.dart';
-import '../widgets/setings_content.dart';
+import '../widgets/settings_content.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
