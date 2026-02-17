@@ -44,8 +44,9 @@ class MiniPlayerOverlay extends ConsumerWidget {
     return GestureDetector(
       onTap: () => navigateToFocusSession(context: context),
       child: Container(
+        height: 60,
         decoration: BoxDecoration(
-          color: context.colors.background,
+          color: context.colors.primary.withValues(alpha: 0.02),
           border: Border(top: BorderSide(color: context.colors.border, width: 0.5)),
         ),
         padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular, vertical: AppConstants.spacing.small),
