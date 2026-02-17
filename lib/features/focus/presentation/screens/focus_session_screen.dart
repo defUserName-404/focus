@@ -6,8 +6,9 @@ import '../../../../core/common/widgets/marquee_text.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../providers/ambience_mute_provider.dart';
-import '../providers/focus_session_provider.dart';
 import '../providers/focus_progress_provider.dart';
+import '../providers/focus_screen_provider.dart';
+import '../providers/focus_session_provider.dart';
 import '../widgets/circular_timer.dart';
 import '../widgets/completion_overlay.dart';
 import '../widgets/focus_task_info.dart';
@@ -20,19 +21,17 @@ class FocusSessionScreen extends ConsumerStatefulWidget {
 }
 
 class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
-  bool _showCompletion = false;
-  bool _hasPopped = false;
-
   void _onCompleteTask() async {
     await ref.read(focusTimerProvider.notifier).completeTaskAndSession();
     if (mounted) {
-      setState(() => _showCompletion = true);
+      ref.read(focusScreenProvider.notifier).showCompletion();
     }
   }
 
   void _onAnimationDone() {
-    if (mounted && !_hasPopped) {
-      _hasPopped = true;
+    final state = ref.read(focusScreenProvider);
+    if (mounted && !state.hasPopped) {
+      ref.read(focusScreenProvider.notifier).markAsPopped();
       ref.read(focusTimerProvider.notifier).clearCompletedSession();
       Navigator.of(context).pop();
     }
@@ -42,58 +41,84 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
   Widget build(BuildContext context) {
     final progress = ref.watch(focusProgressProvider);
     final session = ref.watch(focusTimerProvider);
+    final screenState = ref.watch(focusScreenProvider);
 
     // Auto-pop when the session is cleared (e.g. completeSessionEarly,
     // cancelSession). Skip if the completion animation is playing.
-    // Guard with _hasPopped to prevent multiple pops (which would pop the
+    // Guard with hasPopped to prevent multiple pops (which would pop the
     // underlying shell route and cause a black screen).
-    if (session == null && !_showCompletion && !_hasPopped) {
-      _hasPopped = true;
+    if (session == null && !screenState.showCompletion && !screenState.hasPopped) {
+      // Mark as popped immediately to prevent re-entry
+      // We can't update state during build easily, but we can schedule it or just rely on the local check for this frame?
+      // Actually, updating the provider here might trigger a rebuild which is bad during build.
+      // But we are popping, so the widget will unmount.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Navigator.of(context).pop();
+        if (mounted) {
+          ref.read(focusScreenProvider.notifier).markAsPopped();
+          Navigator.of(context).pop();
+        }
       });
       return const FScaffold(child: Center(child: CircularProgressIndicator()));
     }
 
     return PopScope(
       canPop: true,
-      child: Stack(
-        children: [
-          FScaffold(
-            header: FHeader.nested(prefixes: [FHeaderAction.back(onPress: () => Navigator.of(context).pop())]),
-            child: Center(
-              child: Column(
-                children: [
-                  const FocusTaskInfo(),
-                  SizedBox(height: AppConstants.spacing.small),
-                  // Phase indicator with animated transition
-                  if (progress != null) ...[
-                    (() {
-                      final label = progress.isFocusPhase ? 'FOCUS' : 'BREAK';
-                      return AnimatedSwitcher(
-                        duration: AppConstants.animation.medium,
-                        switchInCurve: Curves.easeOut,
-                        switchOutCurve: Curves.easeIn,
-                        child: FBadge(key: ValueKey(label), style: FBadgeStyle.secondary(), child: Text(label)),
-                      );
-                    })(),
+      child: GestureDetector(
+        onTap: () => ref.read(focusScreenProvider.notifier).onUserInteraction(),
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            FScaffold(
+              header: FHeader.nested(prefixes: [FHeaderAction.back(onPress: () => Navigator.of(context).pop())]),
+              child: Center(
+                child: Column(
+                  children: [
+                    AnimatedOpacity(
+                      duration: AppConstants.animation.medium,
+                      opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                      child: const FocusTaskInfo(),
+                    ),
+                    SizedBox(height: AppConstants.spacing.small),
+                    // Phase indicator with animated transition
+                    if (progress != null) ...[
+                      (() {
+                        final label = progress.isFocusPhase ? 'FOCUS' : 'BREAK';
+                        return AnimatedOpacity(
+                          duration: AppConstants.animation.medium,
+                          opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                          child: AnimatedSwitcher(
+                            duration: AppConstants.animation.medium,
+                            switchInCurve: Curves.easeOut,
+                            switchOutCurve: Curves.easeIn,
+                            child: FBadge(key: ValueKey(label), style: FBadgeStyle.secondary(), child: Text(label)),
+                          ),
+                        );
+                      })(),
+                    ],
+                    SizedBox(height: AppConstants.spacing.regular),
+                    // Ambience sound marquee + mute button
+                    AnimatedOpacity(
+                      duration: AppConstants.animation.medium,
+                      opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                      child: const _AmbienceMarqueeRow(),
+                    ),
+                    const Spacer(flex: 1),
+                    const CircularTimer(),
+                    SizedBox(height: AppConstants.spacing.extraLarge),
+                    _FocusControlsWithCallback(
+                      onCompleteTask: _onCompleteTask,
+                      controlsVisible: screenState.isControlsVisible,
+                    ),
+                    const Spacer(flex: 2),
                   ],
-                  SizedBox(height: AppConstants.spacing.regular),
-                  // Ambience sound marquee + mute button
-                  const _AmbienceMarqueeRow(),
-                  const Spacer(flex: 1),
-                  const CircularTimer(),
-                  SizedBox(height: AppConstants.spacing.extraLarge),
-                  _FocusControlsWithCallback(onCompleteTask: _onCompleteTask),
-                  const Spacer(flex: 2),
-                ],
+                ),
               ),
             ),
-          ),
 
-          // Completion animation overlay
-          if (_showCompletion) CompletionOverlay(onDismiss: _onAnimationDone),
-        ],
+            // Completion animation overlay
+            if (screenState.showCompletion) CompletionOverlay(onDismiss: _onAnimationDone),
+          ],
+        ),
       ),
     );
   }
@@ -106,8 +131,12 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
 /// changes (idle ↔ running ↔ paused ↔ break).
 class _FocusControlsWithCallback extends ConsumerWidget {
   final VoidCallback onCompleteTask;
+  final bool controlsVisible;
 
-  const _FocusControlsWithCallback({required this.onCompleteTask});
+  const _FocusControlsWithCallback({
+    required this.onCompleteTask,
+    required this.controlsVisible,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -140,18 +169,21 @@ class _FocusControlsWithCallback extends ConsumerWidget {
                 top: -8,
                 child: AnimatedOpacity(
                   duration: AppConstants.animation.medium,
-                  opacity: showTransport ? 1.0 : 0.0,
+                  opacity: (showTransport && controlsVisible) ? 1.0 : 0.0,
                   child: AnimatedScale(
                     duration: AppConstants.animation.medium,
                     scale: showTransport ? 1.0 : 0.0,
                     child: IgnorePointer(
-                      ignoring: !showTransport,
+                      ignoring: !showTransport || !controlsVisible,
                       child: _CircleIconButton(
                         icon: FIcons.square,
                         size: 44,
                         color: context.colors.mutedForeground,
                         backgroundColor: context.colors.muted,
-                        onTap: () => _confirmEnd(context, ref),
+                        onTap: () {
+                          ref.read(focusScreenProvider.notifier).onUserInteraction();
+                          _confirmEnd(context, ref);
+                        },
                       ),
                     ),
                   ),
@@ -166,18 +198,21 @@ class _FocusControlsWithCallback extends ConsumerWidget {
                 top: -8,
                 child: AnimatedOpacity(
                   duration: AppConstants.animation.medium,
-                  opacity: showTransport ? 1.0 : 0.0,
+                  opacity: (showTransport && controlsVisible) ? 1.0 : 0.0,
                   child: AnimatedScale(
                     duration: AppConstants.animation.medium,
                     scale: showTransport ? 1.0 : 0.0,
                     child: IgnorePointer(
-                      ignoring: !showTransport,
+                      ignoring: !showTransport || !controlsVisible,
                       child: _CircleIconButton(
                         icon: FIcons.skipForward,
                         size: 44,
                         color: context.colors.mutedForeground,
                         backgroundColor: context.colors.muted,
-                        onTap: () => notifier.skipToNextPhase(),
+                        onTap: () {
+                          ref.read(focusScreenProvider.notifier).onUserInteraction();
+                          notifier.skipToNextPhase();
+                        },
                       ),
                     ),
                   ),
@@ -190,7 +225,11 @@ class _FocusControlsWithCallback extends ConsumerWidget {
                 size: 64,
                 color: context.colors.primaryForeground,
                 backgroundColor: context.colors.primary,
-                onTap: () => notifier.togglePlayPause(),
+                onTap: () {
+                  // Always register interaction so controls wake up
+                  ref.read(focusScreenProvider.notifier).onUserInteraction();
+                  notifier.togglePlayPause();
+                },
               ),
             ],
           ),
@@ -198,28 +237,37 @@ class _FocusControlsWithCallback extends ConsumerWidget {
 
         SizedBox(height: AppConstants.spacing.extraLarge),
 
-        AnimatedSwitcher(
+        AnimatedOpacity(
           duration: AppConstants.animation.medium,
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(animation),
-              child: child,
+          opacity: controlsVisible ? 1.0 : 0.0,
+          child: AnimatedSwitcher(
+            duration: AppConstants.animation.medium,
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(animation),
+                child: child,
+              ),
             ),
+            child: showTransport
+                ? FButton(
+                    key: const ValueKey('complete-btn'),
+                    style: FButtonStyle.outline(),
+                    onPress: () {
+                       ref.read(focusScreenProvider.notifier).onUserInteraction();
+                       if (isQuickSession) {
+                         ref.read(focusTimerProvider.notifier).completeSessionEarly();
+                       } else {
+                         onCompleteTask();
+                       }
+                    },
+                    prefix: Icon(isQuickSession ? FIcons.check : FIcons.checkCheck),
+                    child: Text(isQuickSession ? 'End Session' : 'Complete Task'),
+                  )
+                : const SizedBox.shrink(key: ValueKey('empty-btn')),
           ),
-          child: showTransport
-              ? FButton(
-                  key: const ValueKey('complete-btn'),
-                  style: FButtonStyle.outline(),
-                  onPress: isQuickSession
-                      ? () => ref.read(focusTimerProvider.notifier).completeSessionEarly()
-                      : onCompleteTask,
-                  prefix: Icon(isQuickSession ? FIcons.check : FIcons.checkCheck),
-                  child: Text(isQuickSession ? 'End Session' : 'Complete Task'),
-                )
-              : const SizedBox.shrink(key: ValueKey('empty-btn')),
         ),
       ],
     );

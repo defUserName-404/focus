@@ -37,7 +37,7 @@ class FocusMediaSessionCoordinator {
 
     _audioHandler.updateSessionMediaItem(
       title: isFocusPhase ? 'Focus Session' : 'Break Time',
-      artist: session.state == SessionState.paused ? 'Paused' : 'Focus App',
+      artist: session.state == SessionState.paused ? 'Paused' : 'Stay Focused',
       duration: Duration(seconds: phaseDuration),
     );
 

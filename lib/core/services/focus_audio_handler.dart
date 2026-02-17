@@ -117,7 +117,7 @@ class FocusAudioHandler extends BaseAudioHandler with SeekHandler {
           MediaControl.stop,
         ],
         systemActions: const {MediaAction.play, MediaAction.pause, MediaAction.stop, MediaAction.skipToNext},
-        androidCompactActionIndices: const [0, 1, 2],
+        androidCompactActionIndices: const [0, 1],
         processingState: AudioProcessingState.ready,
         playing: isPlaying,
         updatePosition: position,
