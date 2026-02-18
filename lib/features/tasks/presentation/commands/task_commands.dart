@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/common/widgets/confirmation_dialog.dart';
+import 'package:focus/core/di/injection.dart';
+import 'package:focus/core/routing/navigation_service.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
-
-import '../../../../core/constants/route_constants.dart';
 
 class TaskCommands {
   static void create(
@@ -13,21 +13,16 @@ class TaskCommands {
     BigInt? parentTaskId,
     int depth = 0,
   }) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      RouteConstants.createTaskRoute,
-      arguments: {
-        'projectId': projectId,
-        'parentTaskId': parentTaskId,
-        'depth': depth,
-      },
+    getIt<NavigationService>().goToCreateTask(
+      context,
+      projectId: projectId,
+      parentTaskId: parentTaskId,
+      depth: depth,
     );
   }
 
   static void edit(BuildContext context, Task task) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      RouteConstants.editTaskRoute,
-      arguments: task,
-    );
+    getIt<NavigationService>().goToEditTask(context, task);
   }
 
   static Future<void> delete(

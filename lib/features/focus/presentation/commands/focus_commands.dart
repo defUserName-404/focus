@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/common/widgets/confirmation_dialog.dart';
 import '../../../../core/di/injection.dart';
-import '../../../../core/routing/navigator_key.dart';
+import '../../../../core/routing/navigation_service.dart';
 import '../../../settings/domain/entities/setting.dart';
-import '../../../settings/domain/repositories/i_settings_repository.dart';
+import '../../../settings/domain/services/settings_service.dart';
 import '../../domain/entities/focus_session.dart';
 import '../../domain/entities/session_state.dart';
 import '../providers/focus_session_provider.dart';
@@ -44,31 +44,25 @@ class FocusCommands {
 
   /// Read persisted timer preferences.
   static Future<TimerPreferences> _timerPrefs() async {
-    final repo = getIt<ISettingsRepository>();
-    return repo.getTimerPreferences();
+    return getIt<SettingsService>().getTimerPreferences();
   }
 
   // ── Public API ──────────────────────────────────────────────────────────
 
   /// Navigate to the focus session screen for a given task.
-  ///
-  /// Reads focus/break duration from persisted settings.
-  /// If there is already an active session, asks the user whether
-  /// to end it and start a new one.
   static Future<void> start(
     BuildContext context,
     WidgetRef ref, {
     required BigInt taskId,
   }) async {
     final existing = ref.read(focusTimerProvider);
+    final nav = getIt<NavigationService>();
 
     if (_isActive(existing)) {
-      // Same task → just navigate to it.
       if (existing!.taskId == taskId) {
-        if (context.mounted) navigateToFocusSession(context: context);
+        if (context.mounted) nav.goToFocusSession(context: context);
         return;
       }
-      // Different task → ask to replace.
       if (context.mounted) {
         await _confirmReplace(context, ref, onReplaced: () async {
           await _createAndNavigate(context, ref, taskId: taskId);
@@ -90,16 +84,11 @@ class FocusCommands {
       cancelLabel: 'Keep going',
       onConfirm: () {
         ref.read(focusTimerProvider.notifier).cancelSession();
-        // No explicit pop — the session screen's auto-pop logic
-        // handles navigation when state becomes null.
       },
     );
   }
 
   /// Start a **quick session** with no task attached.
-  ///
-  /// Quick sessions count toward daily statistics but are not linked
-  /// to a task or project. They appear as "Quick Session" in the UI.
   static Future<void> startQuickSession(
     BuildContext context,
     WidgetRef ref,
@@ -120,9 +109,6 @@ class FocusCommands {
 
   // ── Internal creation helper ────────────────────────────────────────────
 
-  /// Create a new session and navigate to the focus screen.
-  ///
-  /// If [taskId] is `null`, creates a quick session.
   static Future<void> _createAndNavigate(
     BuildContext context,
     WidgetRef ref, {
@@ -137,7 +123,7 @@ class FocusCommands {
         );
 
     if (context.mounted) {
-      navigateToFocusSession(context: context);
+      getIt<NavigationService>().goToFocusSession(context: context);
     }
   }
 }
