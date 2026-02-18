@@ -23,10 +23,7 @@ class NavigationService {
   //  Project routes
 
   void goToProjectDetail(BuildContext context, BigInt projectId) {
-    Navigator.of(context).pushNamed(
-      RouteConstants.projectDetailRoute,
-      arguments: projectId,
-    );
+    Navigator.of(context).pushNamed(RouteConstants.projectDetailRoute, arguments: projectId);
   }
 
   void goToProjectList(BuildContext context) {
@@ -34,58 +31,34 @@ class NavigationService {
   }
 
   void goToCreateProject(BuildContext context) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      RouteConstants.createProjectRoute,
-    );
+    Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.createProjectRoute);
   }
 
   void goToEditProject(BuildContext context, Project project) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      RouteConstants.editProjectRoute,
-      arguments: project,
-    );
+    Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.editProjectRoute, arguments: project);
   }
 
   // Task routes
 
-  void goToTaskDetail(
-    BuildContext context, {
-    required BigInt taskId,
-    required BigInt projectId,
-  }) {
-    Navigator.of(context).pushNamed(
-      RouteConstants.taskDetailRoute,
-      arguments: {'taskId': taskId, 'projectId': projectId},
-    );
+  void goToTaskDetail(BuildContext context, {required BigInt taskId, required BigInt projectId}) {
+    Navigator.of(
+      context,
+    ).pushNamed(RouteConstants.taskDetailRoute, arguments: {'taskId': taskId, 'projectId': projectId});
   }
 
-  void goToCreateTask(
-    BuildContext context, {
-    required BigInt projectId,
-    BigInt? parentTaskId,
-    int depth = 0,
-  }) {
+  void goToCreateTask(BuildContext context, {required BigInt projectId, BigInt? parentTaskId, int depth = 0}) {
     Navigator.of(context, rootNavigator: true).pushNamed(
       RouteConstants.createTaskRoute,
-      arguments: {
-        'projectId': projectId,
-        'parentTaskId': parentTaskId,
-        'depth': depth,
-      },
+      arguments: {'projectId': projectId, 'parentTaskId': parentTaskId, 'depth': depth},
     );
   }
 
   void goToEditTask(BuildContext context, Task task) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      RouteConstants.editTaskRoute,
-      arguments: task,
-    );
+    Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.editTaskRoute, arguments: task);
   }
 
   void goToCreateTaskWithProject(BuildContext context) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      RouteConstants.createTaskWithProjectRoute,
-    );
+    Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.createTaskWithProjectRoute);
   }
 
   // Focus routes

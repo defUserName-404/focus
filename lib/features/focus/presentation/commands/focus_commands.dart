@@ -11,8 +11,7 @@ import '../../domain/entities/session_state.dart';
 import '../providers/focus_session_provider.dart';
 
 class FocusCommands {
-  // ── Helpers ──────────────────────────────────────────────────────────────
-
+  //  Helpers
   /// Whether [session] is still in an active (non-terminal) state.
   static bool _isActive(FocusSession? session) {
     if (session == null) return false;
@@ -23,18 +22,15 @@ class FocusCommands {
 
   /// End the existing session (marked as **incomplete**), then invoke
   /// [onReplaced] to create & navigate to the new one.
-  static Future<void> _confirmReplace(
-    BuildContext context,
-    WidgetRef ref, {
-    required VoidCallback onReplaced,
-  }) async {
+  static Future<void> _confirmReplace(BuildContext context, WidgetRef ref, {required VoidCallback onReplaced}) async {
     await ConfirmationDialog.show(
       context,
       title: 'Session already running',
       body: 'Ending the current session will mark it as incomplete. Start a new one?',
       confirmLabel: 'End & start new',
       cancelLabel: 'Keep current',
-      confirmStyle: null, // uses default destructive style
+      confirmStyle: null,
+      // uses default destructive style
       onConfirm: () {
         ref.read(focusTimerProvider.notifier).cancelSession();
         onReplaced();
@@ -47,14 +43,10 @@ class FocusCommands {
     return getIt<SettingsService>().getTimerPreferences();
   }
 
-  // ── Public API ──────────────────────────────────────────────────────────
+  //  Public API
 
   /// Navigate to the focus session screen for a given task.
-  static Future<void> start(
-    BuildContext context,
-    WidgetRef ref, {
-    required BigInt taskId,
-  }) async {
+  static Future<void> start(BuildContext context, WidgetRef ref, {required BigInt taskId}) async {
     final existing = ref.read(focusTimerProvider);
     final nav = getIt<NavigationService>();
 
@@ -64,9 +56,13 @@ class FocusCommands {
         return;
       }
       if (context.mounted) {
-        await _confirmReplace(context, ref, onReplaced: () async {
-          await _createAndNavigate(context, ref, taskId: taskId);
-        });
+        await _confirmReplace(
+          context,
+          ref,
+          onReplaced: () async {
+            await _createAndNavigate(context, ref, taskId: taskId);
+          },
+        );
       }
       return;
     }
@@ -89,17 +85,18 @@ class FocusCommands {
   }
 
   /// Start a **quick session** with no task attached.
-  static Future<void> startQuickSession(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  static Future<void> startQuickSession(BuildContext context, WidgetRef ref) async {
     final existing = ref.read(focusTimerProvider);
 
     if (_isActive(existing)) {
       if (context.mounted) {
-        await _confirmReplace(context, ref, onReplaced: () async {
-          await _createAndNavigate(context, ref);
-        });
+        await _confirmReplace(
+          context,
+          ref,
+          onReplaced: () async {
+            await _createAndNavigate(context, ref);
+          },
+        );
       }
       return;
     }
@@ -107,16 +104,14 @@ class FocusCommands {
     await _createAndNavigate(context, ref);
   }
 
-  // ── Internal creation helper ────────────────────────────────────────────
+  //  Internal creation helper
 
-  static Future<void> _createAndNavigate(
-    BuildContext context,
-    WidgetRef ref, {
-    BigInt? taskId,
-  }) async {
+  static Future<void> _createAndNavigate(BuildContext context, WidgetRef ref, {BigInt? taskId}) async {
     final prefs = await _timerPrefs();
 
-    await ref.read(focusTimerProvider.notifier).createSession(
+    await ref
+        .read(focusTimerProvider.notifier)
+        .createSession(
           taskId: taskId,
           focusMinutes: prefs.focusDurationMinutes,
           breakMinutes: prefs.breakDurationMinutes,

@@ -16,10 +16,7 @@ class NoOpNotificationService {
     int progressCurrent = 0,
   }) async {}
 
-  Future<void> showAlarmNotification({
-    required String title,
-    required String body,
-  }) async {}
+  Future<void> showAlarmNotification({required String title, required String body}) async {}
 
   Future<void> cancelFocusNotification() async {}
 }

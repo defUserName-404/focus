@@ -13,12 +13,7 @@ part of 'settings_provider.dart';
 final settingsRepositoryProvider = SettingsRepositoryProvider._();
 
 final class SettingsRepositoryProvider
-    extends
-        $FunctionalProvider<
-          ISettingsRepository,
-          ISettingsRepository,
-          ISettingsRepository
-        >
+    extends $FunctionalProvider<ISettingsRepository, ISettingsRepository, ISettingsRepository>
     with $Provider<ISettingsRepository> {
   SettingsRepositoryProvider._()
     : super(
@@ -36,9 +31,7 @@ final class SettingsRepositoryProvider
 
   @$internal
   @override
-  $ProviderElement<ISettingsRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<ISettingsRepository> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   ISettingsRepository create(Ref ref) {
@@ -47,21 +40,16 @@ final class SettingsRepositoryProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(ISettingsRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ISettingsRepository>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<ISettingsRepository>(value));
   }
 }
 
-String _$settingsRepositoryHash() =>
-    r'd1aceaa364732510ae079a02406fffff8b81bebd';
+String _$settingsRepositoryHash() => r'd1aceaa364732510ae079a02406fffff8b81bebd';
 
 @ProviderFor(audioService)
 final audioServiceProvider = AudioServiceProvider._();
 
-final class AudioServiceProvider
-    extends $FunctionalProvider<AudioService, AudioService, AudioService>
+final class AudioServiceProvider extends $FunctionalProvider<AudioService, AudioService, AudioService>
     with $Provider<AudioService> {
   AudioServiceProvider._()
     : super(
@@ -79,8 +67,7 @@ final class AudioServiceProvider
 
   @$internal
   @override
-  $ProviderElement<AudioService> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<AudioService> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   AudioService create(Ref ref) {
@@ -89,10 +76,7 @@ final class AudioServiceProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AudioService value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AudioService>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<AudioService>(value));
   }
 }
 
@@ -101,8 +85,7 @@ String _$audioServiceHash() => r'15f96b139b86f1ab5e758ea86ce2bc6a8ff8eb39';
 @ProviderFor(PreviewingIdNotifier)
 final previewingIdProvider = PreviewingIdNotifierProvider._();
 
-final class PreviewingIdNotifierProvider
-    extends $NotifierProvider<PreviewingIdNotifier, String?> {
+final class PreviewingIdNotifierProvider extends $NotifierProvider<PreviewingIdNotifier, String?> {
   PreviewingIdNotifierProvider._()
     : super(
         from: null,
@@ -123,15 +106,11 @@ final class PreviewingIdNotifierProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(String? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<String?>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<String?>(value));
   }
 }
 
-String _$previewingIdNotifierHash() =>
-    r'467c9301fa04f18df4394dc18217da44e98a56ca';
+String _$previewingIdNotifierHash() => r'467c9301fa04f18df4394dc18217da44e98a56ca';
 
 abstract class _$PreviewingIdNotifier extends $Notifier<String?> {
   String? build();
@@ -139,14 +118,7 @@ abstract class _$PreviewingIdNotifier extends $Notifier<String?> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<String?, String?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<String?, String?>,
-              String?,
-              Object?,
-              Object?
-            >;
+    final element = ref.element as $ClassProviderElement<AnyNotifier<String?, String?>, String?, Object?, Object?>;
     element.handleCreate(ref, build);
   }
 }
@@ -154,8 +126,7 @@ abstract class _$PreviewingIdNotifier extends $Notifier<String?> {
 @ProviderFor(SettingsNotifier)
 final settingsProvider = SettingsNotifierProvider._();
 
-final class SettingsNotifierProvider
-    extends $AsyncNotifierProvider<SettingsNotifier, AudioPreferences> {
+final class SettingsNotifierProvider extends $AsyncNotifierProvider<SettingsNotifier, AudioPreferences> {
   SettingsNotifierProvider._()
     : super(
         from: null,
@@ -175,15 +146,14 @@ final class SettingsNotifierProvider
   SettingsNotifier create() => SettingsNotifier();
 }
 
-String _$settingsNotifierHash() => r'f355413f6ba01ea6a0214f0771c6d02c82bc0017';
+String _$settingsNotifierHash() => r'8e21afeab7c1ccf2e99b05d5fa374f1858c2260b';
 
 abstract class _$SettingsNotifier extends $AsyncNotifier<AudioPreferences> {
   FutureOr<AudioPreferences> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<AudioPreferences>, AudioPreferences>;
+    final ref = this.ref as $Ref<AsyncValue<AudioPreferences>, AudioPreferences>;
     final element =
         ref.element
             as $ClassProviderElement<

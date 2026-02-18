@@ -34,9 +34,7 @@ class CircularTimer extends ConsumerWidget {
       );
     }
 
-    final progressColor = progress.isFocusPhase
-        ? context.colors.primary
-        : context.colors.mutedForeground;
+    final progressColor = progress.isFocusPhase ? context.colors.primary : context.colors.mutedForeground;
 
     return GestureDetector(
       onTap: () => ref.read(focusTimerProvider.notifier).togglePlayPause(),
@@ -63,52 +61,37 @@ class CircularTimer extends ConsumerWidget {
                       children: [
                         Text(
                           progress.formattedTime,
-                          style: context.typography.xl6
-                              .copyWith(fontWeight: FontWeight.w100),
+                          style: context.typography.xl6.copyWith(fontWeight: FontWeight.w100),
                         ),
                         AnimatedSwitcher(
                           duration: AppConstants.animation.medium,
                           switchInCurve: Curves.easeOut,
                           switchOutCurve: Curves.easeIn,
-                          transitionBuilder: (child, animation) =>
-                              FadeTransition(
+                          transitionBuilder: (child, animation) => FadeTransition(
                             opacity: animation,
-                            child: SizeTransition(
-                              sizeFactor: animation,
-                              axisAlignment: -1.0,
-                              child: child,
-                            ),
+                            child: SizeTransition(sizeFactor: animation, axisAlignment: -1.0, child: child),
                           ),
                           child: progress.isIdle
                               ? Padding(
                                   key: const ValueKey('tap-hint'),
-                                  padding: EdgeInsets.only(
-                                      top: AppConstants.spacing.regular),
+                                  padding: EdgeInsets.only(top: AppConstants.spacing.regular),
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     spacing: AppConstants.spacing.small,
                                     children: [
                                       Icon(
                                         FIcons.play,
-                                        size:
-                                            AppConstants.size.icon.large,
-                                        color: context
-                                            .colors.mutedForeground,
+                                        size: AppConstants.size.icon.large,
+                                        color: context.colors.mutedForeground,
                                       ),
                                       Text(
                                         'tap to start',
-                                        style: context.typography.xs
-                                            .copyWith(
-                                          color: context
-                                              .colors.mutedForeground,
-                                        ),
+                                        style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
                                       ),
                                     ],
                                   ),
                                 )
-                              : const SizedBox.shrink(
-                                  key: ValueKey('no-hint')),
+                              : const SizedBox.shrink(key: ValueKey('no-hint')),
                         ),
                       ],
                     ),

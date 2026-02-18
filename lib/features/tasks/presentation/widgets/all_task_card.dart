@@ -30,9 +30,7 @@ class AllTaskCard extends ConsumerWidget {
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
-        onChange: (_) => ref
-            .read(taskProvider(task.projectId.toString()).notifier)
-            .toggleTaskCompletion(task),
+        onChange: (_) => ref.read(taskProvider(task.projectId.toString()).notifier).toggleTaskCompletion(task),
       ),
       title: Text(task.title),
       trailing: TaskPriorityBadge(priority: task.priority),
@@ -41,10 +39,7 @@ class AllTaskCard extends ConsumerWidget {
               task.description!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: context.typography.sm.copyWith(
-                color: context.colors.mutedForeground,
-                height: 1.4,
-              ),
+              style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.4),
             )
           : null,
       content: TaskDateRow(

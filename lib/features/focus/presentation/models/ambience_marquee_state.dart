@@ -9,16 +9,10 @@ class AmbienceMarqueeState {
   final bool isPaused;
   final bool isBreak;
 
-  const AmbienceMarqueeState({
-    this.soundLabel,
-    this.isMuted = false,
-    this.isPaused = false,
-    this.isBreak = false,
-  });
+  const AmbienceMarqueeState({this.soundLabel, this.isMuted = false, this.isPaused = false, this.isBreak = false});
 
   /// Whether the marquee text should scroll.
-  bool get isScrolling =>
-      soundLabel != null && !isMuted && !isPaused && !isBreak;
+  bool get isScrolling => soundLabel != null && !isMuted && !isPaused && !isBreak;
 
   /// Whether the visuals should appear dimmed.
   bool get isDimmed => isMuted || isPaused;

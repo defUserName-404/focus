@@ -7,11 +7,7 @@ class InlineAddSubtask extends StatefulWidget {
   final VoidCallback onCancel;
   final ValueChanged<String> onSubmit;
 
-  const InlineAddSubtask({
-    super.key,
-    required this.onCancel,
-    required this.onSubmit,
-  });
+  const InlineAddSubtask({super.key, required this.onCancel, required this.onSubmit});
 
   @override
   State<InlineAddSubtask> createState() => _InlineAddSubtaskState();
@@ -24,9 +20,7 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _focusNode.requestFocus(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _focusNode.requestFocus());
   }
 
   @override
@@ -61,17 +55,13 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
                 width: 1.5,
                 decoration: BoxDecoration(
                   color: context.colors.border,
-                  borderRadius: BorderRadius.circular(
-                    AppConstants.border.radius.small,
-                  ),
+                  borderRadius: BorderRadius.circular(AppConstants.border.radius.small),
                 ),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: AppConstants.spacing.small,
-                ),
+                padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.small),
                 child: Row(
                   children: [
                     Expanded(
@@ -81,9 +71,7 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
                           decoration: BoxDecoration(
                             color: context.colors.muted,
                             border: Border.all(color: context.colors.border),
-                            borderRadius: BorderRadius.circular(
-                              AppConstants.border.radius.regular,
-                            ),
+                            borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
                           ),
                           child: Material(
                             color: Colors.transparent,
@@ -91,14 +79,10 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
                               controller: _controller,
                               focusNode: _focusNode,
                               onSubmitted: (_) => _submit(),
-                              style: context.typography.sm.copyWith(
-                                color: context.colors.foreground,
-                              ),
+                              style: context.typography.sm.copyWith(color: context.colors.foreground),
                               decoration: InputDecoration(
                                 hintText: 'Subtask title…',
-                                hintStyle: context.typography.sm.copyWith(
-                                  color: context.colors.mutedForeground,
-                                ),
+                                hintStyle: context.typography.sm.copyWith(color: context.colors.mutedForeground),
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: AppConstants.spacing.regular,
                                   vertical: AppConstants.spacing.small,
@@ -114,9 +98,7 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
                     GestureDetector(
                       onTap: widget.onCancel,
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppConstants.spacing.regular,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
                         child: Icon(
                           fu.FIcons.x,
                           size: AppConstants.size.icon.regular,

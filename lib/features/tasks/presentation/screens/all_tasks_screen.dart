@@ -40,20 +40,15 @@ class AllTasksScreen extends ConsumerWidget {
             },
           ),
         ],
-        title: Text(
-          'Tasks',
-          style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700),
-        ),
+        title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
       ),
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Task'),
-          onPress: () => Navigator.of(
-            context,
-            rootNavigator: true,
-          ).pushNamed(RouteConstants.createTaskWithProjectRoute),
+          onPress: () =>
+              Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.createTaskWithProjectRoute),
         ),
       ),
       child: Column(
@@ -61,9 +56,7 @@ class AllTasksScreen extends ConsumerWidget {
           AppSearchBar(
             hint: 'Search tasks...',
             onChanged: (query) {
-              ref
-                  .read(allTasksFilterProvider.notifier)
-                  .updateFilter(searchQuery: query);
+              ref.read(allTasksFilterProvider.notifier).updateFilter(searchQuery: query);
             },
           ),
           Row(
@@ -73,9 +66,7 @@ class AllTasksScreen extends ConsumerWidget {
                 child: SortOrderSelector<AllTasksSortOrder>(
                   selectedOrder: filter.sortOrder,
                   onChanged: (order) {
-                    ref
-                        .read(allTasksFilterProvider.notifier)
-                        .updateFilter(sortOrder: order);
+                    ref.read(allTasksFilterProvider.notifier).updateFilter(sortOrder: order);
                   },
                   orderOptions: AllTasksSortOrder.values,
                 ),
@@ -84,9 +75,7 @@ class AllTasksScreen extends ConsumerWidget {
                 child: SortFilterChips<AllTasksSortCriteria>(
                   selectedCriteria: filter.sortCriteria,
                   onChanged: (criteria) {
-                    ref
-                        .read(allTasksFilterProvider.notifier)
-                        .updateFilter(sortCriteria: criteria);
+                    ref.read(allTasksFilterProvider.notifier).updateFilter(sortCriteria: criteria);
                   },
                   criteriaOptions: AllTasksSortCriteria.values,
                 ),
@@ -101,9 +90,7 @@ class AllTasksScreen extends ConsumerWidget {
                 child: FilterSelect<TaskPriority?>(
                   selected: filter.priorityFilter,
                   onChanged: (value) {
-                    ref
-                        .read(allTasksFilterProvider.notifier)
-                        .updateFilter(priorityFilter: value);
+                    ref.read(allTasksFilterProvider.notifier).updateFilter(priorityFilter: value);
                   },
                   options: TaskPriority.values,
                   hint: 'Priority',
@@ -115,13 +102,9 @@ class AllTasksScreen extends ConsumerWidget {
                 (f) => Padding(
                   padding: EdgeInsets.only(right: AppConstants.spacing.small),
                   child: fu.FButton(
-                    style: filter.completionFilter == f
-                        ? fu.FButtonStyle.secondary()
-                        : fu.FButtonStyle.outline(),
+                    style: filter.completionFilter == f ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
                     onPress: () {
-                      ref
-                          .read(allTasksFilterProvider.notifier)
-                          .updateFilter(completionFilter: f);
+                      ref.read(allTasksFilterProvider.notifier).updateFilter(completionFilter: f);
                     },
                     child: Text(f.label),
                   ),
@@ -147,9 +130,7 @@ class AllTasksScreen extends ConsumerWidget {
                         ),
                         Text(
                           'No tasks found',
-                          style: context.typography.sm.copyWith(
-                            color: context.colors.mutedForeground,
-                          ),
+                          style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
                         ),
                       ],
                     ),
@@ -157,9 +138,7 @@ class AllTasksScreen extends ConsumerWidget {
                 }
 
                 return ListView.builder(
-                  padding: EdgeInsets.symmetric(
-                    vertical: AppConstants.spacing.regular,
-                  ),
+                  padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
                   itemCount: tasks.length,
                   itemBuilder: (context, index) {
                     final task = tasks[index];
@@ -168,10 +147,7 @@ class AllTasksScreen extends ConsumerWidget {
                       onTap: () => task.id != null
                           ? Navigator.of(context).pushNamed(
                               RouteConstants.taskDetailRoute,
-                              arguments: {
-                                'taskId': task.id!,
-                                'projectId': task.projectId,
-                              },
+                              arguments: {'taskId': task.id!, 'projectId': task.projectId},
                             )
                           : null,
                     );

@@ -63,15 +63,9 @@ class TimerPreferences {
   final int focusDurationMinutes;
   final int breakDurationMinutes;
 
-  const TimerPreferences({
-    this.focusDurationMinutes = 25,
-    this.breakDurationMinutes = 5,
-  });
+  const TimerPreferences({this.focusDurationMinutes = 25, this.breakDurationMinutes = 5});
 
-  TimerPreferences copyWith({
-    int? focusDurationMinutes,
-    int? breakDurationMinutes,
-  }) {
+  TimerPreferences copyWith({int? focusDurationMinutes, int? breakDurationMinutes}) {
     return TimerPreferences(
       focusDurationMinutes: focusDurationMinutes ?? this.focusDurationMinutes,
       breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,

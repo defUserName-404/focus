@@ -4,33 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/entities/session_state.dart';
+import '../models/focus_screen_state.dart';
 import 'focus_session_provider.dart';
 
 part 'focus_screen_provider.g.dart';
-
-class FocusScreenState {
-  final bool isControlsVisible;
-  final bool showCompletion;
-  final bool hasPopped;
-
-  const FocusScreenState({
-    this.isControlsVisible = true,
-    this.showCompletion = false,
-    this.hasPopped = false,
-  });
-
-  FocusScreenState copyWith({
-    bool? isControlsVisible,
-    bool? showCompletion,
-    bool? hasPopped,
-  }) {
-    return FocusScreenState(
-      isControlsVisible: isControlsVisible ?? this.isControlsVisible,
-      showCompletion: showCompletion ?? this.showCompletion,
-      hasPopped: hasPopped ?? this.hasPopped,
-    );
-  }
-}
 
 @riverpod
 class FocusScreenNotifier extends _$FocusScreenNotifier {
@@ -73,7 +50,7 @@ class FocusScreenNotifier extends _$FocusScreenNotifier {
     // Only schedule if we are actually running
     final session = ref.read(focusTimerProvider);
     final isRunning = session?.state == SessionState.running || session?.state == SessionState.onBreak;
-    
+
     if (isRunning) {
       _inactivityTimer = Timer(_inactivityDuration, () {
         if (state.isControlsVisible) {

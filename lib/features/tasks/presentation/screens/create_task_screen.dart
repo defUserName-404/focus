@@ -14,12 +14,7 @@ class CreateTaskScreen extends ConsumerStatefulWidget {
   final BigInt? parentTaskId;
   final int depth;
 
-  const CreateTaskScreen({
-    super.key,
-    required this.projectId,
-    this.parentTaskId,
-    this.depth = 0,
-  });
+  const CreateTaskScreen({super.key, required this.projectId, this.parentTaskId, this.depth = 0});
 
   @override
   ConsumerState<CreateTaskScreen> createState() => _CreateTaskScreenState();
@@ -54,19 +49,14 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           autovalidateMode: AutovalidateMode.onUnfocus,
         ),
         FTextField(
-          control: FTextFieldControl.managed(
-            controller: _descriptionController,
-          ),
+          control: FTextFieldControl.managed(controller: _descriptionController),
           hint: 'Task Description (Optional)',
           label: const Text('Description'),
           maxLines: 3,
         ),
         Align(
           alignment: Alignment.centerLeft,
-          child: Text(
-            'Priority',
-            style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
-          ),
+          child: Text('Priority', style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
         ),
         FilterSelect<TaskPriority>(
           selected: _priority,
@@ -77,9 +67,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
-          control: FDateFieldControl.managed(
-            onChange: (date) => _startDate = date,
-          ),
+          control: FDateFieldControl.managed(onChange: (date) => _startDate = date),
           clearable: true,
         ),
         FDateField.calendar(
@@ -87,8 +75,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           hint: 'Select End Date (Optional)',
           control: FDateFieldControl.managed(
             onChange: (date) => _endDate = date,
-            validator: (value) =>
-                AppFormValidator.startDateBeforeEndDate(_startDate, value),
+            validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           ),
           autovalidateMode: AutovalidateMode.onUnfocus,
           clearable: true,
@@ -107,9 +94,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           projectId: widget.projectId.toString(),
           parentTaskId: widget.parentTaskId,
           title: title,
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
           priority: _priority,
           startDate: _startDate,
           endDate: _endDate,

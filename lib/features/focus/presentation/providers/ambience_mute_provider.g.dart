@@ -45,10 +45,7 @@ final class AmbienceMuteProvider extends $NotifierProvider<AmbienceMute, bool> {
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(bool value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<bool>(value));
   }
 }
 
@@ -65,14 +62,7 @@ abstract class _$AmbienceMute extends $Notifier<bool> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<bool, bool>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
-              Object?,
-              Object?
-            >;
+    final element = ref.element as $ClassProviderElement<AnyNotifier<bool, bool>, bool, Object?, Object?>;
     element.handleCreate(ref, build);
   }
 }
@@ -81,12 +71,7 @@ abstract class _$AmbienceMute extends $Notifier<bool> {
 final ambienceMarqueeProvider = AmbienceMarqueeProvider._();
 
 final class AmbienceMarqueeProvider
-    extends
-        $FunctionalProvider<
-          AmbienceMarqueeState,
-          AmbienceMarqueeState,
-          AmbienceMarqueeState
-        >
+    extends $FunctionalProvider<AmbienceMarqueeState, AmbienceMarqueeState, AmbienceMarqueeState>
     with $Provider<AmbienceMarqueeState> {
   AmbienceMarqueeProvider._()
     : super(
@@ -104,9 +89,7 @@ final class AmbienceMarqueeProvider
 
   @$internal
   @override
-  $ProviderElement<AmbienceMarqueeState> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<AmbienceMarqueeState> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   AmbienceMarqueeState create(Ref ref) {
@@ -115,10 +98,7 @@ final class AmbienceMarqueeProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AmbienceMarqueeState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AmbienceMarqueeState>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<AmbienceMarqueeState>(value));
   }
 }
 

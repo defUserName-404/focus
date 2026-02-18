@@ -20,8 +20,7 @@ final bottomNavIndexProvider = BottomNavIndexProvider._();
 ///
 /// Keeps the selected tab index and exposes methods to switch tabs
 /// programmatically from anywhere in the widget tree.
-final class BottomNavIndexProvider
-    extends $NotifierProvider<BottomNavIndex, int> {
+final class BottomNavIndexProvider extends $NotifierProvider<BottomNavIndex, int> {
   /// Manages the bottom navigation bar state.
   ///
   /// Keeps the selected tab index and exposes methods to switch tabs
@@ -46,10 +45,7 @@ final class BottomNavIndexProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<int>(value));
   }
 }
 
@@ -66,14 +62,7 @@ abstract class _$BottomNavIndex extends $Notifier<int> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<int, int>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<int, int>,
-              int,
-              Object?,
-              Object?
-            >;
+    final element = ref.element as $ClassProviderElement<AnyNotifier<int, int>, int, Object?, Object?>;
     element.handleCreate(ref, build);
   }
 }

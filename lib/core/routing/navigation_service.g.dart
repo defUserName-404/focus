@@ -22,12 +22,7 @@ final navigationServiceProvider = NavigationServiceProvider._();
 /// commands and providers rather than calling `Navigator.of` directly.
 
 final class NavigationServiceProvider
-    extends
-        $FunctionalProvider<
-          NavigationService,
-          NavigationService,
-          NavigationService
-        >
+    extends $FunctionalProvider<NavigationService, NavigationService, NavigationService>
     with $Provider<NavigationService> {
   /// Riverpod provider for the navigation service.
   ///
@@ -49,9 +44,7 @@ final class NavigationServiceProvider
 
   @$internal
   @override
-  $ProviderElement<NavigationService> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<NavigationService> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   NavigationService create(Ref ref) {
@@ -60,10 +53,7 @@ final class NavigationServiceProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(NavigationService value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<NavigationService>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<NavigationService>(value));
   }
 }
 

@@ -12,8 +12,7 @@ part of 'focus_progress_provider.dart';
 @ProviderFor(focusProgress)
 final focusProgressProvider = FocusProgressProvider._();
 
-final class FocusProgressProvider
-    extends $FunctionalProvider<FocusProgress?, FocusProgress?, FocusProgress?>
+final class FocusProgressProvider extends $FunctionalProvider<FocusProgress?, FocusProgress?, FocusProgress?>
     with $Provider<FocusProgress?> {
   FocusProgressProvider._()
     : super(
@@ -31,8 +30,7 @@ final class FocusProgressProvider
 
   @$internal
   @override
-  $ProviderElement<FocusProgress?> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<FocusProgress?> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   FocusProgress? create(Ref ref) {
@@ -41,10 +39,7 @@ final class FocusProgressProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(FocusProgress? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<FocusProgress?>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<FocusProgress?>(value));
   }
 }
 

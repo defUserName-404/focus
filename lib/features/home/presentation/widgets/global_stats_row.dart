@@ -15,19 +15,11 @@ class GlobalStatsRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: MiniStatCard(
-            icon: fu.FIcons.timer,
-            value: stats.formattedTotalTime,
-            label: 'Total Focus',
-          ),
+          child: MiniStatCard(icon: fu.FIcons.timer, value: stats.formattedTotalTime, label: 'Total Focus'),
         ),
         SizedBox(width: AppConstants.spacing.regular),
         Expanded(
-          child: MiniStatCard(
-            icon: fu.FIcons.chartBar,
-            value: '${stats.completedSessions}',
-            label: 'Sessions',
-          ),
+          child: MiniStatCard(icon: fu.FIcons.chartBar, value: '${stats.completedSessions}', label: 'Sessions'),
         ),
         SizedBox(width: AppConstants.spacing.regular),
         Expanded(

@@ -14,19 +14,9 @@ class SubtaskRow extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
-  const SubtaskRow({
-    super.key,
-    required this.subtask,
-    required this.onToggle,
-    this.onTap,
-    this.onEdit,
-    this.onDelete,
-  });
+  const SubtaskRow({super.key, required this.subtask, required this.onToggle, this.onTap, this.onEdit, this.onDelete});
 
-  bool get _isOverdue =>
-      subtask.endDate != null &&
-      subtask.endDate!.isBefore(DateTime.now()) &&
-      !subtask.isCompleted;
+  bool get _isOverdue => subtask.endDate != null && subtask.endDate!.isBefore(DateTime.now()) && !subtask.isCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +33,7 @@ class SubtaskRow extends StatelessWidget {
               padding: const EdgeInsets.only(left: 14, right: 10),
               child: Container(
                 width: 1.5,
-                decoration: BoxDecoration(
-                  color: context.colors.border,
-                  borderRadius: BorderRadius.circular(1),
-                ),
+                decoration: BoxDecoration(color: context.colors.border, borderRadius: BorderRadius.circular(1)),
               ),
             ),
 
@@ -65,24 +52,15 @@ class SubtaskRow extends StatelessWidget {
                       children: [
                         SizedBox(
                           width: leadingWidth,
-                          child: fu.FCheckbox(
-                            value: subtask.isCompleted,
-                            onChange: (_) => onToggle(),
-                          ),
+                          child: fu.FCheckbox(value: subtask.isCompleted, onChange: (_) => onToggle()),
                         ),
                         Expanded(
                           child: Text(
                             subtask.title,
                             style: context.typography.sm.copyWith(
-                              fontWeight: subtask.isCompleted
-                                  ? FontWeight.w400
-                                  : FontWeight.w500,
-                              color: subtask.isCompleted
-                                  ? context.colors.mutedForeground
-                                  : context.colors.foreground,
-                              decoration: subtask.isCompleted
-                                  ? TextDecoration.lineThrough
-                                  : null,
+                              fontWeight: subtask.isCompleted ? FontWeight.w400 : FontWeight.w500,
+                              color: subtask.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
+                              decoration: subtask.isCompleted ? TextDecoration.lineThrough : null,
                               decorationColor: context.colors.mutedForeground,
                             ),
                           ),
@@ -90,8 +68,7 @@ class SubtaskRow extends StatelessWidget {
                         const SizedBox(width: 4),
                         TaskPriorityBadge(priority: subtask.priority),
                         const SizedBox(width: 2),
-                        if (onEdit != null || onDelete != null)
-                          ActionMenuButton(onEdit: onEdit, onDelete: onDelete),
+                        if (onEdit != null || onDelete != null) ActionMenuButton(onEdit: onEdit, onDelete: onDelete),
                       ],
                     ),
                     // ... rest of the content (indented below Title)
@@ -102,29 +79,20 @@ class SubtaskRow extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Description (max 2 lines)
-                          if (subtask.description != null &&
-                              subtask.description!.isNotEmpty) ...[
+                          if (subtask.description != null && subtask.description!.isNotEmpty) ...[
                             const SizedBox(height: 2),
                             Text(
                               subtask.description!,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: context.typography.xs.copyWith(
-                                color: context.colors.mutedForeground,
-                                height: 1.3,
-                              ),
+                              style: context.typography.xs.copyWith(color: context.colors.mutedForeground, height: 1.3),
                             ),
                           ],
 
                           // Date row
-                          if (subtask.endDate != null ||
-                              subtask.startDate != null) ...[
+                          if (subtask.endDate != null || subtask.startDate != null) ...[
                             const SizedBox(height: 4),
-                            TaskDateRow(
-                              startDate: subtask.startDate,
-                              deadline: subtask.endDate,
-                              isOverdue: _isOverdue,
-                            ),
+                            TaskDateRow(startDate: subtask.startDate, deadline: subtask.endDate, isOverdue: _isOverdue),
                           ],
                         ],
                       ),

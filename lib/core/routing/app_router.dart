@@ -40,10 +40,7 @@ abstract final class AppRouter {
           builder: (_) => TaskDetailScreen(taskId: taskId, projectId: projectId),
         );
       case RouteConstants.projectListRoute:
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const ProjectListScreen(),
-        );
+        return MaterialPageRoute(settings: settings, builder: (_) => const ProjectListScreen());
       default:
         return null;
     }
@@ -53,15 +50,9 @@ abstract final class AppRouter {
   static Route<dynamic>? generateFullScreenRoute(RouteSettings settings) {
     switch (settings.name) {
       case RouteConstants.focusSessionRoute:
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const FocusSessionScreen(),
-        );
+        return MaterialPageRoute(settings: settings, builder: (_) => const FocusSessionScreen());
       case RouteConstants.createProjectRoute:
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const CreateProjectScreen(),
-        );
+        return MaterialPageRoute(settings: settings, builder: (_) => const CreateProjectScreen());
       case RouteConstants.editProjectRoute:
         final project = settings.arguments as Project;
         return MaterialPageRoute(
@@ -85,10 +76,7 @@ abstract final class AppRouter {
           builder: (_) => EditTaskScreen(task: task),
         );
       case RouteConstants.createTaskWithProjectRoute:
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const CreateTaskWithProjectScreen(),
-        );
+        return MaterialPageRoute(settings: settings, builder: (_) => const CreateTaskWithProjectScreen());
       default:
         return null;
     }

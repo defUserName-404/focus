@@ -23,11 +23,7 @@ class TaskDetailScreen extends ConsumerWidget {
   final BigInt taskId;
   final BigInt projectId;
 
-  const TaskDetailScreen({
-    super.key,
-    required this.taskId,
-    required this.projectId,
-  });
+  const TaskDetailScreen({super.key, required this.taskId, required this.projectId});
 
   String get _taskIdString => taskId.toString();
 
@@ -41,10 +37,8 @@ class TaskDetailScreen extends ConsumerWidget {
     final recentAsync = ref.watch(recentSessionsProvider(_taskIdString));
 
     return allTasksAsync.when(
-      loading: () =>
-          const fu.FScaffold(child: Center(child: fu.FCircularProgress())),
-      error: (err, _) =>
-          fu.FScaffold(child: Center(child: Text('Error: $err'))),
+      loading: () => const fu.FScaffold(child: Center(child: fu.FCircularProgress())),
+      error: (err, _) => fu.FScaffold(child: Center(child: Text('Error: $err'))),
       data: (allTasks) {
         final task = allTasks.where((t) => t.id == taskId).firstOrNull;
 
@@ -52,17 +46,13 @@ class TaskDetailScreen extends ConsumerWidget {
           return fu.FScaffold(
             header: fu.FHeader.nested(
               title: const Text('Task Details'),
-              prefixes: [
-                fu.FHeaderAction.back(onPress: () => Navigator.pop(context)),
-              ],
+              prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
             ),
             child: const Center(child: Text('Task not found')),
           );
         }
 
-        final subtasks = allTasks
-            .where((t) => t.parentTaskId == taskId)
-            .toList();
+        final subtasks = allTasks.where((t) => t.parentTaskId == taskId).toList();
         final stats = statsAsync.value ?? TaskStats.empty;
         final recentSessions = recentAsync.value ?? [];
         final project = projectAsync.value;
@@ -76,19 +66,12 @@ class TaskDetailScreen extends ConsumerWidget {
         return fu.FScaffold(
           header: fu.FHeader.nested(
             title: const Text('Task Details'),
-            prefixes: [
-              fu.FHeaderAction.back(onPress: () => Navigator.pop(context)),
-            ],
+            prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
             suffixes: [
               ActionMenuButton(
                 onEdit: () => TaskCommands.edit(context, task),
-                onDelete: () => TaskCommands.delete(
-                  context,
-                  ref,
-                  task,
-                  _projectIdString,
-                  onDeleted: () => Navigator.pop(context),
-                ),
+                onDelete: () =>
+                    TaskCommands.delete(context, ref, task, _projectIdString, onDeleted: () => Navigator.pop(context)),
               ),
             ],
           ),
@@ -97,32 +80,18 @@ class TaskDetailScreen extends ConsumerWidget {
               : Padding(
                   padding: EdgeInsets.all(AppConstants.spacing.large),
                   child: fu.FButton(
-                    onPress: () =>
-                        FocusCommands.start(context, ref, taskId: task.id!),
-                    prefix: Icon(
-                      hasActiveSession ? fu.FIcons.eye : fu.FIcons.play,
-                      size: AppConstants.size.icon.small,
-                    ),
-                    child: Text(
-                      hasActiveSession
-                          ? 'View Active Session'
-                          : 'Start Focus Session',
-                    ),
+                    onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
+                    prefix: Icon(hasActiveSession ? fu.FIcons.eye : fu.FIcons.play, size: AppConstants.size.icon.small),
+                    child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
                   ),
                 ),
           child: SingleChildScrollView(
-            padding: EdgeInsets.only(
-              bottom: AppConstants.spacing.extraLarge * 2,
-            ),
+            padding: EdgeInsets.only(bottom: AppConstants.spacing.extraLarge * 2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: AppConstants.spacing.regular,
               children: [
-                TaskSummarySection(
-                  task: task,
-                  projectName: project?.title,
-                  projectId: project?.id,
-                ),
+                TaskSummarySection(task: task, projectName: project?.title, projectId: project?.id),
                 SectionHeader(title: 'Stats'),
                 TaskStatsRow(stats: stats),
                 SizedBox(height: AppConstants.spacing.regular),
@@ -131,11 +100,7 @@ class TaskDetailScreen extends ConsumerWidget {
                 RecentSessionsSection(sessions: recentSessions),
                 SizedBox(height: AppConstants.spacing.regular),
                 if (subtasks.isNotEmpty)
-                  SubtasksSection(
-                    subtasks: subtasks,
-                    parentTask: task,
-                    projectIdString: _projectIdString,
-                  ),
+                  SubtasksSection(subtasks: subtasks, parentTask: task, projectIdString: _projectIdString),
               ],
             ),
           ),

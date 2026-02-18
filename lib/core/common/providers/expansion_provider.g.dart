@@ -12,8 +12,7 @@ part of 'expansion_provider.dart';
 @ProviderFor(Expansion)
 final expansionProvider = ExpansionProvider._();
 
-final class ExpansionProvider
-    extends $NotifierProvider<Expansion, Map<String, bool>> {
+final class ExpansionProvider extends $NotifierProvider<Expansion, Map<String, bool>> {
   ExpansionProvider._()
     : super(
         from: null,
@@ -34,10 +33,7 @@ final class ExpansionProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(Map<String, bool> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<Map<String, bool>>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<Map<String, bool>>(value));
   }
 }
 

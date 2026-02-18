@@ -14,20 +14,13 @@ class CreateTaskModalContent extends ConsumerStatefulWidget {
   final BigInt? parentTaskId;
   final int depth;
 
-  const CreateTaskModalContent({
-    super.key,
-    required this.projectId,
-    this.parentTaskId,
-    this.depth = 0,
-  });
+  const CreateTaskModalContent({super.key, required this.projectId, this.parentTaskId, this.depth = 0});
 
   @override
-  ConsumerState<CreateTaskModalContent> createState() =>
-      _CreateTaskModalContentState();
+  ConsumerState<CreateTaskModalContent> createState() => _CreateTaskModalContentState();
 }
 
-class _CreateTaskModalContentState
-    extends ConsumerState<CreateTaskModalContent> {
+class _CreateTaskModalContentState extends ConsumerState<CreateTaskModalContent> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   DateTime? _startDate;
@@ -54,19 +47,14 @@ class _CreateTaskModalContentState
           autovalidateMode: .onUnfocus,
         ),
         FTextField(
-          control: FTextFieldControl.managed(
-            controller: _descriptionController,
-          ),
+          control: FTextFieldControl.managed(controller: _descriptionController),
           hint: 'Task Description (Optional)',
           label: const Text('Description'),
           maxLines: 3,
         ),
         Align(
           alignment: .centerLeft,
-          child: Text(
-            'Priority',
-            style: context.typography.sm.copyWith(fontWeight: .w600),
-          ),
+          child: Text('Priority', style: context.typography.sm.copyWith(fontWeight: .w600)),
         ),
         FilterSelect<TaskPriority>(
           selected: _priority,
@@ -79,9 +67,7 @@ class _CreateTaskModalContentState
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
-          control: FDateFieldControl.managed(
-            onChange: (date) => _startDate = date,
-          ),
+          control: FDateFieldControl.managed(onChange: (date) => _startDate = date),
           clearable: true,
         ),
         FDateField.calendar(
@@ -89,8 +75,7 @@ class _CreateTaskModalContentState
           hint: 'Select End Date (Optional)',
           control: FDateFieldControl.managed(
             onChange: (date) => _endDate = date,
-            validator: (value) =>
-                AppFormValidator.startDateBeforeEndDate(_startDate, value),
+            validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           ),
           autovalidateMode: .onUnfocus,
           clearable: true,
@@ -112,9 +97,7 @@ class _CreateTaskModalContentState
           projectId: widget.projectId.toString(),
           parentTaskId: widget.parentTaskId,
           title: title,
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
           priority: _priority,
           startDate: _startDate,
           endDate: _endDate,

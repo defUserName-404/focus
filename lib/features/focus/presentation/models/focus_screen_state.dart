@@ -5,17 +5,9 @@ class FocusScreenState {
   final bool showCompletion;
   final bool hasPopped;
 
-  const FocusScreenState({
-    this.isControlsVisible = true,
-    this.showCompletion = false,
-    this.hasPopped = false,
-  });
+  const FocusScreenState({this.isControlsVisible = true, this.showCompletion = false, this.hasPopped = false});
 
-  FocusScreenState copyWith({
-    bool? isControlsVisible,
-    bool? showCompletion,
-    bool? hasPopped,
-  }) {
+  FocusScreenState copyWith({bool? isControlsVisible, bool? showCompletion, bool? hasPopped}) {
     return FocusScreenState(
       isControlsVisible: isControlsVisible ?? this.isControlsVisible,
       showCompletion: showCompletion ?? this.showCompletion,

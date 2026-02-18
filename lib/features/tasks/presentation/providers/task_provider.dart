@@ -3,9 +3,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/task.dart';
-import '../../domain/entities/task_extensions.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/repositories/i_task_repository.dart';
+import '../../domain/services/task_service.dart';
 import 'task_filter_state.dart';
 
 part 'task_provider.g.dart';
@@ -29,7 +29,7 @@ Future<Task> taskById(Ref ref, String taskId) async {
   return task;
 }
 
-// ── Filter state provider (per-project family) ─────────────────────────────
+//  Filter state provider (per-project family)
 @Riverpod(keepAlive: true)
 class TaskListFilter extends _$TaskListFilter {
   @override
@@ -52,7 +52,7 @@ class TaskListFilter extends _$TaskListFilter {
   }
 }
 
-// ── Filtered task list — delegates to DB-level filtering ───────────────────
+//  Filtered task list — delegates to DB-level filtering
 
 final filteredTasksProvider = StreamProvider.family<List<Task>, String>((ref, projectId) {
   final repository = ref.watch(taskRepositoryProvider);
@@ -69,11 +69,11 @@ final filteredTasksProvider = StreamProvider.family<List<Task>, String>((ref, pr
 
 @Riverpod(keepAlive: true)
 class TaskNotifier extends _$TaskNotifier {
-  late final ITaskRepository _repository;
+  late final TaskService _service;
 
   @override
   AsyncValue<List<Task>> build(String projectId) {
-    _repository = ref.watch(taskRepositoryProvider);
+    _service = getIt<TaskService>();
     _loadTasks(projectId);
     return const AsyncValue.loading();
   }
@@ -81,7 +81,7 @@ class TaskNotifier extends _$TaskNotifier {
   Future<void> _loadTasks(String projectId) async {
     state = const AsyncValue.loading();
     try {
-      final tasks = await _repository.getTasksByProjectId(BigInt.parse(projectId));
+      final tasks = await _service.getTasksByProjectId(BigInt.parse(projectId));
       state = AsyncValue.data(tasks);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -98,8 +98,7 @@ class TaskNotifier extends _$TaskNotifier {
     DateTime? endDate,
     required int depth,
   }) async {
-    final time = DateTime.now();
-    final task = Task(
+    final created = await _service.createTask(
       projectId: BigInt.parse(projectId),
       parentTaskId: parentTaskId,
       title: title,
@@ -108,30 +107,23 @@ class TaskNotifier extends _$TaskNotifier {
       startDate: startDate,
       endDate: endDate,
       depth: depth,
-      isCompleted: false,
-      createdAt: time,
-      updatedAt: time,
     );
-
-    final created = await _repository.createTask(task);
     await _loadTasks(projectId);
     return created;
   }
 
   Future<void> updateTask(Task task) async {
-    final updated = task.copyWith(updatedAt: DateTime.now());
-    await _repository.updateTask(updated);
+    await _service.updateTask(task);
     await _loadTasks(task.projectId.toString());
   }
 
   Future<void> deleteTask(BigInt id, String projectId) async {
-    await _repository.deleteTask(id);
+    await _service.deleteTask(id);
     await _loadTasks(projectId);
   }
 
   Future<void> toggleTaskCompletion(Task task) async {
-    final updatedTask = task.copyWith(isCompleted: !task.isCompleted, updatedAt: DateTime.now());
-    await _repository.updateTask(updatedTask);
+    await _service.toggleTaskCompletion(task);
     await _loadTasks(task.projectId.toString());
   }
 }

@@ -1,42 +1,10 @@
-import 'package:focus/core/common/utils/datetime_formatter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../domain/entities/focus_session.dart';
 import '../../domain/entities/session_state.dart';
+import '../models/focus_progress.dart';
 import 'focus_session_provider.dart';
 
 part 'focus_progress_provider.g.dart';
-
-/// Computed progress data derived from the raw [FocusSession].
-///
-/// This is a **synchronous** provider — no isolate, no async.
-/// The calculation is trivially cheap (a handful of int ops) and
-/// making it sync eliminates the `AsyncValue.loading` flicker that
-/// caused the ambience marquee / badge to blink on every tick.
-class FocusProgress {
-  final double progress;
-  final int remainingMinutes;
-  final int remainingSeconds;
-  final bool isFocusPhase;
-  final bool isIdle;
-  final bool isPaused;
-  final bool isRunning;
-  final bool isCompleted;
-
-  const FocusProgress({
-    required this.progress,
-    required this.remainingMinutes,
-    required this.remainingSeconds,
-    required this.isFocusPhase,
-    required this.isIdle,
-    required this.isPaused,
-    required this.isRunning,
-    required this.isCompleted,
-  });
-
-  String get formattedTime =>
-      '${remainingMinutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
-}
 
 @riverpod
 FocusProgress? focusProgress(Ref ref) {

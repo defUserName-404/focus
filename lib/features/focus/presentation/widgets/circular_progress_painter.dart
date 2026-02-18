@@ -50,7 +50,5 @@ class CircularProgressPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CircularProgressPainter old) =>
-      old.progress != progress ||
-      old.trackColor != trackColor ||
-      old.progressColor != progressColor;
+      old.progress != progress || old.trackColor != trackColor || old.progressColor != progressColor;
 }

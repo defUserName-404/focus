@@ -45,6 +45,5 @@ class GlobalStats {
     return mins > 0 ? '${hours}h ${mins}m' : '${hours}h';
   }
 
-  double get taskCompletionRate =>
-      totalTasks > 0 ? completedTasks / totalTasks : 0.0;
+  double get taskCompletionRate => totalTasks > 0 ? completedTasks / totalTasks : 0.0;
 }
