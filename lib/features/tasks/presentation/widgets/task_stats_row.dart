@@ -51,12 +51,20 @@ class _StatCard extends StatelessWidget {
   final String label;
   final BuildContext context;
 
-  const _StatCard({required this.icon, required this.value, required this.label, required this.context});
+  const _StatCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.context,
+  });
 
   @override
   Widget build(BuildContext outerContext) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular, vertical: AppConstants.spacing.large),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppConstants.spacing.regular,
+        vertical: AppConstants.spacing.large,
+      ),
       decoration: BoxDecoration(
         color: outerContext.colors.mutedForeground.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
@@ -67,11 +75,25 @@ class _StatCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, size: AppConstants.size.icon.regular, color: outerContext.colors.mutedForeground),
+          Icon(
+            icon,
+            size: AppConstants.size.icon.regular,
+            color: outerContext.colors.mutedForeground,
+          ),
           SizedBox(height: AppConstants.spacing.small),
-          Text(value, style: outerContext.typography.lg.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            value,
+            style: outerContext.typography.lg.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           SizedBox(height: AppConstants.spacing.extraSmall),
-          Text(label, style: outerContext.typography.xs.copyWith(color: outerContext.colors.mutedForeground)),
+          Text(
+            label,
+            style: outerContext.typography.xs.copyWith(
+              color: outerContext.colors.mutedForeground,
+            ),
+          ),
         ],
       ),
     );

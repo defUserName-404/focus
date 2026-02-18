@@ -24,12 +24,17 @@ class RecentSessionsSection extends StatelessWidget {
           children: [
             Text(
               'Recent Sessions',
-              style: context.typography.sm.copyWith(fontWeight: FontWeight.w600, color: context.colors.foreground),
+              style: context.typography.sm.copyWith(
+                fontWeight: FontWeight.w600,
+                color: context.colors.foreground,
+              ),
             ),
             const Spacer(),
             Text(
               '${sessions.length} total',
-              style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
+              style: context.typography.xs.copyWith(
+                color: context.colors.mutedForeground,
+              ),
             ),
           ],
         ),
@@ -71,7 +76,9 @@ class _SessionTile extends StatelessWidget {
                       : isCancelled
                       ? context.colors.destructive.withValues(alpha: 0.15)
                       : context.colors.mutedForeground.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.border.radius.regular,
+                  ),
                 ),
                 child: Icon(
                   isCompleted
@@ -96,12 +103,16 @@ class _SessionTile extends StatelessWidget {
                   children: [
                     Text(
                       '${duration}min focus · ${session.focusDurationMinutes}min planned',
-                      style: context.typography.sm.copyWith(fontWeight: FontWeight.w500),
+                      style: context.typography.sm.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     SizedBox(height: AppConstants.spacing.extraSmall),
                     Text(
                       session.startTime.toShortDateString(),
-                      style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
+                      style: context.typography.xs.copyWith(
+                        color: context.colors.mutedForeground,
+                      ),
                     ),
                   ],
                 ),
@@ -109,7 +120,9 @@ class _SessionTile extends StatelessWidget {
 
               // State badge
               fu.FBadge(
-                style: isCompleted ? fu.FBadgeStyle.secondary() : fu.FBadgeStyle.outline(),
+                style: isCompleted
+                    ? fu.FBadgeStyle.secondary()
+                    : fu.FBadgeStyle.outline(),
                 child: Text(session.state.label, style: context.typography.sm),
               ),
             ],

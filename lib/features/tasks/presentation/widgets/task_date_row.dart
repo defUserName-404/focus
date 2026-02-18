@@ -9,7 +9,12 @@ class TaskDateRow extends StatelessWidget {
   final DateTime? deadline;
   final bool isOverdue;
 
-  const TaskDateRow({super.key, this.startDate, this.deadline, this.isOverdue = false});
+  const TaskDateRow({
+    super.key,
+    this.startDate,
+    this.deadline,
+    this.isOverdue = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +28,9 @@ class TaskDateRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: const EdgeInsets.only(bottom: 2), // Slight lift for optical alignment
+              padding: const EdgeInsets.only(
+                bottom: 2,
+              ), // Slight lift for optical alignment
               child: Icon(
                 fu.FIcons.calendar,
                 size: AppConstants.size.icon.small,
@@ -31,10 +38,16 @@ class TaskDateRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 4),
-            Text(_buildDateText(), style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
+            Text(
+              _buildDateText(),
+              style: context.typography.xs.copyWith(
+                color: context.colors.mutedForeground,
+              ),
+            ),
           ],
         ),
-        if (deadline != null && (isOverdue || deadline!.isOverdue || _isApproaching(deadline!)))
+        if (deadline != null &&
+            (isOverdue || deadline!.isOverdue || _isApproaching(deadline!)))
           Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -43,7 +56,9 @@ class TaskDateRow extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Icon(
-                  _isActuallyOverdue(deadline!) ? fu.FIcons.triangleAlert : fu.FIcons.clock,
+                  _isActuallyOverdue(deadline!)
+                      ? fu.FIcons.triangleAlert
+                      : fu.FIcons.clock,
                   color: _getStatusColor(context, deadline!),
                   size: AppConstants.size.icon.small,
                 ),
@@ -75,6 +90,7 @@ class TaskDateRow extends StatelessWidget {
 
   Color _getStatusColor(BuildContext context, DateTime dt) {
     if (_isActuallyOverdue(dt)) return context.colors.destructive;
-    return Colors.orange; // Should ideally be in context.colors if theme supports it
+    return Colors
+        .orange; // Should ideally be in context.colors if theme supports it
   }
 }

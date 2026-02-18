@@ -18,7 +18,8 @@ class EditTaskModalContent extends ConsumerStatefulWidget {
   const EditTaskModalContent({super.key, required this.task});
 
   @override
-  ConsumerState<EditTaskModalContent> createState() => _EditTaskModalContentState();
+  ConsumerState<EditTaskModalContent> createState() =>
+      _EditTaskModalContentState();
 }
 
 class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
@@ -32,7 +33,9 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.task.title);
-    _descriptionController = TextEditingController(text: widget.task.description ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.task.description ?? '',
+    );
     _startDate = widget.task.startDate;
     _endDate = widget.task.endDate;
     _priority = widget.task.priority;
@@ -58,14 +61,19 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
           autovalidateMode: .onUnfocus,
         ),
         FTextField(
-          control: FTextFieldControl.managed(controller: _descriptionController),
+          control: FTextFieldControl.managed(
+            controller: _descriptionController,
+          ),
           hint: 'Task Description (Optional)',
           label: const Text('Description'),
           maxLines: 3,
         ),
         Align(
           alignment: .centerLeft,
-          child: Text('Priority', style: context.typography.sm.copyWith(fontWeight: .w600)),
+          child: Text(
+            'Priority',
+            style: context.typography.sm.copyWith(fontWeight: .w600),
+          ),
         ),
         FilterSelect<TaskPriority>(
           selected: _priority,
@@ -78,7 +86,10 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
-          control: FDateFieldControl.managed(initial: _startDate, onChange: (date) => _startDate = date),
+          control: FDateFieldControl.managed(
+            initial: _startDate,
+            onChange: (date) => _startDate = date,
+          ),
           clearable: true,
         ),
         FDateField.calendar(
@@ -86,7 +97,8 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
           hint: _endDate?.toDateString() ?? 'Select End Date (Optional)',
           control: FDateFieldControl.managed(
             onChange: (date) => _endDate = date,
-            validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
+            validator: (value) =>
+                AppFormValidator.startDateBeforeEndDate(_startDate, value),
           ),
           autovalidateMode: .onUnfocus,
           clearable: true,
@@ -104,14 +116,18 @@ class _EditTaskModalContentState extends ConsumerState<EditTaskModalContent> {
 
     final updated = widget.task.copyWith(
       title: title,
-      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
       priority: _priority,
       startDate: _startDate,
       endDate: _endDate,
       updatedAt: DateTime.now(),
     );
 
-    await ref.read(taskProvider(widget.task.projectId.toString()).notifier).updateTask(updated);
+    await ref
+        .read(taskProvider(widget.task.projectId.toString()).notifier)
+        .updateTask(updated);
     if (mounted) Navigator.of(context).pop();
   }
 }

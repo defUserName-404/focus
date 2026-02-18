@@ -32,7 +32,7 @@ class SubtasksSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: AppConstants.spacing.regular,
       children: [
-        // ── Header ──
+        //  Header
         Row(
           children: [
             Text(
@@ -45,7 +45,9 @@ class SubtasksSection extends ConsumerWidget {
             SizedBox(width: AppConstants.spacing.regular),
             Text(
               '$completed / $total',
-              style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
+              style: context.typography.xs.copyWith(
+                color: context.colors.mutedForeground,
+              ),
             ),
             const Spacer(),
             fu.FButton(
@@ -56,18 +58,22 @@ class SubtasksSection extends ConsumerWidget {
                 parentTaskId: parentTask.id,
                 depth: parentTask.depth + 1,
               ),
-              prefix: Icon(fu.FIcons.plus, size: AppConstants.size.icon.extraSmall),
+              prefix: Icon(
+                fu.FIcons.plus,
+                size: AppConstants.size.icon.extraSmall,
+              ),
               child: Text('Add', style: context.typography.xs),
             ),
           ],
         ),
 
-        // ── Progress bar ──
+        //  Progress bar
         fu.FDeterminateProgress(value: progress),
 
-        // ── Subtask list ──
+        //  Subtask list
         ...subtasks.map(
-          (subtask) => SubtaskTile(subtask: subtask, projectIdString: projectIdString),
+          (subtask) =>
+              SubtaskTile(subtask: subtask, projectIdString: projectIdString),
         ),
       ],
     );
@@ -106,7 +112,9 @@ class SubtaskTile extends ConsumerWidget {
                   color: subtask.isCompleted
                       ? context.colors.mutedForeground
                       : context.colors.foreground,
-                  decoration: subtask.isCompleted ? TextDecoration.lineThrough : null,
+                  decoration: subtask.isCompleted
+                      ? TextDecoration.lineThrough
+                      : null,
                 ),
               ),
             ),

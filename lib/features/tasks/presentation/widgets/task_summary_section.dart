@@ -14,7 +14,12 @@ class TaskSummarySection extends StatelessWidget {
   final String? projectName;
   final BigInt? projectId;
 
-  const TaskSummarySection({super.key, required this.task, this.projectName, this.projectId});
+  const TaskSummarySection({
+    super.key,
+    required this.task,
+    this.projectName,
+    this.projectId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +38,9 @@ class TaskSummarySection extends StatelessWidget {
           children: [
             Text(
               task.title,
-              style: context.typography.lg.copyWith(fontWeight: FontWeight.bold),
+              style: context.typography.lg.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
               maxLines: 2,
               overflow: .ellipsis,
             ),
@@ -44,7 +51,11 @@ class TaskSummarySection extends StatelessWidget {
                 child: fu.FButton(
                   onPress: () {
                     if (projectId != null) {
-                      Navigator.pushNamed(context, RouteConstants.projectDetailRoute, arguments: projectId!);
+                      Navigator.pushNamed(
+                        context,
+                        RouteConstants.projectDetailRoute,
+                        arguments: projectId!,
+                      );
                     }
                   },
                   style: fu.FButtonStyle.ghost(),
@@ -59,7 +70,11 @@ class TaskSummarySection extends StatelessWidget {
           spacing: AppConstants.spacing.regular,
           children: [
             TaskPriorityBadge(priority: task.priority),
-            if (task.isCompleted) fu.FBadge(style: fu.FBadgeStyle.primary(), child: Text('Completed')),
+            if (task.isCompleted)
+              fu.FBadge(
+                style: fu.FBadgeStyle.primary(),
+                child: Text('Completed'),
+              ),
           ],
         ),
 
@@ -69,7 +84,10 @@ class TaskSummarySection extends StatelessWidget {
             child: SingleChildScrollView(
               child: Text(
                 description,
-                style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.5),
+                style: context.typography.sm.copyWith(
+                  color: context.colors.mutedForeground,
+                  height: 1.5,
+                ),
               ),
             ),
           ),
@@ -79,7 +97,11 @@ class TaskSummarySection extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: AppConstants.spacing.regular,
             children: [
-              if (start != null) MetaChip(icon: fu.FIcons.calendarDays, label: 'Start: ${start.toDateString()}'),
+              if (start != null)
+                MetaChip(
+                  icon: fu.FIcons.calendarDays,
+                  label: 'Start: ${start.toDateString()}',
+                ),
               if (end != null) ...[
                 MetaChip(
                   icon: fu.FIcons.calendarClock,

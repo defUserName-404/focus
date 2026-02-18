@@ -7,7 +7,11 @@ class InlineAddSubtask extends StatefulWidget {
   final VoidCallback onCancel;
   final ValueChanged<String> onSubmit;
 
-  const InlineAddSubtask({super.key, required this.onCancel, required this.onSubmit});
+  const InlineAddSubtask({
+    super.key,
+    required this.onCancel,
+    required this.onSubmit,
+  });
 
   @override
   State<InlineAddSubtask> createState() => _InlineAddSubtaskState();
@@ -20,7 +24,9 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _focusNode.requestFocus());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _focusNode.requestFocus(),
+    );
   }
 
   @override
