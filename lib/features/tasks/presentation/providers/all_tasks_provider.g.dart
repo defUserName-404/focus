@@ -12,8 +12,7 @@ part of 'all_tasks_provider.dart';
 @ProviderFor(AllTasksFilter)
 final allTasksFilterProvider = AllTasksFilterProvider._();
 
-final class AllTasksFilterProvider
-    extends $NotifierProvider<AllTasksFilter, AllTasksFilterState> {
+final class AllTasksFilterProvider extends $NotifierProvider<AllTasksFilter, AllTasksFilterState> {
   AllTasksFilterProvider._()
     : super(
         from: null,
@@ -34,10 +33,7 @@ final class AllTasksFilterProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AllTasksFilterState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AllTasksFilterState>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<AllTasksFilterState>(value));
   }
 }
 

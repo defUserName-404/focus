@@ -3,7 +3,7 @@ import '../../domain/entities/task_extensions.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/repositories/i_task_repository.dart';
 import '../../presentation/providers/task_filter_state.dart';
-import '../../../all_tasks/domain/entities/all_tasks_filter_state.dart';
+import '../../domain/entities/all_tasks_filter_state.dart';
 import '../datasources/task_local_datasource.dart';
 import '../mappers/task_extensions.dart';
 

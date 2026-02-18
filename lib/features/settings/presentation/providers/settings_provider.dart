@@ -8,6 +8,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../domain/entities/setting.dart';
 import '../../domain/repositories/i_settings_repository.dart';
+import '../../domain/services/settings_service.dart';
 
 part 'settings_provider.g.dart';
 
@@ -47,7 +48,7 @@ class PreviewingIdNotifier extends _$PreviewingIdNotifier {
 
 @Riverpod(keepAlive: true)
 class SettingsNotifier extends _$SettingsNotifier {
-  late final ISettingsRepository _repository;
+  late final SettingsService _service;
   late final AudioService _audioService;
 
   /// Incremented at the start of every preview call.
@@ -58,42 +59,40 @@ class SettingsNotifier extends _$SettingsNotifier {
 
   @override
   FutureOr<AudioPreferences> build() async {
-    _repository = ref.watch(settingsRepositoryProvider);
+    _service = getIt<SettingsService>();
     _audioService = ref.watch(audioServiceProvider);
-    return _repository.getAudioPreferences();
+    return _service.getAudioPreferences();
   }
 
   // ---- Persistence ---------------------------------------------------------
 
   Future<void> setAlarmSound(String soundId) async {
-    await _repository.setValue(SettingsKeys.alarmSoundId, soundId);
+    await _service.setAlarmSound(soundId);
     state = AsyncValue.data(state.value?.copyWith(alarmSoundId: soundId) ?? AudioPreferences(alarmSoundId: soundId));
   }
 
   Future<void> setAmbienceSound(String soundId) async {
-    await _repository.setValue(SettingsKeys.ambienceSoundId, soundId);
+    await _service.setAmbienceSound(soundId);
     state = AsyncValue.data(
       state.value?.copyWith(ambienceSoundId: soundId) ?? AudioPreferences(ambienceSoundId: soundId),
     );
   }
 
   Future<void> setAmbienceVolume(double volume) async {
-    await _repository.setValue(SettingsKeys.ambienceVolume, volume.toString());
+    await _service.setAmbienceVolume(volume);
     state = AsyncValue.data(state.value?.copyWith(ambienceVolume: volume) ?? AudioPreferences(ambienceVolume: volume));
   }
 
   Future<void> setAmbienceEnabled(bool enabled) async {
-    await _repository.setValue(SettingsKeys.ambienceEnabled, enabled.toString());
+    await _service.setAmbienceEnabled(enabled);
     state = AsyncValue.data(
       state.value?.copyWith(ambienceEnabled: enabled) ?? AudioPreferences(ambienceEnabled: enabled),
     );
   }
 
-  Future<void> setFocusDuration(int minutes) async =>
-      _repository.setValue(SettingsKeys.focusDurationMinutes, minutes.toString());
+  Future<void> setFocusDuration(int minutes) async => _service.setFocusDuration(minutes);
 
-  Future<void> setBreakDuration(int minutes) async =>
-      _repository.setValue(SettingsKeys.breakDurationMinutes, minutes.toString());
+  Future<void> setBreakDuration(int minutes) async => _service.setBreakDuration(minutes);
 
   // ---- Preview logic -------------------------------------------------------
   //

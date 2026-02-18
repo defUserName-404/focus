@@ -5,6 +5,7 @@ import 'package:forui/forui.dart';
 import '../../../../core/common/widgets/marquee_text.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../models/focus_progress.dart';
 import '../providers/ambience_mute_provider.dart';
 import '../providers/focus_progress_provider.dart';
 import '../providers/focus_screen_provider.dart';
@@ -133,10 +134,7 @@ class _FocusControlsWithCallback extends ConsumerWidget {
   final VoidCallback onCompleteTask;
   final bool controlsVisible;
 
-  const _FocusControlsWithCallback({
-    required this.onCompleteTask,
-    required this.controlsVisible,
-  });
+  const _FocusControlsWithCallback({required this.onCompleteTask, required this.controlsVisible});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -152,7 +150,7 @@ class _FocusControlsWithCallback extends ConsumerWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ── Transport controls (stack) ───────────────────────
+        //  Transport controls (stack)
         SizedBox(
           width: 240,
           height: 72,
@@ -256,12 +254,12 @@ class _FocusControlsWithCallback extends ConsumerWidget {
                     key: const ValueKey('complete-btn'),
                     style: FButtonStyle.outline(),
                     onPress: () {
-                       ref.read(focusScreenProvider.notifier).onUserInteraction();
-                       if (isQuickSession) {
-                         ref.read(focusTimerProvider.notifier).completeSessionEarly();
-                       } else {
-                         onCompleteTask();
-                       }
+                      ref.read(focusScreenProvider.notifier).onUserInteraction();
+                      if (isQuickSession) {
+                        ref.read(focusTimerProvider.notifier).completeSessionEarly();
+                      } else {
+                        onCompleteTask();
+                      }
                     },
                     prefix: Icon(isQuickSession ? FIcons.check : FIcons.checkCheck),
                     child: Text(isQuickSession ? 'End Session' : 'Complete Task'),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-import 'common/widgets/main_shell.dart';
+import 'common/widgets/adaptive_shell.dart';
 import 'config/theme/app_theme.dart';
 import 'constants/route_constants.dart';
 import 'routing/app_router.dart';
@@ -26,7 +26,7 @@ class FocusApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         // Home route → MainShell (contains bottom nav + nested navigators).
         if (settings.name == RouteConstants.homeRoute) {
-          return MaterialPageRoute(settings: settings, builder: (_) => const MainShell());
+          return MaterialPageRoute(settings: settings, builder: (_) => const AdaptiveShell());
         }
 
         // Full-screen routes that render above the shell (e.g. focus session).

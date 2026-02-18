@@ -1,6 +1,6 @@
 import '../../../../core/common/sort_criteria.dart';
 import '../../../../core/common/sort_order.dart';
-import '../../../tasks/domain/entities/task_priority.dart';
+import '../../domain/entities/task_priority.dart';
 
 /// Sort criteria for the global (all-projects) task list.
 enum AllTasksSortCriteria implements SortCriteria {

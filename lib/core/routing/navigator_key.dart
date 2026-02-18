@@ -13,9 +13,7 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 /// Checks the current route before pushing — if we're already on the
 /// focus session screen, this is a no-op.
 void navigateToFocusSession({BuildContext? context}) {
-  final nav = context != null
-      ? Navigator.of(context, rootNavigator: true)
-      : rootNavigatorKey.currentState;
+  final nav = context != null ? Navigator.of(context, rootNavigator: true) : rootNavigatorKey.currentState;
   if (nav == null) return;
 
   // Check if the current route is already the focus session screen.

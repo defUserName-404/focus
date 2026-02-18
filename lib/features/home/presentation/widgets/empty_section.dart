@@ -11,10 +11,7 @@ class EmptySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppConstants.spacing.extraLarge2,
-        vertical: AppConstants.spacing.large,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.extraLarge2, vertical: AppConstants.spacing.large),
       child: Center(
         child: Column(
           children: [
@@ -24,10 +21,7 @@ class EmptySection extends StatelessWidget {
               color: context.colors.mutedForeground.withValues(alpha: 0.4),
             ),
             SizedBox(height: AppConstants.spacing.regular),
-            Text(
-              message,
-              style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
-            ),
+            Text(message, style: context.typography.sm.copyWith(color: context.colors.mutedForeground)),
           ],
         ),
       ),

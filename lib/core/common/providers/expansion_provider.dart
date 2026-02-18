@@ -15,16 +15,10 @@ class Expansion extends _$Expansion {
 
   void toggle(String id, {bool defaultValue = false}) {
     final current = state[id] ?? defaultValue;
-    state = {
-      ...state,
-      id: !current,
-    };
+    state = {...state, id: !current};
   }
 
   void setExpanded(String id, bool expanded) {
-    state = {
-      ...state,
-      id: expanded,
-    };
+    state = {...state, id: expanded};
   }
 }

@@ -39,11 +39,7 @@ class BaseFormScreen extends StatelessWidget {
           children: [
             ...fields,
             SizedBox(height: AppConstants.spacing.large),
-            FButton(
-              prefix: Icon(submitIcon),
-              onPress: onSubmit,
-              child: Text(submitButtonText),
-            ),
+            FButton(prefix: Icon(submitIcon), onPress: onSubmit, child: Text(submitButtonText)),
           ],
         ),
       ),

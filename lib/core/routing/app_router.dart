@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../features/all_tasks/presentation/screens/create_task_with_project_screen.dart';
+import '../../features/projects/domain/entities/project.dart';
+import '../../features/tasks/domain/entities/task.dart';
+import '../../features/tasks/presentation/screens/create_task_with_project_screen.dart';
 import '../../features/focus/presentation/screens/focus_session_screen.dart';
 import '../../features/projects/presentation/screens/create_project_screen.dart';
 import '../../features/projects/presentation/screens/edit_project_screen.dart';
@@ -38,10 +40,7 @@ abstract final class AppRouter {
           builder: (_) => TaskDetailScreen(taskId: taskId, projectId: projectId),
         );
       case RouteConstants.projectListRoute:
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const ProjectListScreen(),
-        );
+        return MaterialPageRoute(settings: settings, builder: (_) => const ProjectListScreen());
       default:
         return null;
     }
@@ -51,17 +50,11 @@ abstract final class AppRouter {
   static Route<dynamic>? generateFullScreenRoute(RouteSettings settings) {
     switch (settings.name) {
       case RouteConstants.focusSessionRoute:
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const FocusSessionScreen(),
-        );
+        return MaterialPageRoute(settings: settings, builder: (_) => const FocusSessionScreen());
       case RouteConstants.createProjectRoute:
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const CreateProjectScreen(),
-        );
+        return MaterialPageRoute(settings: settings, builder: (_) => const CreateProjectScreen());
       case RouteConstants.editProjectRoute:
-        final project = settings.arguments as dynamic;
+        final project = settings.arguments as Project;
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => EditProjectScreen(project: project),
@@ -77,16 +70,13 @@ abstract final class AppRouter {
           ),
         );
       case RouteConstants.editTaskRoute:
-        final task = settings.arguments as dynamic;
+        final task = settings.arguments as Task;
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => EditTaskScreen(task: task),
         );
       case RouteConstants.createTaskWithProjectRoute:
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (_) => const CreateTaskWithProjectScreen(),
-        );
+        return MaterialPageRoute(settings: settings, builder: (_) => const CreateTaskWithProjectScreen());
       default:
         return null;
     }

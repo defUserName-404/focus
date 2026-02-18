@@ -3,34 +3,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import '../../../../core/common/utils/form_validators.dart';
-import '../../../../core/common/widgets/base_modal_form.dart';
+import '../../../../core/common/widgets/base_form_screen.dart';
 import '../../../../core/common/widgets/filter_select.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../projects/domain/entities/project.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
-import '../../../tasks/domain/entities/task_priority.dart';
-import '../../../tasks/presentation/providers/task_provider.dart';
+import '../../domain/entities/task_priority.dart';
+import '../providers/task_provider.dart';
 
-/// A task-creation modal that also lets the user pick (or create) a project.
+/// Full-screen form that creates a task and optionally a new project.
 ///
-/// Used from the global "Tasks" tab where there is no implicit project context.
-class CreateTaskWithProjectModal extends ConsumerStatefulWidget {
-  const CreateTaskWithProjectModal({super.key});
+/// Used from the global "Tasks" tab where there is no implicit project.
+class CreateTaskWithProjectScreen extends ConsumerStatefulWidget {
+  const CreateTaskWithProjectScreen({super.key});
 
   @override
-  ConsumerState<CreateTaskWithProjectModal> createState() => _CreateTaskWithProjectModalState();
+  ConsumerState<CreateTaskWithProjectScreen> createState() => _CreateTaskWithProjectScreenState();
 }
 
-class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProjectModal> {
-  final TextEditingController _titleController = .new();
-  final TextEditingController _descriptionController = .new();
-  final FAutocompleteController _projectController = .new();
+class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProjectScreen> {
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _projectController = FAutocompleteController();
   DateTime? _startDate;
   DateTime? _endDate;
-  final ValueNotifier<TaskPriority> _priority = .new(TaskPriority.medium);
-  final ValueNotifier<Project?> _selectedProject = .new(null);
-  final ValueNotifier<bool> _isNewProject = .new(false);
+  final ValueNotifier<TaskPriority> _priority = ValueNotifier(TaskPriority.medium);
+  final ValueNotifier<Project?> _selectedProject = ValueNotifier(null);
+  final ValueNotifier<bool> _isNewProject = ValueNotifier(false);
 
   @override
   void dispose() {
@@ -64,8 +64,10 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
   Widget build(BuildContext context) {
     final projectsAsync = ref.watch(projectListProvider);
 
-    return BaseModalForm(
-      title: 'Create New Task',
+    return BaseFormScreen(
+      title: 'New Task',
+      submitButtonText: 'Create Task',
+      onSubmit: _submit,
       fields: [
         projectsAsync.when(
           data: (projects) => _ProjectAutocomplete(
@@ -82,14 +84,12 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
           loading: () => const FTextField(hint: 'Loading projects…', enabled: false, label: Text('Project')),
           error: (_, _) => const FTextField(hint: 'Error loading projects', enabled: false, label: Text('Project')),
         ),
-
-        // ── Task fields ───────────────
         FTextFormField(
           control: FTextFieldControl.managed(controller: _titleController),
           hint: 'Task Title',
           label: const Text('Title'),
           validator: (value) => AppFormValidator.isNotEmpty(value),
-          autovalidateMode: .onUnfocus,
+          autovalidateMode: AutovalidateMode.onUnfocus,
         ),
         FTextField(
           control: FTextFieldControl.managed(controller: _descriptionController),
@@ -115,13 +115,10 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
             onChange: (date) => _endDate = date,
             validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           ),
-          autovalidateMode: .onUnfocus,
+          autovalidateMode: AutovalidateMode.onUnfocus,
           clearable: true,
         ),
       ],
-      onCancel: () => Navigator.pop(context),
-      onSubmit: _submit,
-      submitButtonText: 'Create',
     );
   }
 
@@ -135,7 +132,6 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
     if (_selectedProject.value != null) {
       projectId = _selectedProject.value!.id!;
     } else {
-      // Create a new project on the fly.
       final newProject = await ref.read(projectProvider.notifier).createProject(title: projectName);
       projectId = newProject.id!;
     }
@@ -152,11 +148,11 @@ class _CreateTaskWithProjectModalState extends ConsumerState<CreateTaskWithProje
           depth: 0,
         );
 
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+    if (mounted) Navigator.of(context).pop();
   }
 }
+
+//  Private helper widgets
 
 class _PrioritySelector extends StatelessWidget {
   final ValueNotifier<TaskPriority> priority;
@@ -210,10 +206,8 @@ class _ProjectAutocompleteState extends State<_ProjectAutocomplete> {
 
   void _onControllerChanged() {
     final text = widget.controller.text;
-    // Avoid duplicate processing
     if (text == _lastText) return;
     _lastText = text;
-    // Notify parent to handle project matching logic
     widget.onQueryChanged(text);
   }
 
@@ -256,15 +250,12 @@ class _NewProjectHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to both isNewProject AND controller text changes
     return AnimatedBuilder(
       animation: Listenable.merge([isNewProject, controller]),
       builder: (context, _) {
         final isNew = isNewProject.value;
         final projectName = controller.text.trim();
-        if (!isNew || projectName.isEmpty) {
-          return const SizedBox.shrink();
-        }
+        if (!isNew || projectName.isEmpty) return const SizedBox.shrink();
         return Padding(
           padding: EdgeInsets.only(top: AppConstants.spacing.small),
           child: Row(

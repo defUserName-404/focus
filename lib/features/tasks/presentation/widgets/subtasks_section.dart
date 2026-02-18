@@ -15,12 +15,7 @@ class SubtasksSection extends ConsumerWidget {
   final Task parentTask;
   final String projectIdString;
 
-  const SubtasksSection({
-    super.key,
-    required this.subtasks,
-    required this.parentTask,
-    required this.projectIdString,
-  });
+  const SubtasksSection({super.key, required this.subtasks, required this.parentTask, required this.projectIdString});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,21 +27,15 @@ class SubtasksSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: AppConstants.spacing.regular,
       children: [
-        // ── Header ──
+        //  Header
         Row(
           children: [
             Text(
               'Subtasks',
-              style: context.typography.sm.copyWith(
-                fontWeight: FontWeight.w600,
-                color: context.colors.foreground,
-              ),
+              style: context.typography.sm.copyWith(fontWeight: FontWeight.w600, color: context.colors.foreground),
             ),
             SizedBox(width: AppConstants.spacing.regular),
-            Text(
-              '$completed / $total',
-              style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
-            ),
+            Text('$completed / $total', style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
             const Spacer(),
             fu.FButton(
               style: fu.FButtonStyle.outline(),
@@ -62,13 +51,11 @@ class SubtasksSection extends ConsumerWidget {
           ],
         ),
 
-        // ── Progress bar ──
+        //  Progress bar
         fu.FDeterminateProgress(value: progress),
 
-        // ── Subtask list ──
-        ...subtasks.map(
-          (subtask) => SubtaskTile(subtask: subtask, projectIdString: projectIdString),
-        ),
+        //  Subtask list
+        ...subtasks.map((subtask) => SubtaskTile(subtask: subtask, projectIdString: projectIdString)),
       ],
     );
   }
@@ -79,11 +66,7 @@ class SubtaskTile extends ConsumerWidget {
   final Task subtask;
   final String projectIdString;
 
-  const SubtaskTile({
-    super.key,
-    required this.subtask,
-    required this.projectIdString,
-  });
+  const SubtaskTile({super.key, required this.subtask, required this.projectIdString});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -94,18 +77,14 @@ class SubtaskTile extends ConsumerWidget {
           children: [
             fu.FCheckbox(
               value: subtask.isCompleted,
-              onChange: (_) => ref
-                  .read(taskProvider(projectIdString).notifier)
-                  .toggleTaskCompletion(subtask),
+              onChange: (_) => ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(subtask),
             ),
             SizedBox(width: AppConstants.spacing.regular),
             Expanded(
               child: Text(
                 subtask.title,
                 style: context.typography.sm.copyWith(
-                  color: subtask.isCompleted
-                      ? context.colors.mutedForeground
-                      : context.colors.foreground,
+                  color: subtask.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
                   decoration: subtask.isCompleted ? TextDecoration.lineThrough : null,
                 ),
               ),

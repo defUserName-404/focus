@@ -3,7 +3,7 @@ import 'package:focus/core/services/db_service.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/presentation/providers/task_filter_state.dart';
 
-import '../../../all_tasks/domain/entities/all_tasks_filter_state.dart';
+import '../../domain/entities/all_tasks_filter_state.dart';
 
 abstract class ITaskLocalDataSource {
   Future<List<TaskTableData>> getTasksByProjectId(BigInt projectId);
@@ -58,9 +58,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
 
   @override
   Future<void> updateTask(TaskTableCompanion companion) async {
-    await (_db.update(_db.taskTable)
-          ..where((t) => t.id.equals(companion.id.value)))
-        .write(companion);
+    await (_db.update(_db.taskTable)..where((t) => t.id.equals(companion.id.value))).write(companion);
   }
 
   @override
@@ -86,15 +84,11 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     TaskSortOrder sortOrder = TaskSortOrder.none,
     TaskPriority? priorityFilter,
   }) {
-    final query = _db.select(_db.taskTable)
-      ..where((t) => t.projectId.equals(projectId));
+    final query = _db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId));
 
     final q = searchQuery.trim().toLowerCase();
     if (q.isNotEmpty) {
-      query.where(
-        (t) =>
-            t.title.lower().like('%$q%') | t.description.lower().like('%$q%'),
-      );
+      query.where((t) => t.title.lower().like('%$q%') | t.description.lower().like('%$q%'));
     }
 
     if (priorityFilter != null) {
@@ -102,9 +96,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     }
 
     if (sortOrder != TaskSortOrder.none) {
-      final mode = sortOrder == TaskSortOrder.ascending
-          ? OrderingMode.asc
-          : OrderingMode.desc;
+      final mode = sortOrder == TaskSortOrder.ascending ? OrderingMode.asc : OrderingMode.desc;
       query.orderBy([
         (t) {
           switch (sortCriteria) {
@@ -137,14 +129,11 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     TaskPriority? priorityFilter,
     TaskCompletionFilter completionFilter = TaskCompletionFilter.all,
   }) {
-    final query = _db.select(_db.taskTable)
-      ..where((t) => t.depth.equals(0)); // root tasks only
+    final query = _db.select(_db.taskTable)..where((t) => t.depth.equals(0)); // root tasks only
 
     final q = searchQuery.trim().toLowerCase();
     if (q.isNotEmpty) {
-      query.where(
-        (t) => t.title.lower().like('%$q%') | t.description.lower().like('%$q%'),
-      );
+      query.where((t) => t.title.lower().like('%$q%') | t.description.lower().like('%$q%'));
     }
 
     if (priorityFilter != null) {

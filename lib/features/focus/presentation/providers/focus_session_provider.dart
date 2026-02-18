@@ -20,8 +20,8 @@ part 'focus_session_provider.g.dart';
 class FocusTimer extends _$FocusTimer {
   late final FocusSessionService _sessionService;
   late final FocusAudioCoordinator _audioCoordinator;
-  late final FocusNotificationCoordinator _notificationCoordinator;
-  late final FocusMediaSessionCoordinator _mediaCoordinator;
+  FocusNotificationCoordinator? _notificationCoordinator;
+  FocusMediaSessionCoordinator? _mediaCoordinator;
   Timer? _timer;
   StreamSubscription<String>? _notificationActionSub;
 
@@ -32,9 +32,8 @@ class FocusTimer extends _$FocusTimer {
     _notificationCoordinator = ref.watch(focusNotificationCoordinatorProvider);
     _mediaCoordinator = ref.watch(focusMediaSessionCoordinatorProvider);
 
-    // Wire media-button & lock-screen controls → our actions.
-    // Wire headphone unplug → auto-pause.
-    _mediaCoordinator.wireCallbacks(
+    // Wire media-button & lock-screen controls → our actions (mobile only).
+    _mediaCoordinator?.wireCallbacks(
       onAction: _handleNotificationAction,
       onBecomingNoisy: () => pauseSession(),
       onInterruption: (shouldPause) {
@@ -48,11 +47,11 @@ class FocusTimer extends _$FocusTimer {
 
     // Listen for notification action taps (pause/resume/stop/skip).
     _notificationActionSub?.cancel();
-    _notificationActionSub = _notificationCoordinator.listenForActions(_handleNotificationAction);
+    _notificationActionSub = _notificationCoordinator?.listenForActions(_handleNotificationAction);
 
     ref.onDispose(() {
       _notificationActionSub?.cancel();
-      _mediaCoordinator.clearCallbacks();
+      _mediaCoordinator?.clearCallbacks();
       _stopTicking();
     });
 
@@ -66,7 +65,7 @@ class FocusTimer extends _$FocusTimer {
       final current = state;
       if (current == null) return;
       if (current.state != SessionState.running && current.state != SessionState.onBreak) return;
-      
+
       // Only reload when the data actually changed and we have valid data.
       final newData = next.asData?.value;
       if (newData != null && prev?.asData?.value != newData) {
@@ -119,14 +118,14 @@ class FocusTimer extends _$FocusTimer {
 
     if (current.state == SessionState.idle) {
       // Acquire audio focus from the OS.
-      await _mediaCoordinator.activateAudioSession();
+      await _mediaCoordinator?.activateAudioSession();
 
       // Now persist the session for the first time.
       final running = current.copyWith(state: SessionState.running, startTime: DateTime.now());
       final saved = await _sessionService.startSession(running);
       state = saved;
       _startTicking();
-      _mediaCoordinator.updateMediaSession(saved);
+      _mediaCoordinator?.updateMediaSession(saved);
       _audioCoordinator.startConfiguredAmbience();
     } else if (current.state == SessionState.paused) {
       // Resume into the correct phase based on elapsed time.
@@ -138,7 +137,7 @@ class FocusTimer extends _$FocusTimer {
       state = updated;
       _sessionService.updateSession(updated);
       _startTicking();
-      _mediaCoordinator.updateMediaSession(updated);
+      _mediaCoordinator?.updateMediaSession(updated);
       _audioCoordinator.resumeAmbience();
     }
   }
@@ -154,7 +153,7 @@ class FocusTimer extends _$FocusTimer {
     final updated = current.copyWith(state: SessionState.paused);
     state = updated;
     _sessionService.updateSession(updated);
-    _mediaCoordinator.updateMediaSession(updated);
+    _mediaCoordinator?.updateMediaSession(updated);
   }
 
   void resumeSession() {
@@ -170,7 +169,7 @@ class FocusTimer extends _$FocusTimer {
     state = updated;
     _sessionService.updateSession(updated);
     _startTicking();
-    _mediaCoordinator.updateMediaSession(updated);
+    _mediaCoordinator?.updateMediaSession(updated);
     _audioCoordinator.resumeAmbience();
   }
 
@@ -234,8 +233,8 @@ class FocusTimer extends _$FocusTimer {
       _sessionService.updateSession(updated);
     }
     state = null;
-    _notificationCoordinator.cancelFocusNotification();
-    _mediaCoordinator.clearMediaSession();
+    _notificationCoordinator?.cancelFocusNotification();
+    _mediaCoordinator?.clearMediaSession();
   }
 
   /// Clear the in-memory session once the UI has finished showing
@@ -269,9 +268,9 @@ class FocusTimer extends _$FocusTimer {
     state = null;
 
     _audioCoordinator.playConfiguredAlarm();
-    _notificationCoordinator.cancelFocusNotification();
-    _mediaCoordinator.clearMediaSession();
-    _notificationCoordinator.showEarlyCompleteNotification();
+    _notificationCoordinator?.cancelFocusNotification();
+    _mediaCoordinator?.clearMediaSession();
+    _notificationCoordinator?.showEarlyCompleteNotification();
   }
 
   /// Complete the session AND mark the associated task as completed.
@@ -300,12 +299,12 @@ class FocusTimer extends _$FocusTimer {
     }
 
     _audioCoordinator.playConfiguredAlarm();
-    _notificationCoordinator.cancelFocusNotification();
-    _mediaCoordinator.clearMediaSession();
-    _notificationCoordinator.showTaskCompleteNotification();
+    _notificationCoordinator?.cancelFocusNotification();
+    _mediaCoordinator?.clearMediaSession();
+    _notificationCoordinator?.showTaskCompleteNotification();
   }
 
-  // ── Internal tick logic ───────────────────────────────────────────────────
+  //  Internal tick logic
 
   void _startTicking() {
     _timer?.cancel();
@@ -333,7 +332,7 @@ class FocusTimer extends _$FocusTimer {
       } else {
         state = current.copyWith(elapsedSeconds: newElapsed);
         if (newElapsed % 10 == 0) _sessionService.updateSession(state!);
-        _mediaCoordinator.updateMediaSession(state!);
+        _mediaCoordinator?.updateMediaSession(state!);
       }
     } else if (current.state == SessionState.onBreak) {
       final totalBreakSeconds = current.breakDurationMinutes * 60;
@@ -342,7 +341,7 @@ class FocusTimer extends _$FocusTimer {
       } else {
         state = current.copyWith(elapsedSeconds: newElapsed);
         if (newElapsed % 10 == 0) _sessionService.updateSession(state!);
-        _mediaCoordinator.updateMediaSession(state!);
+        _mediaCoordinator?.updateMediaSession(state!);
       }
     }
   }
@@ -363,10 +362,10 @@ class FocusTimer extends _$FocusTimer {
     // Restart the timer for the break phase.
     _stopTicking();
     _startTicking();
-    _mediaCoordinator.updateMediaSession(updated);
+    _mediaCoordinator?.updateMediaSession(updated);
 
     _audioCoordinator.playConfiguredAlarm();
-    _notificationCoordinator.showBreakNotification(current.breakDurationMinutes);
+    _notificationCoordinator?.showBreakNotification(current.breakDurationMinutes);
   }
 
   void _handleSessionCompleted() {
@@ -379,7 +378,7 @@ class FocusTimer extends _$FocusTimer {
     _sessionService.updateSession(completed);
 
     _audioCoordinator.playConfiguredAlarm();
-    _notificationCoordinator.showNextCycleNotification();
+    _notificationCoordinator?.showNextCycleNotification();
 
     _startNextCycle(current.taskId, current.focusDurationMinutes, current.breakDurationMinutes);
   }
@@ -397,7 +396,7 @@ class FocusTimer extends _$FocusTimer {
     final saved = await _sessionService.startSession(session);
     state = saved;
     _startTicking();
-    _mediaCoordinator.updateMediaSession(saved);
+    _mediaCoordinator?.updateMediaSession(saved);
     _audioCoordinator.startConfiguredAmbience();
   }
 
@@ -416,12 +415,12 @@ class FocusTimer extends _$FocusTimer {
     }
     state = null;
 
-    _notificationCoordinator.cancelFocusNotification();
-    _mediaCoordinator.clearMediaSession();
-    _notificationCoordinator.showCycleStoppedNotification();
+    _notificationCoordinator?.cancelFocusNotification();
+    _mediaCoordinator?.clearMediaSession();
+    _notificationCoordinator?.showCycleStoppedNotification();
   }
 
-  // ── Mute helper ──────────────────────────────────────────────────────────
+  //  Mute helper
 
   void _resetMute() {
     try {

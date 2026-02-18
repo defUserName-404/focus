@@ -5,10 +5,10 @@ import 'package:forui/forui.dart' as fu;
 import '../../../../core/common/utils/datetime_formatter.dart';
 import '../../../../core/common/widgets/app_card.dart';
 import '../../../../core/config/theme/app_theme.dart';
-import '../../../tasks/domain/entities/task.dart';
-import '../../../tasks/presentation/providers/task_provider.dart';
-import '../../../tasks/presentation/widgets/task_date_row.dart';
-import '../../../tasks/presentation/widgets/task_priority_badge.dart';
+import '../../domain/entities/task.dart';
+import '../providers/task_provider.dart';
+import 'task_date_row.dart';
+import 'task_priority_badge.dart';
 
 /// A task card for the global all-tasks list.
 ///

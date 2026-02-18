@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/constants/audio_assets.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
+import '../models/ambience_marquee_state.dart';
 import 'focus_progress_provider.dart';
 import 'focus_providers.dart';
 
@@ -30,27 +31,7 @@ class AmbienceMute extends _$AmbienceMute {
   void reset() => state = false;
 }
 
-// ── Computed marquee display state ─────────────────────────────────────────
-
-/// All the data the ambience marquee row needs to render.
-class AmbienceMarqueeState {
-  /// `null` means the row should be hidden entirely.
-  final String? soundLabel;
-  final bool isMuted;
-  final bool isPaused;
-  final bool isBreak;
-
-  const AmbienceMarqueeState({this.soundLabel, this.isMuted = false, this.isPaused = false, this.isBreak = false});
-
-  /// Whether the marquee text should scroll.
-  bool get isScrolling => soundLabel != null && !isMuted && !isPaused && !isBreak;
-
-  /// Whether the visuals should appear dimmed.
-  bool get isDimmed => isMuted || isPaused;
-
-  /// Whether the entire row should be hidden.
-  bool get isHidden => soundLabel == null || isBreak;
-}
+//  Computed marquee display state
 
 @riverpod
 AmbienceMarqueeState ambienceMarquee(Ref ref) {

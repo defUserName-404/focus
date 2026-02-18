@@ -14,11 +14,7 @@ class TaskQuickActions extends ConsumerWidget {
   final Task task;
   final BigInt projectId;
 
-  const TaskQuickActions({
-    super.key,
-    required this.task,
-    required this.projectId,
-  });
+  const TaskQuickActions({super.key, required this.task, required this.projectId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,10 +23,7 @@ class TaskQuickActions extends ConsumerWidget {
       children: [
         Text(
           'Quick Actions',
-          style: context.typography.sm.copyWith(
-            fontWeight: FontWeight.w600,
-            color: context.colors.foreground,
-          ),
+          style: context.typography.sm.copyWith(fontWeight: FontWeight.w600, color: context.colors.foreground),
         ),
         SizedBox(height: AppConstants.spacing.regular),
         Wrap(
@@ -39,31 +32,21 @@ class TaskQuickActions extends ConsumerWidget {
           children: [
             if (!task.isCompleted)
               fu.FButton(
-                onPress: () =>
-                    FocusCommands.start(context, ref, taskId: task.id!),
+                onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
                 prefix: const Icon(fu.FIcons.play, size: 14),
                 child: const Text('Start Focus'),
               ),
             fu.FButton(
               style: fu.FButtonStyle.outline(),
-              onPress: () => TaskCommands.create(
-                context,
-                projectId: projectId,
-                parentTaskId: task.id,
-                depth: task.depth + 1,
-              ),
+              onPress: () =>
+                  TaskCommands.create(context, projectId: projectId, parentTaskId: task.id, depth: task.depth + 1),
               prefix: const Icon(fu.FIcons.plus, size: 14),
               child: const Text('Add Subtask'),
             ),
             fu.FButton(
               style: fu.FButtonStyle.outline(),
-              onPress: () => ref
-                  .read(taskProvider(projectId.toString()).notifier)
-                  .toggleTaskCompletion(task),
-              prefix: Icon(
-                task.isCompleted ? fu.FIcons.rotateCcw : fu.FIcons.check,
-                size: 14,
-              ),
+              onPress: () => ref.read(taskProvider(projectId.toString()).notifier).toggleTaskCompletion(task),
+              prefix: Icon(task.isCompleted ? fu.FIcons.rotateCcw : fu.FIcons.check, size: 14),
               child: Text(task.isCompleted ? 'Reopen' : 'Complete'),
             ),
             fu.FButton(

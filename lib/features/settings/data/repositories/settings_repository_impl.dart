@@ -55,10 +55,8 @@ class SettingsRepositoryImpl implements ISettingsRepository {
 
   TimerPreferences _decodeTimerPreferences(Map<String, String> all) {
     return TimerPreferences(
-      focusDurationMinutes:
-          int.tryParse(all[SettingsKeys.focusDurationMinutes] ?? '') ?? 25,
-      breakDurationMinutes:
-          int.tryParse(all[SettingsKeys.breakDurationMinutes] ?? '') ?? 5,
+      focusDurationMinutes: int.tryParse(all[SettingsKeys.focusDurationMinutes] ?? '') ?? 25,
+      breakDurationMinutes: int.tryParse(all[SettingsKeys.breakDurationMinutes] ?? '') ?? 5,
     );
   }
 }

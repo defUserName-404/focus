@@ -21,13 +21,8 @@ class TaskStatsRepositoryImpl implements ITaskStatsRepository {
   }
 
   @override
-  Stream<List<FocusSession>> watchRecentSessions(
-    BigInt taskId, {
-    int limit = 10,
-  }) {
-    return _local
-        .watchRecentSessions(taskId, limit: limit)
-        .map((rows) => rows.map((r) => r.toDomain()).toList());
+  Stream<List<FocusSession>> watchRecentSessions(BigInt taskId, {int limit = 10}) {
+    return _local.watchRecentSessions(taskId, limit: limit).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
   @override
@@ -36,22 +31,21 @@ class TaskStatsRepositoryImpl implements ITaskStatsRepository {
   }
 
   @override
-  Stream<List<DailySessionStats>> watchDailyStatsForRange(
-    String startDate,
-    String endDate,
-  ) {
-    return _local.watchDailyStatsForRange(startDate, endDate).map(
-      (rows) => rows
-          .map(
-            (r) => DailySessionStats(
-              date: r.date,
-              completedSessions: r.completedSessions,
-              totalSessions: r.totalSessions,
-              focusSeconds: r.focusSeconds,
-            ),
-          )
-          .toList(),
-    );
+  Stream<List<DailySessionStats>> watchDailyStatsForRange(String startDate, String endDate) {
+    return _local
+        .watchDailyStatsForRange(startDate, endDate)
+        .map(
+          (rows) => rows
+              .map(
+                (r) => DailySessionStats(
+                  date: r.date,
+                  completedSessions: r.completedSessions,
+                  totalSessions: r.totalSessions,
+                  focusSeconds: r.focusSeconds,
+                ),
+              )
+              .toList(),
+        );
   }
 
   @override
@@ -61,8 +55,6 @@ class TaskStatsRepositoryImpl implements ITaskStatsRepository {
 
   @override
   Stream<List<Task>> watchRecentTasks({int limit = 5}) {
-    return _local
-        .watchRecentTasks(limit: limit)
-        .map((rows) => rows.map((r) => r.toDomain()).toList());
+    return _local.watchRecentTasks(limit: limit).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 }

@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/common/utils/platform_utils.dart';
 import '../../../../core/di/injection.dart';
 import '../../domain/repositories/i_focus_session_repository.dart';
 import '../../domain/services/focus_audio_coordinator.dart';
@@ -23,12 +24,16 @@ FocusSessionService focusSessionService(Ref ref) => getIt<FocusSessionService>()
 FocusAudioCoordinator focusAudioCoordinator(Ref ref) => getIt<FocusAudioCoordinator>();
 
 @Riverpod(keepAlive: true)
-FocusNotificationCoordinator focusNotificationCoordinator(Ref ref) =>
-    getIt<FocusNotificationCoordinator>();
+FocusNotificationCoordinator? focusNotificationCoordinator(Ref ref) {
+  if (!PlatformUtils.supportsLocalNotifications) return null;
+  return getIt<FocusNotificationCoordinator>();
+}
 
 @Riverpod(keepAlive: true)
-FocusMediaSessionCoordinator focusMediaSessionCoordinator(Ref ref) =>
-    getIt<FocusMediaSessionCoordinator>();
+FocusMediaSessionCoordinator? focusMediaSessionCoordinator(Ref ref) {
+  if (!PlatformUtils.supportsMediaSession) return null;
+  return getIt<FocusMediaSessionCoordinator>();
+}
 
 @Riverpod(keepAlive: true)
 IFocusSessionRepository focusSessionRepository(Ref ref) => getIt<IFocusSessionRepository>();

@@ -4,7 +4,8 @@ import 'package:forui/forui.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/routing/navigator_key.dart';
+import '../../../../core/di/injection.dart';
+import '../../../../core/routing/navigation_service.dart';
 import '../../domain/entities/session_state.dart';
 import '../providers/focus_progress_provider.dart';
 import '../providers/focus_session_provider.dart';
@@ -42,7 +43,7 @@ class MiniPlayerOverlay extends ConsumerWidget {
         : phaseLabel;
 
     return GestureDetector(
-      onTap: () => navigateToFocusSession(context: context),
+      onTap: () => getIt<NavigationService>().goToFocusSession(context: context),
       child: Container(
         height: 60,
         decoration: BoxDecoration(

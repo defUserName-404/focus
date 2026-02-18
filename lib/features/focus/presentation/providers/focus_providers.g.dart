@@ -26,12 +26,7 @@ final focusSessionServiceProvider = FocusSessionServiceProvider._();
 /// - `overrideWithValue()` in tests for easy mocking
 
 final class FocusSessionServiceProvider
-    extends
-        $FunctionalProvider<
-          FocusSessionService,
-          FocusSessionService,
-          FocusSessionService
-        >
+    extends $FunctionalProvider<FocusSessionService, FocusSessionService, FocusSessionService>
     with $Provider<FocusSessionService> {
   /// Riverpod wrappers for GetIt-registered focus singletons.
   ///
@@ -55,9 +50,7 @@ final class FocusSessionServiceProvider
 
   @$internal
   @override
-  $ProviderElement<FocusSessionService> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<FocusSessionService> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   FocusSessionService create(Ref ref) {
@@ -66,26 +59,17 @@ final class FocusSessionServiceProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(FocusSessionService value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<FocusSessionService>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<FocusSessionService>(value));
   }
 }
 
-String _$focusSessionServiceHash() =>
-    r'ccf4da2960cc662c72c0d4e47e5392dd0cff209a';
+String _$focusSessionServiceHash() => r'ccf4da2960cc662c72c0d4e47e5392dd0cff209a';
 
 @ProviderFor(focusAudioCoordinator)
 final focusAudioCoordinatorProvider = FocusAudioCoordinatorProvider._();
 
 final class FocusAudioCoordinatorProvider
-    extends
-        $FunctionalProvider<
-          FocusAudioCoordinator,
-          FocusAudioCoordinator,
-          FocusAudioCoordinator
-        >
+    extends $FunctionalProvider<FocusAudioCoordinator, FocusAudioCoordinator, FocusAudioCoordinator>
     with $Provider<FocusAudioCoordinator> {
   FocusAudioCoordinatorProvider._()
     : super(
@@ -103,9 +87,7 @@ final class FocusAudioCoordinatorProvider
 
   @$internal
   @override
-  $ProviderElement<FocusAudioCoordinator> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<FocusAudioCoordinator> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   FocusAudioCoordinator create(Ref ref) {
@@ -114,28 +96,19 @@ final class FocusAudioCoordinatorProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(FocusAudioCoordinator value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<FocusAudioCoordinator>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<FocusAudioCoordinator>(value));
   }
 }
 
-String _$focusAudioCoordinatorHash() =>
-    r'3a4ac7e2e6b0eeb8237bec4df5b1b4af68504c02';
+String _$focusAudioCoordinatorHash() => r'3a4ac7e2e6b0eeb8237bec4df5b1b4af68504c02';
 
 @ProviderFor(focusNotificationCoordinator)
-final focusNotificationCoordinatorProvider =
-    FocusNotificationCoordinatorProvider._();
+final focusNotificationCoordinatorProvider = FocusNotificationCoordinatorProvider._();
 
 final class FocusNotificationCoordinatorProvider
     extends
-        $FunctionalProvider<
-          FocusNotificationCoordinator,
-          FocusNotificationCoordinator,
-          FocusNotificationCoordinator
-        >
-    with $Provider<FocusNotificationCoordinator> {
+        $FunctionalProvider<FocusNotificationCoordinator?, FocusNotificationCoordinator?, FocusNotificationCoordinator?>
+    with $Provider<FocusNotificationCoordinator?> {
   FocusNotificationCoordinatorProvider._()
     : super(
         from: null,
@@ -152,39 +125,28 @@ final class FocusNotificationCoordinatorProvider
 
   @$internal
   @override
-  $ProviderElement<FocusNotificationCoordinator> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<FocusNotificationCoordinator?> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
-  FocusNotificationCoordinator create(Ref ref) {
+  FocusNotificationCoordinator? create(Ref ref) {
     return focusNotificationCoordinator(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FocusNotificationCoordinator value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<FocusNotificationCoordinator>(value),
-    );
+  Override overrideWithValue(FocusNotificationCoordinator? value) {
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<FocusNotificationCoordinator?>(value));
   }
 }
 
-String _$focusNotificationCoordinatorHash() =>
-    r'82168247f5ae772a08137e9aa1e791b921f0295c';
+String _$focusNotificationCoordinatorHash() => r'dc5862250de393596b8c3f027e1fc25d0ffbfb6e';
 
 @ProviderFor(focusMediaSessionCoordinator)
-final focusMediaSessionCoordinatorProvider =
-    FocusMediaSessionCoordinatorProvider._();
+final focusMediaSessionCoordinatorProvider = FocusMediaSessionCoordinatorProvider._();
 
 final class FocusMediaSessionCoordinatorProvider
     extends
-        $FunctionalProvider<
-          FocusMediaSessionCoordinator,
-          FocusMediaSessionCoordinator,
-          FocusMediaSessionCoordinator
-        >
-    with $Provider<FocusMediaSessionCoordinator> {
+        $FunctionalProvider<FocusMediaSessionCoordinator?, FocusMediaSessionCoordinator?, FocusMediaSessionCoordinator?>
+    with $Provider<FocusMediaSessionCoordinator?> {
   FocusMediaSessionCoordinatorProvider._()
     : super(
         from: null,
@@ -201,37 +163,26 @@ final class FocusMediaSessionCoordinatorProvider
 
   @$internal
   @override
-  $ProviderElement<FocusMediaSessionCoordinator> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<FocusMediaSessionCoordinator?> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
-  FocusMediaSessionCoordinator create(Ref ref) {
+  FocusMediaSessionCoordinator? create(Ref ref) {
     return focusMediaSessionCoordinator(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FocusMediaSessionCoordinator value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<FocusMediaSessionCoordinator>(value),
-    );
+  Override overrideWithValue(FocusMediaSessionCoordinator? value) {
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<FocusMediaSessionCoordinator?>(value));
   }
 }
 
-String _$focusMediaSessionCoordinatorHash() =>
-    r'a4d030b1a0e255b29aa41a4bea558e7faeacc705';
+String _$focusMediaSessionCoordinatorHash() => r'3011944f2794f076a0e7b7ebbd3fa60112727f46';
 
 @ProviderFor(focusSessionRepository)
 final focusSessionRepositoryProvider = FocusSessionRepositoryProvider._();
 
 final class FocusSessionRepositoryProvider
-    extends
-        $FunctionalProvider<
-          IFocusSessionRepository,
-          IFocusSessionRepository,
-          IFocusSessionRepository
-        >
+    extends $FunctionalProvider<IFocusSessionRepository, IFocusSessionRepository, IFocusSessionRepository>
     with $Provider<IFocusSessionRepository> {
   FocusSessionRepositoryProvider._()
     : super(
@@ -249,9 +200,7 @@ final class FocusSessionRepositoryProvider
 
   @$internal
   @override
-  $ProviderElement<IFocusSessionRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<IFocusSessionRepository> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   IFocusSessionRepository create(Ref ref) {
@@ -260,12 +209,8 @@ final class FocusSessionRepositoryProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(IFocusSessionRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<IFocusSessionRepository>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<IFocusSessionRepository>(value));
   }
 }
 
-String _$focusSessionRepositoryHash() =>
-    r'39edbb69396c3cfd03db7a7c7bb5ccb5de7a9b7a';
+String _$focusSessionRepositoryHash() => r'39edbb69396c3cfd03db7a7c7bb5ccb5de7a9b7a';

@@ -10,18 +10,11 @@ class MetaChip extends StatelessWidget {
   final String label;
   final bool isDestructive;
 
-  const MetaChip({
-    super.key,
-    required this.icon,
-    required this.label,
-    this.isDestructive = false,
-  });
+  const MetaChip({super.key, required this.icon, required this.label, this.isDestructive = false});
 
   @override
   Widget build(BuildContext context) {
-    final color = isDestructive
-        ? context.colors.destructive
-        : context.colors.mutedForeground;
+    final color = isDestructive ? context.colors.destructive : context.colors.mutedForeground;
 
     return Row(
       mainAxisSize: MainAxisSize.min,

@@ -14,12 +14,7 @@ class CreateTaskScreen extends ConsumerStatefulWidget {
   final BigInt? parentTaskId;
   final int depth;
 
-  const CreateTaskScreen({
-    super.key,
-    required this.projectId,
-    this.parentTaskId,
-    this.depth = 0,
-  });
+  const CreateTaskScreen({super.key, required this.projectId, this.parentTaskId, this.depth = 0});
 
   @override
   ConsumerState<CreateTaskScreen> createState() => _CreateTaskScreenState();
@@ -93,7 +88,9 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
 
-    await ref.read(taskProvider(widget.projectId.toString()).notifier).createTask(
+    await ref
+        .read(taskProvider(widget.projectId.toString()).notifier)
+        .createTask(
           projectId: widget.projectId.toString(),
           parentTaskId: widget.parentTaskId,
           title: title,

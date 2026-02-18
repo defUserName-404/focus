@@ -71,7 +71,9 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
 
-    final project = await ref.read(projectProvider.notifier).createProject(
+    final project = await ref
+        .read(projectProvider.notifier)
+        .createProject(
           title: title,
           description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
           startDate: _startDate,

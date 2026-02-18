@@ -14,13 +14,7 @@ class MarqueeText extends StatefulWidget {
   final double velocity; // pixels per second
   final bool isAnimating;
 
-  const MarqueeText({
-    super.key,
-    required this.text,
-    this.style,
-    this.velocity = 30.0,
-    this.isAnimating = true,
-  });
+  const MarqueeText({super.key, required this.text, this.style, this.velocity = 30.0, this.isAnimating = true});
 
   @override
   State<MarqueeText> createState() => _MarqueeTextState();
@@ -118,10 +112,7 @@ class _MarqueeTextState extends State<MarqueeText> with SingleTickerProviderStat
           animation: _controller,
           builder: (context, child) {
             final offset = _controller.value * scrollDistance;
-            return Transform.translate(
-              offset: Offset(-offset, 0),
-              child: child,
-            );
+            return Transform.translate(offset: Offset(-offset, 0), child: child);
           },
           child: Row(
             mainAxisSize: MainAxisSize.min,

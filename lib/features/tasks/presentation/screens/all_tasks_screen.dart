@@ -9,12 +9,16 @@ import '../../../../core/common/widgets/sort_order_selector.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
-import '../../../tasks/domain/entities/task_priority.dart';
-import '../../domain/entities/all_tasks_filter_state.dart';
 import '../../../../core/common/providers/navigation_provider.dart';
+import '../../domain/entities/task_priority.dart';
+import '../../domain/entities/all_tasks_filter_state.dart';
 import '../providers/all_tasks_provider.dart';
 import '../widgets/all_task_card.dart';
 
+/// Global all-tasks screen that shows tasks across all projects.
+///
+/// This is part of the tasks feature (not a standalone feature) and
+/// serves as the Tasks tab root in the main shell.
 class AllTasksScreen extends ConsumerWidget {
   const AllTasksScreen({super.key});
 
@@ -43,8 +47,8 @@ class AllTasksScreen extends ConsumerWidget {
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Task'),
-          onPress: () => Navigator.of(context, rootNavigator: true)
-              .pushNamed(RouteConstants.createTaskWithProjectRoute),
+          onPress: () =>
+              Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.createTaskWithProjectRoute),
         ),
       ),
       child: Column(

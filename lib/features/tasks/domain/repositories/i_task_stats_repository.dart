@@ -17,10 +17,7 @@ abstract class ITaskStatsRepository {
 
   /// Watches pre-aggregated daily stats for a date range (inclusive).
   /// [startDate] and [endDate] are ISO `YYYY-MM-DD` strings.
-  Stream<List<DailySessionStats>> watchDailyStatsForRange(
-    String startDate,
-    String endDate,
-  );
+  Stream<List<DailySessionStats>> watchDailyStatsForRange(String startDate, String endDate);
 
   /// Watches aggregated global stats across all tasks and sessions.
   Stream<GlobalStats> watchGlobalStats();
