@@ -50,12 +50,14 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
+          start: DateTime.now(),
           control: FDateFieldControl.managed(onChange: (date) => _startDate = date),
           clearable: true,
         ),
         FDateField.calendar(
           label: const Text('Deadline'),
           hint: 'Select Deadline (Optional)',
+          start: DateTime.now(),
           control: FDateFieldControl.managed(
             onChange: (date) => _deadline = date,
             validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),

@@ -105,12 +105,14 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
+          start: DateTime.now(),
           control: FDateFieldControl.managed(onChange: (date) => _startDate = date),
           clearable: true,
         ),
         FDateField.calendar(
           label: const Text('End Date'),
           hint: 'Select End Date (Optional)',
+          start: DateTime.now(),
           control: FDateFieldControl.managed(
             onChange: (date) => _endDate = date,
             validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
