@@ -1,8 +1,11 @@
+import '../../../../core/services/log_service.dart';
 import '../../domain/entities/focus_session.dart';
 import '../../domain/entities/focus_session_extensions.dart';
 import '../../domain/repositories/i_focus_session_repository.dart';
 import '../datasources/focus_local_datasource.dart';
 import '../mappers/focus_session_mappers.dart';
+
+final _log = LogService.instance;
 
 class FocusSessionRepositoryImpl implements IFocusSessionRepository {
   final IFocusLocalDataSource _local;
@@ -11,22 +14,39 @@ class FocusSessionRepositoryImpl implements IFocusSessionRepository {
 
   @override
   Future<FocusSession> startSession(FocusSession session) async {
-    final companion = session.toCompanion();
-    final id = await _local.createSession(companion);
-    return session.copyWith(id: id);
+    try {
+      final companion = session.toCompanion();
+      final id = await _local.createSession(companion);
+      final saved = session.copyWith(id: id);
+      _log.debug('Session persisted (id=$id)', tag: 'FocusSessionRepository');
+      return saved;
+    } catch (e, st) {
+      _log.error('Failed to persist session', tag: 'FocusSessionRepository', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<void> updateSession(FocusSession session) async {
     if (session.id == null) return;
-    final companion = session.toCompanion();
-    await _local.updateSession(companion);
+    try {
+      final companion = session.toCompanion();
+      await _local.updateSession(companion);
+    } catch (e, st) {
+      _log.error('Failed to update session (id=${session.id})', tag: 'FocusSessionRepository', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<FocusSession?> getActiveSession() async {
-    final data = await _local.getActiveSession();
-    return data?.toDomain();
+    try {
+      final data = await _local.getActiveSession();
+      return data?.toDomain();
+    } catch (e, st) {
+      _log.error('Failed to query active session', tag: 'FocusSessionRepository', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
@@ -41,6 +61,11 @@ class FocusSessionRepositoryImpl implements IFocusSessionRepository {
 
   @override
   Future<void> deleteSession(int id) async {
-    await _local.deleteSession(id);
+    try {
+      await _local.deleteSession(id);
+    } catch (e, st) {
+      _log.error('Failed to delete session (id=$id)', tag: 'FocusSessionRepository', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 }
