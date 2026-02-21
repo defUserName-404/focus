@@ -5,14 +5,14 @@ import '../../../tasks/domain/entities/task_stats.dart';
 ///
 /// Keeps the domain entity free of display logic.
 extension GlobalStatsFormatting on GlobalStats {
-  String get formattedTotalTime => _formatMinutes(totalFocusMinutes);
+  String get formattedTotalTime => _formatMinutes(totalFocusSeconds ~/ 60);
 
-  String get formattedTodayTime => _formatMinutes(todayFocusMinutes);
+  String get formattedTodayTime => _formatMinutes(todayFocusSeconds ~/ 60);
 }
 
 /// Presentation-layer formatting for [TaskStats].
 extension TaskStatsFormatting on TaskStats {
-  String get formattedTotalTime => _formatMinutes(totalFocusMinutes);
+  String get formattedTotalTime => _formatMinutes(totalFocusSeconds ~/ 60);
 
   String get formattedAvgTime => '${avgSessionMinutes.round()}m';
 }

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../../core/services/db_service.dart';
+import '../../../../core/services/log_service.dart';
 import '../../../focus/domain/entities/session_state.dart';
 import '../models/global_stats_model.dart';
 import '../models/task_stats_model.dart';
@@ -34,6 +35,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
   TaskStatsLocalDataSourceImpl(this._db);
 
   final AppDatabase _db;
+  final _log = LogService.instance;
 
   static final int _completedState = SessionState.completed.index;
 
@@ -66,17 +68,22 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
               )
               .get();
 
-          final Map<String, int> daily = {};
-          for (final row in dailyRows) {
-            daily[row.read<String>('d')] = row.read<int>('cnt');
-          }
+          try {
+            final Map<String, int> daily = {};
+            for (final row in dailyRows) {
+              daily[row.read<String>('d')] = row.read<int>('cnt');
+            }
 
-          return TaskStatsModel(
-            totalSeconds: totalSeconds,
-            totalSessions: totalSessions,
-            completedSessions: completedSessions,
-            dailyCompletedSessions: daily,
-          );
+            return TaskStatsModel(
+              totalSeconds: totalSeconds,
+              totalSessions: totalSessions,
+              completedSessions: completedSessions,
+              dailyCompletedSessions: daily,
+            );
+          } catch (e, st) {
+            _log.error('Error mapping TaskStatsModel for task $taskId', tag: 'TaskStatsLocalDataSource', error: e, stackTrace: st);
+            rethrow;
+          }
         });
   }
 

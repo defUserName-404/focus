@@ -11,6 +11,8 @@ import 'package:meta/meta.dart';
 @immutable
 class TaskStats extends Equatable {
   final int totalFocusMinutes;
+  /// Total focus time in seconds (preserved from DB for precision).
+  final int totalFocusSeconds;
   final int totalSessions;
   final int completedSessions;
   final double avgSessionMinutes;
@@ -20,6 +22,7 @@ class TaskStats extends Equatable {
 
   const TaskStats({
     required this.totalFocusMinutes,
+    required this.totalFocusSeconds,
     required this.totalSessions,
     required this.completedSessions,
     required this.avgSessionMinutes,
@@ -28,6 +31,7 @@ class TaskStats extends Equatable {
 
   static const empty = TaskStats(
     totalFocusMinutes: 0,
+    totalFocusSeconds: 0,
     totalSessions: 0,
     completedSessions: 0,
     avgSessionMinutes: 0,
@@ -36,7 +40,7 @@ class TaskStats extends Equatable {
 
   @override
   List<Object?> get props => [
-    totalFocusMinutes, totalSessions, completedSessions,
+    totalFocusMinutes, totalFocusSeconds, totalSessions, completedSessions,
     avgSessionMinutes, dailyCompletedSessions,
   ];
 }

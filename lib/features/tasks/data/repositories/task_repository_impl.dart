@@ -6,6 +6,9 @@ import '../../domain/entities/task_priority.dart';
 import '../../domain/repositories/i_task_repository.dart';
 import '../datasources/task_local_datasource.dart';
 import '../mappers/task_extensions.dart';
+import '../../../../core/services/log_service.dart';
+
+final _log = LogService.instance;
 
 class TaskRepositoryImpl implements ITaskRepository {
   final ITaskLocalDataSource _local;
@@ -32,20 +35,36 @@ class TaskRepositoryImpl implements ITaskRepository {
 
   @override
   Future<Task> createTask(Task task) async {
-    final companion = task.toCompanion();
-    final id = await _local.createTask(companion);
-    return task.copyWith(id: id);
+    try {
+      final companion = task.toCompanion();
+      final id = await _local.createTask(companion);
+      _log.debug('Task created (id=$id)', tag: 'TaskRepository');
+      return task.copyWith(id: id);
+    } catch (e, st) {
+      _log.error('Failed to create task', tag: 'TaskRepository', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<void> updateTask(Task task) async {
-    final companion = task.toCompanion();
-    await _local.updateTask(companion);
+    try {
+      final companion = task.toCompanion();
+      await _local.updateTask(companion);
+    } catch (e, st) {
+      _log.error('Failed to update task (id=${task.id})', tag: 'TaskRepository', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<void> deleteTask(int id) async {
-    await _local.deleteTask(id);
+    try {
+      await _local.deleteTask(id);
+    } catch (e, st) {
+      _log.error('Failed to delete task (id=$id)', tag: 'TaskRepository', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
