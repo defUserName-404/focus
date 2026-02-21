@@ -1,7 +1,7 @@
-import '../entities/task.dart';
-import '../entities/task_priority.dart';
 import '../entities/all_tasks_filter_state.dart';
-import '../../presentation/providers/task_filter_state.dart';
+import '../entities/task.dart';
+import '../entities/task_filter_state.dart';
+import '../entities/task_priority.dart';
 
 abstract class ITaskRepository {
   Future<List<Task>> getTasksByProjectId(int projectId);
