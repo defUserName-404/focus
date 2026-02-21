@@ -40,7 +40,7 @@ Future<void> setupDependencyInjection() async {
 
   // Platform-specific services — only initialise where supported.
   if (PlatformUtils.supportsMediaSession) {
-    // audio_service — MediaStyle notification & lock-screen controls.
+    // audio_service - MediaStyle notification & lock-screen controls.
     // Must init BEFORE notification service so the Android plugin context is ready.
     final audioHandler = await FocusAudioHandler.init();
     getIt.registerSingleton<FocusAudioHandler>(audioHandler);

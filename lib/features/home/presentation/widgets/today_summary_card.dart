@@ -4,6 +4,8 @@ import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/tasks/domain/entities/global_stats.dart';
 import 'package:forui/forui.dart';
 
+import '../utils/stats_formatting.dart';
+
 class TodaySummaryCard extends StatelessWidget {
   final GlobalStats stats;
 

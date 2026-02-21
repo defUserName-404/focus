@@ -68,7 +68,7 @@ class HomeScreen extends ConsumerWidget {
               onViewAll: () {
                 final projects = projectsAsync.value;
                 if (projects != null && projects.isNotEmpty) {
-                  Navigator.pushNamed(context, RouteConstants.projectDetailRoute, arguments: projects.first.id!);
+                  Navigator.pushNamed(context, RouteConstants.allTasksRoute);
                 }
               },
             ),

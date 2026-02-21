@@ -32,7 +32,6 @@ class BaseFormScreen extends StatelessWidget {
         prefixes: [FHeaderAction.back(onPress: () => Navigator.of(context).pop())],
       ),
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(AppConstants.spacing.regular),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: AppConstants.spacing.small,
