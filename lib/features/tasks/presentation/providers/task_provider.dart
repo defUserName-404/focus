@@ -114,6 +114,7 @@ class TaskNotifier extends _$TaskNotifier {
         await _loadTasks(projectId);
         return value;
       case Failure(:final failure):
+        state = AsyncValue.error(failure, StackTrace.current);
         throw failure;
     }
   }
@@ -124,7 +125,7 @@ class TaskNotifier extends _$TaskNotifier {
       case Success():
         await _loadTasks(task.projectId.toString());
       case Failure(:final failure):
-        throw failure;
+        state = AsyncValue.error(failure, StackTrace.current);
     }
   }
 
@@ -134,7 +135,7 @@ class TaskNotifier extends _$TaskNotifier {
       case Success():
         await _loadTasks(projectId);
       case Failure(:final failure):
-        throw failure;
+        state = AsyncValue.error(failure, StackTrace.current);
     }
   }
 
@@ -144,7 +145,7 @@ class TaskNotifier extends _$TaskNotifier {
       case Success():
         await _loadTasks(task.projectId.toString());
       case Failure(:final failure):
-        throw failure;
+        state = AsyncValue.error(failure, StackTrace.current);
     }
   }
 }
