@@ -2,6 +2,7 @@ import '../../../../core/common/result.dart';
 import '../../../../core/services/log_service.dart';
 import '../entities/project.dart';
 import '../entities/project_extensions.dart';
+import '../entities/project_list_filter_state.dart';
 import '../repositories/i_project_repository.dart';
 
 final _log = LogService.instance;
@@ -24,7 +25,11 @@ class ProjectService {
 
   Stream<Project?> watchProjectById(int id) => _repository.watchProjectById(id);
 
-  Stream<List<Project>> watchFilteredProjects({String searchQuery = '', dynamic sortCriteria, dynamic sortOrder}) {
+  Stream<List<Project>> watchFilteredProjects({
+    String searchQuery = '',
+    ProjectSortCriteria sortCriteria = ProjectSortCriteria.recentlyModified,
+    ProjectSortOrder sortOrder = ProjectSortOrder.none,
+  }) {
     return _repository.watchFilteredProjects(
       searchQuery: searchQuery,
       sortCriteria: sortCriteria,
