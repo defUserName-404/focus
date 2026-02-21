@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../../../projects/data/models/project_model.dart';
 import '../../domain/entities/task_priority.dart';
 
 @TableIndex(name: 'task_project_id_idx', columns: {#projectId})
@@ -11,9 +12,9 @@ import '../../domain/entities/task_priority.dart';
 class TaskTable extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  IntColumn get projectId => integer()();
+  IntColumn get projectId => integer().references(ProjectTable, #id, onDelete: KeyAction.cascade)();
 
-  IntColumn get parentTaskId => integer().nullable().references(TaskTable, #id)();
+  IntColumn get parentTaskId => integer().nullable().references(TaskTable, #id, onDelete: KeyAction.cascade)();
 
   TextColumn get title => text()();
 
