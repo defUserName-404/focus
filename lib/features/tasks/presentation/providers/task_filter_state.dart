@@ -1,32 +1,8 @@
-import '../../../../core/common/sort_criteria.dart';
-import '../../../../core/common/sort_order.dart';
+import '../../../tasks/domain/entities/task_filter_state.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
 
-/// Sort criteria for the task list on the project detail screen.
-enum TaskSortCriteria implements SortCriteria {
-  recentlyModified('Recent'),
-  deadline('Deadline'),
-  priority('Priority'),
-  title('Title'),
-  createdDate('Created');
-
-  @override
-  final String label;
-
-  const TaskSortCriteria(this.label);
-}
-
-/// Sort order for the task list.
-enum TaskSortOrder implements SortOrder {
-  none('None'),
-  ascending('Ascending'),
-  descending('Descending');
-
-  @override
-  final String label;
-
-  const TaskSortOrder(this.label);
-}
+// Re-export so existing presentation imports keep working.
+export '../../../tasks/domain/entities/task_filter_state.dart' show TaskSortCriteria, TaskSortOrder;
 
 /// Immutable state for task list filtering and sorting.
 class TaskListFilterState {

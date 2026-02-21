@@ -20,8 +20,8 @@ import '../widgets/task_stats_row.dart';
 import '../widgets/task_summary_section.dart';
 
 class TaskDetailScreen extends ConsumerWidget {
-  final BigInt taskId;
-  final BigInt projectId;
+  final int taskId;
+  final int projectId;
 
   const TaskDetailScreen({super.key, required this.taskId, required this.projectId});
 

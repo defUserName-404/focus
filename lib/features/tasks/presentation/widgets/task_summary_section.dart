@@ -12,7 +12,7 @@ import 'task_priority_badge.dart';
 class TaskSummarySection extends StatelessWidget {
   final Task task;
   final String? projectName;
-  final BigInt? projectId;
+  final int? projectId;
 
   const TaskSummarySection({super.key, required this.task, this.projectName, this.projectId});
 

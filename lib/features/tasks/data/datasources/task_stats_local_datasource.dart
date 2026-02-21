@@ -7,10 +7,10 @@ import '../models/task_stats_model.dart';
 
 abstract class ITaskStatsLocalDataSource {
   /// Watches aggregated stats for a single task.
-  Stream<TaskStatsModel> watchTaskStats(BigInt taskId);
+  Stream<TaskStatsModel> watchTaskStats(int taskId);
 
   /// Watches the most recent sessions for a task, ordered by start_time desc.
-  Stream<List<FocusSessionData>> watchRecentSessions(BigInt taskId, {int limit = 10});
+  Stream<List<FocusSessionData>> watchRecentSessions(int taskId, {int limit = 10});
 
   /// Watches daily completed-session counts across ALL tasks.
   ///
@@ -38,7 +38,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
   static final int _completedState = SessionState.completed.index;
 
   @override
-  Stream<TaskStatsModel> watchTaskStats(BigInt taskId) {
+  Stream<TaskStatsModel> watchTaskStats(int taskId) {
     return _db
         .customSelect(
           'SELECT '
@@ -46,7 +46,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
           'COUNT(*) AS total_sessions, '
           'SUM(CASE WHEN state = $_completedState THEN 1 ELSE 0 END) AS completed_sessions '
           'FROM focus_session_table WHERE task_id = ?',
-          variables: [Variable<BigInt>(taskId)],
+          variables: [Variable<int>(taskId)],
           readsFrom: {_db.focusSessionTable},
         )
         .watchSingle()
@@ -62,7 +62,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
                 'FROM focus_session_table '
                 'WHERE task_id = ? AND state = $_completedState '
                 'GROUP BY d',
-                variables: [Variable<BigInt>(taskId)],
+                variables: [Variable<int>(taskId)],
               )
               .get();
 
@@ -81,7 +81,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
   }
 
   @override
-  Stream<List<FocusSessionData>> watchRecentSessions(BigInt taskId, {int limit = 10}) {
+  Stream<List<FocusSessionData>> watchRecentSessions(int taskId, {int limit = 10}) {
     return (_db.select(_db.focusSessionTable)
           ..where((t) => t.taskId.equals(taskId))
           ..orderBy([(t) => OrderingTerm.desc(t.startTime)])
@@ -109,6 +109,11 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
     final now = DateTime.now();
     final todayKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
+    // Today’s stats are derived from focus_session_table (same source as
+    // the overall counters) so the two can never disagree.  The previous
+    // implementation read today from daily_session_stats_table, which
+    // could lag behind the session table after a write, causing the
+    // today / overall mismatch the user reported.
     return _db
         .customSelect(
           'SELECT '
@@ -126,9 +131,11 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
           '(SELECT COUNT(*) AS total_tasks, '
           'SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) AS completed_tasks '
           'FROM task_table WHERE depth = 0) t, '
-          '(SELECT COALESCE(completed_sessions, 0) AS today_sessions, '
-          'COALESCE(focus_seconds, 0) AS today_seconds '
-          'FROM daily_session_stats_table WHERE date = ?) td',
+          '(SELECT '
+          'COALESCE(SUM(CASE WHEN state = $_completedState THEN 1 ELSE 0 END), 0) AS today_sessions, '
+          'COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) AS today_seconds '
+          'FROM focus_session_table '
+          "WHERE date(start_time, 'unixepoch', 'localtime') = ?) td",
           variables: [Variable<String>(todayKey)],
           readsFrom: {_db.focusSessionTable, _db.taskTable, _db.dailySessionStatsTable},
         )

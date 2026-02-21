@@ -1,9 +1,15 @@
+import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
+
 /// Aggregated statistics for a single task's focus sessions.
 ///
 /// All computation is performed at the ORM/SQL level for performance.
 /// [dailyCompletedSessions] maps ISO date strings (`YYYY-MM-DD`) to the
 /// number of completed sessions on that day, powering the activity heatmap.
-class TaskStats {
+///
+/// Formatting lives in presentation-layer extensions.
+@immutable
+class TaskStats extends Equatable {
   final int totalFocusMinutes;
   final int totalSessions;
   final int completedSessions;
@@ -28,12 +34,9 @@ class TaskStats {
     dailyCompletedSessions: {},
   );
 
-  String get formattedTotalTime {
-    if (totalFocusMinutes < 60) return '${totalFocusMinutes}m';
-    final hours = totalFocusMinutes ~/ 60;
-    final mins = totalFocusMinutes % 60;
-    return mins > 0 ? '${hours}h ${mins}m' : '${hours}h';
-  }
-
-  String get formattedAvgTime => '${avgSessionMinutes.round()}m';
+  @override
+  List<Object?> get props => [
+    totalFocusMinutes, totalSessions, completedSessions,
+    avgSessionMinutes, dailyCompletedSessions,
+  ];
 }

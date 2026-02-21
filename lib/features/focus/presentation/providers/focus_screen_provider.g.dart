@@ -12,7 +12,8 @@ part of 'focus_screen_provider.dart';
 @ProviderFor(FocusScreenNotifier)
 final focusScreenProvider = FocusScreenNotifierProvider._();
 
-final class FocusScreenNotifierProvider extends $NotifierProvider<FocusScreenNotifier, FocusScreenState> {
+final class FocusScreenNotifierProvider
+    extends $NotifierProvider<FocusScreenNotifier, FocusScreenState> {
   FocusScreenNotifierProvider._()
     : super(
         from: null,
@@ -33,11 +34,15 @@ final class FocusScreenNotifierProvider extends $NotifierProvider<FocusScreenNot
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(FocusScreenState value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<FocusScreenState>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FocusScreenState>(value),
+    );
   }
 }
 
-String _$focusScreenNotifierHash() => r'8c7dc770beaa902a6520b0559e68fb7999841b05';
+String _$focusScreenNotifierHash() =>
+    r'8c7dc770beaa902a6520b0559e68fb7999841b05';
 
 abstract class _$FocusScreenNotifier extends $Notifier<FocusScreenState> {
   FocusScreenState build();

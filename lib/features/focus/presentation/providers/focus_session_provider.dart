@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/constants/notification_constants.dart';
+import '../../../../core/services/log_service.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../domain/entities/focus_session.dart';
 import '../../domain/entities/focus_session_extensions.dart';
@@ -11,10 +12,13 @@ import '../../domain/services/focus_audio_coordinator.dart';
 import '../../domain/services/focus_media_session_coordinator.dart';
 import '../../domain/services/focus_notification_coordinator.dart';
 import '../../domain/services/focus_session_service.dart';
+import '../../domain/services/focus_session_state_machine.dart';
 import 'ambience_mute_provider.dart';
 import 'focus_providers.dart';
 
 part 'focus_session_provider.g.dart';
+
+final _log = LogService.instance;
 
 @Riverpod(keepAlive: true)
 class FocusTimer extends _$FocusTimer {
@@ -22,6 +26,7 @@ class FocusTimer extends _$FocusTimer {
   late final FocusAudioCoordinator _audioCoordinator;
   FocusNotificationCoordinator? _notificationCoordinator;
   FocusMediaSessionCoordinator? _mediaCoordinator;
+  final FocusSessionStateMachine _sm = const FocusSessionStateMachine();
   Timer? _timer;
   StreamSubscription<String>? _notificationActionSub;
 
@@ -56,7 +61,7 @@ class FocusTimer extends _$FocusTimer {
     });
 
     // Mark abandoned sessions as incomplete on startup.
-    _sessionService.cleanupAbandonedSessions();
+    unawaited(_sessionService.cleanupAbandonedSessions());
 
     // React to audio settings changes (sound, volume, enabled) while a
     // session is actively playing. Without this, the user would need to
@@ -69,7 +74,7 @@ class FocusTimer extends _$FocusTimer {
       // Only reload when the data actually changed and we have valid data.
       final newData = next.asData?.value;
       if (newData != null && prev?.asData?.value != newData) {
-        _audioCoordinator.reloadAmbience(newData);
+        unawaited(_audioCoordinator.reloadAmbience(newData));
       }
     });
 
@@ -95,7 +100,7 @@ class FocusTimer extends _$FocusTimer {
   /// the user actually starts the timer, at which point it gets saved.
   ///
   /// If [taskId] is `null`, this is a **quick session** with no task attached.
-  Future<void> createSession({BigInt? taskId, required int focusMinutes, required int breakMinutes}) async {
+  Future<void> createSession({int? taskId, required int focusMinutes, required int breakMinutes}) async {
     _stopTicking();
 
     final session = FocusSession(
@@ -122,55 +127,54 @@ class FocusTimer extends _$FocusTimer {
 
       // Now persist the session for the first time.
       final running = current.copyWith(state: SessionState.running, startTime: DateTime.now());
-      final saved = await _sessionService.startSession(running);
+      final result = await _sessionService.startSession(running);
+      final saved = result.getOrNull();
+      if (saved == null) {
+        _log.error('Failed to persist new session — aborting start', tag: 'FocusTimer');
+        return;
+      }
       state = saved;
       _startTicking();
       _mediaCoordinator?.updateMediaSession(saved);
-      _audioCoordinator.startConfiguredAmbience();
+      unawaited(_audioCoordinator.startConfiguredAmbience());
     } else if (current.state == SessionState.paused) {
-      // Resume into the correct phase based on elapsed time.
-      final totalFocusSeconds = current.focusDurationMinutes * 60;
-      final wasOnBreak = current.elapsedSeconds >= totalFocusSeconds;
-      final resumeState = wasOnBreak ? SessionState.onBreak : SessionState.running;
+      final resumed = _sm.resume(current);
+      if (resumed == null) return;
 
-      final updated = current.copyWith(state: resumeState);
-      state = updated;
-      _sessionService.updateSession(updated);
+      state = resumed;
+      unawaited(_sessionService.updateSession(resumed));
       _startTicking();
-      _mediaCoordinator?.updateMediaSession(updated);
-      _audioCoordinator.resumeAmbience();
+      _mediaCoordinator?.updateMediaSession(resumed);
+      unawaited(_audioCoordinator.resumeAmbience());
     }
   }
 
   void pauseSession() {
     final current = state;
-    if (current == null || (current.state != SessionState.running && current.state != SessionState.onBreak)) {
-      return;
-    }
+    if (current == null) return;
+
+    final paused = _sm.pause(current);
+    if (paused == null) return;
 
     _stopTicking();
-    _audioCoordinator.pauseAmbience();
-    final updated = current.copyWith(state: SessionState.paused);
-    state = updated;
-    _sessionService.updateSession(updated);
-    _mediaCoordinator?.updateMediaSession(updated);
+    unawaited(_audioCoordinator.pauseAmbience());
+    state = paused;
+    unawaited(_sessionService.updateSession(paused));
+    _mediaCoordinator?.updateMediaSession(paused);
   }
 
   void resumeSession() {
     final current = state;
-    if (current == null || current.state != SessionState.paused) return;
+    if (current == null) return;
 
-    // Determine the correct phase to resume into based on elapsed time.
-    final totalFocusSeconds = current.focusDurationMinutes * 60;
-    final wasOnBreak = current.elapsedSeconds >= totalFocusSeconds;
-    final resumeState = wasOnBreak ? SessionState.onBreak : SessionState.running;
+    final resumed = _sm.resume(current);
+    if (resumed == null) return;
 
-    final updated = current.copyWith(state: resumeState);
-    state = updated;
-    _sessionService.updateSession(updated);
+    state = resumed;
+    unawaited(_sessionService.updateSession(resumed));
     _startTicking();
-    _mediaCoordinator?.updateMediaSession(updated);
-    _audioCoordinator.resumeAmbience();
+    _mediaCoordinator?.updateMediaSession(resumed);
+    unawaited(_audioCoordinator.resumeAmbience());
   }
 
   /// Toggle play/pause from ring tap.
@@ -196,26 +200,10 @@ class FocusTimer extends _$FocusTimer {
     final current = state;
     if (current == null) return;
 
-    // Determine the phase — when paused, infer from elapsed seconds.
-    final totalFocusSeconds = current.focusDurationMinutes * 60;
-    final bool isInFocusPhase;
+    final transition = _sm.skip(current);
+    if (transition == null) return;
 
-    switch (current.state) {
-      case SessionState.running:
-        isInFocusPhase = true;
-      case SessionState.onBreak:
-        isInFocusPhase = false;
-      case SessionState.paused:
-        isInFocusPhase = current.elapsedSeconds < totalFocusSeconds;
-      default:
-        return; // idle / completed / cancelled / incomplete
-    }
-
-    if (isInFocusPhase) {
-      _handleFocusCompleted();
-    } else {
-      _handleSessionCompleted();
-    }
+    _applyTransition(transition);
   }
 
   /// Premature end: save as cancelled (not deleted).
@@ -225,12 +213,12 @@ class FocusTimer extends _$FocusTimer {
     if (current == null) return;
 
     _stopTicking();
-    _audioCoordinator.stopAmbience();
+    unawaited(_audioCoordinator.stopAmbience());
     _resetMute();
 
     if (current.id != null) {
       final updated = current.copyWith(state: SessionState.cancelled, endTime: DateTime.now());
-      _sessionService.updateSession(updated);
+      unawaited(_sessionService.updateSession(updated));
     }
     state = null;
     _notificationCoordinator?.cancelFocusNotification();
@@ -255,19 +243,19 @@ class FocusTimer extends _$FocusTimer {
     }
 
     _stopTicking();
-    _audioCoordinator.stopAmbience();
+    unawaited(_audioCoordinator.stopAmbience());
     _resetMute();
     final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
 
     if (current.id != null) {
-      _sessionService.updateSession(updated);
+      unawaited(_sessionService.updateSession(updated));
     } else {
-      _sessionService.startSession(updated);
+      unawaited(_sessionService.startSession(updated));
     }
     // Clear state so the session screen reacts immediately.
     state = null;
 
-    _audioCoordinator.playConfiguredAlarm();
+    unawaited(_audioCoordinator.playConfiguredAlarm());
     _notificationCoordinator?.cancelFocusNotification();
     _mediaCoordinator?.clearMediaSession();
     _notificationCoordinator?.showEarlyCompleteNotification();
@@ -282,12 +270,12 @@ class FocusTimer extends _$FocusTimer {
     }
 
     _stopTicking();
-    _audioCoordinator.stopAmbience();
+    unawaited(_audioCoordinator.stopAmbience());
     _resetMute();
     final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
 
     if (current.id != null) {
-      _sessionService.updateSession(updated);
+      await _sessionService.updateSession(updated);
     } else {
       await _sessionService.startSession(updated);
     }
@@ -298,7 +286,7 @@ class FocusTimer extends _$FocusTimer {
       await _sessionService.completeTask(current.taskId!);
     }
 
-    _audioCoordinator.playConfiguredAlarm();
+    unawaited(_audioCoordinator.playConfiguredAlarm());
     _notificationCoordinator?.cancelFocusNotification();
     _mediaCoordinator?.clearMediaSession();
     _notificationCoordinator?.showTaskCompleteNotification();
@@ -322,68 +310,55 @@ class FocusTimer extends _$FocusTimer {
       _stopTicking();
       return;
     }
+    _applyTransition(_sm.tick(current));
+  }
 
-    final newElapsed = current.elapsedSeconds + 1;
-    final totalFocusSeconds = current.focusDurationMinutes * 60;
+  /// Centralised handler for all [SessionTransition] outcomes.
+  ///
+  /// Keeps the side-effect logic in one place so [_tick], [skipToNextPhase],
+  /// etc. don't duplicate audio/notification/persistence calls.
+  void _applyTransition(SessionTransition transition) {
+    switch (transition) {
+      case TickUpdate(:final session, :final shouldPersist):
+        state = session;
+        if (shouldPersist) unawaited(_sessionService.updateSession(session));
+        _mediaCoordinator?.updateMediaSession(session);
 
-    if (current.state == SessionState.running) {
-      if (newElapsed >= totalFocusSeconds) {
-        _handleFocusCompleted();
-      } else {
-        state = current.copyWith(elapsedSeconds: newElapsed);
-        if (newElapsed % 10 == 0) _sessionService.updateSession(state!);
-        _mediaCoordinator?.updateMediaSession(state!);
-      }
-    } else if (current.state == SessionState.onBreak) {
-      final totalBreakSeconds = current.breakDurationMinutes * 60;
-      if (newElapsed >= (totalFocusSeconds + totalBreakSeconds)) {
-        _handleSessionCompleted();
-      } else {
-        state = current.copyWith(elapsedSeconds: newElapsed);
-        if (newElapsed % 10 == 0) _sessionService.updateSession(state!);
-        _mediaCoordinator?.updateMediaSession(state!);
-      }
+      case FocusPhaseCompleted(:final session):
+        unawaited(_audioCoordinator.stopAmbience());
+        state = session;
+        unawaited(_sessionService.updateSession(session));
+        _stopTicking();
+        _startTicking();
+        _mediaCoordinator?.updateMediaSession(session);
+        unawaited(_audioCoordinator.playConfiguredAlarm());
+        _notificationCoordinator?.showBreakNotification(session.breakDurationMinutes);
+
+      case CycleCompleted(:final session):
+        _stopTicking();
+        _resetMute();
+        _handleCycleCompleted(session);
     }
   }
 
-  void _handleFocusCompleted() {
-    final current = state;
-    if (current == null) return;
+  /// Persist the completed session and auto-start the next cycle.
+  ///
+  /// Awaited so the daily stats table is fully in sync before a new
+  /// session row is inserted — preventing the today / overall mismatch.
+  Future<void> _handleCycleCompleted(FocusSession completed) async {
+    await _sessionService.updateSession(completed);
 
-    _audioCoordinator.stopAmbience();
-
-    // All sessions (including quick) transition to break phase.
-    // Set elapsed to exactly the focus total so break phase counting starts correctly.
-    final totalFocusSeconds = current.focusDurationMinutes * 60;
-    final updated = current.copyWith(state: SessionState.onBreak, elapsedSeconds: totalFocusSeconds);
-    state = updated;
-    _sessionService.updateSession(updated);
-
-    // Restart the timer for the break phase.
-    _stopTicking();
-    _startTicking();
-    _mediaCoordinator?.updateMediaSession(updated);
-
-    _audioCoordinator.playConfiguredAlarm();
-    _notificationCoordinator?.showBreakNotification(current.breakDurationMinutes);
-  }
-
-  void _handleSessionCompleted() {
-    final current = state;
-    if (current == null) return;
-
-    _stopTicking();
-    _resetMute();
-    final completed = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
-    _sessionService.updateSession(completed);
-
-    _audioCoordinator.playConfiguredAlarm();
+    unawaited(_audioCoordinator.playConfiguredAlarm());
     _notificationCoordinator?.showNextCycleNotification();
 
-    _startNextCycle(current.taskId, current.focusDurationMinutes, current.breakDurationMinutes);
+    await _startNextCycle(
+      completed.taskId,
+      completed.focusDurationMinutes,
+      completed.breakDurationMinutes,
+    );
   }
 
-  Future<void> _startNextCycle(BigInt? taskId, int focusMinutes, int breakMinutes) async {
+  Future<void> _startNextCycle(int? taskId, int focusMinutes, int breakMinutes) async {
     final session = FocusSession(
       taskId: taskId,
       focusDurationMinutes: focusMinutes,
@@ -393,25 +368,33 @@ class FocusTimer extends _$FocusTimer {
       elapsedSeconds: 0,
     );
 
-    final saved = await _sessionService.startSession(session);
+    final result = await _sessionService.startSession(session);
+    final saved = result.getOrNull();
+    if (saved == null) {
+      _log.error('Failed to persist next-cycle session', tag: 'FocusTimer');
+      return;
+    }
     state = saved;
     _startTicking();
     _mediaCoordinator?.updateMediaSession(saved);
-    _audioCoordinator.startConfiguredAmbience();
+    unawaited(_audioCoordinator.startConfiguredAmbience());
   }
 
   /// Manually stop the Pomodoro cycle.
+  ///
+  /// The session is saved as **cancelled** — not completed — so it
+  /// doesn't inflate the "sessions completed" stat.
   void stopCycle() {
     final current = state;
     if (current == null) return;
 
     _stopTicking();
-    _audioCoordinator.stopAmbience();
+    unawaited(_audioCoordinator.stopAmbience());
     _resetMute();
 
     if (current.id != null) {
-      final updated = current.copyWith(state: SessionState.completed, endTime: DateTime.now());
-      _sessionService.updateSession(updated);
+      final updated = current.copyWith(state: SessionState.cancelled, endTime: DateTime.now());
+      unawaited(_sessionService.updateSession(updated));
     }
     state = null;
 

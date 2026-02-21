@@ -1,9 +1,10 @@
-import 'package:flutter/foundation.dart';
-
 import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/services/audio_service.dart';
+import '../../../../core/services/log_service.dart';
 import '../../../settings/domain/entities/setting.dart';
 import '../../../settings/domain/repositories/i_settings_repository.dart';
+
+final _log = LogService.instance;
 
 /// Coordinates all audio playback for focus sessions.
 ///
@@ -29,8 +30,9 @@ class FocusAudioCoordinator {
 
       await _audioService.setNoiseVolume(prefs.ambienceVolume);
       await _audioService.startAmbience(preset);
-    } catch (e) {
-      debugPrint('Error starting configured ambience: $e');
+      _log.debug('Ambience started: ${preset.label}', tag: 'FocusAudioCoordinator');
+    } catch (e, st) {
+      _log.error('Error starting configured ambience', tag: 'FocusAudioCoordinator', error: e, stackTrace: st);
     }
   }
 
@@ -44,8 +46,8 @@ class FocusAudioCoordinator {
       }
       preset ??= AudioAssets.defaultAlarm;
       await _audioService.playAlarm(preset);
-    } catch (e) {
-      debugPrint('Error playing configured alarm: $e');
+    } catch (e, st) {
+      _log.error('Error playing configured alarm', tag: 'FocusAudioCoordinator', error: e, stackTrace: st);
       await _audioService.playAlarm();
     }
   }
@@ -65,8 +67,8 @@ class FocusAudioCoordinator {
     try {
       await _audioService.stopAmbience();
       await startConfiguredAmbience(newPrefs);
-    } catch (e) {
-      debugPrint('Error reloading ambience: $e');
+    } catch (e, st) {
+      _log.error('Error reloading ambience', tag: 'FocusAudioCoordinator', error: e, stackTrace: st);
     }
   }
 
@@ -74,8 +76,8 @@ class FocusAudioCoordinator {
   Future<void> stopAmbience() async {
     try {
       await _audioService.stopAmbience();
-    } catch (e) {
-      debugPrint('Error stopping ambience: $e');
+    } catch (e, st) {
+      _log.error('Error stopping ambience', tag: 'FocusAudioCoordinator', error: e, stackTrace: st);
     }
   }
 }

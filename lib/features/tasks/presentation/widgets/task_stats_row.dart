@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../home/presentation/utils/stats_formatting.dart';
 import '../../domain/entities/task_stats.dart';
 
 /// Row of three stat cards: Total time, Sessions, Average.

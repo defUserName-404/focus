@@ -16,12 +16,12 @@ class TaskStatsRepositoryImpl implements ITaskStatsRepository {
   TaskStatsRepositoryImpl(this._local);
 
   @override
-  Stream<TaskStats> watchTaskStats(BigInt taskId) {
+  Stream<TaskStats> watchTaskStats(int taskId) {
     return _local.watchTaskStats(taskId).map((model) => model.toDomain());
   }
 
   @override
-  Stream<List<FocusSession>> watchRecentSessions(BigInt taskId, {int limit = 10}) {
+  Stream<List<FocusSession>> watchRecentSessions(int taskId, {int limit = 10}) {
     return _local.watchRecentSessions(taskId, limit: limit).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 

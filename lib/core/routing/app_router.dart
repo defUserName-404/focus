@@ -26,15 +26,15 @@ abstract final class AppRouter {
   static Route<dynamic>? generateTabRoute(RouteSettings settings) {
     switch (settings.name) {
       case RouteConstants.projectDetailRoute:
-        final projectId = settings.arguments as BigInt;
+        final projectId = settings.arguments as int;
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => ProjectDetailScreen(projectId: projectId),
         );
       case RouteConstants.taskDetailRoute:
         final args = settings.arguments as Map<String, dynamic>;
-        final taskId = args['taskId'] as BigInt;
-        final projectId = args['projectId'] as BigInt;
+        final taskId = args['taskId'] as int;
+        final projectId = args['projectId'] as int;
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => TaskDetailScreen(taskId: taskId, projectId: projectId),
@@ -64,8 +64,8 @@ abstract final class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => CreateTaskScreen(
-            projectId: args['projectId'] as BigInt,
-            parentTaskId: args['parentTaskId'] as BigInt?,
+            projectId: args['projectId'] as int,
+            parentTaskId: args['parentTaskId'] as int?,
             depth: args['depth'] as int? ?? 0,
           ),
         );

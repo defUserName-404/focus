@@ -1,25 +1,25 @@
-import '../entities/task.dart';
-import '../entities/task_priority.dart';
 import '../entities/all_tasks_filter_state.dart';
-import '../../presentation/providers/task_filter_state.dart';
+import '../entities/task.dart';
+import '../entities/task_filter_state.dart';
+import '../entities/task_priority.dart';
 
 abstract class ITaskRepository {
-  Future<List<Task>> getTasksByProjectId(BigInt projectId);
+  Future<List<Task>> getTasksByProjectId(int projectId);
 
-  Future<Task?> getTaskById(BigInt id);
+  Future<Task?> getTaskById(int id);
 
-  Future<List<Task>> getSubtasks(BigInt parentTaskId);
+  Future<List<Task>> getSubtasks(int parentTaskId);
 
   Future<Task> createTask(Task task);
 
   Future<void> updateTask(Task task);
 
-  Future<void> deleteTask(BigInt id);
+  Future<void> deleteTask(int id);
 
-  Stream<List<Task>> watchTasksByProjectId(BigInt projectId);
+  Stream<List<Task>> watchTasksByProjectId(int projectId);
 
   Stream<List<Task>> watchFilteredTasks({
-    required BigInt projectId,
+    required int projectId,
     String searchQuery,
     TaskSortOrder sortOrder,
     TaskSortCriteria sortCriteria,

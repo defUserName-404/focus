@@ -22,7 +22,7 @@ part 'navigation_service.g.dart';
 class NavigationService {
   //  Project routes
 
-  void goToProjectDetail(BuildContext context, BigInt projectId) {
+  void goToProjectDetail(BuildContext context, int projectId) {
     Navigator.of(context).pushNamed(RouteConstants.projectDetailRoute, arguments: projectId);
   }
 
@@ -40,13 +40,13 @@ class NavigationService {
 
   // Task routes
 
-  void goToTaskDetail(BuildContext context, {required BigInt taskId, required BigInt projectId}) {
+  void goToTaskDetail(BuildContext context, {required int taskId, required int projectId}) {
     Navigator.of(
       context,
     ).pushNamed(RouteConstants.taskDetailRoute, arguments: {'taskId': taskId, 'projectId': projectId});
   }
 
-  void goToCreateTask(BuildContext context, {required BigInt projectId, BigInt? parentTaskId, int depth = 0}) {
+  void goToCreateTask(BuildContext context, {required int projectId, int? parentTaskId, int depth = 0}) {
     Navigator.of(context, rootNavigator: true).pushNamed(
       RouteConstants.createTaskRoute,
       arguments: {'projectId': projectId, 'parentTaskId': parentTaskId, 'depth': depth},

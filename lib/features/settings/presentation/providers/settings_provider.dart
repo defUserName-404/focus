@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/common/result.dart';
 import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
@@ -67,32 +68,62 @@ class SettingsNotifier extends _$SettingsNotifier {
   // ---- Persistence ---------------------------------------------------------
 
   Future<void> setAlarmSound(String soundId) async {
-    await _service.setAlarmSound(soundId);
-    state = AsyncValue.data(state.value?.copyWith(alarmSoundId: soundId) ?? AudioPreferences(alarmSoundId: soundId));
+    final result = await _service.setAlarmSound(soundId);
+    switch (result) {
+      case Success():
+        state = AsyncValue.data(state.value?.copyWith(alarmSoundId: soundId) ?? AudioPreferences(alarmSoundId: soundId));
+      case Failure(:final failure):
+        state = AsyncValue.error(failure, StackTrace.current);
+    }
   }
 
   Future<void> setAmbienceSound(String soundId) async {
-    await _service.setAmbienceSound(soundId);
-    state = AsyncValue.data(
-      state.value?.copyWith(ambienceSoundId: soundId) ?? AudioPreferences(ambienceSoundId: soundId),
-    );
+    final result = await _service.setAmbienceSound(soundId);
+    switch (result) {
+      case Success():
+        state = AsyncValue.data(
+          state.value?.copyWith(ambienceSoundId: soundId) ?? AudioPreferences(ambienceSoundId: soundId),
+        );
+      case Failure(:final failure):
+        state = AsyncValue.error(failure, StackTrace.current);
+    }
   }
 
   Future<void> setAmbienceVolume(double volume) async {
-    await _service.setAmbienceVolume(volume);
-    state = AsyncValue.data(state.value?.copyWith(ambienceVolume: volume) ?? AudioPreferences(ambienceVolume: volume));
+    final result = await _service.setAmbienceVolume(volume);
+    switch (result) {
+      case Success():
+        state = AsyncValue.data(state.value?.copyWith(ambienceVolume: volume) ?? AudioPreferences(ambienceVolume: volume));
+      case Failure(:final failure):
+        state = AsyncValue.error(failure, StackTrace.current);
+    }
   }
 
   Future<void> setAmbienceEnabled(bool enabled) async {
-    await _service.setAmbienceEnabled(enabled);
-    state = AsyncValue.data(
-      state.value?.copyWith(ambienceEnabled: enabled) ?? AudioPreferences(ambienceEnabled: enabled),
-    );
+    final result = await _service.setAmbienceEnabled(enabled);
+    switch (result) {
+      case Success():
+        state = AsyncValue.data(
+          state.value?.copyWith(ambienceEnabled: enabled) ?? AudioPreferences(ambienceEnabled: enabled),
+        );
+      case Failure(:final failure):
+        state = AsyncValue.error(failure, StackTrace.current);
+    }
   }
 
-  Future<void> setFocusDuration(int minutes) async => _service.setFocusDuration(minutes);
+  Future<void> setFocusDuration(int minutes) async {
+    final result = await _service.setFocusDuration(minutes);
+    if (result case Failure(:final failure)) {
+      state = AsyncValue.error(failure, StackTrace.current);
+    }
+  }
 
-  Future<void> setBreakDuration(int minutes) async => _service.setBreakDuration(minutes);
+  Future<void> setBreakDuration(int minutes) async {
+    final result = await _service.setBreakDuration(minutes);
+    if (result case Failure(:final failure)) {
+      state = AsyncValue.error(failure, StackTrace.current);
+    }
+  }
 
   // ---- Preview logic -------------------------------------------------------
   //

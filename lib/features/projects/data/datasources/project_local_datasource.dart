@@ -6,15 +6,15 @@ import '../../domain/entities/project_list_filter_state.dart';
 abstract interface class IProjectLocalDataSource {
   Future<List<ProjectTableData>> getAllProjects();
 
-  Future<ProjectTableData?> getProjectById(BigInt id);
+  Future<ProjectTableData?> getProjectById(int id);
 
   Future<int> createProject(ProjectTableCompanion companion);
 
   Future<void> updateProject(ProjectTableCompanion companion);
 
-  Future<void> deleteProject(BigInt id);
+  Future<void> deleteProject(int id);
 
-  Stream<ProjectTableData?> watchProjectById(BigInt id);
+  Stream<ProjectTableData?> watchProjectById(int id);
 
   Stream<List<ProjectTableData>> watchAllProjects();
 
@@ -36,7 +36,7 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
   }
 
   @override
-  Future<ProjectTableData?> getProjectById(BigInt id) async {
+  Future<ProjectTableData?> getProjectById(int id) async {
     final query = _db.select(_db.projectTable)..where((t) => t.id.equals(id));
     return await query.getSingleOrNull();
   }
@@ -52,14 +52,14 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
   }
 
   @override
-  Future<void> deleteProject(BigInt id) async {
-    // Cascade: delete all tasks belonging to this project first
-    await (_db.delete(_db.taskTable)..where((t) => t.projectId.equals(id))).go();
+  Future<void> deleteProject(int id) async {
+    // ON DELETE CASCADE on TaskTable.projectId propagates the delete to all
+    // tasks (and transitively to their focus sessions). A single statement suffices.
     await (_db.delete(_db.projectTable)..where((t) => t.id.equals(id))).go();
   }
 
   @override
-  Stream<ProjectTableData?> watchProjectById(BigInt id) {
+  Stream<ProjectTableData?> watchProjectById(int id) {
     return (_db.select(_db.projectTable)..where((t) => t.id.equals(id))).watchSingleOrNull();
   }
 

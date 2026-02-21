@@ -7,7 +7,7 @@ import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 
 class TaskCommands {
-  static void create(BuildContext context, {required BigInt projectId, BigInt? parentTaskId, int depth = 0}) {
+  static void create(BuildContext context, {required int projectId, int? parentTaskId, int depth = 0}) {
     getIt<NavigationService>().goToCreateTask(context, projectId: projectId, parentTaskId: parentTaskId, depth: depth);
   }
 

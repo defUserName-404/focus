@@ -21,17 +21,18 @@ class FocusMediaSessionCoordinator {
   void updateMediaSession(FocusSession session) {
     final totalFocusSeconds = session.focusDurationMinutes * 60;
     final totalBreakSeconds = session.breakDurationMinutes * 60;
+    final focusEnd = session.focusEndElapsed;
     final isPlaying = session.state == SessionState.running || session.state == SessionState.onBreak;
 
     final bool isFocusPhase;
     if (session.state == SessionState.paused) {
-      isFocusPhase = session.elapsedSeconds < totalFocusSeconds;
+      isFocusPhase = session.elapsedSeconds < focusEnd;
     } else {
       isFocusPhase = session.state == SessionState.running;
     }
 
     final phaseDuration = isFocusPhase ? totalFocusSeconds : totalBreakSeconds;
-    final elapsedInPhase = isFocusPhase ? session.elapsedSeconds : session.elapsedSeconds - totalFocusSeconds;
+    final elapsedInPhase = isFocusPhase ? session.elapsedSeconds : session.elapsedSeconds - focusEnd;
 
     _audioHandler.updateSessionMediaItem(
       title: isFocusPhase ? 'Focus Session' : 'Break Time',

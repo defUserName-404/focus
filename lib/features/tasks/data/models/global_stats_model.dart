@@ -1,5 +1,10 @@
+import 'package:dart_mappable/dart_mappable.dart';
+
+part 'global_stats_model.mapper.dart';
+
 /// Raw aggregated global stats from the database.
-class GlobalStatsModel {
+@MappableClass()
+class GlobalStatsModel with GlobalStatsModelMappable {
   final int totalSeconds;
   final int totalSessions;
   final int completedSessions;

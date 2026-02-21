@@ -4,15 +4,15 @@ import '../entities/project.dart';
 abstract interface class IProjectRepository {
   Future<List<Project>> getAllProjects();
 
-  Future<Project?> getProjectById(BigInt id);
+  Future<Project?> getProjectById(int id);
 
   Future<Project> createProject(Project project);
 
   Future<void> updateProject(Project project);
 
-  Future<void> deleteProject(BigInt id);
+  Future<void> deleteProject(int id);
 
-  Stream<Project?> watchProjectById(BigInt id);
+  Stream<Project?> watchProjectById(int id);
 
   Stream<List<Project>> watchAllProjects();
 

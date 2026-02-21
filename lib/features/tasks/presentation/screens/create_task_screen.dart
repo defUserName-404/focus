@@ -10,8 +10,8 @@ import '../../domain/entities/task_priority.dart';
 import '../providers/task_provider.dart';
 
 class CreateTaskScreen extends ConsumerStatefulWidget {
-  final BigInt projectId;
-  final BigInt? parentTaskId;
+  final int projectId;
+  final int? parentTaskId;
   final int depth;
 
   const CreateTaskScreen({super.key, required this.projectId, this.parentTaskId, this.depth = 0});

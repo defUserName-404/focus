@@ -17,7 +17,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -49,6 +49,22 @@ class AppDatabase extends _$AppDatabase {
     onCreate: (m) async {
       await m.createAll();
     },
-    onUpgrade: (m, from, to) async {},
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // v1 → v2: TaskTable gains ON DELETE CASCADE on projectId and parentTaskId.
+        // FocusSessionTable already had cascade on taskId, so drop sessions first
+        // to avoid FK constraint issues, then rebuild both tables.
+        // ⚠️  This migration is destructive — task and session data is cleared.
+        await customStatement('DROP TABLE IF EXISTS focus_session_table');
+        await customStatement('DROP TABLE IF EXISTS task_table');
+        await m.createTable(taskTable);
+        await m.createTable(focusSessionTable);
+      }
+    },
+    beforeOpen: (details) async {
+      // SQLite requires this pragma to be enabled per connection.
+      // Must run before any data-layer operation so FK constraints are enforced.
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
   );
 }

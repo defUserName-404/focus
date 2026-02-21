@@ -7,8 +7,8 @@ import '../../domain/entities/session_state.dart';
 @TableIndex(name: 'focus_session_task_id_idx', columns: {#taskId})
 @TableIndex(name: 'focus_session_start_time_idx', columns: {#startTime})
 class FocusSessionTable extends Table {
-  Int64Column get id => int64().autoIncrement()();
-  Int64Column get taskId => int64().nullable().references(TaskTable, #id, onDelete: KeyAction.cascade)();
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get taskId => integer().nullable().references(TaskTable, #id, onDelete: KeyAction.cascade)();
   IntColumn get focusDurationMinutes => integer()();
   IntColumn get breakDurationMinutes => integer()();
   DateTimeColumn get startTime => dateTime()();

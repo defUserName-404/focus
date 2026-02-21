@@ -16,13 +16,13 @@ final taskStatsRepositoryProvider = Provider<ITaskStatsRepository>((ref) {
 /// Watches aggregated stats for a single task.
 final taskStatsProvider = StreamProvider.family<TaskStats, String>((ref, taskIdString) {
   final repository = ref.watch(taskStatsRepositoryProvider);
-  return repository.watchTaskStats(BigInt.parse(taskIdString));
+  return repository.watchTaskStats(int.parse(taskIdString));
 });
 
 /// Watches the most recent focus sessions for a task (max 10).
 final recentSessionsProvider = StreamProvider.family<List<FocusSession>, String>((ref, taskIdString) {
   final repository = ref.watch(taskStatsRepositoryProvider);
-  return repository.watchRecentSessions(BigInt.parse(taskIdString));
+  return repository.watchRecentSessions(int.parse(taskIdString));
 });
 
 /// Watches daily completed sessions across ALL tasks for the activity heatmap.
