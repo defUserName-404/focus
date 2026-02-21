@@ -53,8 +53,8 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
 
   @override
   Future<void> deleteProject(int id) async {
-    // Cascade: delete all tasks belonging to this project first
-    await (_db.delete(_db.taskTable)..where((t) => t.projectId.equals(id))).go();
+    // ON DELETE CASCADE on TaskTable.projectId propagates the delete to all
+    // tasks (and transitively to their focus sessions). A single statement suffices.
     await (_db.delete(_db.projectTable)..where((t) => t.id.equals(id))).go();
   }
 
