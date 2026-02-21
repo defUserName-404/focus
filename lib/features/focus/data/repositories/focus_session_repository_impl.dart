@@ -13,7 +13,7 @@ class FocusSessionRepositoryImpl implements IFocusSessionRepository {
   Future<FocusSession> startSession(FocusSession session) async {
     final companion = session.toCompanion();
     final id = await _local.createSession(companion);
-    return session.copyWith(id: BigInt.from(id));
+    return session.copyWith(id: id);
   }
 
   @override
@@ -30,7 +30,7 @@ class FocusSessionRepositoryImpl implements IFocusSessionRepository {
   }
 
   @override
-  Stream<List<FocusSession>> watchSessionsByTask(BigInt taskId) {
+  Stream<List<FocusSession>> watchSessionsByTask(int taskId) {
     return _local.watchSessionsByTask(taskId).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
@@ -40,7 +40,7 @@ class FocusSessionRepositoryImpl implements IFocusSessionRepository {
   }
 
   @override
-  Future<void> deleteSession(BigInt id) async {
+  Future<void> deleteSession(int id) async {
     await _local.deleteSession(id);
   }
 }

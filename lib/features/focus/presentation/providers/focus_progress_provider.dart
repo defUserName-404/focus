@@ -11,18 +11,20 @@ FocusProgress? focusProgress(Ref ref) {
   final session = ref.watch(focusTimerProvider);
   if (session == null) return null;
 
-  final totalFocusSeconds = session.focusDurationMinutes * 60;
+  // Use focusEndElapsed (not the raw configured duration) so that
+  // skipped focus phases are reflected correctly in the progress ring.
+  final focusEnd = session.focusEndElapsed;
 
   // Determine phase: when paused, infer from elapsed time.
   final bool isFocus;
   if (session.state == SessionState.paused) {
-    isFocus = session.elapsedSeconds < totalFocusSeconds;
+    isFocus = session.elapsedSeconds < focusEnd;
   } else {
     isFocus = session.state == SessionState.running || session.state == SessionState.idle;
   }
 
-  final totalSeconds = isFocus ? totalFocusSeconds : session.breakDurationMinutes * 60;
-  final elapsedInPhase = isFocus ? session.elapsedSeconds : session.elapsedSeconds - totalFocusSeconds;
+  final totalSeconds = isFocus ? session.focusDurationMinutes * 60 : session.breakDurationMinutes * 60;
+  final elapsedInPhase = isFocus ? session.elapsedSeconds : session.elapsedSeconds - focusEnd;
 
   final remaining = (totalSeconds - elapsedInPhase).clamp(0, totalSeconds);
   final progress = totalSeconds > 0 ? (elapsedInPhase / totalSeconds).clamp(0.0, 1.0) : 0.0;

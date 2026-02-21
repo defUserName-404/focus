@@ -46,7 +46,7 @@ class FocusCommands {
   //  Public API
 
   /// Navigate to the focus session screen for a given task.
-  static Future<void> start(BuildContext context, WidgetRef ref, {required BigInt taskId}) async {
+  static Future<void> start(BuildContext context, WidgetRef ref, {required int taskId}) async {
     final existing = ref.read(focusTimerProvider);
     final nav = getIt<NavigationService>();
 
@@ -106,7 +106,7 @@ class FocusCommands {
 
   //  Internal creation helper
 
-  static Future<void> _createAndNavigate(BuildContext context, WidgetRef ref, {BigInt? taskId}) async {
+  static Future<void> _createAndNavigate(BuildContext context, WidgetRef ref, {int? taskId}) async {
     final prefs = await _timerPrefs();
 
     await ref

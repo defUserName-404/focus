@@ -4,7 +4,7 @@ import '../../domain/entities/session_state.dart';
 abstract class IFocusLocalDataSource {
   Future<List<FocusSessionData>> getAllSessions();
 
-  Future<FocusSessionData?> getSessionById(BigInt id);
+  Future<FocusSessionData?> getSessionById(int id);
 
   Future<FocusSessionData?> getActiveSession();
 
@@ -12,9 +12,9 @@ abstract class IFocusLocalDataSource {
 
   Future<void> updateSession(FocusSessionTableCompanion companion);
 
-  Future<void> deleteSession(BigInt id);
+  Future<void> deleteSession(int id);
 
-  Stream<List<FocusSessionData>> watchSessionsByTask(BigInt taskId);
+  Stream<List<FocusSessionData>> watchSessionsByTask(int taskId);
 
   Stream<List<FocusSessionData>> watchAllSessions();
 }
@@ -30,7 +30,7 @@ class FocusLocalDataSourceImpl implements IFocusLocalDataSource {
   }
 
   @override
-  Future<FocusSessionData?> getSessionById(BigInt id) async {
+  Future<FocusSessionData?> getSessionById(int id) async {
     return await (_db.select(_db.focusSessionTable)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
@@ -45,21 +45,26 @@ class FocusLocalDataSourceImpl implements IFocusLocalDataSource {
 
   @override
   Future<int> createSession(FocusSessionTableCompanion companion) async {
-    final id = await _db.into(_db.focusSessionTable).insert(companion);
-    // Keep daily stats table in sync.
-    await _recalcForCompanion(companion);
-    return id;
+    // Transaction ensures the session insert and daily stats recalc
+    // are committed atomically, preventing watchers from seeing a
+    // half-updated state (root cause of the today / overall mismatch).
+    return _db.transaction(() async {
+      final id = await _db.into(_db.focusSessionTable).insert(companion);
+      await _recalcForCompanion(companion);
+      return id;
+    });
   }
 
   @override
   Future<void> updateSession(FocusSessionTableCompanion companion) async {
-    await (_db.update(_db.focusSessionTable)..where((t) => t.id.equals(companion.id.value))).write(companion);
-    // Keep daily stats table in sync.
-    await _recalcForCompanion(companion);
+    await _db.transaction(() async {
+      await (_db.update(_db.focusSessionTable)..where((t) => t.id.equals(companion.id.value))).write(companion);
+      await _recalcForCompanion(companion);
+    });
   }
 
   @override
-  Future<void> deleteSession(BigInt id) async {
+  Future<void> deleteSession(int id) async {
     // Fetch the session first so we know which date to recalculate.
     final session = await getSessionById(id);
     await (_db.delete(_db.focusSessionTable)..where((t) => t.id.equals(id))).go();
@@ -69,7 +74,7 @@ class FocusLocalDataSourceImpl implements IFocusLocalDataSource {
   }
 
   @override
-  Stream<List<FocusSessionData>> watchSessionsByTask(BigInt taskId) {
+  Stream<List<FocusSessionData>> watchSessionsByTask(int taskId) {
     return (_db.select(_db.focusSessionTable)..where((t) => t.taskId.equals(taskId))).watch();
   }
 
