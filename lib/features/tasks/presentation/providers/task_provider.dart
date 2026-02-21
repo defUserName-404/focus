@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart' show StreamProvider;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/common/result.dart';
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_priority.dart';
@@ -18,13 +19,13 @@ ITaskRepository taskRepository(Ref ref) {
 @Riverpod(keepAlive: true)
 Stream<List<Task>> tasksByProject(Ref ref, String projectId) {
   final repository = ref.watch(taskRepositoryProvider);
-  return repository.watchTasksByProjectId(BigInt.parse(projectId));
+  return repository.watchTasksByProjectId(int.parse(projectId));
 }
 
 @Riverpod(keepAlive: true)
 Future<Task> taskById(Ref ref, String taskId) async {
   final repository = ref.watch(taskRepositoryProvider);
-  final task = await repository.getTaskById(BigInt.parse(taskId));
+  final task = await repository.getTaskById(int.parse(taskId));
   if (task == null) throw Exception('Task not found: $taskId');
   return task;
 }
@@ -59,7 +60,7 @@ final filteredTasksProvider = StreamProvider.family<List<Task>, String>((ref, pr
   final filter = ref.watch(taskListFilterProvider(projectId));
 
   return repository.watchFilteredTasks(
-    projectId: BigInt.parse(projectId),
+    projectId: int.parse(projectId),
     searchQuery: filter.searchQuery,
     sortCriteria: filter.sortCriteria,
     sortOrder: filter.sortOrder,
@@ -81,7 +82,7 @@ class TaskNotifier extends _$TaskNotifier {
   Future<void> _loadTasks(String projectId) async {
     state = const AsyncValue.loading();
     try {
-      final tasks = await _service.getTasksByProjectId(BigInt.parse(projectId));
+      final tasks = await _service.getTasksByProjectId(int.parse(projectId));
       state = AsyncValue.data(tasks);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -90,7 +91,7 @@ class TaskNotifier extends _$TaskNotifier {
 
   Future<Task> createTask({
     required String projectId,
-    BigInt? parentTaskId,
+    int? parentTaskId,
     required String title,
     TaskPriority? priority,
     String? description,
@@ -98,8 +99,8 @@ class TaskNotifier extends _$TaskNotifier {
     DateTime? endDate,
     required int depth,
   }) async {
-    final created = await _service.createTask(
-      projectId: BigInt.parse(projectId),
+    final result = await _service.createTask(
+      projectId: int.parse(projectId),
       parentTaskId: parentTaskId,
       title: title,
       description: description,
@@ -108,22 +109,42 @@ class TaskNotifier extends _$TaskNotifier {
       endDate: endDate,
       depth: depth,
     );
-    await _loadTasks(projectId);
-    return created;
+    switch (result) {
+      case Success(:final value):
+        await _loadTasks(projectId);
+        return value;
+      case Failure(:final failure):
+        throw failure;
+    }
   }
 
   Future<void> updateTask(Task task) async {
-    await _service.updateTask(task);
-    await _loadTasks(task.projectId.toString());
+    final result = await _service.updateTask(task);
+    switch (result) {
+      case Success():
+        await _loadTasks(task.projectId.toString());
+      case Failure(:final failure):
+        throw failure;
+    }
   }
 
-  Future<void> deleteTask(BigInt id, String projectId) async {
-    await _service.deleteTask(id);
-    await _loadTasks(projectId);
+  Future<void> deleteTask(int id, String projectId) async {
+    final result = await _service.deleteTask(id);
+    switch (result) {
+      case Success():
+        await _loadTasks(projectId);
+      case Failure(:final failure):
+        throw failure;
+    }
   }
 
   Future<void> toggleTaskCompletion(Task task) async {
-    await _service.toggleTaskCompletion(task);
-    await _loadTasks(task.projectId.toString());
+    final result = await _service.toggleTaskCompletion(task);
+    switch (result) {
+      case Success():
+        await _loadTasks(task.projectId.toString());
+      case Failure(:final failure):
+        throw failure;
+    }
   }
 }

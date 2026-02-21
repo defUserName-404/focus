@@ -13,19 +13,19 @@ class TaskRepositoryImpl implements ITaskRepository {
   TaskRepositoryImpl(this._local);
 
   @override
-  Future<List<Task>> getTasksByProjectId(BigInt projectId) async {
+  Future<List<Task>> getTasksByProjectId(int projectId) async {
     final rows = await _local.getTasksByProjectId(projectId);
     return rows.map((r) => r.toDomain()).toList();
   }
 
   @override
-  Future<Task?> getTaskById(BigInt id) async {
+  Future<Task?> getTaskById(int id) async {
     final row = await _local.getTaskById(id);
     return row?.toDomain();
   }
 
   @override
-  Future<List<Task>> getSubtasks(BigInt parentTaskId) async {
+  Future<List<Task>> getSubtasks(int parentTaskId) async {
     final rows = await _local.getSubtasks(parentTaskId);
     return rows.map((r) => r.toDomain()).toList();
   }
@@ -34,7 +34,7 @@ class TaskRepositoryImpl implements ITaskRepository {
   Future<Task> createTask(Task task) async {
     final companion = task.toCompanion();
     final id = await _local.createTask(companion);
-    return task.copyWith(id: BigInt.from(id));
+    return task.copyWith(id: id);
   }
 
   @override
@@ -44,18 +44,18 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   @override
-  Future<void> deleteTask(BigInt id) async {
+  Future<void> deleteTask(int id) async {
     await _local.deleteTask(id);
   }
 
   @override
-  Stream<List<Task>> watchTasksByProjectId(BigInt projectId) {
+  Stream<List<Task>> watchTasksByProjectId(int projectId) {
     return _local.watchTasksByProjectId(projectId).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
   @override
   Stream<List<Task>> watchFilteredTasks({
-    required BigInt projectId,
+    required int projectId,
     String searchQuery = '',
     TaskSortCriteria sortCriteria = TaskSortCriteria.recentlyModified,
     TaskSortOrder sortOrder = TaskSortOrder.none,

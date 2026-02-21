@@ -1,10 +1,9 @@
-import 'package:drift/drift.dart'
-    show BuildGeneralColumn, DateTimeColumn, Table, TextColumn, Int64Column, BuildInt64Column, TableIndex;
+import 'package:drift/drift.dart';
 
 @TableIndex(name: 'project_created_at_idx', columns: {#createdAt})
 @TableIndex(name: 'project_updated_at_idx', columns: {#updatedAt})
 class ProjectTable extends Table {
-  Int64Column get id => int64().autoIncrement()();
+  IntColumn get id => integer().autoIncrement()();
 
   TextColumn get title => text()();
 

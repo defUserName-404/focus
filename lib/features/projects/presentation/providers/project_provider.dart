@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:flutter/foundation.dart';
+import '../../../../core/common/result.dart';
 import '../../../../core/di/injection.dart';
 import '../../../tasks/presentation/providers/task_provider.dart';
 import '../../domain/entities/project.dart';
@@ -27,7 +28,7 @@ Stream<List<Project>> projectList(Ref ref) {
 @Riverpod(keepAlive: true)
 Stream<Project?> projectById(Ref ref, String id) {
   final repository = ref.watch(projectRepositoryProvider);
-  return repository.watchProjectById(BigInt.parse(id));
+  return repository.watchProjectById(int.parse(id));
 }
 
 //  Filter state provider
@@ -109,23 +110,38 @@ class ProjectNotifier extends _$ProjectNotifier {
     DateTime? startDate,
     DateTime? deadline,
   }) async {
-    final createdProject = await _service.createProject(
+    final result = await _service.createProject(
       title: title,
       description: description,
       startDate: startDate,
       deadline: deadline,
     );
-    await _loadProjects();
-    return createdProject;
+    switch (result) {
+      case Success(:final value):
+        await _loadProjects();
+        return value;
+      case Failure(:final failure):
+        throw failure;
+    }
   }
 
   Future<void> updateProject(Project project) async {
-    await _service.updateProject(project);
-    await _loadProjects();
+    final result = await _service.updateProject(project);
+    switch (result) {
+      case Success():
+        await _loadProjects();
+      case Failure(:final failure):
+        throw failure;
+    }
   }
 
-  Future<void> deleteProject(BigInt id) async {
-    await _service.deleteProject(id);
-    await _loadProjects();
+  Future<void> deleteProject(int id) async {
+    final result = await _service.deleteProject(id);
+    switch (result) {
+      case Success():
+        await _loadProjects();
+      case Failure(:final failure):
+        throw failure;
+    }
   }
 }

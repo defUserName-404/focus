@@ -127,7 +127,7 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
     final projectName = _projectController.text.trim();
     if (title.isEmpty || projectName.isEmpty) return;
 
-    BigInt projectId;
+    int projectId;
 
     if (_selectedProject.value != null) {
       projectId = _selectedProject.value!.id!;

@@ -2,6 +2,10 @@ import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 
 import 'task.dart';
 
+/// Sentinel object used in [TaskCopyWith.copyWith] to distinguish
+/// "parameter not provided" from "explicitly set to null".
+///
+/// See [FocusSessionCopyWith] for the same pattern and rationale.
 const _TaskCopyWithUnset _taskCopyWithUnset = _TaskCopyWithUnset();
 
 class _TaskCopyWithUnset {
@@ -10,8 +14,8 @@ class _TaskCopyWithUnset {
 
 extension TaskCopyWith on Task {
   Task copyWith({
-    BigInt? id,
-    BigInt? projectId,
+    int? id,
+    int? projectId,
     Object? parentTaskId = _taskCopyWithUnset,
     String? title,
     String? description,
@@ -25,7 +29,7 @@ extension TaskCopyWith on Task {
   }) => Task(
     id: id ?? this.id,
     projectId: projectId ?? this.projectId,
-    parentTaskId: parentTaskId == _taskCopyWithUnset ? this.parentTaskId : parentTaskId as BigInt?,
+    parentTaskId: parentTaskId == _taskCopyWithUnset ? this.parentTaskId : parentTaskId as int?,
     title: title ?? this.title,
     description: description ?? this.description,
     priority: priority ?? this.priority,

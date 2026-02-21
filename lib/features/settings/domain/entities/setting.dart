@@ -1,3 +1,6 @@
+import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
+
 /// Known setting keys used throughout the app.
 ///
 /// Centralises all preference keys to avoid magic strings.
@@ -22,15 +25,20 @@ abstract final class SettingsKeys {
 }
 
 /// Domain entity representing a user preference.
-class Setting {
+@immutable
+class Setting extends Equatable {
   final String key;
   final String value;
 
   const Setting({required this.key, required this.value});
+
+  @override
+  List<Object?> get props => [key, value];
 }
 
 /// Convenience wrapper holding all decoded audio preferences.
-class AudioPreferences {
+@immutable
+class AudioPreferences extends Equatable {
   final String? alarmSoundId;
   final String? ambienceSoundId;
   final double ambienceVolume;
@@ -56,10 +64,16 @@ class AudioPreferences {
       ambienceEnabled: ambienceEnabled ?? this.ambienceEnabled,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    alarmSoundId, ambienceSoundId, ambienceVolume, ambienceEnabled,
+  ];
 }
 
 /// Convenience wrapper for Pomodoro timer durations.
-class TimerPreferences {
+@immutable
+class TimerPreferences extends Equatable {
   final int focusDurationMinutes;
   final int breakDurationMinutes;
 
@@ -71,4 +85,7 @@ class TimerPreferences {
       breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,
     );
   }
+
+  @override
+  List<Object?> get props => [focusDurationMinutes, breakDurationMinutes];
 }

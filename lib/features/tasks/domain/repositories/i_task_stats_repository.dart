@@ -6,10 +6,10 @@ import '../../../focus/domain/entities/focus_session.dart';
 
 abstract class ITaskStatsRepository {
   /// Watches aggregated stats for a task, computed at the ORM level.
-  Stream<TaskStats> watchTaskStats(BigInt taskId);
+  Stream<TaskStats> watchTaskStats(int taskId);
 
   /// Watches the most recent focus sessions for a task.
-  Stream<List<FocusSession>> watchRecentSessions(BigInt taskId, {int limit = 10});
+  Stream<List<FocusSession>> watchRecentSessions(int taskId, {int limit = 10});
 
   /// Watches daily completed sessions across all tasks.
   /// Keys are ISO date strings (`YYYY-MM-DD`).

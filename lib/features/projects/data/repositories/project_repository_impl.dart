@@ -17,7 +17,7 @@ class ProjectRepositoryImpl implements IProjectRepository {
   }
 
   @override
-  Future<Project?> getProjectById(BigInt id) async {
+  Future<Project?> getProjectById(int id) async {
     final row = await _localDataSource.getProjectById(id);
     return row?.toDomain();
   }
@@ -26,7 +26,7 @@ class ProjectRepositoryImpl implements IProjectRepository {
   Future<Project> createProject(Project project) async {
     final companion = project.toCompanion();
     final id = await _localDataSource.createProject(companion);
-    return project.copyWith(id: BigInt.from(id));
+    return project.copyWith(id: id);
   }
 
   @override
@@ -36,12 +36,12 @@ class ProjectRepositoryImpl implements IProjectRepository {
   }
 
   @override
-  Future<void> deleteProject(BigInt id) async {
+  Future<void> deleteProject(int id) async {
     await _localDataSource.deleteProject(id);
   }
 
   @override
-  Stream<Project?> watchProjectById(BigInt id) {
+  Stream<Project?> watchProjectById(int id) {
     return _localDataSource.watchProjectById(id).map((row) => row?.toDomain());
   }
 

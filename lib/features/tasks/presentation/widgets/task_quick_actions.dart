@@ -12,7 +12,7 @@ import '../providers/task_provider.dart';
 /// Quick action buttons for the task detail screen.
 class TaskQuickActions extends ConsumerWidget {
   final Task task;
-  final BigInt projectId;
+  final int projectId;
 
   const TaskQuickActions({super.key, required this.task, required this.projectId});
 

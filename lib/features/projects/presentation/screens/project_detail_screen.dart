@@ -19,7 +19,7 @@ import '../providers/project_provider.dart';
 import '../widgets/project_detail_header.dart';
 
 class ProjectDetailScreen extends ConsumerStatefulWidget {
-  final BigInt projectId;
+  final int projectId;
 
   const ProjectDetailScreen({super.key, required this.projectId});
 

@@ -1,6 +1,10 @@
+import '../../../../core/common/result.dart';
+import '../../../../core/services/log_service.dart';
 import '../entities/project.dart';
 import '../entities/project_extensions.dart';
 import '../repositories/i_project_repository.dart';
+
+final _log = LogService.instance;
 
 /// Domain service for project operations.
 ///
@@ -18,7 +22,7 @@ class ProjectService {
 
   Stream<List<Project>> watchAllProjects() => _repository.watchAllProjects();
 
-  Stream<Project?> watchProjectById(BigInt id) => _repository.watchProjectById(id);
+  Stream<Project?> watchProjectById(int id) => _repository.watchProjectById(id);
 
   Stream<List<Project>> watchFilteredProjects({String searchQuery = '', dynamic sortCriteria, dynamic sortOrder}) {
     return _repository.watchFilteredProjects(
@@ -30,28 +34,50 @@ class ProjectService {
 
   //  Write
 
-  Future<Project> createProject({
+  Future<Result<Project>> createProject({
     required String title,
     String? description,
     DateTime? startDate,
     DateTime? deadline,
   }) async {
-    final now = DateTime.now();
-    final project = Project(
-      title: title,
-      description: description,
-      startDate: startDate,
-      deadline: deadline,
-      createdAt: now,
-      updatedAt: now,
-    );
-    return _repository.createProject(project);
+    try {
+      final now = DateTime.now();
+      final project = Project(
+        title: title,
+        description: description,
+        startDate: startDate,
+        deadline: deadline,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final created = await _repository.createProject(project);
+      _log.info('Project created: "$title" (id=${created.id})', tag: 'ProjectService');
+      return Success(created);
+    } catch (e, st) {
+      _log.error('Failed to create project "$title"', tag: 'ProjectService', error: e, stackTrace: st);
+      return Failure(DatabaseFailure('Failed to create project', error: e, stackTrace: st));
+    }
   }
 
-  Future<void> updateProject(Project project) async {
-    final updated = project.copyWith(updatedAt: DateTime.now());
-    return _repository.updateProject(updated);
+  Future<Result<void>> updateProject(Project project) async {
+    try {
+      final updated = project.copyWith(updatedAt: DateTime.now());
+      await _repository.updateProject(updated);
+      return const Success(null);
+    } catch (e, st) {
+      _log.error('Failed to update project ${project.id}', tag: 'ProjectService', error: e, stackTrace: st);
+      return Failure(DatabaseFailure('Failed to update project', error: e, stackTrace: st));
+    }
   }
 
-  Future<void> deleteProject(BigInt id) => _repository.deleteProject(id);
+  Future<Result<void>> deleteProject(int id) async {
+    try {
+      await _repository.deleteProject(id);
+      _log.info('Project $id deleted', tag: 'ProjectService');
+      return const Success(null);
+    } catch (e, st) {
+      _log.error('Failed to delete project $id', tag: 'ProjectService', error: e, stackTrace: st);
+      return Failure(DatabaseFailure('Failed to delete project', error: e, stackTrace: st));
+    }
+  }
 }

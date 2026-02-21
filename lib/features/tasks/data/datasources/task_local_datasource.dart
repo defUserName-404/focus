@@ -6,15 +6,15 @@ import 'package:focus/features/tasks/presentation/providers/task_filter_state.da
 import '../../domain/entities/all_tasks_filter_state.dart';
 
 abstract class ITaskLocalDataSource {
-  Future<List<TaskTableData>> getTasksByProjectId(BigInt projectId);
-  Future<TaskTableData?> getTaskById(BigInt id);
-  Future<List<TaskTableData>> getSubtasks(BigInt parentTaskId);
+  Future<List<TaskTableData>> getTasksByProjectId(int projectId);
+  Future<TaskTableData?> getTaskById(int id);
+  Future<List<TaskTableData>> getSubtasks(int parentTaskId);
   Future<int> createTask(TaskTableCompanion companion);
   Future<void> updateTask(TaskTableCompanion companion);
-  Future<void> deleteTask(BigInt id);
-  Stream<List<TaskTableData>> watchTasksByProjectId(BigInt projectId);
+  Future<void> deleteTask(int id);
+  Stream<List<TaskTableData>> watchTasksByProjectId(int projectId);
   Stream<List<TaskTableData>> watchFilteredTasks({
-    required BigInt projectId,
+    required int projectId,
     String searchQuery,
     TaskSortCriteria sortCriteria,
     TaskSortOrder sortOrder,
@@ -37,17 +37,17 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   final AppDatabase _db;
 
   @override
-  Future<List<TaskTableData>> getTasksByProjectId(BigInt projectId) async {
+  Future<List<TaskTableData>> getTasksByProjectId(int projectId) async {
     return await (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).get();
   }
 
   @override
-  Future<TaskTableData?> getTaskById(BigInt id) async {
+  Future<TaskTableData?> getTaskById(int id) async {
     return await (_db.select(_db.taskTable)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
   @override
-  Future<List<TaskTableData>> getSubtasks(BigInt parentTaskId) async {
+  Future<List<TaskTableData>> getSubtasks(int parentTaskId) async {
     return await (_db.select(_db.taskTable)..where((t) => t.parentTaskId.equals(parentTaskId))).get();
   }
 
@@ -62,7 +62,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   }
 
   @override
-  Future<void> deleteTask(BigInt id) async {
+  Future<void> deleteTask(int id) async {
     // Cascade: delete child tasks first
     final children = await (_db.select(_db.taskTable)..where((t) => t.parentTaskId.equals(id))).get();
     for (final child in children) {
@@ -72,13 +72,13 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   }
 
   @override
-  Stream<List<TaskTableData>> watchTasksByProjectId(BigInt projectId) {
+  Stream<List<TaskTableData>> watchTasksByProjectId(int projectId) {
     return (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).watch();
   }
 
   @override
   Stream<List<TaskTableData>> watchFilteredTasks({
-    required BigInt projectId,
+    required int projectId,
     String searchQuery = '',
     TaskSortCriteria sortCriteria = TaskSortCriteria.recentlyModified,
     TaskSortOrder sortOrder = TaskSortOrder.none,

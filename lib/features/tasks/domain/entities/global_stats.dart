@@ -1,5 +1,11 @@
+import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
+
 /// Aggregated global statistics across all tasks and sessions.
-class GlobalStats {
+///
+/// Pure data container — formatting lives in presentation-layer extensions.
+@immutable
+class GlobalStats extends Equatable {
   final int totalFocusMinutes;
   final int totalSessions;
   final int completedSessions;
@@ -31,19 +37,12 @@ class GlobalStats {
     currentStreak: 0,
   );
 
-  String get formattedTotalTime {
-    if (totalFocusMinutes < 60) return '${totalFocusMinutes}m';
-    final hours = totalFocusMinutes ~/ 60;
-    final mins = totalFocusMinutes % 60;
-    return mins > 0 ? '${hours}h ${mins}m' : '${hours}h';
-  }
-
-  String get formattedTodayTime {
-    if (todayFocusMinutes < 60) return '${todayFocusMinutes}m';
-    final hours = todayFocusMinutes ~/ 60;
-    final mins = todayFocusMinutes % 60;
-    return mins > 0 ? '${hours}h ${mins}m' : '${hours}h';
-  }
-
   double get taskCompletionRate => totalTasks > 0 ? completedTasks / totalTasks : 0.0;
+
+  @override
+  List<Object?> get props => [
+    totalFocusMinutes, totalSessions, completedSessions,
+    totalTasks, completedTasks, todaySessions, todayFocusMinutes,
+    currentStreak,
+  ];
 }
