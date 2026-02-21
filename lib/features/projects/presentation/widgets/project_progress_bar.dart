@@ -15,28 +15,30 @@ class ProjectProgressBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progressAsync = ref.watch(projectProgressProvider(projectId));
 
-    return progressAsync.maybeWhen(
-      data: (progress) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(progress.label, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
-              Text(
-                '${progress.percent}%',
-                style: context.typography.xs.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: progress.percent == 100 ? context.colors.primary : context.colors.foreground,
-                ),
+    // Use .value so the bar stays visible during async rebuilds
+    // (e.g. after toggling task completion) instead of flashing away.
+    final progress = progressAsync.value;
+    if (progress == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(progress.label, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
+            Text(
+              '${progress.percent}%',
+              style: context.typography.xs.copyWith(
+                fontWeight: FontWeight.w600,
+                color: progress.percent == 100 ? context.colors.primary : context.colors.foreground,
               ),
-            ],
-          ),
-          SizedBox(height: AppConstants.spacing.extraSmall),
-          fu.FDeterminateProgress(value: progress.progress),
-        ],
-      ),
-      orElse: () => const SizedBox.shrink(),
+            ),
+          ],
+        ),
+        SizedBox(height: AppConstants.spacing.extraSmall),
+        fu.FDeterminateProgress(value: progress.progress),
+      ],
     );
   }
 }
