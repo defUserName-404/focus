@@ -493,6 +493,9 @@ class $TaskTableTable extends TaskTable
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project_table (id) ON DELETE CASCADE',
+    ),
   );
   static const VerificationMeta _parentTaskIdMeta = const VerificationMeta(
     'parentTaskId',
@@ -505,7 +508,7 @@ class $TaskTableTable extends TaskTable
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES task_table (id)',
+      'REFERENCES task_table (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
@@ -2334,6 +2337,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
     WritePropagation(
       on: TableUpdateQuery.onTableName(
+        'project_table',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('task_table', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'task_table',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('task_table', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
         'task_table',
         limitUpdateKind: UpdateKind.delete,
       ),
@@ -2362,6 +2379,30 @@ typedef $$ProjectTableTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
+
+final class $$ProjectTableTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $ProjectTableTable, ProjectTableData> {
+  $$ProjectTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TaskTableTable, List<TaskTableData>>
+  _taskTableRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.taskTable,
+    aliasName: $_aliasNameGenerator(db.projectTable.id, db.taskTable.projectId),
+  );
+
+  $$TaskTableTableProcessedTableManager get taskTableRefs {
+    final manager = $$TaskTableTableTableManager(
+      $_db,
+      $_db.taskTable,
+    ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_taskTableRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
 
 class $$ProjectTableTableFilterComposer
     extends Composer<_$AppDatabase, $ProjectTableTable> {
@@ -2406,6 +2447,31 @@ class $$ProjectTableTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> taskTableRefs(
+    Expression<bool> Function($$TaskTableTableFilterComposer f) f,
+  ) {
+    final $$TaskTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.taskTable,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableFilterComposer(
+            $db: $db,
+            $table: $db.taskTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ProjectTableTableOrderingComposer
@@ -2484,6 +2550,31 @@ class $$ProjectTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> taskTableRefs<T extends Object>(
+    Expression<T> Function($$TaskTableTableAnnotationComposer a) f,
+  ) {
+    final $$TaskTableTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.taskTable,
+      getReferencedColumn: (t) => t.projectId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableAnnotationComposer(
+            $db: $db,
+            $table: $db.taskTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ProjectTableTableTableManager
@@ -2497,12 +2588,9 @@ class $$ProjectTableTableTableManager
           $$ProjectTableTableAnnotationComposer,
           $$ProjectTableTableCreateCompanionBuilder,
           $$ProjectTableTableUpdateCompanionBuilder,
-          (
-            ProjectTableData,
-            BaseReferences<_$AppDatabase, $ProjectTableTable, ProjectTableData>,
-          ),
+          (ProjectTableData, $$ProjectTableTableReferences),
           ProjectTableData,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool taskTableRefs})
         > {
   $$ProjectTableTableTableManager(_$AppDatabase db, $ProjectTableTable table)
     : super(
@@ -2552,9 +2640,43 @@ class $$ProjectTableTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ProjectTableTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({taskTableRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (taskTableRefs) db.taskTable],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (taskTableRefs)
+                    await $_getPrefetchedData<
+                      ProjectTableData,
+                      $ProjectTableTable,
+                      TaskTableData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ProjectTableTableReferences
+                          ._taskTableRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$ProjectTableTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).taskTableRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.projectId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
         ),
       );
 }
@@ -2569,12 +2691,9 @@ typedef $$ProjectTableTableProcessedTableManager =
       $$ProjectTableTableAnnotationComposer,
       $$ProjectTableTableCreateCompanionBuilder,
       $$ProjectTableTableUpdateCompanionBuilder,
-      (
-        ProjectTableData,
-        BaseReferences<_$AppDatabase, $ProjectTableTable, ProjectTableData>,
-      ),
+      (ProjectTableData, $$ProjectTableTableReferences),
       ProjectTableData,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool taskTableRefs})
     >;
 typedef $$TaskTableTableCreateCompanionBuilder =
     TaskTableCompanion Function({
@@ -2610,6 +2729,25 @@ typedef $$TaskTableTableUpdateCompanionBuilder =
 final class $$TaskTableTableReferences
     extends BaseReferences<_$AppDatabase, $TaskTableTable, TaskTableData> {
   $$TaskTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProjectTableTable _projectIdTable(_$AppDatabase db) =>
+      db.projectTable.createAlias(
+        $_aliasNameGenerator(db.taskTable.projectId, db.projectTable.id),
+      );
+
+  $$ProjectTableTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<int>('project_id')!;
+
+    final manager = $$ProjectTableTableTableManager(
+      $_db,
+      $_db.projectTable,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static $TaskTableTable _parentTaskIdTable(_$AppDatabase db) =>
       db.taskTable.createAlias(
@@ -2669,11 +2807,6 @@ class $$TaskTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get projectId => $composableBuilder(
-    column: $table.projectId,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<String> get title => $composableBuilder(
     column: $table.title,
     builder: (column) => ColumnFilters(column),
@@ -2719,6 +2852,29 @@ class $$TaskTableTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$ProjectTableTableFilterComposer get projectId {
+    final $$ProjectTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projectTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectTableTableFilterComposer(
+            $db: $db,
+            $table: $db.projectTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$TaskTableTableFilterComposer get parentTaskId {
     final $$TaskTableTableFilterComposer composer = $composerBuilder(
@@ -2783,11 +2939,6 @@ class $$TaskTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get projectId => $composableBuilder(
-    column: $table.projectId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get title => $composableBuilder(
     column: $table.title,
     builder: (column) => ColumnOrderings(column),
@@ -2833,6 +2984,29 @@ class $$TaskTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  $$ProjectTableTableOrderingComposer get projectId {
+    final $$ProjectTableTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projectTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectTableTableOrderingComposer(
+            $db: $db,
+            $table: $db.projectTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   $$TaskTableTableOrderingComposer get parentTaskId {
     final $$TaskTableTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -2869,9 +3043,6 @@ class $$TaskTableTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<int> get projectId =>
-      $composableBuilder(column: $table.projectId, builder: (column) => column);
-
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
@@ -2902,6 +3073,29 @@ class $$TaskTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ProjectTableTableAnnotationComposer get projectId {
+    final $$ProjectTableTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.projectId,
+      referencedTable: $db.projectTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectTableTableAnnotationComposer(
+            $db: $db,
+            $table: $db.projectTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$TaskTableTableAnnotationComposer get parentTaskId {
     final $$TaskTableTableAnnotationComposer composer = $composerBuilder(
@@ -2967,6 +3161,7 @@ class $$TaskTableTableTableManager
           (TaskTableData, $$TaskTableTableReferences),
           TaskTableData,
           PrefetchHooks Function({
+            bool projectId,
             bool parentTaskId,
             bool focusSessionTableRefs,
           })
@@ -3047,7 +3242,11 @@ class $$TaskTableTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({parentTaskId = false, focusSessionTableRefs = false}) {
+              ({
+                projectId = false,
+                parentTaskId = false,
+                focusSessionTableRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
@@ -3069,6 +3268,19 @@ class $$TaskTableTableTableManager
                           dynamic
                         >
                       >(state) {
+                        if (projectId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.projectId,
+                                    referencedTable: $$TaskTableTableReferences
+                                        ._projectIdTable(db),
+                                    referencedColumn: $$TaskTableTableReferences
+                                        ._projectIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
                         if (parentTaskId) {
                           state =
                               state.withJoin(
@@ -3128,7 +3340,11 @@ typedef $$TaskTableTableProcessedTableManager =
       $$TaskTableTableUpdateCompanionBuilder,
       (TaskTableData, $$TaskTableTableReferences),
       TaskTableData,
-      PrefetchHooks Function({bool parentTaskId, bool focusSessionTableRefs})
+      PrefetchHooks Function({
+        bool projectId,
+        bool parentTaskId,
+        bool focusSessionTableRefs,
+      })
     >;
 typedef $$FocusSessionTableTableCreateCompanionBuilder =
     FocusSessionTableCompanion Function({
