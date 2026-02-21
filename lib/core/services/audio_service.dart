@@ -1,17 +1,16 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/foundation.dart';
 
 import '../constants/audio_assets.dart';
+import 'log_service.dart';
 
 class AudioService {
   final AudioPlayer _alarmPlayer = AudioPlayer();
-  final AudioPlayer _bgPlayer = AudioPlayer();
-
-  /// Dedicated player for short sound previews in the settings screen.
-  /// Kept separate so previews never touch the session ambience player.
+  final AudioPlayer _bgPlayer = AudioPlayer()..setPlayerMode(PlayerMode.lowLatency);
   final AudioPlayer _previewPlayer = AudioPlayer();
+  final _log = LogService.instance;
 
   AudioService() {
+    _log.info("AudioService: Initializing...");
     AudioPlayer.global.setAudioContext(
       AudioContext(
         iOS: AudioContextIOS(category: AVAudioSessionCategory.playback, options: {AVAudioSessionOptions.mixWithOthers}),
@@ -30,56 +29,73 @@ class AudioService {
   // Session audio
   // ---------------------------------------------------------------------------
 
-  /// Play an alarm sound, falling back to [AudioAssets.defaultAlarm].
   Future<void> playAlarm([SoundPreset? preset]) async {
     final sound = preset ?? AudioAssets.defaultAlarm;
-    await _alarmPlayer.stop();
-    await _alarmPlayer.play(AssetSource('audio/${sound.assetPath}'));
-  }
-
-  /// Start looping an ambient/focus sound, falling back to [AudioAssets.defaultAmbience].
-  Future<void> startAmbience([SoundPreset? preset]) async {
-    final sound = preset ?? AudioAssets.defaultAmbience;
     try {
-      await _bgPlayer.setReleaseMode(ReleaseMode.loop);
-      await _bgPlayer.play(AssetSource('audio/${sound.assetPath}'));
-    } catch (e) {
-      debugPrint('AudioService.startAmbience: $e');
+      _log.info("AudioService: Playing alarm: ${sound.assetPath}");
+      await _alarmPlayer.stop();
+      await _alarmPlayer.play(AssetSource('audio/${sound.assetPath}'));
+    } catch (e, stack) {
+      _log.error("AudioService: playAlarm failed", error: e, stackTrace: stack);
     }
   }
 
-  Future<void> pauseAmbience() => _bgPlayer.pause();
+  Future<void> startAmbience([SoundPreset? preset]) async {
+    final sound = preset ?? AudioAssets.defaultAmbience;
+    try {
+      _log.info("AudioService: Starting ambience: ${sound.assetPath}");
+      // stop() before play() ensures the buffer is cleared for the new asset
+      await _bgPlayer.stop();
+      await _bgPlayer.setReleaseMode(ReleaseMode.loop);
+      await _bgPlayer.play(AssetSource('audio/${sound.assetPath}'));
+    } catch (e, stack) {
+      _log.error("AudioService: startAmbience failed", error: e, stackTrace: stack);
+    }
+  }
 
-  Future<void> resumeAmbience() => _bgPlayer.resume();
+  Future<void> pauseAmbience() {
+    _log.info("AudioService: Pausing ambience");
+    return _bgPlayer.pause();
+  }
 
-  Future<void> stopAmbience() => _bgPlayer.stop();
+  Future<void> resumeAmbience() {
+    _log.info("AudioService: Resuming ambience");
+    return _bgPlayer.resume();
+  }
+
+  Future<void> stopAmbience() {
+    _log.info("AudioService: Stopping ambience");
+    return _bgPlayer.stop();
+  }
 
   Future<void> setAmbienceVolume(double volume) => _bgPlayer.setVolume(volume);
 
   // ---------------------------------------------------------------------------
   // Preview audio (settings screen)
-  //
-  // Uses a completely separate player so session ambience is unaffected.
-  // The caller is responsible for calling stopPreview() when done or when a
-  // new preview starts (to avoid overlap).
   // ---------------------------------------------------------------------------
 
-  /// Play [preset] once on the preview player.
-  /// Stops any in-progress preview before starting the new one.
   Future<void> startPreview(SoundPreset preset) async {
-    await _previewPlayer.stop();
-    // One-shot, no looping — we just want a short listen.
-    await _previewPlayer.setReleaseMode(ReleaseMode.release);
-    await _previewPlayer.play(AssetSource('audio/${preset.assetPath}'));
+    try {
+      _log.info("AudioService: Starting preview: ${preset.assetPath}");
+      await _previewPlayer.stop();
+      await _previewPlayer.setReleaseMode(ReleaseMode.release);
+      await _previewPlayer.play(AssetSource('audio/${preset.assetPath}'));
+    } catch (e, stack) {
+      _log.error("AudioService: startPreview failed", error: e, stackTrace: stack);
+    }
   }
 
-  Future<void> stopPreview() => _previewPlayer.stop();
+  Future<void> stopPreview() {
+    _log.info("AudioService: Stopping preview");
+    return _previewPlayer.stop();
+  }
 
   Future<void> setNoiseVolume(double volume) async {
     await _bgPlayer.setVolume(volume);
   }
 
   void dispose() {
+    _log.info("AudioService: Disposing players");
     _alarmPlayer.dispose();
     _bgPlayer.dispose();
     _previewPlayer.dispose();
