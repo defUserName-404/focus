@@ -55,3 +55,20 @@ See <a href="docs/wiki/getting_started.md">docs/wiki/getting_started.md</a> for 
 
 ## License
 This project is open source. See LICENSE for details.
+
+## Database Migration (v1 → v2)
+
+This release includes a schema change that adds `ON DELETE CASCADE` to the `task_table` foreign keys so deleting a project or a parent task automatically cascades to child tasks and their sessions.
+
+Migration notes:
+- The app implements a non-destructive migration (rename-create-copy-drop) in `lib/core/services/db_service.dart`.
+- On upgrade the migration will:
+  1. Rename `task_table` and `focus_session_table` to `_old` names.
+  2. Create new tables with the `ON DELETE CASCADE` foreign keys.
+  3. Copy existing rows into the new tables.
+  4. Drop the old tables and recreate necessary indexes.
+
+Testing and backup:
+- Always back up the existing `focus.sqlite` file before testing a migration on device/emulator.
+- To verify migration locally, run the app on a device/emulator with a copy of your DB and confirm rows are preserved after upgrade and deletes cascade as expected.
+- If you want an automated check, I can prepare a test harness that constructs a v1 DB, runs the upgrade, and asserts data integrity.
