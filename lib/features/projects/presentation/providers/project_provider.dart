@@ -121,6 +121,7 @@ class ProjectNotifier extends _$ProjectNotifier {
         await _loadProjects();
         return value;
       case Failure(:final failure):
+        state = AsyncValue.error(failure, StackTrace.current);
         throw failure;
     }
   }
@@ -131,7 +132,7 @@ class ProjectNotifier extends _$ProjectNotifier {
       case Success():
         await _loadProjects();
       case Failure(:final failure):
-        throw failure;
+        state = AsyncValue.error(failure, StackTrace.current);
     }
   }
 
@@ -141,7 +142,7 @@ class ProjectNotifier extends _$ProjectNotifier {
       case Success():
         await _loadProjects();
       case Failure(:final failure):
-        throw failure;
+        state = AsyncValue.error(failure, StackTrace.current);
     }
   }
 }
