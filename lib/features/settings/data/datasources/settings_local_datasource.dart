@@ -1,4 +1,5 @@
 import '../../../../core/services/db_service.dart';
+import '../../../../core/services/log_service.dart';
 
 abstract class ISettingsLocalDataSource {
   Future<String?> getValue(String key);
@@ -16,16 +17,27 @@ class SettingsLocalDataSourceImpl implements ISettingsLocalDataSource {
   SettingsLocalDataSourceImpl(this._db);
 
   final AppDatabase _db;
+  final _log = LogService.instance;
 
   @override
   Future<String?> getValue(String key) async {
-    final row = await (_db.select(_db.settingsTable)..where((t) => t.key.equals(key))).getSingleOrNull();
-    return row?.value;
+    try {
+      final row = await (_db.select(_db.settingsTable)..where((t) => t.key.equals(key))).getSingleOrNull();
+      return row?.value;
+    } catch (e, st) {
+      _log.error('getValue failed', tag: 'SettingsLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<void> setValue(String key, String value) async {
-    await _db.into(_db.settingsTable).insertOnConflictUpdate(SettingsTableCompanion.insert(key: key, value: value));
+    try {
+      await _db.into(_db.settingsTable).insertOnConflictUpdate(SettingsTableCompanion.insert(key: key, value: value));
+    } catch (e, st) {
+      _log.error('setValue failed', tag: 'SettingsLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
@@ -37,8 +49,13 @@ class SettingsLocalDataSourceImpl implements ISettingsLocalDataSource {
 
   @override
   Future<Map<String, String>> getAll() async {
-    final rows = await _db.select(_db.settingsTable).get();
-    return {for (final row in rows) row.key: row.value};
+    try {
+      final rows = await _db.select(_db.settingsTable).get();
+      return {for (final row in rows) row.key: row.value};
+    } catch (e, st) {
+      _log.error('getAll failed', tag: 'SettingsLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:focus/core/services/db_service.dart';
+import 'package:focus/core/services/log_service.dart';
 import 'package:focus/features/tasks/domain/entities/task_filter_state.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 
@@ -35,30 +36,56 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   TaskLocalDataSourceImpl(this._db);
 
   final AppDatabase _db;
+  final _log = LogService.instance;
 
   @override
   Future<List<TaskTableData>> getTasksByProjectId(int projectId) async {
-    return await (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).get();
+    try {
+      return await (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).get();
+    } catch (e, st) {
+      _log.error('getTasksByProjectId failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<TaskTableData?> getTaskById(int id) async {
-    return await (_db.select(_db.taskTable)..where((t) => t.id.equals(id))).getSingleOrNull();
+    try {
+      return await (_db.select(_db.taskTable)..where((t) => t.id.equals(id))).getSingleOrNull();
+    } catch (e, st) {
+      _log.error('getTaskById failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<List<TaskTableData>> getSubtasks(int parentTaskId) async {
-    return await (_db.select(_db.taskTable)..where((t) => t.parentTaskId.equals(parentTaskId))).get();
+    try {
+      return await (_db.select(_db.taskTable)..where((t) => t.parentTaskId.equals(parentTaskId))).get();
+    } catch (e, st) {
+      _log.error('getSubtasks failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<int> createTask(TaskTableCompanion companion) async {
-    return await _db.into(_db.taskTable).insert(companion);
+    try {
+      return await _db.into(_db.taskTable).insert(companion);
+    } catch (e, st) {
+      _log.error('createTask failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<void> updateTask(TaskTableCompanion companion) async {
-    await (_db.update(_db.taskTable)..where((t) => t.id.equals(companion.id.value))).write(companion);
+    try {
+      await (_db.update(_db.taskTable)..where((t) => t.id.equals(companion.id.value))).write(companion);
+    } catch (e, st) {
+      _log.error('updateTask failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
@@ -66,7 +93,12 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     // ON DELETE CASCADE on parentTaskId propagates the delete to all
     // descendant tasks automatically (and further to their sessions via
     // FocusSessionTable.taskId cascade). A single statement suffices.
-    await (_db.delete(_db.taskTable)..where((t) => t.id.equals(id))).go();
+    try {
+      await (_db.delete(_db.taskTable)..where((t) => t.id.equals(id))).go();
+    } catch (e, st) {
+      _log.error('deleteTask failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override

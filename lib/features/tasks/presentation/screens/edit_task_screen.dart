@@ -78,12 +78,14 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
+          start: DateTime.now(),
           control: FDateFieldControl.managed(initial: _startDate, onChange: (date) => _startDate = date),
           clearable: true,
         ),
         FDateField.calendar(
           label: const Text('End Date'),
           hint: _endDate?.toDateString() ?? 'Select End Date (Optional)',
+          start: DateTime.now(),
           control: FDateFieldControl.managed(
             onChange: (date) => _endDate = date,
             validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),

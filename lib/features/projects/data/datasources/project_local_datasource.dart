@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../../core/services/db_service.dart';
+import '../../../../core/services/log_service.dart';
 import '../../domain/entities/project_list_filter_state.dart';
 
 abstract interface class IProjectLocalDataSource {
@@ -29,6 +30,7 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
   ProjectLocalDataSourceImpl(this._db);
 
   final AppDatabase _db;
+  final _log = LogService.instance;
 
   @override
   Future<List<ProjectTableData>> getAllProjects() async {
@@ -43,19 +45,34 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
 
   @override
   Future<int> createProject(ProjectTableCompanion companion) async {
-    return await _db.into(_db.projectTable).insert(companion);
+    try {
+      return await _db.into(_db.projectTable).insert(companion);
+    } catch (e, st) {
+      _log.error('createProject failed', tag: 'ProjectLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<void> updateProject(ProjectTableCompanion companion) async {
-    await (_db.update(_db.projectTable)..where((t) => t.id.equals(companion.id.value))).write(companion);
+    try {
+      await (_db.update(_db.projectTable)..where((t) => t.id.equals(companion.id.value))).write(companion);
+    } catch (e, st) {
+      _log.error('updateProject failed', tag: 'ProjectLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
   Future<void> deleteProject(int id) async {
     // ON DELETE CASCADE on TaskTable.projectId propagates the delete to all
     // tasks (and transitively to their focus sessions). A single statement suffices.
-    await (_db.delete(_db.projectTable)..where((t) => t.id.equals(id))).go();
+    try {
+      await (_db.delete(_db.projectTable)..where((t) => t.id.equals(id))).go();
+    } catch (e, st) {
+      _log.error('deleteProject failed', tag: 'ProjectLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
   }
 
   @override
