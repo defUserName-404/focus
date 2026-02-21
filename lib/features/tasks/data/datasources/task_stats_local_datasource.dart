@@ -46,7 +46,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
           'SELECT '
           'COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) AS total_seconds, '
           'COUNT(*) AS total_sessions, '
-          'SUM(CASE WHEN state = $_completedState THEN 1 ELSE 0 END) AS completed_sessions '
+          'COALESCE(SUM(CASE WHEN state = $_completedState THEN 1 ELSE 0 END), 0) AS completed_sessions '
           'FROM focus_session_table WHERE task_id = ?',
           variables: [Variable<int>(taskId)],
           readsFrom: {_db.focusSessionTable},
