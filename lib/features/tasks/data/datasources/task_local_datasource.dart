@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:focus/core/services/db_service.dart';
+import 'package:focus/features/tasks/domain/entities/task_filter_state.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
-import 'package:focus/features/tasks/presentation/providers/task_filter_state.dart';
 
 import '../../domain/entities/all_tasks_filter_state.dart';
 
@@ -63,11 +63,9 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
 
   @override
   Future<void> deleteTask(int id) async {
-    // Cascade: delete child tasks first
-    final children = await (_db.select(_db.taskTable)..where((t) => t.parentTaskId.equals(id))).get();
-    for (final child in children) {
-      await deleteTask(child.id);
-    }
+    // ON DELETE CASCADE on parentTaskId propagates the delete to all
+    // descendant tasks automatically (and further to their sessions via
+    // FocusSessionTable.taskId cascade). A single statement suffices.
     await (_db.delete(_db.taskTable)..where((t) => t.id.equals(id))).go();
   }
 
