@@ -11,39 +11,29 @@ Focus is a fully offline, privacy-first productivity app for managing your proje
 - **Modern, Modular UI**: Enjoy a pixel-perfect, responsive interface built with reusable widgets and modal forms, supporting both light and dark themes.
 - **Cross-Platform**: Use Focus on Android, iOS, Linux, macOS, Windows, and Web—all from a single codebase.
 - **Open Source & Extensible**: Built with Riverpod state management and Drift ORM, the codebase is clean, modular, and easy to contribute to or extend.
+- **Activity stats:** Pre-aggregated daily session statistics with DB-backed recalculation for activity/usage graphs.
+- **Automatic task handling:** Sessions can auto-complete associated tasks and the app cleans up abandoned sessions on startup.
+- **Media & hardware controls:** Media-button, lock-screen, and hardware controls are wired to session actions (pause/resume/skip/stop).
+- **Audio & alarms:** Ambience presets with live-reload of audio preferences and configurable alarm playback.
+- **Background notifications:** Actionable notifications with background handlers for pause/resume/stop/skip.
+
 
 ## App Showcase
 
 <table>
   <tr>
-    <th>Feature</th>
-    <th>iOS (iPhone 16 Pro Max)</th>
-    <th>Android (Samsung S21 Ultra)</th>
-  </tr>
-  <tr>
-    <td><b>Home Screen</b><br><i>Overview of your projects and tasks</i></td>
-    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%201.png" alt="iPhone Home" width="200"></td>
-    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%201.png" alt="Samsung Home" width="200"></td>
-  </tr>
-  <tr>
-    <td><b>Focus Session</b><br><i>Timer, ambience, and session controls</i></td>
-    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%202.png" alt="iPhone Focus" width="200"></td>
-    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%202.png" alt="Samsung Focus" width="200"></td>
-  </tr>
-  <tr>
-    <td><b>Tasks List</b><br><i>Organize and filter your tasks</i></td>
-    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%203.png" alt="iPhone Tasks" width="200"></td>
-    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%203.png" alt="Samsung Tasks" width="200"></td>
-  </tr>
-  <tr>
-    <td><b>Task Details</b><br><i>Subtasks, progress, and metadata</i></td>
-    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%204.png" alt="iPhone Details" width="200"></td>
-    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%204.png" alt="Samsung Details" width="200"></td>
-  </tr>
-  <tr>
-    <td><b>Live Notifications</b><br><i>Real-time session and task updates</i></td>
-    <td><img src="screenshots/Apple%20iPhone%2016%20Pro%20Max%20(1320x2868)/Apple%20iPhone%2016%20Pro%20Max%20Screenshot%205.png" alt="iPhone Notifications" width="200"></td>
-    <td><img src="screenshots/Samsung%20Galaxy%20S21%20Ultra%20(1620x2880)/Samsung%20Galaxy%20S21%20Ultra%20Screenshot%205.png" alt="Samsung Notifications" width="200"></td>
+    <td align="center">
+      <img src="screenshots/Apple iPhone 16 Pro Max Screenshot 1.png">
+    </td>
+    <td align="center">
+      <img src="screenshots/Apple iPhone 16 Pro Max Screenshot 2.png">
+    </td>
+    <td align="center">
+      <img src="screenshots/Apple iPhone 16 Pro Max Screenshot 3.png">
+    </td>
+    <td align="center">
+      <img src="screenshots/Apple iPhone 16 Pro Max Screenshot 4.png">
+    </td>
   </tr>
 </table>
 
@@ -55,18 +45,6 @@ See <a href="docs/wiki/getting_started.md">docs/wiki/getting_started.md</a> for 
 
 ## License
 This project is open source. See LICENSE for details.
-
-## Database Migration (v1 → v2)
-
-This release includes a schema change that adds `ON DELETE CASCADE` to the `task_table` foreign keys so deleting a project or a parent task automatically cascades to child tasks and their sessions.
-
-Migration notes:
-- The app implements a non-destructive migration (rename-create-copy-drop) in `lib/core/services/db_service.dart`.
-- On upgrade the migration will:
-  1. Rename `task_table` and `focus_session_table` to `_old` names.
-  2. Create new tables with the `ON DELETE CASCADE` foreign keys.
-  3. Copy existing rows into the new tables.
-  4. Drop the old tables and recreate necessary indexes.
 
 Testing and backup:
 - Always back up the existing `focus.sqlite` file before testing a migration on device/emulator.
