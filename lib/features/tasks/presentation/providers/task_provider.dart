@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart' show StreamProvider;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../../core/common/result.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/utils/result.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/repositories/i_task_repository.dart';

@@ -1,5 +1,5 @@
-import '../../../../core/common/result.dart';
 import '../../../../core/services/log_service.dart';
+import '../../../../core/utils/result.dart';
 import '../../domain/entities/setting.dart';
 import '../../domain/repositories/i_settings_repository.dart';
 

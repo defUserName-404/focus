@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../../core/common/result.dart';
 import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
+import '../../../../core/utils/result.dart';
 import '../../domain/entities/setting.dart';
 import '../../domain/repositories/i_settings_repository.dart';
 import '../../domain/services/settings_service.dart';
