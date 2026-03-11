@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/common/widgets/app_search_bar.dart';
-import '../../../../core/common/widgets/filter_select.dart';
-import '../../../../core/common/widgets/sort_filter_chips.dart';
-import '../../../../core/common/widgets/sort_order_selector.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';
-import '../../../../core/common/providers/navigation_provider.dart';
-import '../../domain/entities/task_priority.dart';
+import '../../../../core/providers/navigation_provider.dart';
+import '../../../../core/widgets/app_search_bar.dart';
+import '../../../../core/widgets/filter_select.dart';
+import '../../../../core/widgets/sort_filter_chips.dart';
+import '../../../../core/widgets/sort_order_selector.dart';
 import '../../domain/entities/all_tasks_filter_state.dart';
+import '../../domain/entities/task_priority.dart';
 import '../providers/all_tasks_provider.dart';
 import '../widgets/all_task_card.dart';
 
