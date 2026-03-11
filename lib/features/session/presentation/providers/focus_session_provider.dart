@@ -30,6 +30,9 @@ class FocusTimer extends _$FocusTimer {
   Timer? _timer;
   StreamSubscription<String>? _notificationActionSub;
 
+  /// Guard to prevent auto-pausing due to race conditions during startup.
+  bool _isStarting = false;
+
   @override
   FocusSession? build() {
     _sessionService = ref.watch(focusSessionServiceProvider);
@@ -42,6 +45,8 @@ class FocusTimer extends _$FocusTimer {
       onAction: _handleNotificationAction,
       onBecomingNoisy: () => pauseSession(),
       onInterruption: (shouldPause) {
+        // Ignore interruptions during the boot-up phase to prevent auto-pausing.
+        if (_isStarting) return;
         if (shouldPause) {
           pauseSession();
         } else {
@@ -63,15 +68,12 @@ class FocusTimer extends _$FocusTimer {
     // Mark abandoned sessions as incomplete on startup.
     unawaited(_sessionService.cleanupAbandonedSessions());
 
-    // React to audio settings changes (sound, volume, enabled) while a
-    // session is actively playing. Without this, the user would need to
-    // pause+resume to hear the new noise sound.
+    // React to audio settings changes.
     ref.listen(audioPreferencesProvider, (prev, next) {
       final current = state;
       if (current == null) return;
       if (current.state != SessionState.running && current.state != SessionState.onBreak) return;
 
-      // Only reload when the data actually changed and we have valid data.
       final newData = next.asData?.value;
       if (newData != null && prev?.asData?.value != newData) {
         unawaited(_audioCoordinator.reloadAmbience(newData));
@@ -86,7 +88,8 @@ class FocusTimer extends _$FocusTimer {
       case NotificationConstants.actionPause:
         pauseSession();
       case NotificationConstants.actionResume:
-        resumeSession();
+        // Use startTimer to correctly handle transitions from both IDLE and PAUSED.
+        startTimer();
       case NotificationConstants.actionStop:
         stopCycle();
       case NotificationConstants.actionSkip:
@@ -94,12 +97,6 @@ class FocusTimer extends _$FocusTimer {
     }
   }
 
-  /// Create a new session in [idle] state.
-  ///
-  /// **Does NOT persist to DB** — the session is only held in-memory until
-  /// the user actually starts the timer, at which point it gets saved.
-  ///
-  /// If [taskId] is `null`, this is a **quick session** with no task attached.
   Future<void> createSession({int? taskId, required int focusMinutes, required int breakMinutes}) async {
     _stopTicking();
 
@@ -112,40 +109,37 @@ class FocusTimer extends _$FocusTimer {
       elapsedSeconds: 0,
     );
 
-    // Only hold in-memory — no DB write for idle sessions.
     state = session;
   }
 
-  /// User taps play → idle→running (persists to DB), paused→running.
   Future<void> startTimer() async {
     final current = state;
     if (current == null) return;
 
     if (current.state == SessionState.idle) {
+      _isStarting = true;
       // Acquire audio focus from the OS.
       await _mediaCoordinator?.activateAudioSession();
 
-      // Now persist the session for the first time.
       final running = current.copyWith(state: SessionState.running, startTime: DateTime.now());
       final result = await _sessionService.startSession(running);
       final saved = result.getOrNull();
       if (saved == null) {
-        _log.error('Failed to persist new session — aborting start', tag: 'FocusTimer');
+        _isStarting = false;
+        _log.error('Failed to persist new session', tag: 'FocusTimer');
         return;
       }
       state = saved;
       _startTicking();
-      _mediaCoordinator?.updateMediaSession(saved);
-      unawaited(_audioCoordinator.startConfiguredAmbience());
-    } else if (current.state == SessionState.paused) {
-      final resumed = _sm.resume(current);
-      if (resumed == null) return;
 
-      state = resumed;
-      unawaited(_sessionService.updateSession(resumed));
-      _startTicking();
-      _mediaCoordinator?.updateMediaSession(resumed);
-      unawaited(_audioCoordinator.resumeAmbience());
+      // Start audio FIRST, then update media session to prevent "pause" feedback loops.
+      await _audioCoordinator.startConfiguredAmbience();
+      _mediaCoordinator?.updateMediaSession(saved);
+
+      // Release guard after a short delay.
+      Future.delayed(const Duration(milliseconds: 500), () => _isStarting = false);
+    } else if (current.state == SessionState.paused) {
+      resumeSession();
     }
   }
 
@@ -165,19 +159,23 @@ class FocusTimer extends _$FocusTimer {
 
   void resumeSession() {
     final current = state;
-    if (current == null) return;
+    if (current == null || current.state != SessionState.paused) return;
 
     final resumed = _sm.resume(current);
     if (resumed == null) return;
 
+    _isStarting = true;
     state = resumed;
     unawaited(_sessionService.updateSession(resumed));
     _startTicking();
-    _mediaCoordinator?.updateMediaSession(resumed);
+
+    // Resume audio before updating media session to avoid race condition.
     unawaited(_audioCoordinator.resumeAmbience());
+    _mediaCoordinator?.updateMediaSession(resumed);
+
+    Future.delayed(const Duration(milliseconds: 500), () => _isStarting = false);
   }
 
-  /// Toggle play/pause from ring tap.
   void togglePlayPause() {
     final current = state;
     if (current == null) return;
