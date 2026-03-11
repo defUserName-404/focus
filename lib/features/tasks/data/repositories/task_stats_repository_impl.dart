@@ -10,7 +10,6 @@ import '../datasources/task_stats_local_datasource.dart';
 import '../mappers/global_stats_mappers.dart';
 import '../mappers/task_extensions.dart';
 import '../mappers/task_stats_mappers.dart';
-import '../../../../core/services/log_service.dart';
 
 final _log = LogService.instance;
 
