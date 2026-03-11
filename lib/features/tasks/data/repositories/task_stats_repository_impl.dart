@@ -21,17 +21,30 @@ class TaskStatsRepositoryImpl implements ITaskStatsRepository {
   @override
   Stream<TaskStats> watchTaskStats(int taskId) {
     return _local.watchTaskStats(taskId).map((model) => model.toDomain()).handleError((e, st) {
-      _log.error('Error watching task stats for $taskId', tag: 'TaskStatsRepository', error: e, stackTrace: st as StackTrace?);
+      _log.error(
+        'Error watching task stats for $taskId',
+        tag: 'TaskStatsRepository',
+        error: e,
+        stackTrace: st as StackTrace?,
+      );
       throw e;
     });
   }
 
   @override
   Stream<List<FocusSession>> watchRecentSessions(int taskId, {int limit = 10}) {
-    return _local.watchRecentSessions(taskId, limit: limit).map((rows) => rows.map((r) => r.toDomain()).toList()).handleError((e, st) {
-      _log.error('Error watching recent sessions for $taskId', tag: 'TaskStatsRepository', error: e, stackTrace: st as StackTrace?);
-      throw e;
-    });
+    return _local
+        .watchRecentSessions(taskId, limit: limit)
+        .map((rows) => rows.map((r) => r.toDomain()).toList())
+        .handleError((e, st) {
+          _log.error(
+            'Error watching recent sessions for $taskId',
+            tag: 'TaskStatsRepository',
+            error: e,
+            stackTrace: st as StackTrace?,
+          );
+          throw e;
+        });
   }
 
   @override
@@ -67,7 +80,10 @@ class TaskStatsRepositoryImpl implements ITaskStatsRepository {
 
   @override
   Stream<List<Task>> watchRecentTasks({int limit = 5}) {
-    return _local.watchRecentTasks(limit: limit).map((rows) => rows.map((r) => r.toDomain()).toList()).handleError((e, st) {
+    return _local.watchRecentTasks(limit: limit).map((rows) => rows.map((r) => r.toDomain()).toList()).handleError((
+      e,
+      st,
+    ) {
       _log.error('Error watching recent tasks', tag: 'TaskStatsRepository', error: e, stackTrace: st as StackTrace?);
       throw e;
     });

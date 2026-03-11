@@ -81,7 +81,12 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
               dailyCompletedSessions: daily,
             );
           } catch (e, st) {
-            _log.error('Error mapping TaskStatsModel for task $taskId', tag: 'TaskStatsLocalDataSource', error: e, stackTrace: st);
+            _log.error(
+              'Error mapping TaskStatsModel for task $taskId',
+              tag: 'TaskStatsLocalDataSource',
+              error: e,
+              stackTrace: st,
+            );
             rethrow;
           }
         });
