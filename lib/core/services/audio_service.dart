@@ -5,12 +5,21 @@ import 'log_service.dart';
 
 class AudioService {
   final AudioPlayer _alarmPlayer = AudioPlayer();
-  final AudioPlayer _bgPlayer = AudioPlayer()..setPlayerMode(PlayerMode.lowLatency);
+
+  /// Main player for focus ambience. Default mode (MediaPlayer) is used
+  /// instead of lowLatency (SoundPool) for better support of long loops
+  /// and audio focus integration.
+  final AudioPlayer _bgPlayer = AudioPlayer();
   final AudioPlayer _previewPlayer = AudioPlayer();
   final _log = LogService.instance;
 
   AudioService() {
     _log.info("AudioService: Initializing...");
+
+    // Configure global audio context.
+    // We set audioFocus to 'none' on Android because we manage focus
+    // manually via the AudioSessionManager to avoid race conditions
+    // between the player and the OS session listeners.
     AudioPlayer.global.setAudioContext(
       AudioContext(
         iOS: AudioContextIOS(category: AVAudioSessionCategory.playback, options: {AVAudioSessionOptions.mixWithOthers}),
@@ -19,7 +28,7 @@ class AudioService {
           stayAwake: true,
           contentType: AndroidContentType.music,
           usageType: AndroidUsageType.media,
-          audioFocus: AndroidAudioFocus.gain,
+          audioFocus: AndroidAudioFocus.none,
         ),
       ),
     );
