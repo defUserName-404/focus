@@ -1,5 +1,6 @@
-import '../../../focus/data/mappers/focus_session_mappers.dart';
-import '../../../focus/domain/entities/focus_session.dart';
+import '../../../../core/services/log_service.dart';
+import '../../../session/data/mappers/focus_session_mappers.dart';
+import '../../../session/domain/entities/focus_session.dart';
 import '../../domain/entities/daily_session_stats.dart';
 import '../../domain/entities/global_stats.dart';
 import '../../domain/entities/task.dart';

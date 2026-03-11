@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../../core/services/db_service.dart';
 import '../../../../core/services/log_service.dart';
-import '../../../focus/domain/entities/session_state.dart';
+import '../../../session/domain/entities/session_state.dart';
 import '../models/global_stats_model.dart';
 import '../models/task_stats_model.dart';
 
