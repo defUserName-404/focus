@@ -7,11 +7,11 @@ import 'package:focus/features/tasks/presentation/providers/task_filter_state.da
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/common/widgets/action_menu_button.dart';
-import '../../../../core/common/widgets/app_search_bar.dart';
-import '../../../../core/common/widgets/filter_select.dart';
-import '../../../../core/common/widgets/sort_filter_chips.dart';
-import '../../../../core/common/widgets/sort_order_selector.dart';
+import '../../../../core/widgets/action_menu_button.dart';
+import '../../../../core/widgets/app_search_bar.dart';
+import '../../../../core/widgets/filter_select.dart';
+import '../../../../core/widgets/sort_filter_chips.dart';
+import '../../../../core/widgets/sort_order_selector.dart';
 import '../../../tasks/presentation/commands/task_commands.dart';
 import '../../../tasks/presentation/widgets/task_card.dart';
 import '../commands/project_commands.dart';

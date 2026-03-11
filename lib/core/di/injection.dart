@@ -22,26 +22,25 @@ import '../../features/tasks/data/repositories/task_stats_repository_impl.dart';
 import '../../features/tasks/domain/repositories/i_task_repository.dart';
 import '../../features/tasks/domain/repositories/i_task_stats_repository.dart';
 import '../../features/tasks/domain/services/task_service.dart';
-import '../common/utils/platform_utils.dart';
 import '../routing/navigation_service.dart';
 import '../services/audio_service.dart';
 import '../services/audio_session_manager.dart';
 import '../services/db_service.dart';
 import '../services/focus_audio_handler.dart';
 import '../services/notification_service.dart';
+import '../utils/platform_utils.dart';
 
 final getIt = GetIt.instance;
 
 Future<void> setupDependencyInjection() async {
-  //  Core Services
-  getIt.registerSingleton<AppDatabase>(AppDatabase());
-  getIt.registerLazySingleton<AudioService>(() => AudioService());
-  getIt.registerLazySingleton<NavigationService>(() => NavigationService());
+  // Core Infrastructure Services
+  getIt
+    ..registerSingleton<AppDatabase>(AppDatabase())
+    ..registerLazySingleton<AudioService>(() => AudioService())
+    ..registerLazySingleton<NavigationService>(() => NavigationService());
 
-  // Platform-specific services — only initialise where supported.
+  // Platform-specific services
   if (PlatformUtils.supportsMediaSession) {
-    // audio_service - MediaStyle notification & lock-screen controls.
-    // Must init BEFORE notification service so the Android plugin context is ready.
     final audioHandler = await FocusAudioHandler.init();
     getIt.registerSingleton<FocusAudioHandler>(audioHandler);
   }

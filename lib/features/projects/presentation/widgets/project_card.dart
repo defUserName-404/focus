@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:focus/core/common/utils/datetime_formatter.dart';
+import 'package:focus/core/utils/datetime_formatter.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/common/widgets/action_menu_button.dart';
-import '../../../../core/common/widgets/app_card.dart';
+import '../../../../core/widgets/action_menu_button.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/project.dart';

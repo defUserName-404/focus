@@ -7,8 +7,8 @@ import '../../../features/projects/presentation/screens/project_list_screen.dart
 import '../../../features/session/presentation/widgets/mini_player_overlay.dart';
 import '../../../features/settings/presentation/screens/settings_screen.dart';
 import '../../../features/tasks/presentation/screens/all_tasks_screen.dart';
-import '../../routing/app_router.dart';
 import '../providers/navigation_provider.dart';
+import '../routing/app_router.dart';
 import '../utils/platform_utils.dart';
 
 /// Root shell that adapts its navigation chrome to the current form factor.

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-import '../../constants/app_constants.dart';
+import '../constants/app_constants.dart';
 
 /// A full-screen form layout with a nested header (back button + title)
 /// and a scrollable body of form fields with a submit button.

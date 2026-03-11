@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/common/utils/datetime_formatter.dart';
-import '../../../../core/common/widgets/app_card.dart';
+import '../../../../core/utils/datetime_formatter.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../domain/entities/task.dart';
 import '../providers/task_provider.dart';

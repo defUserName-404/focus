@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../config/theme/app_theme.dart';
+import '../config/theme/app_theme.dart';
 
 class ActionMenuButton extends StatelessWidget {
   final VoidCallback? onEdit;
