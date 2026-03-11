@@ -52,47 +52,58 @@ Future<void> setupDependencyInjection() async {
   }
 
   if (PlatformUtils.supportsMediaSession) {
-    // audio_session — headphone unplug, audio focus interruptions.
     final audioSessionManager = AudioSessionManager();
     await audioSessionManager.init();
     getIt.registerSingleton<AudioSessionManager>(audioSessionManager);
   }
 
-  //  Data Sources
-  getIt.registerLazySingleton<IProjectLocalDataSource>(() => ProjectLocalDataSourceImpl(getIt<AppDatabase>()));
-  getIt.registerLazySingleton<ITaskLocalDataSource>(() => TaskLocalDataSourceImpl(getIt<AppDatabase>()));
-  getIt.registerLazySingleton<IFocusLocalDataSource>(() => FocusLocalDataSourceImpl(getIt<AppDatabase>()));
-  getIt.registerLazySingleton<ITaskStatsLocalDataSource>(() => TaskStatsLocalDataSourceImpl(getIt<AppDatabase>()));
-  getIt.registerLazySingleton<ISettingsLocalDataSource>(() => SettingsLocalDataSourceImpl(getIt<AppDatabase>()));
+  // Feature-based DI modules
+  _initProjectsDi();
+  _initTasksDi();
+  _initSettingsDi();
+  _initSessionDi();
+}
 
-  //  Repositories
-  getIt.registerLazySingleton<IProjectRepository>(() => ProjectRepositoryImpl(getIt<IProjectLocalDataSource>()));
-  getIt.registerLazySingleton<ITaskRepository>(() => TaskRepositoryImpl(getIt<ITaskLocalDataSource>()));
-  getIt.registerLazySingleton<IFocusSessionRepository>(
-    () => FocusSessionRepositoryImpl(getIt<IFocusLocalDataSource>()),
-  );
-  getIt.registerLazySingleton<ITaskStatsRepository>(() => TaskStatsRepositoryImpl(getIt<ITaskStatsLocalDataSource>()));
-  getIt.registerLazySingleton<ISettingsRepository>(() => SettingsRepositoryImpl(getIt<ISettingsLocalDataSource>()));
+void _initProjectsDi() {
+  getIt
+    ..registerLazySingleton<IProjectLocalDataSource>(() => ProjectLocalDataSourceImpl(getIt<AppDatabase>()))
+    ..registerLazySingleton<IProjectRepository>(() => ProjectRepositoryImpl(getIt<IProjectLocalDataSource>()))
+    ..registerLazySingleton<ProjectService>(() => ProjectService(getIt<IProjectRepository>()));
+}
 
-  //  Feature Services
-  getIt.registerLazySingleton<ProjectService>(() => ProjectService(getIt<IProjectRepository>()));
-  getIt.registerLazySingleton<TaskService>(() => TaskService(getIt<ITaskRepository>()));
-  getIt.registerLazySingleton<SettingsService>(() => SettingsService(getIt<ISettingsRepository>()));
+void _initTasksDi() {
+  getIt
+    ..registerLazySingleton<ITaskLocalDataSource>(() => TaskLocalDataSourceImpl(getIt<AppDatabase>()))
+    ..registerLazySingleton<ITaskStatsLocalDataSource>(() => TaskStatsLocalDataSourceImpl(getIt<AppDatabase>()))
+    ..registerLazySingleton<ITaskRepository>(() => TaskRepositoryImpl(getIt<ITaskLocalDataSource>()))
+    ..registerLazySingleton<ITaskStatsRepository>(() => TaskStatsRepositoryImpl(getIt<ITaskStatsLocalDataSource>()))
+    ..registerLazySingleton<TaskService>(() => TaskService(getIt<ITaskRepository>()));
+}
 
-  //  Focus Coordinators & Service
-  getIt.registerLazySingleton<FocusSessionService>(
-    () => FocusSessionService(getIt<IFocusSessionRepository>(), getIt<ITaskRepository>()),
-  );
-  getIt.registerLazySingleton<FocusAudioCoordinator>(
-    () => FocusAudioCoordinator(getIt<AudioService>(), getIt<ISettingsRepository>()),
-  );
+void _initSettingsDi() {
+  getIt
+    ..registerLazySingleton<ISettingsLocalDataSource>(() => SettingsLocalDataSourceImpl(getIt<AppDatabase>()))
+    ..registerLazySingleton<ISettingsRepository>(() => SettingsRepositoryImpl(getIt<ISettingsLocalDataSource>()))
+    ..registerLazySingleton<SettingsService>(() => SettingsService(getIt<ISettingsRepository>()));
+}
 
-  // Notification & media-session coordinators — conditional on platform.
+void _initSessionDi() {
+  getIt
+    ..registerLazySingleton<IFocusLocalDataSource>(() => FocusLocalDataSourceImpl(getIt<AppDatabase>()))
+    ..registerLazySingleton<IFocusSessionRepository>(() => FocusSessionRepositoryImpl(getIt<IFocusLocalDataSource>()))
+    ..registerLazySingleton<FocusSessionService>(
+      () => FocusSessionService(getIt<IFocusSessionRepository>(), getIt<ITaskRepository>()),
+    )
+    ..registerLazySingleton<FocusAudioCoordinator>(
+      () => FocusAudioCoordinator(getIt<AudioService>(), getIt<ISettingsRepository>()),
+    );
+
   if (PlatformUtils.supportsLocalNotifications) {
     getIt.registerLazySingleton<FocusNotificationCoordinator>(
       () => FocusNotificationCoordinator(getIt<NotificationService>()),
     );
   }
+
   if (PlatformUtils.supportsMediaSession) {
     getIt.registerLazySingleton<FocusMediaSessionCoordinator>(
       () => FocusMediaSessionCoordinator(getIt<FocusAudioHandler>(), getIt<AudioSessionManager>()),
