@@ -1,5 +1,5 @@
-import '../../../../core/common/sort_criteria.dart';
-import '../../../../core/common/sort_order.dart';
+import '../../../../core/sort_criteria.dart';
+import '../../../../core/sort_order.dart';
 import '../../domain/entities/task_priority.dart';
 
 /// Sort criteria for the global (all-projects) task list.
