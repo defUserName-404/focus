@@ -71,7 +71,9 @@ class SettingsNotifier extends _$SettingsNotifier {
     final result = await _service.setAlarmSound(soundId);
     switch (result) {
       case Success():
-        state = AsyncValue.data(state.value?.copyWith(alarmSoundId: soundId) ?? AudioPreferences(alarmSoundId: soundId));
+        state = AsyncValue.data(
+          state.value?.copyWith(alarmSoundId: soundId) ?? AudioPreferences(alarmSoundId: soundId),
+        );
       case Failure(:final failure):
         state = AsyncValue.error(failure, StackTrace.current);
     }
@@ -93,7 +95,9 @@ class SettingsNotifier extends _$SettingsNotifier {
     final result = await _service.setAmbienceVolume(volume);
     switch (result) {
       case Success():
-        state = AsyncValue.data(state.value?.copyWith(ambienceVolume: volume) ?? AudioPreferences(ambienceVolume: volume));
+        state = AsyncValue.data(
+          state.value?.copyWith(ambienceVolume: volume) ?? AudioPreferences(ambienceVolume: volume),
+        );
       case Failure(:final failure):
         state = AsyncValue.error(failure, StackTrace.current);
     }

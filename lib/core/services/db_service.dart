@@ -134,7 +134,9 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('CREATE INDEX IF NOT EXISTS task_updated_at_idx ON task_table(updated_at)');
 
         await customStatement('CREATE INDEX IF NOT EXISTS focus_session_task_id_idx ON focus_session_table(task_id)');
-        await customStatement('CREATE INDEX IF NOT EXISTS focus_session_start_time_idx ON focus_session_table(start_time)');
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS focus_session_start_time_idx ON focus_session_table(start_time)',
+        );
 
         await customStatement('COMMIT');
       }
