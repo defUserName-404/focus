@@ -4,7 +4,7 @@ import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../focus/presentation/commands/focus_commands.dart';
+import '../../../session/presentation/commands/focus_commands.dart';
 
 class QuickSessionButton extends ConsumerWidget {
   const QuickSessionButton({super.key});

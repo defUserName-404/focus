@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/common/widgets/action_menu_button.dart';
+import '../../../../core/widgets/action_menu_button.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../focus/domain/entities/session_state.dart';
-import '../../../focus/presentation/commands/focus_commands.dart';
-import '../../../focus/presentation/providers/focus_session_provider.dart';
 import '../../../home/presentation/widgets/section_header.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
+import '../../../session/domain/entities/session_state.dart';
+import '../../../session/presentation/commands/focus_commands.dart';
+import '../../../session/presentation/providers/focus_session_provider.dart';
 import '../../domain/entities/task_stats.dart';
 import '../commands/task_commands.dart';
 import '../providers/task_provider.dart';

@@ -1,16 +1,16 @@
 import 'package:get_it/get_it.dart';
 
-import '../../features/focus/data/datasources/focus_local_datasource.dart';
-import '../../features/focus/data/repositories/focus_session_repository_impl.dart';
-import '../../features/focus/domain/repositories/i_focus_session_repository.dart';
-import '../../features/focus/domain/services/focus_audio_coordinator.dart';
-import '../../features/focus/domain/services/focus_media_session_coordinator.dart';
-import '../../features/focus/domain/services/focus_notification_coordinator.dart';
-import '../../features/focus/domain/services/focus_session_service.dart';
 import '../../features/projects/data/datasources/project_local_datasource.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/i_project_repository.dart';
 import '../../features/projects/domain/services/project_service.dart';
+import '../../features/session/data/datasources/focus_local_datasource.dart';
+import '../../features/session/data/repositories/focus_session_repository_impl.dart';
+import '../../features/session/domain/repositories/i_focus_session_repository.dart';
+import '../../features/session/domain/services/focus_audio_coordinator.dart';
+import '../../features/session/domain/services/focus_media_session_coordinator.dart';
+import '../../features/session/domain/services/focus_notification_coordinator.dart';
+import '../../features/session/domain/services/focus_session_service.dart';
 import '../../features/settings/data/datasources/settings_local_datasource.dart';
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/i_settings_repository.dart';

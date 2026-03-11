@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/common/widgets/confirmation_dialog.dart';
+import '../../../../core/widgets/confirmation_dialog.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/routing/navigation_service.dart';
 import '../../../settings/domain/entities/setting.dart';
