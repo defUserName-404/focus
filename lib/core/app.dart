@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-import 'common/widgets/adaptive_shell.dart';
 import 'config/theme/app_theme.dart';
 import 'constants/route_constants.dart';
 import 'routing/app_router.dart';
 import 'routing/navigator_key.dart';
+import 'widgets/adaptive_shell.dart';
 
 class FocusApp extends StatelessWidget {
   const FocusApp({super.key});

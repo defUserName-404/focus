@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../../focus/domain/entities/focus_session.dart';
+import '../../../session/domain/entities/focus_session.dart';
 import '../../domain/entities/daily_session_stats.dart';
 import '../../domain/entities/global_stats.dart';
 import '../../domain/entities/task.dart';

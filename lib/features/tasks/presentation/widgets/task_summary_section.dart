@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/common/utils/datetime_formatter.dart';
-import '../../../../core/common/widgets/meta_chip.dart';
+import '../../../../core/utils/datetime_formatter.dart';
+import '../../../../core/widgets/meta_chip.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/route_constants.dart';

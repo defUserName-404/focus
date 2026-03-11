@@ -9,17 +9,7 @@ typedef InterruptionCallback = void Function(bool shouldPause);
 /// Callback signature for the "becoming noisy" event (headphone unplug).
 typedef BecomingNoisyCallback = void Function();
 
-/// Manages the [AudioSession] to handle system-level audio interactions:
-///
-/// - **Becoming noisy**: Headphone unplug → auto-pause playback.
-/// - **Interruptions**: Phone calls, other media apps → pause/resume.
-/// - **Audio focus**: Requests & releases focus so the OS knows the app
-///   is an active audio source.
-///
-/// This service is a thin wrapper around the [audio_session] package.
-/// Register callbacks via [onInterruption] and [onBecomingNoisy], then
-/// call [activate] when the focus session starts and [deactivate] when
-/// it ends.
+/// Manages the [AudioSession] to handle system-level audio interactions.
 class AudioSessionManager {
   AudioSession? _session;
   StreamSubscription<AudioInterruptionEvent>? _interruptionSub;
@@ -28,13 +18,9 @@ class AudioSessionManager {
   InterruptionCallback? onInterruption;
   BecomingNoisyCallback? onBecomingNoisy;
 
-  /// Configure and prepare the audio session.
-  ///
-  /// Should be called once during app startup (from [setupDependencyInjection]).
   Future<void> init() async {
     try {
       _session = await AudioSession.instance;
-
       await _session!.configure(const AudioSessionConfiguration.music());
 
       _listenForInterruptions();
@@ -48,10 +34,11 @@ class AudioSessionManager {
     _interruptionSub?.cancel();
     _interruptionSub = _session?.interruptionEventStream.listen((event) {
       if (event.begin) {
-        // Another app took audio focus — pause.
+        // Only pause for actual interruptions, not ducking (e.g. notifications).
+        if (event.type == AudioInterruptionType.duck) return;
         onInterruption?.call(true);
       } else {
-        // Interruption ended — resume if the system says we may.
+        // Interruption ended — resume if it was a pause/unknown type.
         if (event.type == AudioInterruptionType.pause || event.type == AudioInterruptionType.unknown) {
           onInterruption?.call(false);
         }
@@ -62,12 +49,10 @@ class AudioSessionManager {
   void _listenForBecomingNoisy() {
     _noisySub?.cancel();
     _noisySub = _session?.becomingNoisyEventStream.listen((_) {
-      // Headphones were unplugged → pause playback.
       onBecomingNoisy?.call();
     });
   }
 
-  /// Request audio focus from the system. Call when a focus session starts.
   Future<bool> activate() async {
     try {
       return await _session?.setActive(true) ?? false;
@@ -77,7 +62,6 @@ class AudioSessionManager {
     }
   }
 
-  /// Release audio focus. Call when a focus session ends.
   Future<void> deactivate() async {
     try {
       await _session?.setActive(false);
@@ -89,7 +73,5 @@ class AudioSessionManager {
   void dispose() {
     _interruptionSub?.cancel();
     _noisySub?.cancel();
-    _interruptionSub = null;
-    _noisySub = null;
   }
 }

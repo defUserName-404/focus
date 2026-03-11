@@ -4,7 +4,7 @@ import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../focus/presentation/commands/focus_commands.dart';
+import '../../../session/presentation/commands/focus_commands.dart';
 import '../../domain/entities/task.dart';
 import '../commands/task_commands.dart';
 import '../providers/task_provider.dart';

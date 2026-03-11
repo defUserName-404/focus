@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/common/providers/navigation_provider.dart';
+import '../../../../core/providers/navigation_provider.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_content.dart';

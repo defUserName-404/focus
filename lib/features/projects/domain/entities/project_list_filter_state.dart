@@ -1,5 +1,5 @@
-import '../../../../core/common/sort_criteria.dart';
-import '../../../../core/common/sort_order.dart';
+import '../../../../core/sort_criteria.dart';
+import '../../../../core/sort_order.dart';
 
 /// Sort criteria for the project list.
 enum ProjectSortCriteria implements SortCriteria {

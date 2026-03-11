@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../../core/common/utils/platform_utils.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/utils/platform_utils.dart';
 import '../../domain/repositories/i_focus_session_repository.dart';
 import '../../domain/services/focus_audio_coordinator.dart';
 import '../../domain/services/focus_media_session_coordinator.dart';

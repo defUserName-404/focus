@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../../core/common/result.dart';
 import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/audio_service.dart';
+import '../../../../core/utils/result.dart';
 import '../../domain/entities/setting.dart';
 import '../../domain/repositories/i_settings_repository.dart';
 import '../../domain/services/settings_service.dart';
@@ -71,7 +71,9 @@ class SettingsNotifier extends _$SettingsNotifier {
     final result = await _service.setAlarmSound(soundId);
     switch (result) {
       case Success():
-        state = AsyncValue.data(state.value?.copyWith(alarmSoundId: soundId) ?? AudioPreferences(alarmSoundId: soundId));
+        state = AsyncValue.data(
+          state.value?.copyWith(alarmSoundId: soundId) ?? AudioPreferences(alarmSoundId: soundId),
+        );
       case Failure(:final failure):
         state = AsyncValue.error(failure, StackTrace.current);
     }
@@ -93,7 +95,9 @@ class SettingsNotifier extends _$SettingsNotifier {
     final result = await _service.setAmbienceVolume(volume);
     switch (result) {
       case Success():
-        state = AsyncValue.data(state.value?.copyWith(ambienceVolume: volume) ?? AudioPreferences(ambienceVolume: volume));
+        state = AsyncValue.data(
+          state.value?.copyWith(ambienceVolume: volume) ?? AudioPreferences(ambienceVolume: volume),
+        );
       case Failure(:final failure):
         state = AsyncValue.error(failure, StackTrace.current);
     }

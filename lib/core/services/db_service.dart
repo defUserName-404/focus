@@ -1,14 +1,14 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:focus/features/focus/data/models/focus_session_model.dart';
 import 'package:focus/features/settings/data/models/settings_model.dart';
 import 'package:focus/features/tasks/data/models/daily_session_stats_model.dart';
 import 'package:focus/features/tasks/data/models/task_model.dart';
 
-import '../../features/focus/domain/entities/session_state.dart';
 import '../../features/projects/data/models/project_model.dart';
+import '../../features/session/data/models/focus_session_model.dart';
+import '../../features/session/domain/entities/session_state.dart';
 import '../../features/tasks/domain/entities/task_priority.dart';
-import '../common/utils/datetime_formatter.dart';
+import '../utils/datetime_formatter.dart';
 
 part 'db_service.g.dart';
 
@@ -134,7 +134,9 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('CREATE INDEX IF NOT EXISTS task_updated_at_idx ON task_table(updated_at)');
 
         await customStatement('CREATE INDEX IF NOT EXISTS focus_session_task_id_idx ON focus_session_table(task_id)');
-        await customStatement('CREATE INDEX IF NOT EXISTS focus_session_start_time_idx ON focus_session_table(start_time)');
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS focus_session_start_time_idx ON focus_session_table(start_time)',
+        );
 
         await customStatement('COMMIT');
       }

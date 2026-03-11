@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/constants/app_constants.dart';
-
-// Removed unused import: ProjectDetailScreen
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/common/widgets/app_search_bar.dart';
-import '../../../../core/common/widgets/sort_filter_chips.dart';
-import '../../../../core/common/widgets/sort_order_selector.dart';
 import '../../../../core/config/theme/app_theme.dart';
-import '../../../../core/constants/route_constants.dart'; // Added import
+import '../../../../core/constants/route_constants.dart';
+import '../../../../core/providers/navigation_provider.dart';
+import '../../../../core/widgets/app_search_bar.dart';
+import '../../../../core/widgets/sort_filter_chips.dart';
+import '../../../../core/widgets/sort_order_selector.dart';
 import '../../domain/entities/project_list_filter_state.dart';
-import '../../../../core/common/providers/navigation_provider.dart';
 import '../commands/project_commands.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';

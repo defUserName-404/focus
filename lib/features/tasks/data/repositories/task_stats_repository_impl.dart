@@ -1,5 +1,6 @@
-import '../../../focus/data/mappers/focus_session_mappers.dart';
-import '../../../focus/domain/entities/focus_session.dart';
+import '../../../../core/services/log_service.dart';
+import '../../../session/data/mappers/focus_session_mappers.dart';
+import '../../../session/domain/entities/focus_session.dart';
 import '../../domain/entities/daily_session_stats.dart';
 import '../../domain/entities/global_stats.dart';
 import '../../domain/entities/task.dart';
@@ -9,7 +10,6 @@ import '../datasources/task_stats_local_datasource.dart';
 import '../mappers/global_stats_mappers.dart';
 import '../mappers/task_extensions.dart';
 import '../mappers/task_stats_mappers.dart';
-import '../../../../core/services/log_service.dart';
 
 final _log = LogService.instance;
 
@@ -21,17 +21,30 @@ class TaskStatsRepositoryImpl implements ITaskStatsRepository {
   @override
   Stream<TaskStats> watchTaskStats(int taskId) {
     return _local.watchTaskStats(taskId).map((model) => model.toDomain()).handleError((e, st) {
-      _log.error('Error watching task stats for $taskId', tag: 'TaskStatsRepository', error: e, stackTrace: st as StackTrace?);
+      _log.error(
+        'Error watching task stats for $taskId',
+        tag: 'TaskStatsRepository',
+        error: e,
+        stackTrace: st as StackTrace?,
+      );
       throw e;
     });
   }
 
   @override
   Stream<List<FocusSession>> watchRecentSessions(int taskId, {int limit = 10}) {
-    return _local.watchRecentSessions(taskId, limit: limit).map((rows) => rows.map((r) => r.toDomain()).toList()).handleError((e, st) {
-      _log.error('Error watching recent sessions for $taskId', tag: 'TaskStatsRepository', error: e, stackTrace: st as StackTrace?);
-      throw e;
-    });
+    return _local
+        .watchRecentSessions(taskId, limit: limit)
+        .map((rows) => rows.map((r) => r.toDomain()).toList())
+        .handleError((e, st) {
+          _log.error(
+            'Error watching recent sessions for $taskId',
+            tag: 'TaskStatsRepository',
+            error: e,
+            stackTrace: st as StackTrace?,
+          );
+          throw e;
+        });
   }
 
   @override
@@ -67,7 +80,10 @@ class TaskStatsRepositoryImpl implements ITaskStatsRepository {
 
   @override
   Stream<List<Task>> watchRecentTasks({int limit = 5}) {
-    return _local.watchRecentTasks(limit: limit).map((rows) => rows.map((r) => r.toDomain()).toList()).handleError((e, st) {
+    return _local.watchRecentTasks(limit: limit).map((rows) => rows.map((r) => r.toDomain()).toList()).handleError((
+      e,
+      st,
+    ) {
       _log.error('Error watching recent tasks', tag: 'TaskStatsRepository', error: e, stackTrace: st as StackTrace?);
       throw e;
     });

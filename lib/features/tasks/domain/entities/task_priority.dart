@@ -1,4 +1,4 @@
-import '../../../../core/common/widgets/filter_select.dart';
+import '../../../../core/widgets/filter_select.dart';
 
 enum TaskPriority implements FilterSelectable {
   critical,

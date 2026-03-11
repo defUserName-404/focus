@@ -1,8 +1,8 @@
+import '../../../session/domain/entities/focus_session.dart';
 import '../entities/daily_session_stats.dart';
 import '../entities/global_stats.dart';
-import '../entities/task_stats.dart';
 import '../entities/task.dart';
-import '../../../focus/domain/entities/focus_session.dart';
+import '../entities/task_stats.dart';
 
 abstract class ITaskStatsRepository {
   /// Watches aggregated stats for a task, computed at the ORM level.

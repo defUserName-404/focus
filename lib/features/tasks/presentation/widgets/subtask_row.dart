@@ -3,7 +3,7 @@ import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../../../../core/common/widgets/action_menu_button.dart';
+import '../../../../core/widgets/action_menu_button.dart';
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
 

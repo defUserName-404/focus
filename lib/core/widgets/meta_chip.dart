@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../config/theme/app_theme.dart';
-import '../../constants/app_constants.dart';
+import '../config/theme/app_theme.dart';
+import '../constants/app_constants.dart';
 
 /// A compact icon + label chip used for metadata display (e.g. project name,
 /// dates). Reusable across task detail, project detail, and any summary UI.

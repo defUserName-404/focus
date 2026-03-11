@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../../core/services/db_service.dart';
 import '../../../../core/services/log_service.dart';
-import '../../../focus/domain/entities/session_state.dart';
+import '../../../session/domain/entities/session_state.dart';
 import '../models/global_stats_model.dart';
 import '../models/task_stats_model.dart';
 
@@ -81,7 +81,12 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
               dailyCompletedSessions: daily,
             );
           } catch (e, st) {
-            _log.error('Error mapping TaskStatsModel for task $taskId', tag: 'TaskStatsLocalDataSource', error: e, stackTrace: st);
+            _log.error(
+              'Error mapping TaskStatsModel for task $taskId',
+              tag: 'TaskStatsLocalDataSource',
+              error: e,
+              stackTrace: st,
+            );
             rethrow;
           }
         });

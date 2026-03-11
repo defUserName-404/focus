@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:focus/core/common/utils/datetime_formatter.dart';
+import 'package:focus/core/utils/datetime_formatter.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../focus/domain/entities/focus_session.dart';
-import '../../../focus/domain/entities/session_state.dart';
+import '../../../session/domain/entities/focus_session.dart';
+import '../../../session/domain/entities/session_state.dart';
 
 /// Displays a list of the most recent focus sessions for a task.
 class RecentSessionsSection extends StatelessWidget {

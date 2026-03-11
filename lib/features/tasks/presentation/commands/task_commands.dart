@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/common/widgets/confirmation_dialog.dart';
+import 'package:focus/core/widgets/confirmation_dialog.dart';
 import 'package:focus/core/di/injection.dart';
 import 'package:focus/core/routing/navigation_service.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';

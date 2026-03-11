@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
-import '../../../../core/common/utils/form_validators.dart';
-import '../../../../core/common/widgets/base_form_screen.dart';
+import '../../../../core/utils/form_validators.dart';
+import '../../../../core/widgets/base_form_screen.dart';
 import '../../../../core/constants/route_constants.dart';
 import '../providers/project_provider.dart';
 
