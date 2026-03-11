@@ -192,8 +192,6 @@ class FocusTimer extends _$FocusTimer {
     }
   }
 
-  /// Skip to the next phase (focus→break or break→next cycle).
-  /// Works in running, onBreak, AND paused states.
   void skipToNextPhase() {
     final current = state;
     if (current == null) return;
@@ -204,8 +202,6 @@ class FocusTimer extends _$FocusTimer {
     _applyTransition(transition);
   }
 
-  /// Premature end: save as cancelled (not deleted).
-  /// Only persists if the session was already saved to DB (has an id).
   void cancelSession() {
     final current = state;
     if (current == null) return;
@@ -223,16 +219,10 @@ class FocusTimer extends _$FocusTimer {
     _mediaCoordinator?.clearMediaSession();
   }
 
-  /// Clear the in-memory session once the UI has finished showing
-  /// the completion animation or any other post-session UI.
   void clearCompletedSession() {
     state = null;
   }
 
-  /// Complete the current focus session early.
-  ///
-  /// Saves the session as completed and clears the in-memory state
-  /// so the UI immediately leaves the session screen.
   void completeSessionEarly() {
     final current = state;
     if (current == null) return;
@@ -250,7 +240,6 @@ class FocusTimer extends _$FocusTimer {
     } else {
       unawaited(_sessionService.startSession(updated));
     }
-    // Clear state so the session screen reacts immediately.
     state = null;
 
     unawaited(_audioCoordinator.playConfiguredAlarm());
@@ -259,7 +248,6 @@ class FocusTimer extends _$FocusTimer {
     _notificationCoordinator?.showEarlyCompleteNotification();
   }
 
-  /// Complete the session AND mark the associated task as completed.
   Future<void> completeTaskAndSession() async {
     final current = state;
     if (current == null) return;
@@ -279,7 +267,6 @@ class FocusTimer extends _$FocusTimer {
     }
     state = updated;
 
-    // Mark the task as completed (skip for quick sessions).
     if (current.taskId != null) {
       await _sessionService.completeTask(current.taskId!);
     }
@@ -289,8 +276,6 @@ class FocusTimer extends _$FocusTimer {
     _mediaCoordinator?.clearMediaSession();
     _notificationCoordinator?.showTaskCompleteNotification();
   }
-
-  //  Internal tick logic
 
   void _startTicking() {
     _timer?.cancel();
@@ -311,10 +296,6 @@ class FocusTimer extends _$FocusTimer {
     _applyTransition(_sm.tick(current));
   }
 
-  /// Centralised handler for all [SessionTransition] outcomes.
-  ///
-  /// Keeps the side-effect logic in one place so [_tick], [skipToNextPhase],
-  /// etc. don't duplicate audio/notification/persistence calls.
   void _applyTransition(SessionTransition transition) {
     switch (transition) {
       case TickUpdate(:final session, :final shouldPersist):
@@ -339,21 +320,13 @@ class FocusTimer extends _$FocusTimer {
     }
   }
 
-  /// Persist the completed session and auto-start the next cycle.
-  ///
-  /// Awaited so the daily stats table is fully in sync before a new
-  /// session row is inserted — preventing the today / overall mismatch.
   Future<void> _handleCycleCompleted(FocusSession completed) async {
     await _sessionService.updateSession(completed);
 
     unawaited(_audioCoordinator.playConfiguredAlarm());
     _notificationCoordinator?.showNextCycleNotification();
 
-    await _startNextCycle(
-      completed.taskId,
-      completed.focusDurationMinutes,
-      completed.breakDurationMinutes,
-    );
+    await _startNextCycle(completed.taskId, completed.focusDurationMinutes, completed.breakDurationMinutes);
   }
 
   Future<void> _startNextCycle(int? taskId, int focusMinutes, int breakMinutes) async {
@@ -378,10 +351,6 @@ class FocusTimer extends _$FocusTimer {
     unawaited(_audioCoordinator.startConfiguredAmbience());
   }
 
-  /// Manually stop the Pomodoro cycle.
-  ///
-  /// The session is saved as **cancelled** — not completed — so it
-  /// doesn't inflate the "sessions completed" stat.
   void stopCycle() {
     final current = state;
     if (current == null) return;
@@ -401,13 +370,9 @@ class FocusTimer extends _$FocusTimer {
     _notificationCoordinator?.showCycleStoppedNotification();
   }
 
-  //  Mute helper
-
   void _resetMute() {
     try {
       ref.read(ambienceMuteProvider.notifier).reset();
-    } catch (_) {
-      // Provider may not be initialised yet — safe to ignore.
-    }
+    } catch (_) {}
   }
 }
