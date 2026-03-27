@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/app_search_bar.dart';
+import '../../../../core/widgets/constrained_content.dart';
 import '../../../../core/widgets/sort_filter_chips.dart';
 import '../../../../core/widgets/sort_order_selector.dart';
 import '../../domain/entities/project_list_filter_state.dart';
@@ -15,36 +16,20 @@ import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
 
 class ProjectListScreen extends ConsumerWidget {
-  const ProjectListScreen({super.key});
+  final int? selectedId;
+  final ValueChanged<int>? onProjectSelected;
+
+  const ProjectListScreen({super.key, this.selectedId, this.onProjectSelected});
+
+  bool get _isEmbedded => onProjectSelected != null;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAsync = ref.watch(filteredProjectListProvider);
     final filter = ref.watch(projectListFilterProvider);
 
-    return fu.FScaffold(
-      header: fu.FHeader.nested(
-        prefixes: [
-          fu.FHeaderAction.back(
-            onPress: () {
-              if (Navigator.of(context).canPop()) {
-                context.pop();
-              } else {
-                context.go(AppRoutes.home);
-              }
-            },
-          ),
-        ],
-        title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-      ),
-      footer: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.large),
-        child: fu.FButton(
-          prefix: Icon(fu.FIcons.plus),
-          child: const Text('Create New Project'),
-          onPress: () => ProjectCommands.create(context),
-        ),
-      ),
+    final content = ConstrainedContent(
+      maxWidth: 980,
       child: Column(
         children: [
           AppSearchBar(
@@ -108,7 +93,15 @@ class ProjectListScreen extends ConsumerWidget {
                     final project = projects[index];
                     return ProjectCard(
                       project: project,
-                      onTap: () => project.id != null ? context.push(AppRoutes.projectDetailPath(project.id!)) : null,
+                      isSelected: selectedId != null && selectedId == project.id,
+                      onTap: () {
+                        if (project.id == null) return;
+                        if (onProjectSelected != null) {
+                          onProjectSelected!(project.id!);
+                          return;
+                        }
+                        context.push(AppRoutes.projectDetailPath(project.id!));
+                      },
                       onEdit: () => ProjectCommands.edit(context, project),
                       onDelete: () => ProjectCommands.delete(context, ref, project),
                     );
@@ -119,6 +112,36 @@ class ProjectListScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+
+    if (_isEmbedded) {
+      return content;
+    }
+
+    return fu.FScaffold(
+      header: fu.FHeader.nested(
+        prefixes: [
+          fu.FHeaderAction.back(
+            onPress: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
+        ],
+        title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+      ),
+      footer: Padding(
+        padding: EdgeInsets.all(AppConstants.spacing.large),
+        child: fu.FButton(
+          prefix: Icon(fu.FIcons.plus),
+          child: const Text('Create New Project'),
+          onPress: () => ProjectCommands.create(context),
+        ),
+      ),
+      child: content,
     );
   }
 }

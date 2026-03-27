@@ -7,6 +7,7 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/app_search_bar.dart';
+import '../../../../core/widgets/constrained_content.dart';
 import '../../../../core/widgets/filter_select.dart';
 import '../../../../core/widgets/sort_filter_chips.dart';
 import '../../../../core/widgets/sort_order_selector.dart';
@@ -20,36 +21,20 @@ import '../widgets/all_task_card.dart';
 /// This is part of the tasks feature (not a standalone feature) and
 /// serves as the Tasks tab root in the main shell.
 class AllTasksScreen extends ConsumerWidget {
-  const AllTasksScreen({super.key});
+  final int? selectedTaskId;
+  final ValueChanged<TaskSelection>? onTaskSelected;
+
+  const AllTasksScreen({super.key, this.selectedTaskId, this.onTaskSelected});
+
+  bool get _isEmbedded => onTaskSelected != null;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAsync = ref.watch(filteredAllTasksProvider);
     final filter = ref.watch(allTasksFilterProvider);
 
-    return fu.FScaffold(
-      header: fu.FHeader.nested(
-        prefixes: [
-          fu.FHeaderAction.back(
-            onPress: () {
-              if (Navigator.of(context).canPop()) {
-                context.pop();
-              } else {
-                context.go(AppRoutes.home);
-              }
-            },
-          ),
-        ],
-        title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-      ),
-      footer: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.large),
-        child: fu.FButton(
-          prefix: Icon(fu.FIcons.plus),
-          child: const Text('Create New Task'),
-          onPress: () => context.push(AppRoutes.createTaskWithProject),
-        ),
-      ),
+    final content = ConstrainedContent(
+      maxWidth: 980,
       child: Column(
         children: [
           AppSearchBar(
@@ -81,7 +66,6 @@ class AllTasksScreen extends ConsumerWidget {
               ),
             ],
           ),
-          // Priority & completion filter row
           Row(
             children: [
               SizedBox(
@@ -143,9 +127,16 @@ class AllTasksScreen extends ConsumerWidget {
                     final task = tasks[index];
                     return AllTaskCard(
                       task: task,
-                      onTap: () => task.id != null
-                          ? context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId})
-                          : null,
+                      isSelected: selectedTaskId != null && selectedTaskId == task.id,
+                      onTap: () {
+                        if (task.id == null) return;
+                        if (onTaskSelected != null) {
+                          final selection = TaskSelection(taskId: task.id!, projectId: task.projectId);
+                          onTaskSelected!(selection);
+                          return;
+                        }
+                        context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId});
+                      },
                     );
                   },
                 );
@@ -155,5 +146,42 @@ class AllTasksScreen extends ConsumerWidget {
         ],
       ),
     );
+
+    if (_isEmbedded) {
+      return content;
+    }
+
+    return fu.FScaffold(
+      header: fu.FHeader.nested(
+        prefixes: [
+          fu.FHeaderAction.back(
+            onPress: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
+        ],
+        title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+      ),
+      footer: Padding(
+        padding: EdgeInsets.all(AppConstants.spacing.large),
+        child: fu.FButton(
+          prefix: Icon(fu.FIcons.plus),
+          child: const Text('Create New Task'),
+          onPress: () => context.push(AppRoutes.createTaskWithProject),
+        ),
+      ),
+      child: content,
+    );
   }
+}
+
+class TaskSelection {
+  final int taskId;
+  final int projectId;
+
+  const TaskSelection({required this.taskId, required this.projectId});
 }
