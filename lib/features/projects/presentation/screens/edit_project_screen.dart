@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/utils/form_validators.dart';
@@ -98,6 +99,6 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
     );
 
     await ref.read(projectProvider.notifier).updateProject(updated);
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) context.pop();
   }
 }

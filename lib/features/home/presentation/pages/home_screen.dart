@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/utils/datetime_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
 import 'package:focus/features/home/presentation/widgets/empty_section.dart';
 import 'package:focus/features/home/presentation/widgets/global_stats_row.dart';
 import 'package:focus/features/home/presentation/widgets/recent_project_tile.dart';
@@ -12,7 +13,7 @@ import 'package:focus/features/home/presentation/widgets/today_summary_card.dart
 import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/route_constants.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../../tasks/domain/entities/global_stats.dart';
 import '../../../tasks/presentation/providers/task_stats_provider.dart';
@@ -68,7 +69,7 @@ class HomeScreen extends ConsumerWidget {
               onViewAll: () {
                 final projects = projectsAsync.value;
                 if (projects != null && projects.isNotEmpty) {
-                  Navigator.pushNamed(context, RouteConstants.allTasksRoute);
+                  context.push(AppRoutes.tasks);
                 }
               },
             ),
@@ -86,10 +87,7 @@ class HomeScreen extends ConsumerWidget {
               },
             ),
             SizedBox(height: AppConstants.spacing.regular),
-            SectionHeader(
-              title: 'Projects',
-              onViewAll: () => Navigator.pushNamed(context, RouteConstants.projectListRoute),
-            ),
+            SectionHeader(title: 'Projects', onViewAll: () => context.push(AppRoutes.projects)),
             projectsAsync.when(
               loading: () => const Center(child: fu.FCircularProgress()),
               error: (err, _) => Padding(

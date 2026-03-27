@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/route_constants.dart';
-import '../../../../core/providers/navigation_provider.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/app_search_bar.dart';
 import '../../../../core/widgets/filter_select.dart';
 import '../../../../core/widgets/sort_filter_chips.dart';
@@ -33,9 +33,9 @@ class AllTasksScreen extends ConsumerWidget {
           fu.FHeaderAction.back(
             onPress: () {
               if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
+                context.pop();
               } else {
-                ref.read(bottomNavIndexProvider.notifier).goHome();
+                context.go(AppRoutes.home);
               }
             },
           ),
@@ -47,8 +47,7 @@ class AllTasksScreen extends ConsumerWidget {
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Task'),
-          onPress: () =>
-              Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.createTaskWithProjectRoute),
+          onPress: () => context.push(AppRoutes.createTaskWithProject),
         ),
       ),
       child: Column(
@@ -145,10 +144,7 @@ class AllTasksScreen extends ConsumerWidget {
                     return AllTaskCard(
                       task: task,
                       onTap: () => task.id != null
-                          ? Navigator.of(context).pushNamed(
-                              RouteConstants.taskDetailRoute,
-                              arguments: {'taskId': task.id!, 'projectId': task.projectId},
-                            )
+                          ? context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId})
                           : null,
                     );
                   },

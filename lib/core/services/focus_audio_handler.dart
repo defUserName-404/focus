@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:ui' show Color;
 
 import 'package:audio_service/audio_service.dart';
-import 'package:flutter/foundation.dart';
 
 import '../constants/notification_constants.dart';
+import 'log_service.dart';
 
 /// Callback signature used by [FocusAudioHandler] to delegate
 /// media-button and notification-action taps back to the app's
@@ -153,8 +153,13 @@ class FocusAudioHandler extends BaseAudioHandler with SeekHandler {
         ),
       );
       return handler;
-    } catch (e) {
-      debugPrint('FocusAudioHandler.init failed: $e');
+    } catch (e, stackTrace) {
+      LogService.instance.error(
+        'FocusAudioHandler.init failed',
+        tag: 'FocusAudioHandler',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }

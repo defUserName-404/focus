@@ -6,6 +6,7 @@ import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/presentation/providers/task_filter_state.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/action_menu_button.dart';
 import '../../../../core/widgets/app_search_bar.dart';
@@ -50,7 +51,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
 
     return fu.FScaffold(
       header: fu.FHeader.nested(
-        prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
+        prefixes: [fu.FHeaderAction.back(onPress: () => context.pop())],
         title: Text('Project Details'),
         suffixes: [
           fu.FHeaderAction(
@@ -65,7 +66,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               if (project == null) return const SizedBox.shrink();
               return ActionMenuButton(
                 onEdit: () => ProjectCommands.edit(context, project),
-                onDelete: () => ProjectCommands.delete(context, ref, project, onDeleted: () => Navigator.pop(context)),
+                onDelete: () => ProjectCommands.delete(context, ref, project, onDeleted: () => context.pop()),
               );
             },
             orElse: () => const SizedBox.shrink(),

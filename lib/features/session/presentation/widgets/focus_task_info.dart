@@ -32,8 +32,8 @@ class FocusTaskInfo extends ConsumerWidget {
       data: (task) {
         final projectAsync = ref.watch(projectByIdProvider(task.projectId.toString()));
         return Row(
-          mainAxisAlignment: .center,
-          crossAxisAlignment: .center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           spacing: AppConstants.spacing.regular,
           children: [
             Text(
@@ -43,20 +43,20 @@ class FocusTaskInfo extends ConsumerWidget {
             ),
             projectAsync.when(
               data: (project) => Padding(
-                padding: EdgeInsetsGeometry.only(top: AppConstants.spacing.regular),
+                padding: EdgeInsets.only(top: AppConstants.spacing.regular),
                 child: Text(
                   project?.title ?? '',
                   style: context.typography.base.copyWith(color: context.colors.mutedForeground),
                 ),
               ),
               loading: () => const SizedBox.shrink(),
-              error: (_, _) => const SizedBox.shrink(),
+              error: (error, stackTrace) => const SizedBox.shrink(),
             ),
           ],
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, _) => const Text('Error loading task'),
+      error: (error, stackTrace) => const Text('Error loading task'),
     );
   }
 }

@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:flutter/foundation.dart';
+
+import 'log_service.dart';
 
 /// Callback signature for audio interruption events.
 typedef InterruptionCallback = void Function(bool shouldPause);
@@ -25,8 +26,13 @@ class AudioSessionManager {
 
       _listenForInterruptions();
       _listenForBecomingNoisy();
-    } catch (e) {
-      debugPrint('AudioSessionManager.init failed: $e');
+    } catch (e, stackTrace) {
+      LogService.instance.warning(
+        'AudioSessionManager.init failed',
+        tag: 'AudioSessionManager',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -56,8 +62,13 @@ class AudioSessionManager {
   Future<bool> activate() async {
     try {
       return await _session?.setActive(true) ?? false;
-    } catch (e) {
-      debugPrint('AudioSessionManager.activate failed: $e');
+    } catch (e, stackTrace) {
+      LogService.instance.warning(
+        'AudioSessionManager.activate failed',
+        tag: 'AudioSessionManager',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return false;
     }
   }
@@ -65,8 +76,13 @@ class AudioSessionManager {
   Future<void> deactivate() async {
     try {
       await _session?.setActive(false);
-    } catch (e) {
-      debugPrint('AudioSessionManager.deactivate failed: $e');
+    } catch (e, stackTrace) {
+      LogService.instance.warning(
+        'AudioSessionManager.deactivate failed',
+        tag: 'AudioSessionManager',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 

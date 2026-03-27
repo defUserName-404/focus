@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../constants/app_constants.dart';
 
@@ -29,7 +30,7 @@ class BaseFormScreen extends StatelessWidget {
     return FScaffold(
       header: FHeader.nested(
         title: Text(title),
-        prefixes: [FHeaderAction.back(onPress: () => Navigator.of(context).pop())],
+        prefixes: [FHeaderAction.back(onPress: () => context.pop())],
       ),
       child: SingleChildScrollView(
         child: Column(

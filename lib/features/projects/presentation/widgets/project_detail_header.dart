@@ -21,7 +21,7 @@ class ProjectDetailHeader extends StatelessWidget {
       spacing: AppConstants.spacing.regular,
       children: [
         Row(
-          crossAxisAlignment: .center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           spacing: AppConstants.spacing.regular,
           children: [
             Padding(

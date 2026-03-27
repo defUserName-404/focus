@@ -11,6 +11,7 @@ abstract final class NotificationConstants {
   // Notification IDs
   static const int focusSessionId = 1001;
   static const int alarmId = 1002;
+  static const int taskReminderIdOffset = 20000;
 
   // Action IDs (notification buttons)
   static const String actionPause = 'focus_pause';
@@ -20,4 +21,5 @@ abstract final class NotificationConstants {
 
   // Notification Payloads (for body tap navigation)
   static const String focusSessionPayload = 'focus_session';
+  static const String taskPayloadPrefix = 'task:';
 }

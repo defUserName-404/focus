@@ -33,6 +33,10 @@ dependencies:
 
   # Notifications
   flutter_local_notifications: ^20.0.0
+  timezone: ^0.10.1
+
+  # Routing
+  go_router: ^14.0.0
 
   # Utils
   forui_assets: ^0.17.1

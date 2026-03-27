@@ -17,7 +17,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -139,6 +139,13 @@ class AppDatabase extends _$AppDatabase {
         );
 
         await customStatement('COMMIT');
+      }
+
+      // v2 → v3: Add focus_phase_ended_at column to focus_session_table
+      // This column stores the elapsed seconds when focus phase ended,
+      // preserving accurate focus time data across app restarts.
+      if (from < 3) {
+        await customStatement('ALTER TABLE focus_session_table ADD COLUMN focus_phase_ended_at INTEGER');
       }
     },
     beforeOpen: (details) async {

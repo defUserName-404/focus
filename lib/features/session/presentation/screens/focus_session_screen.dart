@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/marquee_text.dart';
 import '../../../../core/config/theme/app_theme.dart';
@@ -34,7 +35,7 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
     if (mounted && !state.hasPopped) {
       ref.read(focusScreenProvider.notifier).markAsPopped();
       ref.read(focusTimerProvider.notifier).clearCompletedSession();
-      Navigator.of(context).pop();
+      context.pop();
     }
   }
 
@@ -56,7 +57,7 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ref.read(focusScreenProvider.notifier).markAsPopped();
-          Navigator.of(context).pop();
+          context.pop();
         }
       });
       return const FScaffold(child: Center(child: CircularProgressIndicator()));
@@ -70,7 +71,7 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
         child: Stack(
           children: [
             FScaffold(
-              header: FHeader.nested(prefixes: [FHeaderAction.back(onPress: () => Navigator.of(context).pop())]),
+              header: FHeader.nested(prefixes: [FHeaderAction.back(onPress: () => context.pop())]),
               child: Center(
                 child: Column(
                   children: [
@@ -284,10 +285,10 @@ class _FocusControlsWithCallback extends ConsumerWidget {
         title: const Text('End session?'),
         body: const Text("This session will be saved but won't count as completed."),
         actions: [
-          FButton(onPress: () => Navigator.pop(ctx), style: FButtonStyle.ghost(), child: const Text('Keep going')),
+          FButton(onPress: () => ctx.pop(), style: FButtonStyle.ghost(), child: const Text('Keep going')),
           FButton(
             onPress: () {
-              Navigator.pop(ctx);
+              ctx.pop();
               ref.read(focusTimerProvider.notifier).cancelSession();
               // No explicit pop — auto-pop in build() handles it
               // when cancelSession sets state to null.

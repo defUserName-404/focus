@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/route_constants.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../projects/domain/entities/project.dart';
 
@@ -17,7 +18,7 @@ class RecentProjectTile extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (project.id != null) {
-          Navigator.pushNamed(context, RouteConstants.projectDetailRoute, arguments: project.id!);
+          context.push(AppRoutes.projectDetailPath(project.id!));
         }
       },
       child: fu.FCard(

@@ -11,6 +11,8 @@
 | Architecture | [.agents/ARCHITECTURE.md](.agents/ARCHITECTURE.md) |
 | Commands | [.agents/COMMANDS.md](.agents/COMMANDS.md) |
 | Patterns | [.agents/PATTERNS.md](.agents/PATTERNS.md) |
+| **Audit Results** | [.agents/AUDIT_RESULTS.md](.agents/AUDIT_RESULTS.md) |
+| **Feature Plans** | [.agents/FEATURE_PLANS.md](.agents/FEATURE_PLANS.md) |
 
 ---
 

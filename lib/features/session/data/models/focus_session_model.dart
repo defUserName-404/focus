@@ -15,4 +15,9 @@ class FocusSessionTable extends Table {
   DateTimeColumn get endTime => dateTime().nullable()();
   IntColumn get state => intEnum<SessionState>()();
   IntColumn get elapsedSeconds => integer().withDefault(const Constant(0))();
+
+  /// Elapsed seconds at which the focus phase ended.
+  /// Stored to preserve accurate focus time across app restarts.
+  /// Null while focus is still running; set when transitioning to break.
+  IntColumn get focusPhaseEndedAt => integer().nullable()();
 }

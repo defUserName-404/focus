@@ -11,6 +11,20 @@ extension DateTimeFormattingExtensions on DateTime {
     return '$m $day';
   }
 
+  String toTimeString() {
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final hour12 = hour % 12 == 0 ? 12 : hour % 12;
+    final minutePadded = minute.toString().padLeft(2, '0');
+    return '$hour12:$minutePadded $period';
+  }
+
+  bool get hasExplicitTime => hour != 0 || minute != 0 || second != 0 || millisecond != 0 || microsecond != 0;
+
+  String toDateTimeString() {
+    final date = toDateString();
+    return hasExplicitTime ? '$date, ${toTimeString()}' : date;
+  }
+
   String toShortDateKey() {
     return '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
   }
