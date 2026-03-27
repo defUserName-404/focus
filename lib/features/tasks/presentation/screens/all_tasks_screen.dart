@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/utils/platform_utils.dart';
 import '../../../../core/widgets/app_search_bar.dart';
 import '../../../../core/widgets/constrained_content.dart';
 import '../../../../core/widgets/filter_select.dart';
@@ -32,40 +33,80 @@ class AllTasksScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAsync = ref.watch(filteredAllTasksProvider);
     final filter = ref.watch(allTasksFilterProvider);
+    final isCompact = context.isCompact;
 
     final content = ConstrainedContent(
       maxWidth: 980,
       child: Column(
         children: [
+          if (!isCompact && _isEmbedded)
+            Padding(
+              padding: EdgeInsets.only(bottom: AppConstants.spacing.small),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: fu.FButton(
+                  prefix: Icon(fu.FIcons.plus),
+                  onPress: () => context.push(AppRoutes.createTaskWithProject),
+                  child: const Text('Create Task'),
+                ),
+              ),
+            ),
           AppSearchBar(
             hint: 'Search tasks...',
             onChanged: (query) {
               ref.read(allTasksFilterProvider.notifier).updateFilter(searchQuery: query);
             },
           ),
-          Row(
-            children: [
-              SizedBox(
-                width: 120.0,
-                child: SortOrderSelector<AllTasksSortOrder>(
-                  selectedOrder: filter.sortOrder,
-                  onChanged: (order) {
-                    ref.read(allTasksFilterProvider.notifier).updateFilter(sortOrder: order);
-                  },
-                  orderOptions: AllTasksSortOrder.values,
+          if (isCompact)
+            Row(
+              children: [
+                SizedBox(
+                  width: 120.0,
+                  child: SortOrderSelector<AllTasksSortOrder>(
+                    selectedOrder: filter.sortOrder,
+                    onChanged: (order) {
+                      ref.read(allTasksFilterProvider.notifier).updateFilter(sortOrder: order);
+                    },
+                    orderOptions: AllTasksSortOrder.values,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: SortFilterChips<AllTasksSortCriteria>(
-                  selectedCriteria: filter.sortCriteria,
-                  onChanged: (criteria) {
-                    ref.read(allTasksFilterProvider.notifier).updateFilter(sortCriteria: criteria);
-                  },
-                  criteriaOptions: AllTasksSortCriteria.values,
+                Expanded(
+                  child: SortFilterChips<AllTasksSortCriteria>(
+                    selectedCriteria: filter.sortCriteria,
+                    onChanged: (criteria) {
+                      ref.read(allTasksFilterProvider.notifier).updateFilter(sortCriteria: criteria);
+                    },
+                    criteriaOptions: AllTasksSortCriteria.values,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: FilterSelect<AllTasksSortCriteria>(
+                    selected: filter.sortCriteria,
+                    onChanged: (criteria) {
+                      ref.read(allTasksFilterProvider.notifier).updateFilter(sortCriteria: criteria);
+                    },
+                    options: AllTasksSortCriteria.values,
+                    hint: 'Sort by',
+                  ),
+                ),
+                SizedBox(width: AppConstants.spacing.regular),
+                Expanded(
+                  child: FilterSelect<AllTasksSortOrder>(
+                    selected: filter.sortOrder,
+                    onChanged: (order) {
+                      ref.read(allTasksFilterProvider.notifier).updateFilter(sortOrder: order);
+                    },
+                    options: AllTasksSortOrder.values,
+                    hint: 'Order',
+                  ),
+                ),
+              ],
+            ),
           Row(
             children: [
               SizedBox(

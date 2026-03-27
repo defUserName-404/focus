@@ -184,6 +184,17 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ),
+                projectAsync.maybeWhen(
+                  data: (project) {
+                    if (project == null) return const SizedBox.shrink();
+                    return ActionMenuButton(
+                      onEdit: () => ProjectCommands.edit(context, project),
+                      onDelete: () => ProjectCommands.delete(context, ref, project),
+                    );
+                  },
+                  orElse: () => const SizedBox.shrink(),
+                ),
+                SizedBox(width: AppConstants.spacing.small),
                 fu.FButton.icon(
                   onPress: () => TaskCommands.create(context, projectId: widget.projectId),
                   child: Icon(fu.FIcons.plus),

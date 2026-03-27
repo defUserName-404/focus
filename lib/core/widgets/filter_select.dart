@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-abstract interface class FilterSelectable {
-  String get label;
-}
-
-class FilterSelect<T extends FilterSelectable?> extends StatelessWidget {
+class FilterSelect<T> extends StatelessWidget {
   final T selected;
   final ValueChanged<T> onChanged;
   final List<T> options;
   final String hint;
   final String? allLabel; // Label for the "All" option, null to disable
+  final String Function(T option)? labelBuilder;
 
   const FilterSelect({
     super.key,
@@ -19,7 +16,16 @@ class FilterSelect<T extends FilterSelectable?> extends StatelessWidget {
     required this.options,
     required this.hint,
     this.allLabel,
+    this.labelBuilder,
   });
+
+  String _labelFor(T option) {
+    if (labelBuilder != null) return labelBuilder!(option);
+    final dynamic dynamicOption = option;
+    final label = dynamicOption.label;
+    if (label is String) return label;
+    return option.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +36,7 @@ class FilterSelect<T extends FilterSelectable?> extends StatelessWidget {
 
     for (final option in options) {
       if (option != null) {
-        items[option.label] = option;
+        items[_labelFor(option)] = option;
       }
     }
 

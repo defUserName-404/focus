@@ -6,8 +6,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/utils/platform_utils.dart';
 import '../../../../core/widgets/app_search_bar.dart';
 import '../../../../core/widgets/constrained_content.dart';
+import '../../../../core/widgets/filter_select.dart';
 import '../../../../core/widgets/sort_filter_chips.dart';
 import '../../../../core/widgets/sort_order_selector.dart';
 import '../../domain/entities/project_list_filter_state.dart';
@@ -27,6 +29,7 @@ class ProjectListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAsync = ref.watch(filteredProjectListProvider);
     final filter = ref.watch(projectListFilterProvider);
+    final isCompact = context.isCompact;
 
     final content = ConstrainedContent(
       maxWidth: 980,
@@ -38,29 +41,65 @@ class ProjectListScreen extends ConsumerWidget {
               ref.read(projectListFilterProvider.notifier).updateFilter(searchQuery: query);
             },
           ),
-          Row(
-            children: [
-              SizedBox(
-                width: 120.0,
-                child: SortOrderSelector<ProjectSortOrder>(
-                  selectedOrder: filter.sortOrder,
-                  onChanged: (order) {
-                    ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
-                  },
-                  orderOptions: ProjectSortOrder.values,
+          if (isCompact)
+            Row(
+              children: [
+                SizedBox(
+                  width: 120.0,
+                  child: SortOrderSelector<ProjectSortOrder>(
+                    selectedOrder: filter.sortOrder,
+                    onChanged: (order) {
+                      ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
+                    },
+                    orderOptions: ProjectSortOrder.values,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: SortFilterChips<ProjectSortCriteria>(
-                  selectedCriteria: filter.sortCriteria,
-                  onChanged: (criteria) {
-                    ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
-                  },
-                  criteriaOptions: ProjectSortCriteria.values,
+                Expanded(
+                  child: SortFilterChips<ProjectSortCriteria>(
+                    selectedCriteria: filter.sortCriteria,
+                    onChanged: (criteria) {
+                      ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
+                    },
+                    criteriaOptions: ProjectSortCriteria.values,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                if (!isCompact && _isEmbedded)
+                  Padding(
+                    padding: EdgeInsets.only(left: AppConstants.spacing.regular),
+                    child: fu.FButton(
+                      prefix: Icon(fu.FIcons.plus),
+                      onPress: () => ProjectCommands.create(context),
+                      child: const Text('Create Project'),
+                    ),
+                  ),
+                Expanded(
+                  child: FilterSelect<ProjectSortCriteria>(
+                    selected: filter.sortCriteria,
+                    onChanged: (criteria) {
+                      ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
+                    },
+                    options: ProjectSortCriteria.values,
+                    hint: 'Sort by',
+                  ),
+                ),
+                SizedBox(width: AppConstants.spacing.regular),
+                Expanded(
+                  child: FilterSelect<ProjectSortOrder>(
+                    selected: filter.sortOrder,
+                    onChanged: (order) {
+                      ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
+                    },
+                    options: ProjectSortOrder.values,
+                    hint: 'Order',
+                  ),
+                ),
+              ],
+            ),
           Expanded(
             child: filteredAsync.when(
               loading: () => const Center(child: fu.FCircularProgress()),

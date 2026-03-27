@@ -103,6 +103,11 @@ class TaskDetailScreen extends ConsumerWidget {
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
+                    fu.FButton.icon(
+                      onPress: () => TaskCommands.create(context, projectId: projectId),
+                      child: Icon(fu.FIcons.plus),
+                    ),
+                    SizedBox(width: AppConstants.spacing.small),
                     ActionMenuButton(
                       onEdit: () => TaskCommands.edit(context, task),
                       onDelete: () => TaskCommands.delete(context, ref, task, _projectIdString),
