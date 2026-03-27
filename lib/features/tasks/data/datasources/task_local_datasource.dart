@@ -9,6 +9,7 @@ import '../../domain/entities/all_tasks_filter_state.dart';
 abstract class ITaskLocalDataSource {
   Future<List<TaskTableData>> getTasksByProjectId(int projectId);
   Future<TaskTableData?> getTaskById(int id);
+  Future<List<TaskTableData>> getTasksWithDeadlines();
   Future<List<TaskTableData>> getSubtasks(int parentTaskId);
   Future<int> createTask(TaskTableCompanion companion);
   Future<void> updateTask(TaskTableCompanion companion);
@@ -64,6 +65,16 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
       return await (_db.select(_db.taskTable)..where((t) => t.parentTaskId.equals(parentTaskId))).get();
     } catch (e, st) {
       _log.error('getSubtasks failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<TaskTableData>> getTasksWithDeadlines() async {
+    try {
+      return await (_db.select(_db.taskTable)..where((t) => t.endDate.isNotNull() & t.isCompleted.equals(false))).get();
+    } catch (e, st) {
+      _log.error('getTasksWithDeadlines failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
       rethrow;
     }
   }

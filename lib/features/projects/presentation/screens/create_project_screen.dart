@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
-import '../../../../core/constants/route_constants.dart';
+import '../../../../core/routing/routes.dart';
 import '../providers/project_provider.dart';
 
 class CreateProjectScreen extends ConsumerStatefulWidget {
@@ -84,9 +85,8 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
 
     if (mounted && project.id != null) {
       // Pop this screen and navigate to the new project's detail page.
-      Navigator.of(context)
-        ..pop()
-        ..pushNamed(RouteConstants.projectDetailRoute, arguments: project.id!);
+      context.pop();
+      context.push(AppRoutes.projectDetailPath(project.id!));
     }
   }
 }

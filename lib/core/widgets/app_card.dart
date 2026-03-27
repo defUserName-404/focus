@@ -35,14 +35,14 @@ class AppCard extends StatelessWidget {
       onTap: onTap,
       child: fu.FCard(
         child: Column(
-          mainAxisSize: .min,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Column(
-              crossAxisAlignment: .start,
-              mainAxisSize: .min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
-                  crossAxisAlignment: .center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     if (leading != null) SizedBox(width: leadingWidth, child: leading!),
                     Expanded(
@@ -69,7 +69,7 @@ class AppCard extends StatelessWidget {
                       if (content != null) ...[SizedBox(height: AppConstants.spacing.regular), content!],
                       if (footerActions != null && footerActions!.isNotEmpty) ...[
                         SizedBox(height: AppConstants.spacing.regular),
-                        Row(mainAxisAlignment: .end, children: footerActions!),
+                        Row(mainAxisAlignment: MainAxisAlignment.end, children: footerActions!),
                       ],
                     ],
                   ),

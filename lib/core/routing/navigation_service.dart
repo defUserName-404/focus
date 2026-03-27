@@ -1,64 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../features/projects/domain/entities/project.dart';
 import '../../features/tasks/domain/entities/task.dart';
-import '../di/injection.dart';
-import '../constants/route_constants.dart';
-import 'navigator_key.dart';
+import 'app_router.dart';
+import 'routes.dart';
 
-part 'navigation_service.g.dart';
-
-/// Centralized navigation service.
+/// Centralized navigation service using go_router.
 ///
 /// All screen-to-screen navigation flows through this class.
 /// Widgets and commands call these methods instead of using
-/// `Navigator.of(context).pushNamed(...)` directly.
+/// `context.go()` or `context.push()` directly.
 ///
 /// Benefits:
 ///  - Single place to change navigation behaviour.
-///  - Easy to swap imperative Navigator 1.0 for GoRouter later.
+///  - Consistent navigation patterns across the app.
 ///  - Keeps widgets free of routing logic.
 class NavigationService {
   //  Project routes
 
   void goToProjectDetail(BuildContext context, int projectId) {
-    Navigator.of(context).pushNamed(RouteConstants.projectDetailRoute, arguments: projectId);
+    context.push(AppRoutes.projectDetailPath(projectId));
   }
 
   void goToProjectList(BuildContext context) {
-    Navigator.of(context).pushNamed(RouteConstants.projectListRoute);
+    context.go(AppRoutes.projects);
   }
 
   void goToCreateProject(BuildContext context) {
-    Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.createProjectRoute);
+    context.push(AppRoutes.createProject);
   }
 
   void goToEditProject(BuildContext context, Project project) {
-    Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.editProjectRoute, arguments: project);
+    context.push(AppRoutes.editProjectPath(project.id!), extra: project);
   }
 
   // Task routes
 
   void goToTaskDetail(BuildContext context, {required int taskId, required int projectId}) {
-    Navigator.of(
-      context,
-    ).pushNamed(RouteConstants.taskDetailRoute, arguments: {'taskId': taskId, 'projectId': projectId});
+    context.push(AppRoutes.taskDetailPath(taskId), extra: {'projectId': projectId});
   }
 
   void goToCreateTask(BuildContext context, {required int projectId, int? parentTaskId, int depth = 0}) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      RouteConstants.createTaskRoute,
-      arguments: {'projectId': projectId, 'parentTaskId': parentTaskId, 'depth': depth},
-    );
+    var path = AppRoutes.createTaskPath(projectId);
+    final queryParams = <String, String>{};
+    if (parentTaskId != null) queryParams['parentTaskId'] = parentTaskId.toString();
+    if (depth > 0) queryParams['depth'] = depth.toString();
+
+    if (queryParams.isNotEmpty) {
+      final uri = Uri.parse(path).replace(queryParameters: queryParams);
+      path = uri.toString();
+    }
+
+    context.push(path);
   }
 
   void goToEditTask(BuildContext context, Task task) {
-    Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.editTaskRoute, arguments: task);
+    context.push(AppRoutes.editTaskPath(task.id!), extra: task);
   }
 
   void goToCreateTaskWithProject(BuildContext context) {
-    Navigator.of(context, rootNavigator: true).pushNamed(RouteConstants.createTaskWithProjectRoute);
+    context.push(AppRoutes.createTaskWithProject);
   }
 
   // Focus routes
@@ -71,17 +73,13 @@ class NavigationService {
   // General
 
   void pop(BuildContext context) {
-    Navigator.of(context).pop();
+    if (context.canPop()) {
+      context.pop();
+    }
   }
 
   void popToRoot(BuildContext context) {
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    // In go_router, we navigate to the root route instead of popping
+    context.go(AppRoutes.home);
   }
 }
-
-/// Riverpod provider for the navigation service.
-///
-/// Prefer injecting this via `ref.read(navigationServiceProvider)` in
-/// commands and providers rather than calling `Navigator.of` directly.
-@Riverpod(keepAlive: true)
-NavigationService navigationService(Ref ref) => getIt<NavigationService>();

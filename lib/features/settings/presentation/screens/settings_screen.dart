@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/providers/navigation_provider.dart';
 import '../../../../core/config/theme/app_theme.dart';
+import '../../../../core/routing/routes.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_content.dart';
 
@@ -21,9 +22,9 @@ class SettingsScreen extends ConsumerWidget {
           fu.FHeaderAction.back(
             onPress: () {
               if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
+                context.pop();
               } else {
-                ref.read(bottomNavIndexProvider.notifier).goHome();
+                context.go(AppRoutes.home);
               }
             },
           ),

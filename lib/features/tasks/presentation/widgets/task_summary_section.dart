@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/widgets/meta_chip.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/route_constants.dart';
+import '../../../../core/routing/routes.dart';
 import '../../domain/entities/task.dart';
 import 'task_priority_badge.dart';
 
@@ -29,13 +30,13 @@ class TaskSummarySection extends StatelessWidget {
       children: [
         Row(
           spacing: AppConstants.spacing.regular,
-          crossAxisAlignment: .center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               task.title,
               style: context.typography.lg.copyWith(fontWeight: FontWeight.bold),
               maxLines: 2,
-              overflow: .ellipsis,
+              overflow: TextOverflow.ellipsis,
             ),
             if (projectName != null) ...[
               SizedBox(width: AppConstants.spacing.regular),
@@ -44,7 +45,7 @@ class TaskSummarySection extends StatelessWidget {
                 child: fu.FButton(
                   onPress: () {
                     if (projectId != null) {
-                      Navigator.pushNamed(context, RouteConstants.projectDetailRoute, arguments: projectId!);
+                      context.push(AppRoutes.projectDetailPath(projectId!));
                     }
                   },
                   style: fu.FButtonStyle.ghost(),
@@ -79,11 +80,11 @@ class TaskSummarySection extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: AppConstants.spacing.regular,
             children: [
-              if (start != null) MetaChip(icon: fu.FIcons.calendarDays, label: 'Start: ${start.toDateString()}'),
+              if (start != null) MetaChip(icon: fu.FIcons.calendarDays, label: 'Start: ${start.toDateTimeString()}'),
               if (end != null) ...[
                 MetaChip(
                   icon: fu.FIcons.calendarClock,
-                  label: 'Due: ${end.toDateString()}',
+                  label: 'Due: ${end.toDateTimeString()}',
                   isDestructive: isOverdue && !task.isCompleted,
                 ),
                 if (isOverdue && !task.isCompleted) ...[

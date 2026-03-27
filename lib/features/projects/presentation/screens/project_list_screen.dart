@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
-import '../../../../core/constants/route_constants.dart';
-import '../../../../core/providers/navigation_provider.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/app_search_bar.dart';
 import '../../../../core/widgets/sort_filter_chips.dart';
 import '../../../../core/widgets/sort_order_selector.dart';
@@ -28,9 +28,9 @@ class ProjectListScreen extends ConsumerWidget {
           fu.FHeaderAction.back(
             onPress: () {
               if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
+                context.pop();
               } else {
-                ref.read(bottomNavIndexProvider.notifier).goHome();
+                context.go(AppRoutes.home);
               }
             },
           ),
@@ -108,9 +108,7 @@ class ProjectListScreen extends ConsumerWidget {
                     final project = projects[index];
                     return ProjectCard(
                       project: project,
-                      onTap: () => project.id != null
-                          ? Navigator.of(context).pushNamed(RouteConstants.projectDetailRoute, arguments: project.id!)
-                          : null,
+                      onTap: () => project.id != null ? context.push(AppRoutes.projectDetailPath(project.id!)) : null,
                       onEdit: () => ProjectCommands.edit(context, project),
                       onDelete: () => ProjectCommands.delete(context, ref, project),
                     );

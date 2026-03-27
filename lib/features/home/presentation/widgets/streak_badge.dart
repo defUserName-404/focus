@@ -15,10 +15,10 @@ class StreakBadge extends StatelessWidget {
     return FBadge(
       style: FBadgeStyle.secondary(),
       child: Row(
-        mainAxisSize: .min,
+        mainAxisSize: MainAxisSize.min,
         spacing: AppConstants.spacing.small,
-        mainAxisAlignment: .center,
-        crossAxisAlignment: .center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Lottie.asset(
             AnimationAssets.fire,

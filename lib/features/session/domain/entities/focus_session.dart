@@ -28,8 +28,7 @@ class FocusSession extends Equatable {
   /// This lets the break timer and stats use the *real* focus time
   /// instead of always assuming the full configured duration.
   ///
-  /// Not persisted to the database; defaults to
-  /// [focusDurationMinutes] * 60 when loaded from storage.
+  /// Persisted to the database to preserve accurate stats across app restarts.
   final int? focusPhaseEndedAt;
 
   /// Elapsed seconds at which the focus phase ended.
@@ -54,7 +53,14 @@ class FocusSession extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, taskId, focusDurationMinutes, breakDurationMinutes,
-    startTime, endTime, state, elapsedSeconds, focusPhaseEndedAt,
+    id,
+    taskId,
+    focusDurationMinutes,
+    breakDurationMinutes,
+    startTime,
+    endTime,
+    state,
+    elapsedSeconds,
+    focusPhaseEndedAt,
   ];
 }

@@ -3,7 +3,8 @@
 part of 'db_service.dart';
 
 // ignore_for_file: type=lint
-class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable, ProjectTableData> {
+class $ProjectTableTable extends ProjectTable
+    with TableInfo<$ProjectTableTable, ProjectTableData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -17,7 +18,9 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
   );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
@@ -28,7 +31,9 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _descriptionMeta = const VerificationMeta('description');
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
   @override
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
     'description',
@@ -37,7 +42,9 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _startDateMeta = const VerificationMeta('startDate');
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
   @override
   late final GeneratedColumn<DateTime> startDate = GeneratedColumn<DateTime>(
     'start_date',
@@ -46,7 +53,9 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _deadlineMeta = const VerificationMeta('deadline');
+  static const VerificationMeta _deadlineMeta = const VerificationMeta(
+    'deadline',
+  );
   @override
   late final GeneratedColumn<DateTime> deadline = GeneratedColumn<DateTime>(
     'deadline',
@@ -55,7 +64,9 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta('createdAt');
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
     'created_at',
@@ -64,7 +75,9 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta('updatedAt');
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
@@ -74,40 +87,72 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, title, description, startDate, deadline, createdAt, updatedAt];
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    description,
+    startDate,
+    deadline,
+    createdAt,
+    updatedAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'project_table';
   @override
-  VerificationContext validateIntegrity(Insertable<ProjectTableData> instance, {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<ProjectTableData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('title')) {
-      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('description')) {
-      context.handle(_descriptionMeta, description.isAcceptableOrUnknown(data['description']!, _descriptionMeta));
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
     }
     if (data.containsKey('start_date')) {
-      context.handle(_startDateMeta, startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta));
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
     }
     if (data.containsKey('deadline')) {
-      context.handle(_deadlineMeta, deadline.isAcceptableOrUnknown(data['deadline']!, _deadlineMeta));
+      context.handle(
+        _deadlineMeta,
+        deadline.isAcceptableOrUnknown(data['deadline']!, _deadlineMeta),
+      );
     }
     if (data.containsKey('created_at')) {
-      context.handle(_createdAtMeta, createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
     if (data.containsKey('updated_at')) {
-      context.handle(_updatedAtMeta, updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
@@ -120,13 +165,34 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
   ProjectTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ProjectTableData(
-      id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      description: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}description']),
-      startDate: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}start_date']),
-      deadline: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}deadline']),
-      createdAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
-      updatedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_date'],
+      ),
+      deadline: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deadline'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
     );
   }
 
@@ -136,7 +202,8 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
   }
 }
 
-class ProjectTableData extends DataClass implements Insertable<ProjectTableData> {
+class ProjectTableData extends DataClass
+    implements Insertable<ProjectTableData> {
   final int id;
   final String title;
   final String? description;
@@ -176,15 +243,24 @@ class ProjectTableData extends DataClass implements Insertable<ProjectTableData>
     return ProjectTableCompanion(
       id: Value(id),
       title: Value(title),
-      description: description == null && nullToAbsent ? const Value.absent() : Value(description),
-      startDate: startDate == null && nullToAbsent ? const Value.absent() : Value(startDate),
-      deadline: deadline == null && nullToAbsent ? const Value.absent() : Value(deadline),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      startDate: startDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startDate),
+      deadline: deadline == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deadline),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
   }
 
-  factory ProjectTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+  factory ProjectTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ProjectTableData(
       id: serializer.fromJson<int>(json['id']),
@@ -231,7 +307,9 @@ class ProjectTableData extends DataClass implements Insertable<ProjectTableData>
     return ProjectTableData(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
-      description: data.description.present ? data.description.value : this.description,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       deadline: data.deadline.present ? data.deadline.value : this.deadline,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -254,7 +332,15 @@ class ProjectTableData extends DataClass implements Insertable<ProjectTableData>
   }
 
   @override
-  int get hashCode => Object.hash(id, title, description, startDate, deadline, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    title,
+    description,
+    startDate,
+    deadline,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -378,7 +464,8 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
   }
 }
 
-class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTableData> {
+class $TaskTableTable extends TaskTable
+    with TableInfo<$TaskTableTable, TaskTableData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -392,9 +479,13 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
   );
-  static const VerificationMeta _projectIdMeta = const VerificationMeta('projectId');
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
   @override
   late final GeneratedColumn<int> projectId = GeneratedColumn<int>(
     'project_id',
@@ -402,9 +493,13 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('REFERENCES project_table (id) ON DELETE CASCADE'),
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES project_table (id) ON DELETE CASCADE',
+    ),
   );
-  static const VerificationMeta _parentTaskIdMeta = const VerificationMeta('parentTaskId');
+  static const VerificationMeta _parentTaskIdMeta = const VerificationMeta(
+    'parentTaskId',
+  );
   @override
   late final GeneratedColumn<int> parentTaskId = GeneratedColumn<int>(
     'parent_task_id',
@@ -412,7 +507,9 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('REFERENCES task_table (id) ON DELETE CASCADE'),
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES task_table (id) ON DELETE CASCADE',
+    ),
   );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
@@ -423,7 +520,9 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _descriptionMeta = const VerificationMeta('description');
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
   @override
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
     'description',
@@ -433,14 +532,17 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     requiredDuringInsert: false,
   );
   @override
-  late final GeneratedColumnWithTypeConverter<TaskPriority, int> priority = GeneratedColumn<int>(
-    'priority',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  ).withConverter<TaskPriority>($TaskTableTable.$converterpriority);
-  static const VerificationMeta _startDateMeta = const VerificationMeta('startDate');
+  late final GeneratedColumnWithTypeConverter<TaskPriority, int> priority =
+      GeneratedColumn<int>(
+        'priority',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<TaskPriority>($TaskTableTable.$converterpriority);
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
   @override
   late final GeneratedColumn<DateTime> startDate = GeneratedColumn<DateTime>(
     'start_date',
@@ -449,7 +551,9 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _endDateMeta = const VerificationMeta('endDate');
+  static const VerificationMeta _endDateMeta = const VerificationMeta(
+    'endDate',
+  );
   @override
   late final GeneratedColumn<DateTime> endDate = GeneratedColumn<DateTime>(
     'end_date',
@@ -467,7 +571,9 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _isCompletedMeta = const VerificationMeta('isCompleted');
+  static const VerificationMeta _isCompletedMeta = const VerificationMeta(
+    'isCompleted',
+  );
   @override
   late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
     'is_completed',
@@ -475,10 +581,14 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     false,
     type: DriftSqlType.bool,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("is_completed" IN (0, 1))'),
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_completed" IN (0, 1))',
+    ),
     defaultValue: const Constant(false),
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta('createdAt');
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
     'created_at',
@@ -487,7 +597,9 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta('updatedAt');
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
@@ -517,49 +629,91 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
   String get actualTableName => $name;
   static const String $name = 'task_table';
   @override
-  VerificationContext validateIntegrity(Insertable<TaskTableData> instance, {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<TaskTableData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('project_id')) {
-      context.handle(_projectIdMeta, projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
     } else if (isInserting) {
       context.missing(_projectIdMeta);
     }
     if (data.containsKey('parent_task_id')) {
-      context.handle(_parentTaskIdMeta, parentTaskId.isAcceptableOrUnknown(data['parent_task_id']!, _parentTaskIdMeta));
+      context.handle(
+        _parentTaskIdMeta,
+        parentTaskId.isAcceptableOrUnknown(
+          data['parent_task_id']!,
+          _parentTaskIdMeta,
+        ),
+      );
     }
     if (data.containsKey('title')) {
-      context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('description')) {
-      context.handle(_descriptionMeta, description.isAcceptableOrUnknown(data['description']!, _descriptionMeta));
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
     }
     if (data.containsKey('start_date')) {
-      context.handle(_startDateMeta, startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta));
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
     }
     if (data.containsKey('end_date')) {
-      context.handle(_endDateMeta, endDate.isAcceptableOrUnknown(data['end_date']!, _endDateMeta));
+      context.handle(
+        _endDateMeta,
+        endDate.isAcceptableOrUnknown(data['end_date']!, _endDateMeta),
+      );
     }
     if (data.containsKey('depth')) {
-      context.handle(_depthMeta, depth.isAcceptableOrUnknown(data['depth']!, _depthMeta));
+      context.handle(
+        _depthMeta,
+        depth.isAcceptableOrUnknown(data['depth']!, _depthMeta),
+      );
     } else if (isInserting) {
       context.missing(_depthMeta);
     }
     if (data.containsKey('is_completed')) {
-      context.handle(_isCompletedMeta, isCompleted.isAcceptableOrUnknown(data['is_completed']!, _isCompletedMeta));
+      context.handle(
+        _isCompletedMeta,
+        isCompleted.isAcceptableOrUnknown(
+          data['is_completed']!,
+          _isCompletedMeta,
+        ),
+      );
     }
     if (data.containsKey('created_at')) {
-      context.handle(_createdAtMeta, createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
     if (data.containsKey('updated_at')) {
-      context.handle(_updatedAtMeta, updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
@@ -572,20 +726,56 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
   TaskTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TaskTableData(
-      id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      projectId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}project_id'])!,
-      parentTaskId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}parent_task_id']),
-      title: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      description: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}description']),
-      priority: $TaskTableTable.$converterpriority.fromSql(
-        attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}priority'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}project_id'],
+      )!,
+      parentTaskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}parent_task_id'],
       ),
-      startDate: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}start_date']),
-      endDate: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}end_date']),
-      depth: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}depth'])!,
-      isCompleted: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}is_completed'])!,
-      createdAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
-      updatedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      priority: $TaskTableTable.$converterpriority.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}priority'],
+        )!,
+      ),
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_date'],
+      ),
+      endDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}end_date'],
+      ),
+      depth: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}depth'],
+      )!,
+      isCompleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_completed'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
     );
   }
 
@@ -594,9 +784,8 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     return $TaskTableTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<TaskPriority, int, int> $converterpriority = const EnumIndexConverter<TaskPriority>(
-    TaskPriority.values,
-  );
+  static JsonTypeConverter2<TaskPriority, int, int> $converterpriority =
+      const EnumIndexConverter<TaskPriority>(TaskPriority.values);
 }
 
 class TaskTableData extends DataClass implements Insertable<TaskTableData> {
@@ -639,7 +828,9 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       map['description'] = Variable<String>(description);
     }
     {
-      map['priority'] = Variable<int>($TaskTableTable.$converterpriority.toSql(priority));
+      map['priority'] = Variable<int>(
+        $TaskTableTable.$converterpriority.toSql(priority),
+      );
     }
     if (!nullToAbsent || startDate != null) {
       map['start_date'] = Variable<DateTime>(startDate);
@@ -658,12 +849,20 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     return TaskTableCompanion(
       id: Value(id),
       projectId: Value(projectId),
-      parentTaskId: parentTaskId == null && nullToAbsent ? const Value.absent() : Value(parentTaskId),
+      parentTaskId: parentTaskId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentTaskId),
       title: Value(title),
-      description: description == null && nullToAbsent ? const Value.absent() : Value(description),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
       priority: Value(priority),
-      startDate: startDate == null && nullToAbsent ? const Value.absent() : Value(startDate),
-      endDate: endDate == null && nullToAbsent ? const Value.absent() : Value(endDate),
+      startDate: startDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startDate),
+      endDate: endDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endDate),
       depth: Value(depth),
       isCompleted: Value(isCompleted),
       createdAt: Value(createdAt),
@@ -671,7 +870,10 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     );
   }
 
-  factory TaskTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+  factory TaskTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TaskTableData(
       id: serializer.fromJson<int>(json['id']),
@@ -679,7 +881,9 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       parentTaskId: serializer.fromJson<int?>(json['parentTaskId']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String?>(json['description']),
-      priority: $TaskTableTable.$converterpriority.fromJson(serializer.fromJson<int>(json['priority'])),
+      priority: $TaskTableTable.$converterpriority.fromJson(
+        serializer.fromJson<int>(json['priority']),
+      ),
       startDate: serializer.fromJson<DateTime?>(json['startDate']),
       endDate: serializer.fromJson<DateTime?>(json['endDate']),
       depth: serializer.fromJson<int>(json['depth']),
@@ -697,7 +901,9 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       'parentTaskId': serializer.toJson<int?>(parentTaskId),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String?>(description),
-      'priority': serializer.toJson<int>($TaskTableTable.$converterpriority.toJson(priority)),
+      'priority': serializer.toJson<int>(
+        $TaskTableTable.$converterpriority.toJson(priority),
+      ),
       'startDate': serializer.toJson<DateTime?>(startDate),
       'endDate': serializer.toJson<DateTime?>(endDate),
       'depth': serializer.toJson<int>(depth),
@@ -738,14 +944,20 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     return TaskTableData(
       id: data.id.present ? data.id.value : this.id,
       projectId: data.projectId.present ? data.projectId.value : this.projectId,
-      parentTaskId: data.parentTaskId.present ? data.parentTaskId.value : this.parentTaskId,
+      parentTaskId: data.parentTaskId.present
+          ? data.parentTaskId.value
+          : this.parentTaskId,
       title: data.title.present ? data.title.value : this.title,
-      description: data.description.present ? data.description.value : this.description,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
       priority: data.priority.present ? data.priority.value : this.priority,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       endDate: data.endDate.present ? data.endDate.value : this.endDate,
       depth: data.depth.present ? data.depth.value : this.depth,
-      isCompleted: data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
+      isCompleted: data.isCompleted.present
+          ? data.isCompleted.value
+          : this.isCompleted,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -928,7 +1140,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       map['description'] = Variable<String>(description.value);
     }
     if (priority.present) {
-      map['priority'] = Variable<int>($TaskTableTable.$converterpriority.toSql(priority.value));
+      map['priority'] = Variable<int>(
+        $TaskTableTable.$converterpriority.toSql(priority.value),
+      );
     }
     if (startDate.present) {
       map['start_date'] = Variable<DateTime>(startDate.value);
@@ -971,7 +1185,8 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   }
 }
 
-class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSessionTableTable, FocusSessionData> {
+class $FocusSessionTableTable extends FocusSessionTable
+    with TableInfo<$FocusSessionTableTable, FocusSessionData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -985,7 +1200,9 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     hasAutoIncrement: true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
   );
   static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
   @override
@@ -995,9 +1212,12 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('REFERENCES task_table (id) ON DELETE CASCADE'),
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES task_table (id) ON DELETE CASCADE',
+    ),
   );
-  static const VerificationMeta _focusDurationMinutesMeta = const VerificationMeta('focusDurationMinutes');
+  static const VerificationMeta _focusDurationMinutesMeta =
+      const VerificationMeta('focusDurationMinutes');
   @override
   late final GeneratedColumn<int> focusDurationMinutes = GeneratedColumn<int>(
     'focus_duration_minutes',
@@ -1006,7 +1226,8 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _breakDurationMinutesMeta = const VerificationMeta('breakDurationMinutes');
+  static const VerificationMeta _breakDurationMinutesMeta =
+      const VerificationMeta('breakDurationMinutes');
   @override
   late final GeneratedColumn<int> breakDurationMinutes = GeneratedColumn<int>(
     'break_duration_minutes',
@@ -1015,7 +1236,9 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _startTimeMeta = const VerificationMeta('startTime');
+  static const VerificationMeta _startTimeMeta = const VerificationMeta(
+    'startTime',
+  );
   @override
   late final GeneratedColumn<DateTime> startTime = GeneratedColumn<DateTime>(
     'start_time',
@@ -1024,7 +1247,9 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _endTimeMeta = const VerificationMeta('endTime');
+  static const VerificationMeta _endTimeMeta = const VerificationMeta(
+    'endTime',
+  );
   @override
   late final GeneratedColumn<DateTime> endTime = GeneratedColumn<DateTime>(
     'end_time',
@@ -1034,14 +1259,17 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     requiredDuringInsert: false,
   );
   @override
-  late final GeneratedColumnWithTypeConverter<SessionState, int> state = GeneratedColumn<int>(
-    'state',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  ).withConverter<SessionState>($FocusSessionTableTable.$converterstate);
-  static const VerificationMeta _elapsedSecondsMeta = const VerificationMeta('elapsedSeconds');
+  late final GeneratedColumnWithTypeConverter<SessionState, int> state =
+      GeneratedColumn<int>(
+        'state',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<SessionState>($FocusSessionTableTable.$converterstate);
+  static const VerificationMeta _elapsedSecondsMeta = const VerificationMeta(
+    'elapsedSeconds',
+  );
   @override
   late final GeneratedColumn<int> elapsedSeconds = GeneratedColumn<int>(
     'elapsed_seconds',
@@ -1050,6 +1278,17 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _focusPhaseEndedAtMeta = const VerificationMeta(
+    'focusPhaseEndedAt',
+  );
+  @override
+  late final GeneratedColumn<int> focusPhaseEndedAt = GeneratedColumn<int>(
+    'focus_phase_ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -1061,6 +1300,7 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     endTime,
     state,
     elapsedSeconds,
+    focusPhaseEndedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1068,19 +1308,28 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
   String get actualTableName => $name;
   static const String $name = 'focus_session_table';
   @override
-  VerificationContext validateIntegrity(Insertable<FocusSessionData> instance, {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<FocusSessionData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('task_id')) {
-      context.handle(_taskIdMeta, taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta));
+      context.handle(
+        _taskIdMeta,
+        taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
+      );
     }
     if (data.containsKey('focus_duration_minutes')) {
       context.handle(
         _focusDurationMinutesMeta,
-        focusDurationMinutes.isAcceptableOrUnknown(data['focus_duration_minutes']!, _focusDurationMinutesMeta),
+        focusDurationMinutes.isAcceptableOrUnknown(
+          data['focus_duration_minutes']!,
+          _focusDurationMinutesMeta,
+        ),
       );
     } else if (isInserting) {
       context.missing(_focusDurationMinutesMeta);
@@ -1088,23 +1337,44 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     if (data.containsKey('break_duration_minutes')) {
       context.handle(
         _breakDurationMinutesMeta,
-        breakDurationMinutes.isAcceptableOrUnknown(data['break_duration_minutes']!, _breakDurationMinutesMeta),
+        breakDurationMinutes.isAcceptableOrUnknown(
+          data['break_duration_minutes']!,
+          _breakDurationMinutesMeta,
+        ),
       );
     } else if (isInserting) {
       context.missing(_breakDurationMinutesMeta);
     }
     if (data.containsKey('start_time')) {
-      context.handle(_startTimeMeta, startTime.isAcceptableOrUnknown(data['start_time']!, _startTimeMeta));
+      context.handle(
+        _startTimeMeta,
+        startTime.isAcceptableOrUnknown(data['start_time']!, _startTimeMeta),
+      );
     } else if (isInserting) {
       context.missing(_startTimeMeta);
     }
     if (data.containsKey('end_time')) {
-      context.handle(_endTimeMeta, endTime.isAcceptableOrUnknown(data['end_time']!, _endTimeMeta));
+      context.handle(
+        _endTimeMeta,
+        endTime.isAcceptableOrUnknown(data['end_time']!, _endTimeMeta),
+      );
     }
     if (data.containsKey('elapsed_seconds')) {
       context.handle(
         _elapsedSecondsMeta,
-        elapsedSeconds.isAcceptableOrUnknown(data['elapsed_seconds']!, _elapsedSecondsMeta),
+        elapsedSeconds.isAcceptableOrUnknown(
+          data['elapsed_seconds']!,
+          _elapsedSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('focus_phase_ended_at')) {
+      context.handle(
+        _focusPhaseEndedAtMeta,
+        focusPhaseEndedAt.isAcceptableOrUnknown(
+          data['focus_phase_ended_at']!,
+          _focusPhaseEndedAtMeta,
+        ),
       );
     }
     return context;
@@ -1116,8 +1386,14 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
   FocusSessionData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return FocusSessionData(
-      id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      taskId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}task_id']),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      taskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}task_id'],
+      ),
       focusDurationMinutes: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}focus_duration_minutes'],
@@ -1126,12 +1402,28 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
         DriftSqlType.int,
         data['${effectivePrefix}break_duration_minutes'],
       )!,
-      startTime: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}start_time'])!,
-      endTime: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}end_time']),
-      state: $FocusSessionTableTable.$converterstate.fromSql(
-        attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}state'])!,
+      startTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_time'],
+      )!,
+      endTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}end_time'],
       ),
-      elapsedSeconds: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}elapsed_seconds'])!,
+      state: $FocusSessionTableTable.$converterstate.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}state'],
+        )!,
+      ),
+      elapsedSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}elapsed_seconds'],
+      )!,
+      focusPhaseEndedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}focus_phase_ended_at'],
+      ),
     );
   }
 
@@ -1140,12 +1432,12 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     return $FocusSessionTableTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<SessionState, int, int> $converterstate = const EnumIndexConverter<SessionState>(
-    SessionState.values,
-  );
+  static JsonTypeConverter2<SessionState, int, int> $converterstate =
+      const EnumIndexConverter<SessionState>(SessionState.values);
 }
 
-class FocusSessionData extends DataClass implements Insertable<FocusSessionData> {
+class FocusSessionData extends DataClass
+    implements Insertable<FocusSessionData> {
   final int id;
   final int? taskId;
   final int focusDurationMinutes;
@@ -1154,6 +1446,11 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
   final DateTime? endTime;
   final SessionState state;
   final int elapsedSeconds;
+
+  /// Elapsed seconds at which the focus phase ended.
+  /// Stored to preserve accurate focus time across app restarts.
+  /// Null while focus is still running; set when transitioning to break.
+  final int? focusPhaseEndedAt;
   const FocusSessionData({
     required this.id,
     this.taskId,
@@ -1163,6 +1460,7 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     this.endTime,
     required this.state,
     required this.elapsedSeconds,
+    this.focusPhaseEndedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1178,36 +1476,58 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
       map['end_time'] = Variable<DateTime>(endTime);
     }
     {
-      map['state'] = Variable<int>($FocusSessionTableTable.$converterstate.toSql(state));
+      map['state'] = Variable<int>(
+        $FocusSessionTableTable.$converterstate.toSql(state),
+      );
     }
     map['elapsed_seconds'] = Variable<int>(elapsedSeconds);
+    if (!nullToAbsent || focusPhaseEndedAt != null) {
+      map['focus_phase_ended_at'] = Variable<int>(focusPhaseEndedAt);
+    }
     return map;
   }
 
   FocusSessionTableCompanion toCompanion(bool nullToAbsent) {
     return FocusSessionTableCompanion(
       id: Value(id),
-      taskId: taskId == null && nullToAbsent ? const Value.absent() : Value(taskId),
+      taskId: taskId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(taskId),
       focusDurationMinutes: Value(focusDurationMinutes),
       breakDurationMinutes: Value(breakDurationMinutes),
       startTime: Value(startTime),
-      endTime: endTime == null && nullToAbsent ? const Value.absent() : Value(endTime),
+      endTime: endTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endTime),
       state: Value(state),
       elapsedSeconds: Value(elapsedSeconds),
+      focusPhaseEndedAt: focusPhaseEndedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(focusPhaseEndedAt),
     );
   }
 
-  factory FocusSessionData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+  factory FocusSessionData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FocusSessionData(
       id: serializer.fromJson<int>(json['id']),
       taskId: serializer.fromJson<int?>(json['taskId']),
-      focusDurationMinutes: serializer.fromJson<int>(json['focusDurationMinutes']),
-      breakDurationMinutes: serializer.fromJson<int>(json['breakDurationMinutes']),
+      focusDurationMinutes: serializer.fromJson<int>(
+        json['focusDurationMinutes'],
+      ),
+      breakDurationMinutes: serializer.fromJson<int>(
+        json['breakDurationMinutes'],
+      ),
       startTime: serializer.fromJson<DateTime>(json['startTime']),
       endTime: serializer.fromJson<DateTime?>(json['endTime']),
-      state: $FocusSessionTableTable.$converterstate.fromJson(serializer.fromJson<int>(json['state'])),
+      state: $FocusSessionTableTable.$converterstate.fromJson(
+        serializer.fromJson<int>(json['state']),
+      ),
       elapsedSeconds: serializer.fromJson<int>(json['elapsedSeconds']),
+      focusPhaseEndedAt: serializer.fromJson<int?>(json['focusPhaseEndedAt']),
     );
   }
   @override
@@ -1220,8 +1540,11 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
       'breakDurationMinutes': serializer.toJson<int>(breakDurationMinutes),
       'startTime': serializer.toJson<DateTime>(startTime),
       'endTime': serializer.toJson<DateTime?>(endTime),
-      'state': serializer.toJson<int>($FocusSessionTableTable.$converterstate.toJson(state)),
+      'state': serializer.toJson<int>(
+        $FocusSessionTableTable.$converterstate.toJson(state),
+      ),
       'elapsedSeconds': serializer.toJson<int>(elapsedSeconds),
+      'focusPhaseEndedAt': serializer.toJson<int?>(focusPhaseEndedAt),
     };
   }
 
@@ -1234,6 +1557,7 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     Value<DateTime?> endTime = const Value.absent(),
     SessionState? state,
     int? elapsedSeconds,
+    Value<int?> focusPhaseEndedAt = const Value.absent(),
   }) => FocusSessionData(
     id: id ?? this.id,
     taskId: taskId.present ? taskId.value : this.taskId,
@@ -1243,6 +1567,9 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     endTime: endTime.present ? endTime.value : this.endTime,
     state: state ?? this.state,
     elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
+    focusPhaseEndedAt: focusPhaseEndedAt.present
+        ? focusPhaseEndedAt.value
+        : this.focusPhaseEndedAt,
   );
   FocusSessionData copyWithCompanion(FocusSessionTableCompanion data) {
     return FocusSessionData(
@@ -1257,7 +1584,12 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
       startTime: data.startTime.present ? data.startTime.value : this.startTime,
       endTime: data.endTime.present ? data.endTime.value : this.endTime,
       state: data.state.present ? data.state.value : this.state,
-      elapsedSeconds: data.elapsedSeconds.present ? data.elapsedSeconds.value : this.elapsedSeconds,
+      elapsedSeconds: data.elapsedSeconds.present
+          ? data.elapsedSeconds.value
+          : this.elapsedSeconds,
+      focusPhaseEndedAt: data.focusPhaseEndedAt.present
+          ? data.focusPhaseEndedAt.value
+          : this.focusPhaseEndedAt,
     );
   }
 
@@ -1271,14 +1603,24 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
           ..write('startTime: $startTime, ')
           ..write('endTime: $endTime, ')
           ..write('state: $state, ')
-          ..write('elapsedSeconds: $elapsedSeconds')
+          ..write('elapsedSeconds: $elapsedSeconds, ')
+          ..write('focusPhaseEndedAt: $focusPhaseEndedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, taskId, focusDurationMinutes, breakDurationMinutes, startTime, endTime, state, elapsedSeconds);
+  int get hashCode => Object.hash(
+    id,
+    taskId,
+    focusDurationMinutes,
+    breakDurationMinutes,
+    startTime,
+    endTime,
+    state,
+    elapsedSeconds,
+    focusPhaseEndedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1290,7 +1632,8 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
           other.startTime == this.startTime &&
           other.endTime == this.endTime &&
           other.state == this.state &&
-          other.elapsedSeconds == this.elapsedSeconds);
+          other.elapsedSeconds == this.elapsedSeconds &&
+          other.focusPhaseEndedAt == this.focusPhaseEndedAt);
 }
 
 class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
@@ -1302,6 +1645,7 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
   final Value<DateTime?> endTime;
   final Value<SessionState> state;
   final Value<int> elapsedSeconds;
+  final Value<int?> focusPhaseEndedAt;
   const FocusSessionTableCompanion({
     this.id = const Value.absent(),
     this.taskId = const Value.absent(),
@@ -1311,6 +1655,7 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     this.endTime = const Value.absent(),
     this.state = const Value.absent(),
     this.elapsedSeconds = const Value.absent(),
+    this.focusPhaseEndedAt = const Value.absent(),
   });
   FocusSessionTableCompanion.insert({
     this.id = const Value.absent(),
@@ -1321,6 +1666,7 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     this.endTime = const Value.absent(),
     required SessionState state,
     this.elapsedSeconds = const Value.absent(),
+    this.focusPhaseEndedAt = const Value.absent(),
   }) : focusDurationMinutes = Value(focusDurationMinutes),
        breakDurationMinutes = Value(breakDurationMinutes),
        startTime = Value(startTime),
@@ -1334,16 +1680,20 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     Expression<DateTime>? endTime,
     Expression<int>? state,
     Expression<int>? elapsedSeconds,
+    Expression<int>? focusPhaseEndedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (taskId != null) 'task_id': taskId,
-      if (focusDurationMinutes != null) 'focus_duration_minutes': focusDurationMinutes,
-      if (breakDurationMinutes != null) 'break_duration_minutes': breakDurationMinutes,
+      if (focusDurationMinutes != null)
+        'focus_duration_minutes': focusDurationMinutes,
+      if (breakDurationMinutes != null)
+        'break_duration_minutes': breakDurationMinutes,
       if (startTime != null) 'start_time': startTime,
       if (endTime != null) 'end_time': endTime,
       if (state != null) 'state': state,
       if (elapsedSeconds != null) 'elapsed_seconds': elapsedSeconds,
+      if (focusPhaseEndedAt != null) 'focus_phase_ended_at': focusPhaseEndedAt,
     });
   }
 
@@ -1356,6 +1706,7 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     Value<DateTime?>? endTime,
     Value<SessionState>? state,
     Value<int>? elapsedSeconds,
+    Value<int?>? focusPhaseEndedAt,
   }) {
     return FocusSessionTableCompanion(
       id: id ?? this.id,
@@ -1366,6 +1717,7 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
       endTime: endTime ?? this.endTime,
       state: state ?? this.state,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
+      focusPhaseEndedAt: focusPhaseEndedAt ?? this.focusPhaseEndedAt,
     );
   }
 
@@ -1391,10 +1743,15 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
       map['end_time'] = Variable<DateTime>(endTime.value);
     }
     if (state.present) {
-      map['state'] = Variable<int>($FocusSessionTableTable.$converterstate.toSql(state.value));
+      map['state'] = Variable<int>(
+        $FocusSessionTableTable.$converterstate.toSql(state.value),
+      );
     }
     if (elapsedSeconds.present) {
       map['elapsed_seconds'] = Variable<int>(elapsedSeconds.value);
+    }
+    if (focusPhaseEndedAt.present) {
+      map['focus_phase_ended_at'] = Variable<int>(focusPhaseEndedAt.value);
     }
     return map;
   }
@@ -1409,7 +1766,8 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
           ..write('startTime: $startTime, ')
           ..write('endTime: $endTime, ')
           ..write('state: $state, ')
-          ..write('elapsedSeconds: $elapsedSeconds')
+          ..write('elapsedSeconds: $elapsedSeconds, ')
+          ..write('focusPhaseEndedAt: $focusPhaseEndedAt')
           ..write(')'))
         .toString();
   }
@@ -1430,7 +1788,9 @@ class $DailySessionStatsTableTable extends DailySessionStatsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _completedSessionsMeta = const VerificationMeta('completedSessions');
+  static const VerificationMeta _completedSessionsMeta = const VerificationMeta(
+    'completedSessions',
+  );
   @override
   late final GeneratedColumn<int> completedSessions = GeneratedColumn<int>(
     'completed_sessions',
@@ -1440,7 +1800,9 @@ class $DailySessionStatsTableTable extends DailySessionStatsTable
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _totalSessionsMeta = const VerificationMeta('totalSessions');
+  static const VerificationMeta _totalSessionsMeta = const VerificationMeta(
+    'totalSessions',
+  );
   @override
   late final GeneratedColumn<int> totalSessions = GeneratedColumn<int>(
     'total_sessions',
@@ -1450,7 +1812,9 @@ class $DailySessionStatsTableTable extends DailySessionStatsTable
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _focusSecondsMeta = const VerificationMeta('focusSeconds');
+  static const VerificationMeta _focusSecondsMeta = const VerificationMeta(
+    'focusSeconds',
+  );
   @override
   late final GeneratedColumn<int> focusSeconds = GeneratedColumn<int>(
     'focus_seconds',
@@ -1461,35 +1825,58 @@ class $DailySessionStatsTableTable extends DailySessionStatsTable
     defaultValue: const Constant(0),
   );
   @override
-  List<GeneratedColumn> get $columns => [date, completedSessions, totalSessions, focusSeconds];
+  List<GeneratedColumn> get $columns => [
+    date,
+    completedSessions,
+    totalSessions,
+    focusSeconds,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'daily_session_stats_table';
   @override
-  VerificationContext validateIntegrity(Insertable<DailySessionStatsData> instance, {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<DailySessionStatsData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('date')) {
-      context.handle(_dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
     } else if (isInserting) {
       context.missing(_dateMeta);
     }
     if (data.containsKey('completed_sessions')) {
       context.handle(
         _completedSessionsMeta,
-        completedSessions.isAcceptableOrUnknown(data['completed_sessions']!, _completedSessionsMeta),
+        completedSessions.isAcceptableOrUnknown(
+          data['completed_sessions']!,
+          _completedSessionsMeta,
+        ),
       );
     }
     if (data.containsKey('total_sessions')) {
       context.handle(
         _totalSessionsMeta,
-        totalSessions.isAcceptableOrUnknown(data['total_sessions']!, _totalSessionsMeta),
+        totalSessions.isAcceptableOrUnknown(
+          data['total_sessions']!,
+          _totalSessionsMeta,
+        ),
       );
     }
     if (data.containsKey('focus_seconds')) {
-      context.handle(_focusSecondsMeta, focusSeconds.isAcceptableOrUnknown(data['focus_seconds']!, _focusSecondsMeta));
+      context.handle(
+        _focusSecondsMeta,
+        focusSeconds.isAcceptableOrUnknown(
+          data['focus_seconds']!,
+          _focusSecondsMeta,
+        ),
+      );
     }
     return context;
   }
@@ -1500,13 +1887,22 @@ class $DailySessionStatsTableTable extends DailySessionStatsTable
   DailySessionStatsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DailySessionStatsData(
-      date: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}date'])!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
       completedSessions: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}completed_sessions'],
       )!,
-      totalSessions: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}total_sessions'])!,
-      focusSeconds: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}focus_seconds'])!,
+      totalSessions: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_sessions'],
+      )!,
+      focusSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}focus_seconds'],
+      )!,
     );
   }
 
@@ -1516,7 +1912,8 @@ class $DailySessionStatsTableTable extends DailySessionStatsTable
   }
 }
 
-class DailySessionStatsData extends DataClass implements Insertable<DailySessionStatsData> {
+class DailySessionStatsData extends DataClass
+    implements Insertable<DailySessionStatsData> {
   /// ISO-8601 local date, e.g. `'2026-02-12'`. Acts as the primary key.
   final String date;
   final int completedSessions;
@@ -1547,7 +1944,10 @@ class DailySessionStatsData extends DataClass implements Insertable<DailySession
     );
   }
 
-  factory DailySessionStatsData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+  factory DailySessionStatsData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DailySessionStatsData(
       date: serializer.fromJson<String>(json['date']),
@@ -1567,19 +1967,31 @@ class DailySessionStatsData extends DataClass implements Insertable<DailySession
     };
   }
 
-  DailySessionStatsData copyWith({String? date, int? completedSessions, int? totalSessions, int? focusSeconds}) =>
-      DailySessionStatsData(
-        date: date ?? this.date,
-        completedSessions: completedSessions ?? this.completedSessions,
-        totalSessions: totalSessions ?? this.totalSessions,
-        focusSeconds: focusSeconds ?? this.focusSeconds,
-      );
-  DailySessionStatsData copyWithCompanion(DailySessionStatsTableCompanion data) {
+  DailySessionStatsData copyWith({
+    String? date,
+    int? completedSessions,
+    int? totalSessions,
+    int? focusSeconds,
+  }) => DailySessionStatsData(
+    date: date ?? this.date,
+    completedSessions: completedSessions ?? this.completedSessions,
+    totalSessions: totalSessions ?? this.totalSessions,
+    focusSeconds: focusSeconds ?? this.focusSeconds,
+  );
+  DailySessionStatsData copyWithCompanion(
+    DailySessionStatsTableCompanion data,
+  ) {
     return DailySessionStatsData(
       date: data.date.present ? data.date.value : this.date,
-      completedSessions: data.completedSessions.present ? data.completedSessions.value : this.completedSessions,
-      totalSessions: data.totalSessions.present ? data.totalSessions.value : this.totalSessions,
-      focusSeconds: data.focusSeconds.present ? data.focusSeconds.value : this.focusSeconds,
+      completedSessions: data.completedSessions.present
+          ? data.completedSessions.value
+          : this.completedSessions,
+      totalSessions: data.totalSessions.present
+          ? data.totalSessions.value
+          : this.totalSessions,
+      focusSeconds: data.focusSeconds.present
+          ? data.focusSeconds.value
+          : this.focusSeconds,
     );
   }
 
@@ -1595,7 +2007,8 @@ class DailySessionStatsData extends DataClass implements Insertable<DailySession
   }
 
   @override
-  int get hashCode => Object.hash(date, completedSessions, totalSessions, focusSeconds);
+  int get hashCode =>
+      Object.hash(date, completedSessions, totalSessions, focusSeconds);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1606,7 +2019,8 @@ class DailySessionStatsData extends DataClass implements Insertable<DailySession
           other.focusSeconds == this.focusSeconds);
 }
 
-class DailySessionStatsTableCompanion extends UpdateCompanion<DailySessionStatsData> {
+class DailySessionStatsTableCompanion
+    extends UpdateCompanion<DailySessionStatsData> {
   final Value<String> date;
   final Value<int> completedSessions;
   final Value<int> totalSessions;
@@ -1692,7 +2106,8 @@ class DailySessionStatsTableCompanion extends UpdateCompanion<DailySessionStatsD
   }
 }
 
-class $SettingsTableTable extends SettingsTable with TableInfo<$SettingsTableTable, SettingsData> {
+class $SettingsTableTable extends SettingsTable
+    with TableInfo<$SettingsTableTable, SettingsData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -1723,16 +2138,25 @@ class $SettingsTableTable extends SettingsTable with TableInfo<$SettingsTableTab
   String get actualTableName => $name;
   static const String $name = 'settings_table';
   @override
-  VerificationContext validateIntegrity(Insertable<SettingsData> instance, {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<SettingsData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('key')) {
-      context.handle(_keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
     } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (data.containsKey('value')) {
-      context.handle(_valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
     } else if (isInserting) {
       context.missing(_valueMeta);
     }
@@ -1745,8 +2169,14 @@ class $SettingsTableTable extends SettingsTable with TableInfo<$SettingsTableTab
   SettingsData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SettingsData(
-      key: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}key'])!,
-      value: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}value'])!,
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
     );
   }
 
@@ -1775,7 +2205,10 @@ class SettingsData extends DataClass implements Insertable<SettingsData> {
     return SettingsTableCompanion(key: Value(key), value: Value(value));
   }
 
-  factory SettingsData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+  factory SettingsData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SettingsData(
       key: serializer.fromJson<String>(json['key']),
@@ -1785,10 +2218,14 @@ class SettingsData extends DataClass implements Insertable<SettingsData> {
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{'key': serializer.toJson<String>(key), 'value': serializer.toJson<String>(value)};
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String>(value),
+    };
   }
 
-  SettingsData copyWith({String? key, String? value}) => SettingsData(key: key ?? this.key, value: value ?? this.value);
+  SettingsData copyWith({String? key, String? value}) =>
+      SettingsData(key: key ?? this.key, value: value ?? this.value);
   SettingsData copyWithCompanion(SettingsTableCompanion data) {
     return SettingsData(
       key: data.key.present ? data.key.value : this.key,
@@ -1809,7 +2246,10 @@ class SettingsData extends DataClass implements Insertable<SettingsData> {
   int get hashCode => Object.hash(key, value);
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is SettingsData && other.key == this.key && other.value == this.value);
+      identical(this, other) ||
+      (other is SettingsData &&
+          other.key == this.key &&
+          other.value == this.value);
 }
 
 class SettingsTableCompanion extends UpdateCompanion<SettingsData> {
@@ -1821,10 +2261,17 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsData> {
     this.value = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  SettingsTableCompanion.insert({required String key, required String value, this.rowid = const Value.absent()})
-    : key = Value(key),
-      value = Value(value);
-  static Insertable<SettingsData> custom({Expression<String>? key, Expression<String>? value, Expression<int>? rowid}) {
+  SettingsTableCompanion.insert({
+    required String key,
+    required String value,
+    this.rowid = const Value.absent(),
+  }) : key = Value(key),
+       value = Value(value);
+  static Insertable<SettingsData> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
     return RawValuesInsertable({
       if (key != null) 'key': key,
       if (value != null) 'value': value,
@@ -1832,8 +2279,16 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsData> {
     });
   }
 
-  SettingsTableCompanion copyWith({Value<String>? key, Value<String>? value, Value<int>? rowid}) {
-    return SettingsTableCompanion(key: key ?? this.key, value: value ?? this.value, rowid: rowid ?? this.rowid);
+  SettingsTableCompanion copyWith({
+    Value<String>? key,
+    Value<String>? value,
+    Value<int>? rowid,
+  }) {
+    return SettingsTableCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
   }
 
   @override
@@ -1867,8 +2322,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ProjectTableTable projectTable = $ProjectTableTable(this);
   late final $TaskTableTable taskTable = $TaskTableTable(this);
-  late final $FocusSessionTableTable focusSessionTable = $FocusSessionTableTable(this);
-  late final $DailySessionStatsTableTable dailySessionStatsTable = $DailySessionStatsTableTable(this);
+  late final $FocusSessionTableTable focusSessionTable =
+      $FocusSessionTableTable(this);
+  late final $DailySessionStatsTableTable dailySessionStatsTable =
+      $DailySessionStatsTableTable(this);
   late final $SettingsTableTable settingsTable = $SettingsTableTable(this);
   late final Index projectCreatedAtIdx = Index(
     'project_created_at_idx',
@@ -1915,7 +2372,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'CREATE INDEX daily_stats_date_idx ON daily_session_stats_table (date)',
   );
   @override
-  Iterable<TableInfo<Table, Object?>> get allTables => allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  Iterable<TableInfo<Table, Object?>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     projectTable,
@@ -1938,15 +2396,24 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
     WritePropagation(
-      on: TableUpdateQuery.onTableName('project_table', limitUpdateKind: UpdateKind.delete),
+      on: TableUpdateQuery.onTableName(
+        'project_table',
+        limitUpdateKind: UpdateKind.delete,
+      ),
       result: [TableUpdate('task_table', kind: UpdateKind.delete)],
     ),
     WritePropagation(
-      on: TableUpdateQuery.onTableName('task_table', limitUpdateKind: UpdateKind.delete),
+      on: TableUpdateQuery.onTableName(
+        'task_table',
+        limitUpdateKind: UpdateKind.delete,
+      ),
       result: [TableUpdate('task_table', kind: UpdateKind.delete)],
     ),
     WritePropagation(
-      on: TableUpdateQuery.onTableName('task_table', limitUpdateKind: UpdateKind.delete),
+      on: TableUpdateQuery.onTableName(
+        'task_table',
+        limitUpdateKind: UpdateKind.delete,
+      ),
       result: [TableUpdate('focus_session_table', kind: UpdateKind.delete)],
     ),
   ]);
@@ -1973,14 +2440,16 @@ typedef $$ProjectTableTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
     });
 
-final class $$ProjectTableTableReferences extends BaseReferences<_$AppDatabase, $ProjectTableTable, ProjectTableData> {
+final class $$ProjectTableTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $ProjectTableTable, ProjectTableData> {
   $$ProjectTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$TaskTableTable, List<TaskTableData>> _taskTableRefsTable(_$AppDatabase db) =>
-      MultiTypedResultKey.fromTable(
-        db.taskTable,
-        aliasName: $_aliasNameGenerator(db.projectTable.id, db.taskTable.projectId),
-      );
+  static MultiTypedResultKey<$TaskTableTable, List<TaskTableData>>
+  _taskTableRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.taskTable,
+    aliasName: $_aliasNameGenerator(db.projectTable.id, db.taskTable.projectId),
+  );
 
   $$TaskTableTableProcessedTableManager get taskTableRefs {
     final manager = $$TaskTableTableTableManager(
@@ -1989,11 +2458,14 @@ final class $$ProjectTableTableReferences extends BaseReferences<_$AppDatabase, 
     ).filter((f) => f.projectId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_taskTableRefsTable($_db));
-    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: cache));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
   }
 }
 
-class $$ProjectTableTableFilterComposer extends Composer<_$AppDatabase, $ProjectTableTable> {
+class $$ProjectTableTableFilterComposer
+    extends Composer<_$AppDatabase, $ProjectTableTable> {
   $$ProjectTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -2001,46 +2473,69 @@ class $$ProjectTableTableFilterComposer extends Composer<_$AppDatabase, $Project
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<String> get title =>
-      $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<String> get description =>
-      $composableBuilder(column: $table.description, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<DateTime> get startDate =>
-      $composableBuilder(column: $table.startDate, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<DateTime> get deadline =>
-      $composableBuilder(column: $table.deadline, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get deadline => $composableBuilder(
+    column: $table.deadline,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  Expression<bool> taskTableRefs(Expression<bool> Function($$TaskTableTableFilterComposer f) f) {
+  Expression<bool> taskTableRefs(
+    Expression<bool> Function($$TaskTableTableFilterComposer f) f,
+  ) {
     final $$TaskTableTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.taskTable,
       getReferencedColumn: (t) => t.projectId,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$TaskTableTableFilterComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableFilterComposer(
             $db: $db,
             $table: $db.taskTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return f(composer);
   }
 }
 
-class $$ProjectTableTableOrderingComposer extends Composer<_$AppDatabase, $ProjectTableTable> {
+class $$ProjectTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProjectTableTable> {
   $$ProjectTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -2048,28 +2543,44 @@ class $$ProjectTableTableOrderingComposer extends Composer<_$AppDatabase, $Proje
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<String> get title =>
-      $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<String> get description =>
-      $composableBuilder(column: $table.description, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get startDate =>
-      $composableBuilder(column: $table.startDate, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get deadline =>
-      $composableBuilder(column: $table.deadline, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get deadline => $composableBuilder(
+    column: $table.deadline,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
-class $$ProjectTableTableAnnotationComposer extends Composer<_$AppDatabase, $ProjectTableTable> {
+class $$ProjectTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProjectTableTable> {
   $$ProjectTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -2077,34 +2588,49 @@ class $$ProjectTableTableAnnotationComposer extends Composer<_$AppDatabase, $Pro
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id => $composableBuilder(column: $table.id, builder: (column) => column);
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get title => $composableBuilder(column: $table.title, builder: (column) => column);
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<String> get description =>
-      $composableBuilder(column: $table.description, builder: (column) => column);
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<DateTime> get startDate => $composableBuilder(column: $table.startDate, builder: (column) => column);
+  GeneratedColumn<DateTime> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get deadline => $composableBuilder(column: $table.deadline, builder: (column) => column);
+  GeneratedColumn<DateTime> get deadline =>
+      $composableBuilder(column: $table.deadline, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get createdAt => $composableBuilder(column: $table.createdAt, builder: (column) => column);
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get updatedAt => $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  Expression<T> taskTableRefs<T extends Object>(Expression<T> Function($$TaskTableTableAnnotationComposer a) f) {
+  Expression<T> taskTableRefs<T extends Object>(
+    Expression<T> Function($$TaskTableTableAnnotationComposer a) f,
+  ) {
     final $$TaskTableTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.taskTable,
       getReferencedColumn: (t) => t.projectId,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$TaskTableTableAnnotationComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableAnnotationComposer(
             $db: $db,
             $table: $db.taskTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return f(composer);
@@ -2131,9 +2657,12 @@ class $$ProjectTableTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$ProjectTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () => $$ProjectTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () => $$ProjectTableTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$ProjectTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProjectTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProjectTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -2170,8 +2699,14 @@ class $$ProjectTableTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e.readTable(table), $$ProjectTableTableReferences(db, table, e))).toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ProjectTableTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
           prefetchHooksCallback: ({taskTableRefs = false}) {
             return PrefetchHooks(
               db: db,
@@ -2180,10 +2715,20 @@ class $$ProjectTableTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (taskTableRefs)
-                    await $_getPrefetchedData<ProjectTableData, $ProjectTableTable, TaskTableData>(
+                    await $_getPrefetchedData<
+                      ProjectTableData,
+                      $ProjectTableTable,
+                      TaskTableData
+                    >(
                       currentTable: table,
-                      referencedTable: $$ProjectTableTableReferences._taskTableRefsTable(db),
-                      managerFromTypedResult: (p0) => $$ProjectTableTableReferences(db, table, p0).taskTableRefs,
+                      referencedTable: $$ProjectTableTableReferences
+                          ._taskTableRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$ProjectTableTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).taskTableRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
                           referencedItems.where((e) => e.projectId == item.id),
                       typedResults: items,
@@ -2241,39 +2786,57 @@ typedef $$TaskTableTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
     });
 
-final class $$TaskTableTableReferences extends BaseReferences<_$AppDatabase, $TaskTableTable, TaskTableData> {
+final class $$TaskTableTableReferences
+    extends BaseReferences<_$AppDatabase, $TaskTableTable, TaskTableData> {
   $$TaskTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $ProjectTableTable _projectIdTable(_$AppDatabase db) =>
-      db.projectTable.createAlias($_aliasNameGenerator(db.taskTable.projectId, db.projectTable.id));
+      db.projectTable.createAlias(
+        $_aliasNameGenerator(db.taskTable.projectId, db.projectTable.id),
+      );
 
   $$ProjectTableTableProcessedTableManager get projectId {
     final $_column = $_itemColumn<int>('project_id')!;
 
-    final manager = $$ProjectTableTableTableManager($_db, $_db.projectTable).filter((f) => f.id.sqlEquals($_column));
+    final manager = $$ProjectTableTableTableManager(
+      $_db,
+      $_db.projectTable,
+    ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
     if (item == null) return manager;
-    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: [item]));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
   }
 
   static $TaskTableTable _parentTaskIdTable(_$AppDatabase db) =>
-      db.taskTable.createAlias($_aliasNameGenerator(db.taskTable.parentTaskId, db.taskTable.id));
+      db.taskTable.createAlias(
+        $_aliasNameGenerator(db.taskTable.parentTaskId, db.taskTable.id),
+      );
 
   $$TaskTableTableProcessedTableManager? get parentTaskId {
     final $_column = $_itemColumn<int>('parent_task_id');
     if ($_column == null) return null;
-    final manager = $$TaskTableTableTableManager($_db, $_db.taskTable).filter((f) => f.id.sqlEquals($_column));
+    final manager = $$TaskTableTableTableManager(
+      $_db,
+      $_db.taskTable,
+    ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_parentTaskIdTable($_db));
     if (item == null) return manager;
-    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: [item]));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
   }
 
-  static MultiTypedResultKey<$FocusSessionTableTable, List<FocusSessionData>> _focusSessionTableRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.focusSessionTable,
-    aliasName: $_aliasNameGenerator(db.taskTable.id, db.focusSessionTable.taskId),
-  );
+  static MultiTypedResultKey<$FocusSessionTableTable, List<FocusSessionData>>
+  _focusSessionTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.focusSessionTable,
+        aliasName: $_aliasNameGenerator(
+          db.taskTable.id,
+          db.focusSessionTable.taskId,
+        ),
+      );
 
   $$FocusSessionTableTableProcessedTableManager get focusSessionTableRefs {
     final manager = $$FocusSessionTableTableTableManager(
@@ -2281,12 +2844,17 @@ final class $$TaskTableTableReferences extends BaseReferences<_$AppDatabase, $Ta
       $_db.focusSessionTable,
     ).filter((f) => f.taskId.id.sqlEquals($_itemColumn<int>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_focusSessionTableRefsTable($_db));
-    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: cache));
+    final cache = $_typedResult.readTableOrNull(
+      _focusSessionTableRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
   }
 }
 
-class $$TaskTableTableFilterComposer extends Composer<_$AppDatabase, $TaskTableTable> {
+class $$TaskTableTableFilterComposer
+    extends Composer<_$AppDatabase, $TaskTableTable> {
   $$TaskTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -2294,33 +2862,56 @@ class $$TaskTableTableFilterComposer extends Composer<_$AppDatabase, $TaskTableT
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<String> get title =>
-      $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<String> get description =>
-      $composableBuilder(column: $table.description, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnWithTypeConverterFilters<TaskPriority, TaskPriority, int> get priority =>
-      $composableBuilder(column: $table.priority, builder: (column) => ColumnWithTypeConverterFilters(column));
+  ColumnWithTypeConverterFilters<TaskPriority, TaskPriority, int>
+  get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 
-  ColumnFilters<DateTime> get startDate =>
-      $composableBuilder(column: $table.startDate, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<DateTime> get endDate =>
-      $composableBuilder(column: $table.endDate, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get depth => $composableBuilder(column: $table.depth, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get depth => $composableBuilder(
+    column: $table.depth,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<bool> get isCompleted =>
-      $composableBuilder(column: $table.isCompleted, builder: (column) => ColumnFilters(column));
+  ColumnFilters<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
 
   $$ProjectTableTableFilterComposer get projectId {
     final $$ProjectTableTableFilterComposer composer = $composerBuilder(
@@ -2328,13 +2919,18 @@ class $$TaskTableTableFilterComposer extends Composer<_$AppDatabase, $TaskTableT
       getCurrentColumn: (t) => t.projectId,
       referencedTable: $db.projectTable,
       getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$ProjectTableTableFilterComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectTableTableFilterComposer(
             $db: $db,
             $table: $db.projectTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
@@ -2346,38 +2942,51 @@ class $$TaskTableTableFilterComposer extends Composer<_$AppDatabase, $TaskTableT
       getCurrentColumn: (t) => t.parentTaskId,
       referencedTable: $db.taskTable,
       getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$TaskTableTableFilterComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableFilterComposer(
             $db: $db,
             $table: $db.taskTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
   }
 
-  Expression<bool> focusSessionTableRefs(Expression<bool> Function($$FocusSessionTableTableFilterComposer f) f) {
+  Expression<bool> focusSessionTableRefs(
+    Expression<bool> Function($$FocusSessionTableTableFilterComposer f) f,
+  ) {
     final $$FocusSessionTableTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.focusSessionTable,
       getReferencedColumn: (t) => t.taskId,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$FocusSessionTableTableFilterComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FocusSessionTableTableFilterComposer(
             $db: $db,
             $table: $db.focusSessionTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return f(composer);
   }
 }
 
-class $$TaskTableTableOrderingComposer extends Composer<_$AppDatabase, $TaskTableTable> {
+class $$TaskTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $TaskTableTable> {
   $$TaskTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -2385,34 +2994,55 @@ class $$TaskTableTableOrderingComposer extends Composer<_$AppDatabase, $TaskTabl
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<String> get title =>
-      $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<String> get description =>
-      $composableBuilder(column: $table.description, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get priority =>
-      $composableBuilder(column: $table.priority, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get startDate =>
-      $composableBuilder(column: $table.startDate, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get endDate =>
-      $composableBuilder(column: $table.endDate, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get depth =>
-      $composableBuilder(column: $table.depth, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get depth => $composableBuilder(
+    column: $table.depth,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<bool> get isCompleted =>
-      $composableBuilder(column: $table.isCompleted, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   $$ProjectTableTableOrderingComposer get projectId {
     final $$ProjectTableTableOrderingComposer composer = $composerBuilder(
@@ -2420,13 +3050,18 @@ class $$TaskTableTableOrderingComposer extends Composer<_$AppDatabase, $TaskTabl
       getCurrentColumn: (t) => t.projectId,
       referencedTable: $db.projectTable,
       getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$ProjectTableTableOrderingComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectTableTableOrderingComposer(
             $db: $db,
             $table: $db.projectTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
@@ -2438,20 +3073,26 @@ class $$TaskTableTableOrderingComposer extends Composer<_$AppDatabase, $TaskTabl
       getCurrentColumn: (t) => t.parentTaskId,
       referencedTable: $db.taskTable,
       getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$TaskTableTableOrderingComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableOrderingComposer(
             $db: $db,
             $table: $db.taskTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
   }
 }
 
-class $$TaskTableTableAnnotationComposer extends Composer<_$AppDatabase, $TaskTableTable> {
+class $$TaskTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TaskTableTable> {
   $$TaskTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -2459,27 +3100,39 @@ class $$TaskTableTableAnnotationComposer extends Composer<_$AppDatabase, $TaskTa
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id => $composableBuilder(column: $table.id, builder: (column) => column);
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get title => $composableBuilder(column: $table.title, builder: (column) => column);
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<String> get description =>
-      $composableBuilder(column: $table.description, builder: (column) => column);
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
 
   GeneratedColumnWithTypeConverter<TaskPriority, int> get priority =>
       $composableBuilder(column: $table.priority, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get startDate => $composableBuilder(column: $table.startDate, builder: (column) => column);
+  GeneratedColumn<DateTime> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get endDate => $composableBuilder(column: $table.endDate, builder: (column) => column);
+  GeneratedColumn<DateTime> get endDate =>
+      $composableBuilder(column: $table.endDate, builder: (column) => column);
 
-  GeneratedColumn<int> get depth => $composableBuilder(column: $table.depth, builder: (column) => column);
+  GeneratedColumn<int> get depth =>
+      $composableBuilder(column: $table.depth, builder: (column) => column);
 
-  GeneratedColumn<bool> get isCompleted => $composableBuilder(column: $table.isCompleted, builder: (column) => column);
+  GeneratedColumn<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<DateTime> get createdAt => $composableBuilder(column: $table.createdAt, builder: (column) => column);
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get updatedAt => $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
   $$ProjectTableTableAnnotationComposer get projectId {
     final $$ProjectTableTableAnnotationComposer composer = $composerBuilder(
@@ -2487,13 +3140,18 @@ class $$TaskTableTableAnnotationComposer extends Composer<_$AppDatabase, $TaskTa
       getCurrentColumn: (t) => t.projectId,
       referencedTable: $db.projectTable,
       getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$ProjectTableTableAnnotationComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProjectTableTableAnnotationComposer(
             $db: $db,
             $table: $db.projectTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
@@ -2505,13 +3163,18 @@ class $$TaskTableTableAnnotationComposer extends Composer<_$AppDatabase, $TaskTa
       getCurrentColumn: (t) => t.parentTaskId,
       referencedTable: $db.taskTable,
       getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$TaskTableTableAnnotationComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableAnnotationComposer(
             $db: $db,
             $table: $db.taskTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
@@ -2520,20 +3183,26 @@ class $$TaskTableTableAnnotationComposer extends Composer<_$AppDatabase, $TaskTa
   Expression<T> focusSessionTableRefs<T extends Object>(
     Expression<T> Function($$FocusSessionTableTableAnnotationComposer a) f,
   ) {
-    final $$FocusSessionTableTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.focusSessionTable,
-      getReferencedColumn: (t) => t.taskId,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$FocusSessionTableTableAnnotationComposer(
-            $db: $db,
-            $table: $db.focusSessionTable,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-          ),
-    );
+    final $$FocusSessionTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.focusSessionTable,
+          getReferencedColumn: (t) => t.taskId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$FocusSessionTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.focusSessionTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -2551,16 +3220,23 @@ class $$TaskTableTableTableManager
           $$TaskTableTableUpdateCompanionBuilder,
           (TaskTableData, $$TaskTableTableReferences),
           TaskTableData,
-          PrefetchHooks Function({bool projectId, bool parentTaskId, bool focusSessionTableRefs})
+          PrefetchHooks Function({
+            bool projectId,
+            bool parentTaskId,
+            bool focusSessionTableRefs,
+          })
         > {
   $$TaskTableTableTableManager(_$AppDatabase db, $TaskTableTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$TaskTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () => $$TaskTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () => $$TaskTableTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$TaskTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TaskTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TaskTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -2617,66 +3293,97 @@ class $$TaskTableTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e.readTable(table), $$TaskTableTableReferences(db, table, e))).toList(),
-          prefetchHooksCallback: ({projectId = false, parentTaskId = false, focusSessionTableRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (focusSessionTableRefs) db.focusSessionTable],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (projectId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.projectId,
-                                referencedTable: $$TaskTableTableReferences._projectIdTable(db),
-                                referencedColumn: $$TaskTableTableReferences._projectIdTable(db).id,
-                              )
-                              as T;
-                    }
-                    if (parentTaskId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.parentTaskId,
-                                referencedTable: $$TaskTableTableReferences._parentTaskIdTable(db),
-                                referencedColumn: $$TaskTableTableReferences._parentTaskIdTable(db).id,
-                              )
-                              as T;
-                    }
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TaskTableTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                projectId = false,
+                parentTaskId = false,
+                focusSessionTableRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (focusSessionTableRefs) db.focusSessionTable,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (projectId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.projectId,
+                                    referencedTable: $$TaskTableTableReferences
+                                        ._projectIdTable(db),
+                                    referencedColumn: $$TaskTableTableReferences
+                                        ._projectIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (parentTaskId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.parentTaskId,
+                                    referencedTable: $$TaskTableTableReferences
+                                        ._parentTaskIdTable(db),
+                                    referencedColumn: $$TaskTableTableReferences
+                                        ._parentTaskIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (focusSessionTableRefs)
+                        await $_getPrefetchedData<
+                          TaskTableData,
+                          $TaskTableTable,
+                          FocusSessionData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TaskTableTableReferences
+                              ._focusSessionTableRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TaskTableTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).focusSessionTableRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.taskId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (focusSessionTableRefs)
-                    await $_getPrefetchedData<TaskTableData, $TaskTableTable, FocusSessionData>(
-                      currentTable: table,
-                      referencedTable: $$TaskTableTableReferences._focusSessionTableRefsTable(db),
-                      managerFromTypedResult: (p0) => $$TaskTableTableReferences(db, table, p0).focusSessionTableRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.taskId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -2693,7 +3400,11 @@ typedef $$TaskTableTableProcessedTableManager =
       $$TaskTableTableUpdateCompanionBuilder,
       (TaskTableData, $$TaskTableTableReferences),
       TaskTableData,
-      PrefetchHooks Function({bool projectId, bool parentTaskId, bool focusSessionTableRefs})
+      PrefetchHooks Function({
+        bool projectId,
+        bool parentTaskId,
+        bool focusSessionTableRefs,
+      })
     >;
 typedef $$FocusSessionTableTableCreateCompanionBuilder =
     FocusSessionTableCompanion Function({
@@ -2705,6 +3416,7 @@ typedef $$FocusSessionTableTableCreateCompanionBuilder =
       Value<DateTime?> endTime,
       required SessionState state,
       Value<int> elapsedSeconds,
+      Value<int?> focusPhaseEndedAt,
     });
 typedef $$FocusSessionTableTableUpdateCompanionBuilder =
     FocusSessionTableCompanion Function({
@@ -2716,26 +3428,44 @@ typedef $$FocusSessionTableTableUpdateCompanionBuilder =
       Value<DateTime?> endTime,
       Value<SessionState> state,
       Value<int> elapsedSeconds,
+      Value<int?> focusPhaseEndedAt,
     });
 
 final class $$FocusSessionTableTableReferences
-    extends BaseReferences<_$AppDatabase, $FocusSessionTableTable, FocusSessionData> {
-  $$FocusSessionTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $FocusSessionTableTable,
+          FocusSessionData
+        > {
+  $$FocusSessionTableTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
 
   static $TaskTableTable _taskIdTable(_$AppDatabase db) =>
-      db.taskTable.createAlias($_aliasNameGenerator(db.focusSessionTable.taskId, db.taskTable.id));
+      db.taskTable.createAlias(
+        $_aliasNameGenerator(db.focusSessionTable.taskId, db.taskTable.id),
+      );
 
   $$TaskTableTableProcessedTableManager? get taskId {
     final $_column = $_itemColumn<int>('task_id');
     if ($_column == null) return null;
-    final manager = $$TaskTableTableTableManager($_db, $_db.taskTable).filter((f) => f.id.sqlEquals($_column));
+    final manager = $$TaskTableTableTableManager(
+      $_db,
+      $_db.taskTable,
+    ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_taskIdTable($_db));
     if (item == null) return manager;
-    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: [item]));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
   }
 }
 
-class $$FocusSessionTableTableFilterComposer extends Composer<_$AppDatabase, $FocusSessionTableTable> {
+class $$FocusSessionTableTableFilterComposer
+    extends Composer<_$AppDatabase, $FocusSessionTableTable> {
   $$FocusSessionTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -2743,25 +3473,46 @@ class $$FocusSessionTableTableFilterComposer extends Composer<_$AppDatabase, $Fo
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get focusDurationMinutes =>
-      $composableBuilder(column: $table.focusDurationMinutes, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get focusDurationMinutes => $composableBuilder(
+    column: $table.focusDurationMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get breakDurationMinutes =>
-      $composableBuilder(column: $table.breakDurationMinutes, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get breakDurationMinutes => $composableBuilder(
+    column: $table.breakDurationMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<DateTime> get startTime =>
-      $composableBuilder(column: $table.startTime, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get startTime => $composableBuilder(
+    column: $table.startTime,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<DateTime> get endTime =>
-      $composableBuilder(column: $table.endTime, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get endTime => $composableBuilder(
+    column: $table.endTime,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnWithTypeConverterFilters<SessionState, SessionState, int> get state =>
-      $composableBuilder(column: $table.state, builder: (column) => ColumnWithTypeConverterFilters(column));
+      $composableBuilder(
+        column: $table.state,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
-  ColumnFilters<int> get elapsedSeconds =>
-      $composableBuilder(column: $table.elapsedSeconds, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get elapsedSeconds => $composableBuilder(
+    column: $table.elapsedSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get focusPhaseEndedAt => $composableBuilder(
+    column: $table.focusPhaseEndedAt,
+    builder: (column) => ColumnFilters(column),
+  );
 
   $$TaskTableTableFilterComposer get taskId {
     final $$TaskTableTableFilterComposer composer = $composerBuilder(
@@ -2769,20 +3520,26 @@ class $$FocusSessionTableTableFilterComposer extends Composer<_$AppDatabase, $Fo
       getCurrentColumn: (t) => t.taskId,
       referencedTable: $db.taskTable,
       getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$TaskTableTableFilterComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableFilterComposer(
             $db: $db,
             $table: $db.taskTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
   }
 }
 
-class $$FocusSessionTableTableOrderingComposer extends Composer<_$AppDatabase, $FocusSessionTableTable> {
+class $$FocusSessionTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $FocusSessionTableTable> {
   $$FocusSessionTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -2790,25 +3547,45 @@ class $$FocusSessionTableTableOrderingComposer extends Composer<_$AppDatabase, $
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get focusDurationMinutes =>
-      $composableBuilder(column: $table.focusDurationMinutes, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get focusDurationMinutes => $composableBuilder(
+    column: $table.focusDurationMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get breakDurationMinutes =>
-      $composableBuilder(column: $table.breakDurationMinutes, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get breakDurationMinutes => $composableBuilder(
+    column: $table.breakDurationMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get startTime =>
-      $composableBuilder(column: $table.startTime, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get startTime => $composableBuilder(
+    column: $table.startTime,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<DateTime> get endTime =>
-      $composableBuilder(column: $table.endTime, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get endTime => $composableBuilder(
+    column: $table.endTime,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get state =>
-      $composableBuilder(column: $table.state, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get elapsedSeconds =>
-      $composableBuilder(column: $table.elapsedSeconds, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get elapsedSeconds => $composableBuilder(
+    column: $table.elapsedSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get focusPhaseEndedAt => $composableBuilder(
+    column: $table.focusPhaseEndedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   $$TaskTableTableOrderingComposer get taskId {
     final $$TaskTableTableOrderingComposer composer = $composerBuilder(
@@ -2816,20 +3593,26 @@ class $$FocusSessionTableTableOrderingComposer extends Composer<_$AppDatabase, $
       getCurrentColumn: (t) => t.taskId,
       referencedTable: $db.taskTable,
       getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$TaskTableTableOrderingComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableOrderingComposer(
             $db: $db,
             $table: $db.taskTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
   }
 }
 
-class $$FocusSessionTableTableAnnotationComposer extends Composer<_$AppDatabase, $FocusSessionTableTable> {
+class $$FocusSessionTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FocusSessionTableTable> {
   $$FocusSessionTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -2837,23 +3620,37 @@ class $$FocusSessionTableTableAnnotationComposer extends Composer<_$AppDatabase,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id => $composableBuilder(column: $table.id, builder: (column) => column);
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<int> get focusDurationMinutes =>
-      $composableBuilder(column: $table.focusDurationMinutes, builder: (column) => column);
+  GeneratedColumn<int> get focusDurationMinutes => $composableBuilder(
+    column: $table.focusDurationMinutes,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<int> get breakDurationMinutes =>
-      $composableBuilder(column: $table.breakDurationMinutes, builder: (column) => column);
+  GeneratedColumn<int> get breakDurationMinutes => $composableBuilder(
+    column: $table.breakDurationMinutes,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<DateTime> get startTime => $composableBuilder(column: $table.startTime, builder: (column) => column);
+  GeneratedColumn<DateTime> get startTime =>
+      $composableBuilder(column: $table.startTime, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get endTime => $composableBuilder(column: $table.endTime, builder: (column) => column);
+  GeneratedColumn<DateTime> get endTime =>
+      $composableBuilder(column: $table.endTime, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<SessionState, int> get state =>
       $composableBuilder(column: $table.state, builder: (column) => column);
 
-  GeneratedColumn<int> get elapsedSeconds =>
-      $composableBuilder(column: $table.elapsedSeconds, builder: (column) => column);
+  GeneratedColumn<int> get elapsedSeconds => $composableBuilder(
+    column: $table.elapsedSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get focusPhaseEndedAt => $composableBuilder(
+    column: $table.focusPhaseEndedAt,
+    builder: (column) => column,
+  );
 
   $$TaskTableTableAnnotationComposer get taskId {
     final $$TaskTableTableAnnotationComposer composer = $composerBuilder(
@@ -2861,13 +3658,18 @@ class $$FocusSessionTableTableAnnotationComposer extends Composer<_$AppDatabase,
       getCurrentColumn: (t) => t.taskId,
       referencedTable: $db.taskTable,
       getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
-          $$TaskTableTableAnnotationComposer(
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableAnnotationComposer(
             $db: $db,
             $table: $db.taskTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
@@ -2889,14 +3691,22 @@ class $$FocusSessionTableTableTableManager
           FocusSessionData,
           PrefetchHooks Function({bool taskId})
         > {
-  $$FocusSessionTableTableTableManager(_$AppDatabase db, $FocusSessionTableTable table)
-    : super(
+  $$FocusSessionTableTableTableManager(
+    _$AppDatabase db,
+    $FocusSessionTableTable table,
+  ) : super(
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$FocusSessionTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () => $$FocusSessionTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () => $$FocusSessionTableTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$FocusSessionTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FocusSessionTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FocusSessionTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -2907,6 +3717,7 @@ class $$FocusSessionTableTableTableManager
                 Value<DateTime?> endTime = const Value.absent(),
                 Value<SessionState> state = const Value.absent(),
                 Value<int> elapsedSeconds = const Value.absent(),
+                Value<int?> focusPhaseEndedAt = const Value.absent(),
               }) => FocusSessionTableCompanion(
                 id: id,
                 taskId: taskId,
@@ -2916,6 +3727,7 @@ class $$FocusSessionTableTableTableManager
                 endTime: endTime,
                 state: state,
                 elapsedSeconds: elapsedSeconds,
+                focusPhaseEndedAt: focusPhaseEndedAt,
               ),
           createCompanionCallback:
               ({
@@ -2927,6 +3739,7 @@ class $$FocusSessionTableTableTableManager
                 Value<DateTime?> endTime = const Value.absent(),
                 required SessionState state,
                 Value<int> elapsedSeconds = const Value.absent(),
+                Value<int?> focusPhaseEndedAt = const Value.absent(),
               }) => FocusSessionTableCompanion.insert(
                 id: id,
                 taskId: taskId,
@@ -2936,9 +3749,16 @@ class $$FocusSessionTableTableTableManager
                 endTime: endTime,
                 state: state,
                 elapsedSeconds: elapsedSeconds,
+                focusPhaseEndedAt: focusPhaseEndedAt,
               ),
-          withReferenceMapper: (p0) =>
-              p0.map((e) => (e.readTable(table), $$FocusSessionTableTableReferences(db, table, e))).toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$FocusSessionTableTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
           prefetchHooksCallback: ({taskId = false}) {
             return PrefetchHooks(
               db: db,
@@ -2964,8 +3784,13 @@ class $$FocusSessionTableTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.taskId,
-                                referencedTable: $$FocusSessionTableTableReferences._taskIdTable(db),
-                                referencedColumn: $$FocusSessionTableTableReferences._taskIdTable(db).id,
+                                referencedTable:
+                                    $$FocusSessionTableTableReferences
+                                        ._taskIdTable(db),
+                                referencedColumn:
+                                    $$FocusSessionTableTableReferences
+                                        ._taskIdTable(db)
+                                        .id,
                               )
                               as T;
                     }
@@ -3012,7 +3837,8 @@ typedef $$DailySessionStatsTableTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-class $$DailySessionStatsTableTableFilterComposer extends Composer<_$AppDatabase, $DailySessionStatsTableTable> {
+class $$DailySessionStatsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $DailySessionStatsTableTable> {
   $$DailySessionStatsTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -3020,19 +3846,29 @@ class $$DailySessionStatsTableTableFilterComposer extends Composer<_$AppDatabase
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get date => $composableBuilder(column: $table.date, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get completedSessions =>
-      $composableBuilder(column: $table.completedSessions, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get completedSessions => $composableBuilder(
+    column: $table.completedSessions,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get totalSessions =>
-      $composableBuilder(column: $table.totalSessions, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get totalSessions => $composableBuilder(
+    column: $table.totalSessions,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<int> get focusSeconds =>
-      $composableBuilder(column: $table.focusSeconds, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get focusSeconds => $composableBuilder(
+    column: $table.focusSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
-class $$DailySessionStatsTableTableOrderingComposer extends Composer<_$AppDatabase, $DailySessionStatsTableTable> {
+class $$DailySessionStatsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $DailySessionStatsTableTable> {
   $$DailySessionStatsTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -3040,20 +3876,29 @@ class $$DailySessionStatsTableTableOrderingComposer extends Composer<_$AppDataba
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get date =>
-      $composableBuilder(column: $table.date, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get completedSessions =>
-      $composableBuilder(column: $table.completedSessions, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get completedSessions => $composableBuilder(
+    column: $table.completedSessions,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get totalSessions =>
-      $composableBuilder(column: $table.totalSessions, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get totalSessions => $composableBuilder(
+    column: $table.totalSessions,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<int> get focusSeconds =>
-      $composableBuilder(column: $table.focusSeconds, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get focusSeconds => $composableBuilder(
+    column: $table.focusSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
-class $$DailySessionStatsTableTableAnnotationComposer extends Composer<_$AppDatabase, $DailySessionStatsTableTable> {
+class $$DailySessionStatsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DailySessionStatsTableTable> {
   $$DailySessionStatsTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -3061,15 +3906,23 @@ class $$DailySessionStatsTableTableAnnotationComposer extends Composer<_$AppData
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get date => $composableBuilder(column: $table.date, builder: (column) => column);
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
 
-  GeneratedColumn<int> get completedSessions =>
-      $composableBuilder(column: $table.completedSessions, builder: (column) => column);
+  GeneratedColumn<int> get completedSessions => $composableBuilder(
+    column: $table.completedSessions,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<int> get totalSessions =>
-      $composableBuilder(column: $table.totalSessions, builder: (column) => column);
+  GeneratedColumn<int> get totalSessions => $composableBuilder(
+    column: $table.totalSessions,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<int> get focusSeconds => $composableBuilder(column: $table.focusSeconds, builder: (column) => column);
+  GeneratedColumn<int> get focusSeconds => $composableBuilder(
+    column: $table.focusSeconds,
+    builder: (column) => column,
+  );
 }
 
 class $$DailySessionStatsTableTableTableManager
@@ -3083,18 +3936,39 @@ class $$DailySessionStatsTableTableTableManager
           $$DailySessionStatsTableTableAnnotationComposer,
           $$DailySessionStatsTableTableCreateCompanionBuilder,
           $$DailySessionStatsTableTableUpdateCompanionBuilder,
-          (DailySessionStatsData, BaseReferences<_$AppDatabase, $DailySessionStatsTableTable, DailySessionStatsData>),
+          (
+            DailySessionStatsData,
+            BaseReferences<
+              _$AppDatabase,
+              $DailySessionStatsTableTable,
+              DailySessionStatsData
+            >,
+          ),
           DailySessionStatsData,
           PrefetchHooks Function()
         > {
-  $$DailySessionStatsTableTableTableManager(_$AppDatabase db, $DailySessionStatsTableTable table)
-    : super(
+  $$DailySessionStatsTableTableTableManager(
+    _$AppDatabase db,
+    $DailySessionStatsTableTable table,
+  ) : super(
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$DailySessionStatsTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () => $$DailySessionStatsTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () => $$DailySessionStatsTableTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$DailySessionStatsTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$DailySessionStatsTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$DailySessionStatsTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
           updateCompanionCallback:
               ({
                 Value<String> date = const Value.absent(),
@@ -3123,7 +3997,9 @@ class $$DailySessionStatsTableTableTableManager
                 focusSeconds: focusSeconds,
                 rowid: rowid,
               ),
-          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
           prefetchHooksCallback: null,
         ),
       );
@@ -3139,16 +4015,32 @@ typedef $$DailySessionStatsTableTableProcessedTableManager =
       $$DailySessionStatsTableTableAnnotationComposer,
       $$DailySessionStatsTableTableCreateCompanionBuilder,
       $$DailySessionStatsTableTableUpdateCompanionBuilder,
-      (DailySessionStatsData, BaseReferences<_$AppDatabase, $DailySessionStatsTableTable, DailySessionStatsData>),
+      (
+        DailySessionStatsData,
+        BaseReferences<
+          _$AppDatabase,
+          $DailySessionStatsTableTable,
+          DailySessionStatsData
+        >,
+      ),
       DailySessionStatsData,
       PrefetchHooks Function()
     >;
 typedef $$SettingsTableTableCreateCompanionBuilder =
-    SettingsTableCompanion Function({required String key, required String value, Value<int> rowid});
+    SettingsTableCompanion Function({
+      required String key,
+      required String value,
+      Value<int> rowid,
+    });
 typedef $$SettingsTableTableUpdateCompanionBuilder =
-    SettingsTableCompanion Function({Value<String> key, Value<String> value, Value<int> rowid});
+    SettingsTableCompanion Function({
+      Value<String> key,
+      Value<String> value,
+      Value<int> rowid,
+    });
 
-class $$SettingsTableTableFilterComposer extends Composer<_$AppDatabase, $SettingsTableTable> {
+class $$SettingsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $SettingsTableTable> {
   $$SettingsTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -3156,13 +4048,19 @@ class $$SettingsTableTableFilterComposer extends Composer<_$AppDatabase, $Settin
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get key => $composableBuilder(column: $table.key, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
 
-  ColumnFilters<String> get value =>
-      $composableBuilder(column: $table.value, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
-class $$SettingsTableTableOrderingComposer extends Composer<_$AppDatabase, $SettingsTableTable> {
+class $$SettingsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $SettingsTableTable> {
   $$SettingsTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -3170,14 +4068,19 @@ class $$SettingsTableTableOrderingComposer extends Composer<_$AppDatabase, $Sett
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get key =>
-      $composableBuilder(column: $table.key, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  ColumnOrderings<String> get value =>
-      $composableBuilder(column: $table.value, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
-class $$SettingsTableTableAnnotationComposer extends Composer<_$AppDatabase, $SettingsTableTable> {
+class $$SettingsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SettingsTableTable> {
   $$SettingsTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -3185,9 +4088,11 @@ class $$SettingsTableTableAnnotationComposer extends Composer<_$AppDatabase, $Se
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get key => $composableBuilder(column: $table.key, builder: (column) => column);
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
 
-  GeneratedColumn<String> get value => $composableBuilder(column: $table.value, builder: (column) => column);
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
 }
 
 class $$SettingsTableTableTableManager
@@ -3201,7 +4106,10 @@ class $$SettingsTableTableTableManager
           $$SettingsTableTableAnnotationComposer,
           $$SettingsTableTableCreateCompanionBuilder,
           $$SettingsTableTableUpdateCompanionBuilder,
-          (SettingsData, BaseReferences<_$AppDatabase, $SettingsTableTable, SettingsData>),
+          (
+            SettingsData,
+            BaseReferences<_$AppDatabase, $SettingsTableTable, SettingsData>,
+          ),
           SettingsData,
           PrefetchHooks Function()
         > {
@@ -3210,19 +4118,32 @@ class $$SettingsTableTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$SettingsTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () => $$SettingsTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () => $$SettingsTableTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$SettingsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettingsTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettingsTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> key = const Value.absent(),
                 Value<String> value = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => SettingsTableCompanion(key: key, value: value, rowid: rowid),
+              }) =>
+                  SettingsTableCompanion(key: key, value: value, rowid: rowid),
           createCompanionCallback:
-              ({required String key, required String value, Value<int> rowid = const Value.absent()}) =>
-                  SettingsTableCompanion.insert(key: key, value: value, rowid: rowid),
-          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+              ({
+                required String key,
+                required String value,
+                Value<int> rowid = const Value.absent(),
+              }) => SettingsTableCompanion.insert(
+                key: key,
+                value: value,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
           prefetchHooksCallback: null,
         ),
       );
@@ -3238,7 +4159,10 @@ typedef $$SettingsTableTableProcessedTableManager =
       $$SettingsTableTableAnnotationComposer,
       $$SettingsTableTableCreateCompanionBuilder,
       $$SettingsTableTableUpdateCompanionBuilder,
-      (SettingsData, BaseReferences<_$AppDatabase, $SettingsTableTable, SettingsData>),
+      (
+        SettingsData,
+        BaseReferences<_$AppDatabase, $SettingsTableTable, SettingsData>,
+      ),
       SettingsData,
       PrefetchHooks Function()
     >;
@@ -3246,11 +4170,17 @@ typedef $$SettingsTableTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$ProjectTableTableTableManager get projectTable => $$ProjectTableTableTableManager(_db, _db.projectTable);
-  $$TaskTableTableTableManager get taskTable => $$TaskTableTableTableManager(_db, _db.taskTable);
+  $$ProjectTableTableTableManager get projectTable =>
+      $$ProjectTableTableTableManager(_db, _db.projectTable);
+  $$TaskTableTableTableManager get taskTable =>
+      $$TaskTableTableTableManager(_db, _db.taskTable);
   $$FocusSessionTableTableTableManager get focusSessionTable =>
       $$FocusSessionTableTableTableManager(_db, _db.focusSessionTable);
   $$DailySessionStatsTableTableTableManager get dailySessionStatsTable =>
-      $$DailySessionStatsTableTableTableManager(_db, _db.dailySessionStatsTable);
-  $$SettingsTableTableTableManager get settingsTable => $$SettingsTableTableTableManager(_db, _db.settingsTable);
+      $$DailySessionStatsTableTableTableManager(
+        _db,
+        _db.dailySessionStatsTable,
+      );
+  $$SettingsTableTableTableManager get settingsTable =>
+      $$SettingsTableTableTableManager(_db, _db.settingsTable);
 }

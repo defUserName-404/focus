@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/route_constants.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../../core/providers/expansion_provider.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/widgets/action_menu_button.dart';
@@ -39,9 +40,7 @@ class TaskCard extends ConsumerWidget {
     final isOverdue = task.endDate?.isOverdue ?? false;
 
     return AppCard(
-      onTap: () => Navigator.of(
-        context,
-      ).pushNamed(RouteConstants.taskDetailRoute, arguments: {'taskId': task.id!, 'projectId': task.projectId}),
+      onTap: () => context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId}),
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
@@ -49,7 +48,7 @@ class TaskCard extends ConsumerWidget {
       ),
       title: Text(task.title),
       trailing: Row(
-        mainAxisSize: .min,
+        mainAxisSize: MainAxisSize.min,
         children: [
           TaskPriorityBadge(priority: task.priority),
           SizedBox(width: AppConstants.spacing.extraSmall),
@@ -88,17 +87,14 @@ class TaskCard extends ConsumerWidget {
       children: [
         if (isExpanded && subtasks.isNotEmpty)
           Column(
-            mainAxisSize: .min,
+            mainAxisSize: MainAxisSize.min,
             children: subtasks
                 .map(
                   (st) => SubtaskRow(
                     subtask: st,
                     onToggle: () => ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(st),
                     onTap: () {
-                      Navigator.of(context).pushNamed(
-                        RouteConstants.taskDetailRoute,
-                        arguments: {'taskId': st.id!, 'projectId': st.projectId},
-                      );
+                      context.push(AppRoutes.taskDetailPath(st.id!), extra: {'projectId': st.projectId});
                       if (onSubtaskTap != null) onSubtaskTap!(st);
                     },
                     onEdit: () => TaskCommands.edit(context, st),

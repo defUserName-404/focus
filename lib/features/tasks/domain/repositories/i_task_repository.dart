@@ -8,6 +8,8 @@ abstract class ITaskRepository {
 
   Future<Task?> getTaskById(int id);
 
+  Future<List<Task>> getTasksWithDeadlines();
+
   Future<List<Task>> getSubtasks(int parentTaskId);
 
   Future<Task> createTask(Task task);

@@ -64,9 +64,13 @@ class TaskDateRow extends StatelessWidget {
 
   String _buildDateText() {
     if (startDate != null && deadline != null) {
-      return '${startDate!.toShortDateString()} – ${deadline!.toShortDateString()}';
+      final startLabel = startDate!.hasExplicitTime ? startDate!.toDateTimeString() : startDate!.toShortDateString();
+      final deadlineLabel = deadline!.hasExplicitTime ? deadline!.toDateTimeString() : deadline!.toShortDateString();
+      return '$startLabel – $deadlineLabel';
     }
-    return (deadline ?? startDate)!.toShortDateString();
+    final value = deadline ?? startDate;
+    if (value == null) return '';
+    return value.hasExplicitTime ? value.toDateTimeString() : value.toShortDateString();
   }
 
   bool _isApproaching(DateTime dt) => dt.difference(DateTime.now()).inDays <= 3;

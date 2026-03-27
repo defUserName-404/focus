@@ -21,12 +21,15 @@ import '../../features/tasks/data/repositories/task_repository_impl.dart';
 import '../../features/tasks/data/repositories/task_stats_repository_impl.dart';
 import '../../features/tasks/domain/repositories/i_task_repository.dart';
 import '../../features/tasks/domain/repositories/i_task_stats_repository.dart';
+import '../../features/tasks/domain/services/task_notification_service.dart';
 import '../../features/tasks/domain/services/task_service.dart';
 import '../routing/navigation_service.dart';
 import '../services/audio_service.dart';
 import '../services/audio_session_manager.dart';
 import '../services/db_service.dart';
 import '../services/focus_audio_handler.dart';
+import '../services/i_notification_service.dart';
+import '../services/no_op_notification_service.dart';
 import '../services/notification_service.dart';
 import '../utils/platform_utils.dart';
 
@@ -45,10 +48,14 @@ Future<void> setupDependencyInjection() async {
     getIt.registerSingleton<FocusAudioHandler>(audioHandler);
   }
 
+  // Notification service - use real implementation on supported platforms,
+  // no-op implementation on platforms without notification support
   if (PlatformUtils.supportsLocalNotifications) {
     final notificationService = NotificationService();
     await notificationService.init();
-    getIt.registerSingleton<NotificationService>(notificationService);
+    getIt.registerSingleton<INotificationService>(notificationService);
+  } else {
+    getIt.registerSingleton<INotificationService>(NoOpNotificationService());
   }
 
   if (PlatformUtils.supportsMediaSession) {
@@ -77,7 +84,10 @@ void _initTasksDi() {
     ..registerLazySingleton<ITaskStatsLocalDataSource>(() => TaskStatsLocalDataSourceImpl(getIt<AppDatabase>()))
     ..registerLazySingleton<ITaskRepository>(() => TaskRepositoryImpl(getIt<ITaskLocalDataSource>()))
     ..registerLazySingleton<ITaskStatsRepository>(() => TaskStatsRepositoryImpl(getIt<ITaskStatsLocalDataSource>()))
-    ..registerLazySingleton<TaskService>(() => TaskService(getIt<ITaskRepository>()));
+    ..registerLazySingleton<TaskNotificationService>(
+      () => TaskNotificationService(getIt<INotificationService>(), getIt<ITaskRepository>()),
+    )
+    ..registerLazySingleton<TaskService>(() => TaskService(getIt<ITaskRepository>(), getIt<TaskNotificationService>()));
 }
 
 void _initSettingsDi() {
@@ -96,13 +106,11 @@ void _initSessionDi() {
     )
     ..registerLazySingleton<FocusAudioCoordinator>(
       () => FocusAudioCoordinator(getIt<AudioService>(), getIt<ISettingsRepository>()),
+    )
+    // FocusNotificationCoordinator always available - uses NoOpNotificationService on unsupported platforms
+    ..registerLazySingleton<FocusNotificationCoordinator>(
+      () => FocusNotificationCoordinator(getIt<INotificationService>()),
     );
-
-  if (PlatformUtils.supportsLocalNotifications) {
-    getIt.registerLazySingleton<FocusNotificationCoordinator>(
-      () => FocusNotificationCoordinator(getIt<NotificationService>()),
-    );
-  }
 
   if (PlatformUtils.supportsMediaSession) {
     getIt.registerLazySingleton<FocusMediaSessionCoordinator>(

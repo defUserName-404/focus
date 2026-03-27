@@ -1,92 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
-import '../../../features/home/presentation/pages/home_screen.dart';
-import '../../../features/projects/presentation/screens/project_list_screen.dart';
 import '../../../features/session/presentation/widgets/mini_player_overlay.dart';
-import '../../../features/settings/presentation/screens/settings_screen.dart';
-import '../../../features/tasks/presentation/screens/all_tasks_screen.dart';
-import '../providers/navigation_provider.dart';
-import '../routing/app_router.dart';
+import '../routing/routes.dart';
 import '../utils/platform_utils.dart';
 
 /// Root shell that adapts its navigation chrome to the current form factor.
 ///
-/// - **compact** (mobile): bottom navigation bar + per-tab nested navigators.
-/// - **expanded** (desktop/tablet): persistent side navigation rail + content area.
+/// - **compact** (mobile): bottom navigation bar
+/// - **expanded** (desktop/tablet): persistent side navigation rail
 ///
-/// Tab index state is managed via Riverpod ([bottomNavIndexProvider]).
-class AdaptiveShell extends ConsumerStatefulWidget {
-  const AdaptiveShell({super.key});
+/// With go_router, this widget receives the current route's [child] widget
+/// directly from the router configuration.
+class AdaptiveShell extends ConsumerWidget {
+  /// The child widget provided by go_router's ShellRoute.
+  final Widget child;
 
-  @override
-  ConsumerState<AdaptiveShell> createState() => _AdaptiveShellState();
-}
-
-class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
-  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(4, (_) => GlobalKey<NavigatorState>());
+  const AdaptiveShell({super.key, required this.child});
 
   static const _tabs = [
-    _TabDefinition(icon: fu.FIcons.house, label: 'Home'),
-    _TabDefinition(icon: fu.FIcons.squareCheck, label: 'Tasks'),
-    _TabDefinition(icon: fu.FIcons.folderOpen, label: 'Projects'),
-    _TabDefinition(icon: fu.FIcons.settings, label: 'Settings'),
+    _TabDefinition(icon: fu.FIcons.house, label: 'Home', route: AppRoutes.home),
+    _TabDefinition(icon: fu.FIcons.squareCheck, label: 'Tasks', route: AppRoutes.tasks),
+    _TabDefinition(icon: fu.FIcons.folderOpen, label: 'Projects', route: AppRoutes.projects),
+    _TabDefinition(icon: fu.FIcons.settings, label: 'Settings', route: AppRoutes.settings),
   ];
 
-  Widget _buildTabContent(int index) {
-    return switch (index) {
-      0 => const HomeScreen(),
-      1 => const AllTasksScreen(),
-      2 => const ProjectListScreen(),
-      3 => const SettingsScreen(),
-      _ => const HomeScreen(),
-    };
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final currentIndex = ref.watch(bottomNavIndexProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final location = GoRouterState.of(context).uri.path;
+    final currentIndex = _getIndexFromLocation(location);
     final isExpanded = context.isExpanded;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
-        final navState = _navigatorKeys[currentIndex].currentState;
-        if (navState != null && navState.canPop()) {
-          navState.pop();
-          return;
-        }
-        if (currentIndex != 0) {
-          ref.read(bottomNavIndexProvider.notifier).goHome();
-          return;
-        }
-      },
-      child: isExpanded
-          ? _DesktopLayout(
-              currentIndex: currentIndex,
-              navigatorKeys: _navigatorKeys,
-              tabs: _tabs,
-              onTabChanged: _onTabChanged,
-              buildTabContent: _buildTabContent,
-            )
-          : _MobileLayout(
-              currentIndex: currentIndex,
-              navigatorKeys: _navigatorKeys,
-              tabs: _tabs,
-              onTabChanged: _onTabChanged,
-              buildTabContent: _buildTabContent,
-            ),
-    );
+    return isExpanded
+        ? _DesktopLayout(
+            currentIndex: currentIndex,
+            tabs: _tabs,
+            onTabChanged: (index) => _onTabChanged(context, index),
+            child: child,
+          )
+        : _MobileLayout(
+            currentIndex: currentIndex,
+            tabs: _tabs,
+            onTabChanged: (index) => _onTabChanged(context, index),
+            child: child,
+          );
   }
 
-  void _onTabChanged(int index) {
-    final currentIndex = ref.read(bottomNavIndexProvider);
+  /// Determine which tab index corresponds to the current route location.
+  int _getIndexFromLocation(String location) {
+    if (location.startsWith('/tasks')) return 1;
+    if (location.startsWith('/projects')) return 2;
+    if (location.startsWith('/settings')) return 3;
+    return 0; // Home
+  }
+
+  /// Navigate to the selected tab's route.
+  void _onTabChanged(BuildContext context, int index) {
+    final currentIndex = _getIndexFromLocation(GoRouterState.of(context).uri.path);
+
     if (index == currentIndex) {
-      _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+      // Already on this tab - pop to root of this tab
+      // This is handled by go_router automatically when using go()
+      context.go(_tabs[index].route);
     } else {
-      ref.read(bottomNavIndexProvider.notifier).setIndex(index);
+      // Navigate to the new tab
+      context.go(_tabs[index].route);
     }
   }
 }
@@ -95,17 +75,15 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
 
 class _DesktopLayout extends StatelessWidget {
   final int currentIndex;
-  final List<GlobalKey<NavigatorState>> navigatorKeys;
   final List<_TabDefinition> tabs;
   final ValueChanged<int> onTabChanged;
-  final Widget Function(int index) buildTabContent;
+  final Widget child;
 
   const _DesktopLayout({
     required this.currentIndex,
-    required this.navigatorKeys,
     required this.tabs,
     required this.onTabChanged,
-    required this.buildTabContent,
+    required this.child,
   });
 
   @override
@@ -137,15 +115,7 @@ class _DesktopLayout extends StatelessWidget {
               children: [
                 // Mini-player bar at the top on desktop
                 const MiniPlayerOverlay(),
-                Expanded(
-                  child: IndexedStack(
-                    index: currentIndex,
-                    children: [
-                      for (var i = 0; i < tabs.length; i++)
-                        _TabNavigator(navigatorKey: navigatorKeys[i], rootBuilder: (_) => buildTabContent(i)),
-                    ],
-                  ),
-                ),
+                Expanded(child: child),
               ],
             ),
           ),
@@ -159,17 +129,15 @@ class _DesktopLayout extends StatelessWidget {
 
 class _MobileLayout extends StatelessWidget {
   final int currentIndex;
-  final List<GlobalKey<NavigatorState>> navigatorKeys;
   final List<_TabDefinition> tabs;
   final ValueChanged<int> onTabChanged;
-  final Widget Function(int index) buildTabContent;
+  final Widget child;
 
   const _MobileLayout({
     required this.currentIndex,
-    required this.navigatorKeys,
     required this.tabs,
     required this.onTabChanged,
-    required this.buildTabContent,
+    required this.child,
   });
 
   @override
@@ -189,34 +157,7 @@ class _MobileLayout extends StatelessWidget {
           ),
         ],
       ),
-      child: IndexedStack(
-        index: currentIndex,
-        children: [
-          for (var i = 0; i < tabs.length; i++)
-            _TabNavigator(navigatorKey: navigatorKeys[i], rootBuilder: (_) => buildTabContent(i)),
-        ],
-      ),
-    );
-  }
-}
-
-//  Tab navigator (shared between layouts)
-
-class _TabNavigator extends StatelessWidget {
-  final GlobalKey<NavigatorState> navigatorKey;
-  final WidgetBuilder rootBuilder;
-
-  const _TabNavigator({required this.navigatorKey, required this.rootBuilder});
-
-  @override
-  Widget build(BuildContext context) {
-    return Navigator(
-      key: navigatorKey,
-      onGenerateRoute: (settings) {
-        final route = AppRouter.generateTabRoute(settings);
-        if (route != null) return route;
-        return MaterialPageRoute(builder: rootBuilder);
-      },
+      child: child,
     );
   }
 }
@@ -226,6 +167,7 @@ class _TabNavigator extends StatelessWidget {
 class _TabDefinition {
   final IconData icon;
   final String label;
+  final String route;
 
-  const _TabDefinition({required this.icon, required this.label});
+  const _TabDefinition({required this.icon, required this.label, required this.route});
 }

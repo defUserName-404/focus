@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
 import '../../../../core/widgets/filter_select.dart';
@@ -71,6 +74,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           control: FDateFieldControl.managed(onChange: (date) => _startDate = date),
           clearable: true,
         ),
+        _TimeField(label: 'Start Time', value: _startDate, onChanged: (date) => setState(() => _startDate = date)),
         FDateField.calendar(
           label: const Text('End Date'),
           hint: 'Select End Date (Optional)',
@@ -82,6 +86,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           autovalidateMode: AutovalidateMode.onUnfocus,
           clearable: true,
         ),
+        _TimeField(label: 'End Time', value: _endDate, onChanged: (date) => setState(() => _endDate = date)),
       ],
     );
   }
@@ -103,6 +108,44 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           depth: widget.depth,
         );
 
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) context.pop();
+  }
+}
+
+class _TimeField extends StatelessWidget {
+  final String label;
+  final DateTime? value;
+  final ValueChanged<DateTime?> onChanged;
+
+  const _TimeField({required this.label, required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: FButton(
+            style: FButtonStyle.outline(),
+            onPress: value == null
+                ? null
+                : () async {
+                    final initial = TimeOfDay.fromDateTime(value!);
+                    final selected = await showTimePicker(context: context, initialTime: initial);
+                    if (selected == null) return;
+                    onChanged(DateTime(value!.year, value!.month, value!.day, selected.hour, selected.minute));
+                  },
+            child: Text(value == null ? '$label (pick date first)' : '$label: ${value!.toTimeString()}'),
+          ),
+        ),
+        if (value != null) ...[
+          SizedBox(width: AppConstants.spacing.small),
+          FButton(
+            style: FButtonStyle.ghost(),
+            onPress: () => onChanged(DateTime(value!.year, value!.month, value!.day)),
+            child: const Text('Clear'),
+          ),
+        ],
+      ],
+    );
   }
 }

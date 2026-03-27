@@ -4,6 +4,7 @@ import '../entities/task.dart';
 import '../entities/task_extensions.dart';
 import '../entities/task_priority.dart';
 import '../repositories/i_task_repository.dart';
+import 'task_notification_service.dart';
 
 final _log = LogService.instance;
 
@@ -14,8 +15,9 @@ final _log = LogService.instance;
 /// completion toggling, and depth management.
 class TaskService {
   final ITaskRepository _repository;
+  final TaskNotificationService _taskNotificationService;
 
-  TaskService(this._repository);
+  TaskService(this._repository, this._taskNotificationService);
 
   //  Read
 
@@ -53,6 +55,7 @@ class TaskService {
         updatedAt: now,
       );
       final created = await _repository.createTask(task);
+      await _taskNotificationService.scheduleTaskReminder(created);
       _log.info('Task created: "$title" (id=${created.id})', tag: 'TaskService');
       return Success(created);
     } catch (e, st) {
@@ -63,8 +66,12 @@ class TaskService {
 
   Future<Result<void>> updateTask(Task task) async {
     try {
+      if (task.id != null) {
+        await _taskNotificationService.cancelTaskReminder(task.id!);
+      }
       final updated = task.copyWith(updatedAt: DateTime.now());
       await _repository.updateTask(updated);
+      await _taskNotificationService.scheduleTaskReminder(updated);
       return const Success(null);
     } catch (e, st) {
       _log.error('Failed to update task ${task.id}', tag: 'TaskService', error: e, stackTrace: st);
@@ -74,6 +81,7 @@ class TaskService {
 
   Future<Result<void>> deleteTask(int id) async {
     try {
+      await _taskNotificationService.cancelTaskReminder(id);
       await _repository.deleteTask(id);
       _log.info('Task $id deleted', tag: 'TaskService');
       return const Success(null);
@@ -87,6 +95,11 @@ class TaskService {
     try {
       final updated = task.copyWith(isCompleted: !task.isCompleted, updatedAt: DateTime.now());
       await _repository.updateTask(updated);
+      if (updated.isCompleted && updated.id != null) {
+        await _taskNotificationService.cancelTaskReminder(updated.id!);
+      } else {
+        await _taskNotificationService.scheduleTaskReminder(updated);
+      }
       return const Success(null);
     } catch (e, st) {
       _log.error('Failed to toggle task ${task.id}', tag: 'TaskService', error: e, stackTrace: st);

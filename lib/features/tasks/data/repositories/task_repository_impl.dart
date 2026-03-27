@@ -28,6 +28,12 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   @override
+  Future<List<Task>> getTasksWithDeadlines() async {
+    final rows = await _local.getTasksWithDeadlines();
+    return rows.map((r) => r.toDomain()).toList();
+  }
+
+  @override
   Future<List<Task>> getSubtasks(int parentTaskId) async {
     final rows = await _local.getSubtasks(parentTaskId);
     return rows.map((r) => r.toDomain()).toList();

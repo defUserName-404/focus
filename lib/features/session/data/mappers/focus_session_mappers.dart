@@ -13,6 +13,7 @@ extension DbFocusSessionToDomain on FocusSessionData {
     endTime: endTime,
     state: state,
     elapsedSeconds: elapsedSeconds,
+    focusPhaseEndedAt: focusPhaseEndedAt,
   );
 }
 
@@ -28,6 +29,7 @@ extension DomainFocusSessionToCompanion on FocusSession {
         endTime: Value(endTime),
         state: Value(state),
         elapsedSeconds: Value(elapsedSeconds),
+        focusPhaseEndedAt: Value(focusPhaseEndedAt),
       );
     }
     return FocusSessionTableCompanion.insert(
@@ -38,6 +40,7 @@ extension DomainFocusSessionToCompanion on FocusSession {
       endTime: Value(endTime),
       state: state,
       elapsedSeconds: Value(elapsedSeconds),
+      focusPhaseEndedAt: Value(focusPhaseEndedAt),
     );
   }
 }

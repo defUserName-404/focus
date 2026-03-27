@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/action_menu_button.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -46,7 +47,7 @@ class TaskDetailScreen extends ConsumerWidget {
           return fu.FScaffold(
             header: fu.FHeader.nested(
               title: const Text('Task Details'),
-              prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
+              prefixes: [fu.FHeaderAction.back(onPress: () => context.pop())],
             ),
             child: const Center(child: Text('Task not found')),
           );
@@ -66,12 +67,12 @@ class TaskDetailScreen extends ConsumerWidget {
         return fu.FScaffold(
           header: fu.FHeader.nested(
             title: const Text('Task Details'),
-            prefixes: [fu.FHeaderAction.back(onPress: () => Navigator.pop(context))],
+            prefixes: [fu.FHeaderAction.back(onPress: () => context.pop())],
             suffixes: [
               ActionMenuButton(
                 onEdit: () => TaskCommands.edit(context, task),
                 onDelete: () =>
-                    TaskCommands.delete(context, ref, task, _projectIdString, onDeleted: () => Navigator.pop(context)),
+                    TaskCommands.delete(context, ref, task, _projectIdString, onDeleted: () => context.pop()),
               ),
             ],
           ),

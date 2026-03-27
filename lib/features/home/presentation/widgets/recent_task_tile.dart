@@ -5,8 +5,9 @@ import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/widgets/task_priority_badge.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/route_constants.dart';
+import '../../../../core/routing/routes.dart';
 
 class RecentTaskTile extends StatelessWidget {
   final Task task;
@@ -16,11 +17,7 @@ class RecentTaskTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(
-        context,
-        RouteConstants.taskDetailRoute,
-        arguments: {'taskId': task.id!, 'projectId': task.projectId},
-      ),
+      onTap: () => context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId}),
       child: fu.FCard(
         child: Padding(
           padding: EdgeInsets.all(AppConstants.spacing.regular),

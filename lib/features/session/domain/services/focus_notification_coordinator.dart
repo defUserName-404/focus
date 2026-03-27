@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/i_notification_service.dart';
 
 /// Coordinates all notification interactions for focus sessions.
 ///
 /// Encapsulates notification content/messaging so the [FocusTimer]
 /// doesn't need to know about notification titles, bodies, or action routing.
 class FocusNotificationCoordinator {
-  final NotificationService _notificationService;
+  final INotificationService _notificationService;
 
   FocusNotificationCoordinator(this._notificationService);
 
@@ -59,6 +59,6 @@ class FocusNotificationCoordinator {
   /// Listen for notification action taps (pause/resume/stop/skip).
   /// Returns a [StreamSubscription] that the caller must manage.
   StreamSubscription<String> listenForActions(void Function(String) handler) {
-    return NotificationService.actionStream.listen(handler);
+    return _notificationService.actionStream.listen(handler);
   }
 }

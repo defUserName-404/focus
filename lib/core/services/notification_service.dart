@@ -1,10 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../constants/notification_constants.dart';
-import '../routing/navigator_key.dart';
+import '../routing/app_router.dart';
+import 'i_notification_service.dart';
+import 'log_service.dart';
 
 /// Top-level handler required by flutter_local_notifications for
 /// notification actions received while the app is in the background.
@@ -17,18 +20,29 @@ void _onBackgroundNotificationResponse(NotificationResponse response) {
   }
 }
 
-class NotificationService {
+/// Platform notification service for Android, iOS, and macOS.
+///
+/// Uses flutter_local_notifications to display system notifications
+/// with action buttons and progress indicators.
+class NotificationService implements INotificationService {
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
   /// Broadcast stream of notification action IDs (pause, resume, stop).
   static final StreamController<String> _actionController = StreamController<String>.broadcast();
-  static Stream<String> get actionStream => _actionController.stream;
+
+  @override
+  Stream<String> get actionStream => _actionController.stream;
 
   /// Broadcast stream of notification body taps (payload strings).
   static final StreamController<String> _tapController = StreamController<String>.broadcast();
-  static Stream<String> get tapStream => _tapController.stream;
 
+  @override
+  Stream<String> get tapStream => _tapController.stream;
+
+  @override
   Future<void> init() async {
+    tz.initializeTimeZones();
+
     const androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
     const iosSettings = DarwinInitializationSettings();
 
@@ -47,8 +61,13 @@ class NotificationService {
       final androidPlugin = _notifications
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       await androidPlugin?.requestNotificationsPermission();
-    } catch (e) {
-      debugPrint('requestNotificationsPermission failed: $e');
+    } catch (e, stackTrace) {
+      LogService.instance.warning(
+        'requestNotificationsPermission failed',
+        tag: 'NotificationService',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
 
     // Handle the case where the app was launched by tapping a notification.
@@ -92,8 +111,7 @@ class NotificationService {
     }
   }
 
-  /// Show the persistent focus session notification with media-style controls
-  /// and an optional progress bar.
+  @override
   Future<void> showFocusNotification({
     required String title,
     required String body,
@@ -143,7 +161,7 @@ class NotificationService {
     );
   }
 
-  /// Show a one-shot alarm notification (non-persistent).
+  @override
   Future<void> showAlarmNotification({required String title, required String body}) async {
     final androidDetails = AndroidNotificationDetails(
       NotificationConstants.alarmChannelId,
@@ -167,6 +185,45 @@ class NotificationService {
     );
   }
 
+  @override
+  Future<void> scheduleNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledTime,
+    String? payload,
+  }) async {
+    final androidDetails = AndroidNotificationDetails(
+      NotificationConstants.alarmChannelId,
+      NotificationConstants.alarmChannelName,
+      channelDescription: NotificationConstants.alarmChannelDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+      ongoing: false,
+      autoCancel: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
+
+    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+
+    await _notifications.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
+      notificationDetails: details,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      payload: payload,
+    );
+  }
+
+  @override
+  Future<void> cancelNotification(int id) async {
+    await _notifications.cancel(id: id);
+  }
+
+  @override
   Future<void> cancelFocusNotification() async {
     await _notifications.cancel(id: NotificationConstants.focusSessionId);
   }
