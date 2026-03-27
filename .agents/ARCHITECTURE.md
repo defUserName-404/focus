@@ -158,8 +158,7 @@ Future<void> setupDependencyInjection() async {
   // 1. Core Infrastructure (singletons, eager)
   getIt
     ..registerSingleton<AppDatabase>(AppDatabase())
-    ..registerLazySingleton<AudioService>(() => AudioService())
-    ..registerLazySingleton<NavigationService>(() => NavigationService());
+    ..registerLazySingleton<AudioService>(() => AudioService());
 
   // 2. Platform-specific services (conditional)
   if (PlatformUtils.supportsMediaSession) {
@@ -350,40 +349,40 @@ Foreign keys use `ON DELETE CASCADE`:
 
 ## Navigation Architecture
 
-### Navigator 1.0 Pattern
+### go_router Pattern
 
-Focus uses traditional Navigator 1.0 with named routes:
-
-```dart
-// Routes defined in lib/core/constants/route_constants.dart
-abstract final class RouteConstants {
-  static const String homeRoute = '/';
-  static const String projectDetailRoute = '/project_detail';
-  static const String createProjectRoute = '/create_project';
-  // ...
-}
-```
-
-### NavigationService
-
-Centralized navigation via `lib/core/routing/navigation_service.dart`:
+Focus uses `go_router` with a shell-based navigation model:
 
 ```dart
-class NavigationService {
-  void goToProjectDetail(BuildContext context, int projectId) {
-    Navigator.of(context).pushNamed(
-      RouteConstants.projectDetailRoute,
-      arguments: projectId,
-    );
-  }
-
-  void goToCreateProject(BuildContext context) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      RouteConstants.createProjectRoute,
-    );
-  }
-}
+final GoRouter appRouter = GoRouter(
+  initialLocation: AppRoutes.home,
+  routes: [
+    ShellRoute(
+      builder: (context, state, child) => AdaptiveShell(child: child),
+      routes: [
+        GoRoute(path: AppRoutes.home, builder: (_, __) => const HomeScreen()),
+        GoRoute(path: AppRoutes.tasks, builder: (_, __) => const AllTasksScreen()),
+        GoRoute(path: AppRoutes.projects, builder: (_, __) => const ProjectListScreen()),
+        GoRoute(path: AppRoutes.settings, builder: (_, __) => const SettingsScreen()),
+      ],
+    ),
+  ],
+);
 ```
+
+### Navigation Conventions
+
+Navigation is performed directly from UI/commands using `context.go`, `context.push`, and `context.pop` with
+`AppRoutes` helpers:
+
+```dart
+context.go(AppRoutes.projects);
+context.push(AppRoutes.projectDetailPath(projectId));
+context.pop();
+```
+
+For context-free flows (notification taps), routing uses the root navigator key and router helper in
+`lib/core/routing/app_router.dart`.
 
 ### Shell Architecture
 

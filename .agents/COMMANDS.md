@@ -344,6 +344,24 @@ sqlite3 focus_debug.sqlite
 
 ## CI/CD
 
+### Commit Message Convention
+
+Use structured commit messages for feature work:
+
+```text
+feature(<scope>): <intent>
+```
+
+Examples:
+
+```text
+feature(routing): implement go_router migration
+feature(desktop-ui): implement master-detail layouts
+feature(tasks): implement recurring tasks support
+```
+
+Recommended scopes: `routing`, `desktop-ui`, `tasks`, `projects`, `session`, `settings`, `stats`, `sync`, `onboarding`, `docs`.
+
 ### GitHub Actions
 
 The project uses GitHub Actions for releases. Workflow at `.github/workflows/release.yml`.

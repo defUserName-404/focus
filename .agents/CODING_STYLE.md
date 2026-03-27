@@ -680,9 +680,12 @@ _log.debug('Debug', tag: 'ClassName');  // Good
 throw Exception('Failed');  // Bad in services
 return Failure(DatabaseFailure('Failed'));  // Good
 
-// DON'T use Navigator directly in widgets
-Navigator.of(context).pushNamed('/route');  // Acceptable but avoid
-getIt<NavigationService>().goToProjectDetail(context, id);  // Better
+// DON'T use Navigator.pushNamed-style routing
+Navigator.of(context).pushNamed('/route');  // Avoid
+
+// Use go_router route helpers
+context.push(AppRoutes.projectDetailPath(id));
+context.go(AppRoutes.projects);
 
 // DON'T ignore async errors
 doSomething();  // Bad - unawaited future
