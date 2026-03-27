@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:focus/core/widgets/confirmation_dialog.dart';
-import 'package:focus/core/di/injection.dart';
-import 'package:focus/core/routing/navigation_service.dart';
+import 'package:focus/core/routing/routes.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
 import 'package:focus/features/projects/presentation/providers/project_provider.dart';
 
 class ProjectCommands {
   static void create(BuildContext context) {
-    getIt<NavigationService>().goToCreateProject(context);
+    context.push(AppRoutes.createProject);
   }
 
   static void edit(BuildContext context, Project project) {
-    getIt<NavigationService>().goToEditProject(context, project);
+    if (project.id == null) return;
+    context.push(AppRoutes.editProjectPath(project.id!), extra: project);
   }
 
   static Future<void> delete(BuildContext context, WidgetRef ref, Project project, {VoidCallback? onDeleted}) async {
