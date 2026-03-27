@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/di/injection.dart';
-import '../../../../core/routing/navigation_service.dart';
+import '../../../../core/routing/routes.dart';
 import '../../domain/entities/session_state.dart';
 import '../providers/focus_progress_provider.dart';
 import '../providers/focus_session_provider.dart';
@@ -43,7 +43,7 @@ class MiniPlayerOverlay extends ConsumerWidget {
         : phaseLabel;
 
     return GestureDetector(
-      onTap: () => getIt<NavigationService>().goToFocusSession(context: context),
+      onTap: () => context.push(AppRoutes.focusSession),
       child: Container(
         height: 60,
         decoration: BoxDecoration(

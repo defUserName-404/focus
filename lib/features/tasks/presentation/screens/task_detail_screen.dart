@@ -23,8 +23,9 @@ import '../widgets/task_summary_section.dart';
 class TaskDetailScreen extends ConsumerWidget {
   final int taskId;
   final int projectId;
+  final bool isEmbedded;
 
-  const TaskDetailScreen({super.key, required this.taskId, required this.projectId});
+  const TaskDetailScreen({super.key, required this.taskId, required this.projectId, this.isEmbedded = false});
 
   String get _taskIdString => taskId.toString();
 
@@ -64,6 +65,71 @@ class TaskDetailScreen extends ConsumerWidget {
             activeSession.state != SessionState.completed &&
             activeSession.state != SessionState.cancelled;
 
+        final content = SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: AppConstants.spacing.extraLarge * 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppConstants.spacing.regular,
+            children: [
+              TaskSummarySection(task: task, projectName: project?.title, projectId: project?.id),
+              SectionHeader(title: 'Stats'),
+              TaskStatsRow(stats: stats),
+              SizedBox(height: AppConstants.spacing.regular),
+              TaskQuickActions(task: task, projectId: projectId),
+              SizedBox(height: AppConstants.spacing.regular),
+              RecentSessionsSection(sessions: recentSessions),
+              SizedBox(height: AppConstants.spacing.regular),
+              if (subtasks.isNotEmpty)
+                SubtasksSection(subtasks: subtasks, parentTask: task, projectIdString: _projectIdString),
+            ],
+          ),
+        );
+
+        if (isEmbedded) {
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppConstants.spacing.large,
+                  AppConstants.spacing.large,
+                  AppConstants.spacing.large,
+                  AppConstants.spacing.small,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Task Details',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    fu.FButton.icon(
+                      onPress: () => TaskCommands.create(context, projectId: projectId),
+                      child: Icon(fu.FIcons.plus),
+                    ),
+                    SizedBox(width: AppConstants.spacing.small),
+                    ActionMenuButton(
+                      onEdit: () => TaskCommands.edit(context, task),
+                      onDelete: () => TaskCommands.delete(context, ref, task, _projectIdString),
+                    ),
+                  ],
+                ),
+              ),
+              if (!(task.isCompleted && !hasActiveSession))
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large),
+                  child: fu.FButton(
+                    onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
+                    prefix: Icon(hasActiveSession ? fu.FIcons.eye : fu.FIcons.play, size: AppConstants.size.icon.small),
+                    child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
+                  ),
+                ),
+              const SizedBox(height: 8),
+              Expanded(child: content),
+            ],
+          );
+        }
+
         return fu.FScaffold(
           header: fu.FHeader.nested(
             title: const Text('Task Details'),
@@ -86,25 +152,7 @@ class TaskDetailScreen extends ConsumerWidget {
                     child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
                   ),
                 ),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.only(bottom: AppConstants.spacing.extraLarge * 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: AppConstants.spacing.regular,
-              children: [
-                TaskSummarySection(task: task, projectName: project?.title, projectId: project?.id),
-                SectionHeader(title: 'Stats'),
-                TaskStatsRow(stats: stats),
-                SizedBox(height: AppConstants.spacing.regular),
-                TaskQuickActions(task: task, projectId: projectId),
-                SizedBox(height: AppConstants.spacing.regular),
-                RecentSessionsSection(sessions: recentSessions),
-                SizedBox(height: AppConstants.spacing.regular),
-                if (subtasks.isNotEmpty)
-                  SubtasksSection(subtasks: subtasks, parentTask: task, projectIdString: _projectIdString),
-              ],
-            ),
-          ),
+          child: content,
         );
       },
     );

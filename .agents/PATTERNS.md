@@ -593,9 +593,9 @@ class ProjectNotifier extends _$ProjectNotifier {
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/injection.dart';
-import '../../../../core/routing/navigation_service.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/confirmation_dialog.dart';
 import '../../domain/entities/<entity>.dart';
 import '../providers/<name>_provider.dart';
@@ -607,12 +607,13 @@ import '../providers/<name>_provider.dart';
 class ProjectCommands {
   /// Navigate to create screen.
   static void create(BuildContext context) {
-    getIt<NavigationService>().goToCreateProject(context);
+    context.push(AppRoutes.createProject);
   }
 
   /// Navigate to edit screen.
   static void edit(BuildContext context, Project project) {
-    getIt<NavigationService>().goToEditProject(context, project);
+    if (project.id == null) return;
+    context.push(AppRoutes.editProjectPath(project.id!), extra: project);
   }
 
   /// Show delete confirmation and delete if confirmed.
@@ -748,10 +749,7 @@ class ProjectListScreen extends ConsumerWidget {
 
   void _navigateToDetail(BuildContext context, Project project) {
     if (project.id != null) {
-      Navigator.of(context).pushNamed(
-        RouteConstants.projectDetailRoute,
-        arguments: project.id!,
-      );
+      context.push(AppRoutes.projectDetailPath(project.id!));
     }
   }
 }
@@ -834,9 +832,8 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
     );
 
     if (mounted && project.id != null) {
-      Navigator.of(context)
-        ..pop()
-        ..pushNamed(RouteConstants.projectDetailRoute, arguments: project.id!);
+      context.pop();
+      context.push(AppRoutes.projectDetailPath(project.id!));
     }
   }
 }
@@ -1000,9 +997,9 @@ extension DateTimeFormattingExtensions on DateTime {
    - [ ] screens/<name>_list_screen.dart
    - [ ] screens/create_<name>_screen.dart
    - [ ] widgets/<name>_card.dart
-8. [ ] Add routes to route_constants.dart
-9. [ ] Add route handling in app_router.dart
-10. [ ] Add navigation methods to navigation_service.dart
+8. [ ] Add routes in `lib/core/routing/routes.dart`
+9. [ ] Add route handling in `lib/core/routing/app_router.dart`
+10. [ ] Use `context.go/context.push` in commands/widgets
 11. [ ] Update AGENTS.md if significant patterns introduced
 ```
 

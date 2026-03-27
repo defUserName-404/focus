@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:focus/core/widgets/confirmation_dialog.dart';
-import 'package:focus/core/di/injection.dart';
-import 'package:focus/core/routing/navigation_service.dart';
+import 'package:focus/core/routing/routes.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 
 class TaskCommands {
   static void create(BuildContext context, {required int projectId, int? parentTaskId, int depth = 0}) {
-    getIt<NavigationService>().goToCreateTask(context, projectId: projectId, parentTaskId: parentTaskId, depth: depth);
+    var path = AppRoutes.createTaskPath(projectId);
+    final queryParams = <String, String>{};
+    if (parentTaskId != null) queryParams['parentTaskId'] = parentTaskId.toString();
+    if (depth > 0) queryParams['depth'] = depth.toString();
+
+    if (queryParams.isNotEmpty) {
+      path = Uri.parse(path).replace(queryParameters: queryParams).toString();
+    }
+
+    context.push(path);
   }
 
   static void edit(BuildContext context, Task task) {
-    getIt<NavigationService>().goToEditTask(context, task);
+    if (task.id == null) return;
+    context.push(AppRoutes.editTaskPath(task.id!), extra: task);
   }
 
   static Future<void> delete(

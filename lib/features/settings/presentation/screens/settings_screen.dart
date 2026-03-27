@@ -21,7 +21,7 @@ class SettingsScreen extends ConsumerWidget {
         prefixes: [
           fu.FHeaderAction.back(
             onPress: () {
-              if (Navigator.of(context).canPop()) {
+              if (context.canPop()) {
                 context.pop();
               } else {
                 context.go(AppRoutes.home);

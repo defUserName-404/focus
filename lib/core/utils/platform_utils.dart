@@ -3,6 +3,8 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../constants/layout_breakpoints.dart';
+
 /// Canonical platform categories for adaptive UI decisions.
 ///
 /// The app uses two layout modes:
@@ -53,14 +55,20 @@ abstract final class PlatformUtils {
   ///  - compact: < 600 dp
   ///  - expanded: >= 600 dp
   static FormFactor formFactorOf(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    return width < 600 ? FormFactor.compact : FormFactor.expanded;
+    final sizeClass = LayoutBreakpoints.getWindowSizeClass(context);
+    return sizeClass == WindowSizeClass.compact ? FormFactor.compact : FormFactor.expanded;
+  }
+
+  static WindowSizeClass windowSizeClassOf(BuildContext context) {
+    return LayoutBreakpoints.getWindowSizeClass(context);
   }
 }
 
 /// Extension on [BuildContext] for quick form-factor checks.
 extension FormFactorX on BuildContext {
   FormFactor get formFactor => PlatformUtils.formFactorOf(this);
+  WindowSizeClass get windowSizeClass => PlatformUtils.windowSizeClassOf(this);
   bool get isCompact => formFactor == FormFactor.compact;
   bool get isExpanded => formFactor == FormFactor.expanded;
+  bool get isMedium => windowSizeClass == WindowSizeClass.medium;
 }

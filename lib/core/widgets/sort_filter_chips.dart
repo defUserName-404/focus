@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/platform_utils.dart';
 import '../sort_criteria.dart';
 
 class SortFilterChips<T extends SortCriteria> extends StatelessWidget {
@@ -18,6 +19,22 @@ class SortFilterChips<T extends SortCriteria> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!context.isCompact) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular, vertical: AppConstants.spacing.small),
+        child: FSelect<T>(
+          hint: 'Sort by',
+          control: FSelectControl.managed(
+            initial: selectedCriteria,
+            onChange: (value) {
+              if (value != null) onChanged(value);
+            },
+          ),
+          items: {for (final criteria in criteriaOptions) criteria.label: criteria},
+        ),
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular, vertical: AppConstants.spacing.small),
       child: SingleChildScrollView(

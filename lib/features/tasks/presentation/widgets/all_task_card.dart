@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/config/theme/app_theme.dart';
@@ -18,34 +19,42 @@ import 'task_priority_badge.dart';
 class AllTaskCard extends ConsumerWidget {
   final Task task;
   final VoidCallback? onTap;
+  final bool isSelected;
 
-  const AllTaskCard({super.key, required this.task, this.onTap});
+  const AllTaskCard({super.key, required this.task, this.onTap, this.isSelected = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOverdue = task.endDate?.isOverdue ?? false;
 
-    return AppCard(
-      onTap: onTap,
-      isCompleted: task.isCompleted,
-      leading: fu.FCheckbox(
-        value: task.isCompleted,
-        onChange: (_) => ref.read(taskProvider(task.projectId.toString()).notifier).toggleTaskCompletion(task),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+        border: Border.all(color: isSelected ? context.colors.primary : Colors.transparent, width: 1.5),
       ),
-      title: Text(task.title),
-      trailing: TaskPriorityBadge(priority: task.priority),
-      subtitle: (task.description != null && task.description!.isNotEmpty)
-          ? Text(
-              task.description!,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.4),
-            )
-          : null,
-      content: TaskDateRow(
-        startDate: task.startDate,
-        deadline: task.endDate,
-        isOverdue: isOverdue && !task.isCompleted,
+      child: AppCard(
+        onTap: onTap,
+        isCompleted: task.isCompleted,
+        leading: fu.FCheckbox(
+          value: task.isCompleted,
+          onChange: (_) => ref.read(taskProvider(task.projectId.toString()).notifier).toggleTaskCompletion(task),
+        ),
+        title: Text(task.title),
+        trailing: TaskPriorityBadge(priority: task.priority),
+        subtitle: (task.description != null && task.description!.isNotEmpty)
+            ? Text(
+                task.description!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.4),
+              )
+            : null,
+        content: TaskDateRow(
+          startDate: task.startDate,
+          deadline: task.endDate,
+          isOverdue: isOverdue && !task.isCompleted,
+        ),
       ),
     );
   }

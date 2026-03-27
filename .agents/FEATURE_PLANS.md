@@ -53,6 +53,14 @@ Phase 4 (Advanced):
 
 Replace Navigator 1.0 with `go_router` for declarative, type-safe routing.
 
+### Status (Implemented)
+
+- `go_router` dependency added and active
+- `AppRoutes` + `RouteNames` constants in place
+- `app_router.dart` uses `GoRouter` + `ShellRoute`
+- `AdaptiveShell` integrated with go_router state
+- `NavigationService` removed and call sites migrated to `context.go`/`context.push`
+
 ### Current State
 
 - 4 nested navigators with global keys
@@ -325,6 +333,17 @@ lib/core/
 │   └── keyboard_shortcuts.dart      # NEW - keyboard handling
 ```
 
+### Status (Partially Implemented)
+
+- Added `layout_breakpoints.dart` with compact/medium/expanded classes
+- Added `master_detail_layout.dart`
+- Added `constrained_content.dart`
+- Added `responsive_layout.dart`
+- Added `keyboard_shortcuts.dart` and wrapped desktop shell content
+- Updated desktop `NavigationRail` to extended mode
+- Added `ProjectsScreen` and `TasksScreen` master-detail containers
+- Applied constrained layout wrapper to projects and tasks list screens
+
 ### Implementation
 
 #### Step 1: Define Breakpoints
@@ -556,6 +575,13 @@ class AppKeyboardShortcuts extends StatelessWidget {
 ### Overview
 
 Add time support to tasks so users can set specific times for deadlines and receive notifications.
+
+### Status (Implemented)
+
+- Task create/edit screens include time selection for start and end dates
+- `TaskNotificationService` implemented and registered in DI
+- Task notifications integrated in create/update/toggle/delete flows
+- Reminder rescheduling runs on app launch in `main.dart`
 
 ### Current State
 

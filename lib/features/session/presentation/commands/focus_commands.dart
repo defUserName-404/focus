@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/confirmation_dialog.dart';
 import '../../../../core/di/injection.dart';
-import '../../../../core/routing/navigation_service.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../settings/domain/entities/setting.dart';
 import '../../../settings/domain/services/settings_service.dart';
 import '../../domain/entities/focus_session.dart';
@@ -48,11 +49,10 @@ class FocusCommands {
   /// Navigate to the focus session screen for a given task.
   static Future<void> start(BuildContext context, WidgetRef ref, {required int taskId}) async {
     final existing = ref.read(focusTimerProvider);
-    final nav = getIt<NavigationService>();
 
     if (_isActive(existing)) {
       if (existing!.taskId == taskId) {
-        if (context.mounted) nav.goToFocusSession(context: context);
+        if (context.mounted) context.push(AppRoutes.focusSession);
         return;
       }
       if (context.mounted) {
@@ -118,7 +118,7 @@ class FocusCommands {
         );
 
     if (context.mounted) {
-      getIt<NavigationService>().goToFocusSession(context: context);
+      context.push(AppRoutes.focusSession);
     }
   }
 }

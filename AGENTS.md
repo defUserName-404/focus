@@ -88,7 +88,7 @@ lib/
 │   ├── constants/               # App-wide constants
 │   ├── di/injection.dart        # GetIt dependency injection setup
 │   ├── providers/               # Core Riverpod providers
-│   ├── routing/                 # Navigation service and router
+│   ├── routing/                 # go_router routes and configuration
 │   ├── services/                # Core services (DB, audio, notifications, logging)
 │   ├── utils/                   # Utility functions
 │   └── widgets/                 # Reusable UI widgets
@@ -208,7 +208,8 @@ When changing the database schema:
 | `lib/core/services/db_service.dart` | Database definition and migrations |
 | `lib/core/utils/result.dart` | Result type for error handling |
 | `lib/core/services/log_service.dart` | Centralized logging |
-| `lib/core/routing/navigation_service.dart` | Navigation abstraction |
+| `lib/core/routing/app_router.dart` | GoRouter configuration |
+| `lib/core/routing/routes.dart` | Route paths and helper builders |
 | `lib/core/constants/app_constants.dart` | UI constants (spacing, sizes) |
 | `lib/core/config/theme/app_theme.dart` | Theme configuration |
 | `pubspec.yaml` | Dependencies and assets |
@@ -284,9 +285,9 @@ if (PlatformUtils.isMobile) { ... }
 
 1. Create screen in `presentation/screens/<name>_screen.dart`
 2. Use `ConsumerWidget` or `ConsumerStatefulWidget` for Riverpod
-3. Add route constant in `lib/core/constants/route_constants.dart`
+3. Add route constant/helper in `lib/core/routing/routes.dart`
 4. Add route handling in `lib/core/routing/app_router.dart`
-5. Add navigation method to `NavigationService`
+5. Use `context.go` / `context.push` from UI/commands
 
 ---
 

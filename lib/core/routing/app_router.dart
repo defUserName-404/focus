@@ -6,15 +6,15 @@ import '../../features/projects/domain/entities/project.dart';
 import '../../features/projects/presentation/screens/create_project_screen.dart';
 import '../../features/projects/presentation/screens/edit_project_screen.dart';
 import '../../features/projects/presentation/screens/project_detail_screen.dart';
-import '../../features/projects/presentation/screens/project_list_screen.dart';
+import '../../features/projects/presentation/screens/projects_screen.dart';
 import '../../features/session/presentation/screens/focus_session_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/tasks/domain/entities/task.dart';
-import '../../features/tasks/presentation/screens/all_tasks_screen.dart';
 import '../../features/tasks/presentation/screens/create_task_screen.dart';
 import '../../features/tasks/presentation/screens/create_task_with_project_screen.dart';
 import '../../features/tasks/presentation/screens/edit_task_screen.dart';
 import '../../features/tasks/presentation/screens/task_detail_screen.dart';
+import '../../features/tasks/presentation/screens/tasks_screen.dart';
 import '../widgets/adaptive_shell.dart';
 import 'routes.dart';
 
@@ -50,7 +50,7 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.tasks,
           name: RouteNames.tasks,
-          pageBuilder: (context, state) => const NoTransitionPage(child: AllTasksScreen()),
+          pageBuilder: (context, state) => const NoTransitionPage(child: TasksScreen()),
           routes: [
             // Create task with project selection
             GoRoute(
@@ -91,7 +91,7 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: AppRoutes.projects,
           name: RouteNames.projects,
-          pageBuilder: (context, state) => const NoTransitionPage(child: ProjectListScreen()),
+          pageBuilder: (context, state) => const NoTransitionPage(child: ProjectsScreen()),
           routes: [
             // Create project
             GoRoute(

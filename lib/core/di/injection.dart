@@ -23,7 +23,6 @@ import '../../features/tasks/domain/repositories/i_task_repository.dart';
 import '../../features/tasks/domain/repositories/i_task_stats_repository.dart';
 import '../../features/tasks/domain/services/task_notification_service.dart';
 import '../../features/tasks/domain/services/task_service.dart';
-import '../routing/navigation_service.dart';
 import '../services/audio_service.dart';
 import '../services/audio_session_manager.dart';
 import '../services/db_service.dart';
@@ -39,8 +38,7 @@ Future<void> setupDependencyInjection() async {
   // Core Infrastructure Services
   getIt
     ..registerSingleton<AppDatabase>(AppDatabase())
-    ..registerLazySingleton<AudioService>(() => AudioService())
-    ..registerLazySingleton<NavigationService>(() => NavigationService());
+    ..registerLazySingleton<AudioService>(() => AudioService());
 
   // Platform-specific services
   if (PlatformUtils.supportsMediaSession) {

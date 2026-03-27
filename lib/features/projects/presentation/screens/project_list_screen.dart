@@ -6,7 +6,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/utils/platform_utils.dart';
 import '../../../../core/widgets/app_search_bar.dart';
+import '../../../../core/widgets/constrained_content.dart';
+import '../../../../core/widgets/filter_select.dart';
 import '../../../../core/widgets/sort_filter_chips.dart';
 import '../../../../core/widgets/sort_order_selector.dart';
 import '../../domain/entities/project_list_filter_state.dart';
@@ -15,36 +18,21 @@ import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
 
 class ProjectListScreen extends ConsumerWidget {
-  const ProjectListScreen({super.key});
+  final int? selectedId;
+  final ValueChanged<int>? onProjectSelected;
+
+  const ProjectListScreen({super.key, this.selectedId, this.onProjectSelected});
+
+  bool get _isEmbedded => onProjectSelected != null;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAsync = ref.watch(filteredProjectListProvider);
     final filter = ref.watch(projectListFilterProvider);
+    final isCompact = context.isCompact;
 
-    return fu.FScaffold(
-      header: fu.FHeader.nested(
-        prefixes: [
-          fu.FHeaderAction.back(
-            onPress: () {
-              if (Navigator.of(context).canPop()) {
-                context.pop();
-              } else {
-                context.go(AppRoutes.home);
-              }
-            },
-          ),
-        ],
-        title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-      ),
-      footer: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.large),
-        child: fu.FButton(
-          prefix: Icon(fu.FIcons.plus),
-          child: const Text('Create New Project'),
-          onPress: () => ProjectCommands.create(context),
-        ),
-      ),
+    final content = ConstrainedContent(
+      maxWidth: 980,
       child: Column(
         children: [
           AppSearchBar(
@@ -53,29 +41,65 @@ class ProjectListScreen extends ConsumerWidget {
               ref.read(projectListFilterProvider.notifier).updateFilter(searchQuery: query);
             },
           ),
-          Row(
-            children: [
-              SizedBox(
-                width: 120.0,
-                child: SortOrderSelector<ProjectSortOrder>(
-                  selectedOrder: filter.sortOrder,
-                  onChanged: (order) {
-                    ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
-                  },
-                  orderOptions: ProjectSortOrder.values,
+          if (isCompact)
+            Row(
+              children: [
+                SizedBox(
+                  width: 120.0,
+                  child: SortOrderSelector<ProjectSortOrder>(
+                    selectedOrder: filter.sortOrder,
+                    onChanged: (order) {
+                      ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
+                    },
+                    orderOptions: ProjectSortOrder.values,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: SortFilterChips<ProjectSortCriteria>(
-                  selectedCriteria: filter.sortCriteria,
-                  onChanged: (criteria) {
-                    ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
-                  },
-                  criteriaOptions: ProjectSortCriteria.values,
+                Expanded(
+                  child: SortFilterChips<ProjectSortCriteria>(
+                    selectedCriteria: filter.sortCriteria,
+                    onChanged: (criteria) {
+                      ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
+                    },
+                    criteriaOptions: ProjectSortCriteria.values,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                if (!isCompact && _isEmbedded)
+                  Padding(
+                    padding: EdgeInsets.only(left: AppConstants.spacing.regular),
+                    child: fu.FButton(
+                      prefix: Icon(fu.FIcons.plus),
+                      onPress: () => ProjectCommands.create(context),
+                      child: const Text('Create Project'),
+                    ),
+                  ),
+                Expanded(
+                  child: FilterSelect<ProjectSortCriteria>(
+                    selected: filter.sortCriteria,
+                    onChanged: (criteria) {
+                      ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
+                    },
+                    options: ProjectSortCriteria.values,
+                    hint: 'Sort by',
+                  ),
+                ),
+                SizedBox(width: AppConstants.spacing.regular),
+                Expanded(
+                  child: FilterSelect<ProjectSortOrder>(
+                    selected: filter.sortOrder,
+                    onChanged: (order) {
+                      ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
+                    },
+                    options: ProjectSortOrder.values,
+                    hint: 'Order',
+                  ),
+                ),
+              ],
+            ),
           Expanded(
             child: filteredAsync.when(
               loading: () => const Center(child: fu.FCircularProgress()),
@@ -108,7 +132,15 @@ class ProjectListScreen extends ConsumerWidget {
                     final project = projects[index];
                     return ProjectCard(
                       project: project,
-                      onTap: () => project.id != null ? context.push(AppRoutes.projectDetailPath(project.id!)) : null,
+                      isSelected: selectedId != null && selectedId == project.id,
+                      onTap: () {
+                        if (project.id == null) return;
+                        if (onProjectSelected != null) {
+                          onProjectSelected!(project.id!);
+                          return;
+                        }
+                        context.push(AppRoutes.projectDetailPath(project.id!));
+                      },
                       onEdit: () => ProjectCommands.edit(context, project),
                       onDelete: () => ProjectCommands.delete(context, ref, project),
                     );
@@ -119,6 +151,36 @@ class ProjectListScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+
+    if (_isEmbedded) {
+      return content;
+    }
+
+    return fu.FScaffold(
+      header: fu.FHeader.nested(
+        prefixes: [
+          fu.FHeaderAction.back(
+            onPress: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
+        ],
+        title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+      ),
+      footer: Padding(
+        padding: EdgeInsets.all(AppConstants.spacing.large),
+        child: fu.FButton(
+          prefix: Icon(fu.FIcons.plus),
+          child: const Text('Create New Project'),
+          onPress: () => ProjectCommands.create(context),
+        ),
+      ),
+      child: content,
     );
   }
 }

@@ -4,8 +4,10 @@ import 'package:forui/forui.dart' as fu;
 import 'package:go_router/go_router.dart';
 
 import '../../../features/session/presentation/widgets/mini_player_overlay.dart';
+import '../constants/layout_breakpoints.dart';
 import '../routing/routes.dart';
 import '../utils/platform_utils.dart';
+import 'keyboard_shortcuts.dart';
 
 /// Root shell that adapts its navigation chrome to the current form factor.
 ///
@@ -88,38 +90,41 @@ class _DesktopLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sizeClass = LayoutBreakpoints.getWindowSizeClass(context);
+    final spacing = ResponsiveSpacing.small(sizeClass);
+
     return Scaffold(
-      body: Row(
-        children: [
-          // Navigation rail
-          NavigationRail(
-            selectedIndex: currentIndex,
-            onDestinationSelected: onTabChanged,
-            labelType: NavigationRailLabelType.all,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            leading: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                'Focus',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+      body: AppKeyboardShortcuts(
+        child: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: currentIndex,
+              onDestinationSelected: onTabChanged,
+              extended: true,
+              minExtendedWidth: 200,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              leading: Padding(
+                padding: EdgeInsets.all(spacing),
+                child: Text(
+                  'Focus',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
               ),
-            ),
-            destinations: [
-              for (final tab in tabs) NavigationRailDestination(icon: Icon(tab.icon), label: Text(tab.label)),
-            ],
-          ),
-          const VerticalDivider(thickness: 1, width: 1),
-          // Content area
-          Expanded(
-            child: Column(
-              children: [
-                // Mini-player bar at the top on desktop
-                const MiniPlayerOverlay(),
-                Expanded(child: child),
+              destinations: [
+                for (final tab in tabs) NavigationRailDestination(icon: Icon(tab.icon), label: Text(tab.label)),
               ],
             ),
-          ),
-        ],
+            const VerticalDivider(thickness: 1, width: 1),
+            Expanded(
+              child: Column(
+                children: [
+                  const MiniPlayerOverlay(),
+                  Expanded(child: child),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
