@@ -129,6 +129,20 @@ class SettingsNotifier extends _$SettingsNotifier {
     }
   }
 
+  Future<void> setDesktopTrayEnabled(bool enabled) async {
+    final result = await _service.setDesktopTrayEnabled(enabled);
+    if (result case Failure(:final failure)) {
+      state = AsyncValue.error(failure, StackTrace.current);
+    }
+  }
+
+  Future<void> setDesktopLaunchAtStartupEnabled(bool enabled) async {
+    final result = await _service.setDesktopLaunchAtStartupEnabled(enabled);
+    if (result case Failure(:final failure)) {
+      state = AsyncValue.error(failure, StackTrace.current);
+    }
+  }
+
   // ---- Preview logic -------------------------------------------------------
   //
   // AudioService._previewPlayer is separate from _bgPlayer, so session
@@ -174,4 +188,8 @@ class SettingsNotifier extends _$SettingsNotifier {
 
 final timerSettingsProvider = StreamProvider<TimerPreferences>((ref) {
   return ref.watch(settingsRepositoryProvider).watchTimerPreferences();
+});
+
+final desktopSettingsProvider = StreamProvider<DesktopPreferences>((ref) {
+  return ref.watch(settingsRepositoryProvider).watchDesktopPreferences();
 });

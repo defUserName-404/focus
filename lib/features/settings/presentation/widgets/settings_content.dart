@@ -5,6 +5,7 @@ import 'package:forui/forui.dart' as fu;
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/audio_assets.dart';
+import '../../../../core/utils/platform_utils.dart';
 import '../../domain/entities/setting.dart';
 import '../providers/settings_provider.dart';
 import 'ambience_toggle_card.dart';
@@ -21,6 +22,7 @@ class SettingsContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(settingsProvider.notifier);
+    final desktopPrefsAsync = ref.watch(desktopSettingsProvider);
 
     return ListView(
       padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
@@ -61,8 +63,70 @@ class SettingsContent extends ConsumerWidget {
           step: 1,
           onChanged: notifier.setBreakDuration,
         ),
+        if (PlatformUtils.isDesktop) ...[
+          SizedBox(height: AppConstants.spacing.large),
+          const SectionTitle(title: 'Desktop Behavior'),
+          SizedBox(height: AppConstants.spacing.regular),
+          desktopPrefsAsync.when(
+            loading: () => const Center(child: fu.FCircularProgress()),
+            error: (err, _) => fu.FCard(child: Text('Desktop settings unavailable: $err')),
+            data: (desktopPrefs) => Column(
+              children: [
+                _DesktopToggleCard(
+                  title: 'Minimize To Tray On Close',
+                  subtitle: 'Keep Focus running in the tray instead of quitting when the window closes',
+                  enabled: desktopPrefs.trayEnabled,
+                  onChanged: notifier.setDesktopTrayEnabled,
+                ),
+                SizedBox(height: AppConstants.spacing.small),
+                _DesktopToggleCard(
+                  title: 'Launch At Startup',
+                  subtitle: 'Start Focus automatically after desktop sign-in',
+                  enabled: desktopPrefs.launchAtStartupEnabled,
+                  onChanged: notifier.setDesktopLaunchAtStartupEnabled,
+                ),
+              ],
+            ),
+          ),
+        ],
         SizedBox(height: AppConstants.spacing.extraLarge),
       ],
+    );
+  }
+}
+
+class _DesktopToggleCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  const _DesktopToggleCard({
+    required this.title,
+    required this.subtitle,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return fu.FCard(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
+                SizedBox(height: AppConstants.spacing.extraSmall),
+                Text(subtitle, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
+              ],
+            ),
+          ),
+          fu.FSwitch(value: enabled, onChange: onChanged),
+        ],
+      ),
     );
   }
 }

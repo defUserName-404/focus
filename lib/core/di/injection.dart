@@ -26,6 +26,7 @@ import '../../features/tasks/domain/services/task_service.dart';
 import '../services/audio_service.dart';
 import '../services/audio_session_manager.dart';
 import '../services/db_service.dart';
+import '../services/desktop_lifecycle_service.dart';
 import '../services/focus_audio_handler.dart';
 import '../services/i_notification_service.dart';
 import '../services/no_op_notification_service.dart';
@@ -46,8 +47,7 @@ Future<void> setupDependencyInjection() async {
     getIt.registerSingleton<FocusAudioHandler>(audioHandler);
   }
 
-  // Notification service - use real implementation on supported platforms,
-  // no-op implementation on platforms without notification support
+  // Notification service for native platforms with local notification support.
   if (PlatformUtils.supportsLocalNotifications) {
     final notificationService = NotificationService();
     await notificationService.init();
@@ -66,6 +66,11 @@ Future<void> setupDependencyInjection() async {
   _initProjectsDi();
   _initTasksDi();
   _initSettingsDi();
+
+  if (PlatformUtils.isDesktop) {
+    getIt.registerLazySingleton<DesktopLifecycleService>(() => DesktopLifecycleService(getIt<ISettingsRepository>()));
+  }
+
   _initSessionDi();
 }
 

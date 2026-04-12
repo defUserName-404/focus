@@ -22,17 +22,20 @@ class TaskNotificationService {
         return const Success(null);
       }
 
-      final reminderTime = task.endDate!.subtract(const Duration(minutes: 15));
-      if (!reminderTime.isAfter(DateTime.now())) {
+      final now = DateTime.now();
+      if (!task.endDate!.isAfter(now)) {
         await cancelTaskReminder(task.id!);
         return const Success(null);
       }
+
+      final reminderTime = task.endDate!.subtract(const Duration(minutes: 15));
+      final scheduledTime = reminderTime.isAfter(now) ? reminderTime : now.add(const Duration(seconds: 2));
 
       await _notificationService.scheduleNotification(
         id: _taskNotificationId(task.id!),
         title: 'Task Reminder',
         body: task.title,
-        scheduledTime: reminderTime,
+        scheduledTime: scheduledTime,
         payload: '${NotificationConstants.taskPayloadPrefix}${task.id}',
       );
 

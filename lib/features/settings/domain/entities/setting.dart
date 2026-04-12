@@ -22,6 +22,12 @@ abstract final class SettingsKeys {
 
   /// Break duration in minutes.
   static const String breakDurationMinutes = 'break_duration_minutes';
+
+  /// Whether closing the desktop app should minimize to tray.
+  static const String desktopTrayEnabled = 'desktop_tray_enabled';
+
+  /// Whether the desktop app should auto-launch after login/startup.
+  static const String desktopLaunchAtStartupEnabled = 'desktop_launch_at_startup_enabled';
 }
 
 /// Domain entity representing a user preference.
@@ -66,9 +72,7 @@ class AudioPreferences extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-    alarmSoundId, ambienceSoundId, ambienceVolume, ambienceEnabled,
-  ];
+  List<Object?> get props => [alarmSoundId, ambienceSoundId, ambienceVolume, ambienceEnabled];
 }
 
 /// Convenience wrapper for Pomodoro timer durations.
@@ -88,4 +92,23 @@ class TimerPreferences extends Equatable {
 
   @override
   List<Object?> get props => [focusDurationMinutes, breakDurationMinutes];
+}
+
+/// Convenience wrapper for desktop-specific behavior preferences.
+@immutable
+class DesktopPreferences extends Equatable {
+  final bool trayEnabled;
+  final bool launchAtStartupEnabled;
+
+  const DesktopPreferences({this.trayEnabled = true, this.launchAtStartupEnabled = true});
+
+  DesktopPreferences copyWith({bool? trayEnabled, bool? launchAtStartupEnabled}) {
+    return DesktopPreferences(
+      trayEnabled: trayEnabled ?? this.trayEnabled,
+      launchAtStartupEnabled: launchAtStartupEnabled ?? this.launchAtStartupEnabled,
+    );
+  }
+
+  @override
+  List<Object?> get props => [trayEnabled, launchAtStartupEnabled];
 }
