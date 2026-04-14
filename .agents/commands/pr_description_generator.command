@@ -31,11 +31,40 @@ COMMITS="$(git --no-pager log --oneline "$BASE_BRANCH"..HEAD)"
 CHANGED_FILES="$(git diff --name-only "$BASE_BRANCH"...HEAD)"
 DIFFSTAT="$(git diff --stat "$BASE_BRANCH"...HEAD)"
 
+AVAILABLE_LABELS="$(gh label list --limit 200 --json name --jq '.[].name' 2>/dev/null || true)"
+VALID_LABELS=""
+IFS=',' read -r -a REQUESTED_LABELS <<< "$LABELS"
+for raw_label in "${REQUESTED_LABELS[@]}"; do
+  label="$(echo "$raw_label" | xargs)"
+  if [[ -z "$label" ]]; then
+    continue
+  fi
+  if echo "$AVAILABLE_LABELS" | grep -Fxq "$label"; then
+    if [[ -z "$VALID_LABELS" ]]; then
+      VALID_LABELS="$label"
+    else
+      VALID_LABELS="$VALID_LABELS,$label"
+    fi
+  else
+    echo "Warning: label '$label' does not exist and will be skipped."
+  fi
+done
+
+if [[ -z "$VALID_LABELS" ]]; then
+  if echo "$AVAILABLE_LABELS" | grep -Fxq "documentation"; then
+    VALID_LABELS="documentation"
+    echo "No requested labels were valid. Falling back to 'documentation'."
+  else
+    echo "Error: no valid labels available for this repository."
+    exit 1
+  fi
+fi
+
 BODY_FILE="$(mktemp -t focus_pr_body.XXXXXX.md)"
 
 cat > "$BODY_FILE" << EOF
 ## Summary
-- This PR groups related changes from branch \\`$CURRENT_BRANCH\\` into an atomic review unit.
+- This PR groups related changes from branch $CURRENT_BRANCH into an atomic review unit.
 
 ## Why
 - Improve maintainability and review quality through focused, conventional changes.
@@ -65,13 +94,13 @@ EOF
 
 if [[ "${GH_PR_DRY_RUN:-0}" == "1" ]]; then
   echo "DRY RUN"
-  echo "gh pr create --assignee @me --label \"$LABELS\" --title \"$TITLE\" --body-file \"$BODY_FILE\""
+  echo "gh pr create --assignee @me --label \"$VALID_LABELS\" --title \"$TITLE\" --body-file \"$BODY_FILE\""
   echo
   cat "$BODY_FILE"
   exit 0
 fi
 
-gh pr create --assignee @me --label "$LABELS" --title "$TITLE" --body-file "$BODY_FILE"
+gh pr create --assignee @me --label "$VALID_LABELS" --title "$TITLE" --body-file "$BODY_FILE"
 
 echo "PR created with title: $TITLE"
 echo "Description file: $BODY_FILE"
