@@ -169,6 +169,8 @@ Commit titles should default to Conventional Commit types (`feat`, `fix`, `refac
 | `lib/core/utils/result.dart` | `Result<T>` and failure types |
 | `lib/core/routing/app_router.dart` | go_router config |
 | `lib/core/routing/routes.dart` | Route constants/helpers |
+| `lib/features/notifications/presentation/screens/notifications_screen.dart` | Notifications inbox UI |
+| `lib/features/tasks/domain/services/task_reminder_planner.dart` | Task reminder scheduling logic |
 | `lib/core/constants/app_constants.dart` | Shared spacing/sizing constants |
 
 ## Agent Self-Update Protocol (Mandatory)

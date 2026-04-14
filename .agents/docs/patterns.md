@@ -237,6 +237,50 @@ For Android reminder scheduling:
 - Retry with inexact mode on permission errors.
 - Use in-process fallback only as last resort.
 
+## Unified Route Descriptor Pattern
+
+Use a single route descriptor for both path and name.
+
+```dart
+class AppRoute {
+  final String path;
+  final String name;
+
+  const AppRoute({required this.path, required this.name});
+}
+
+abstract final class AppRoutes {
+  static const home = AppRoute(path: '/', name: 'home');
+  static const notifications = AppRoute(path: '/notifications', name: 'notifications');
+}
+```
+
+Use `.path` for navigation calls and `.name` for route registration.
+
+## Task Reminder Strategy Pattern
+
+Per-task reminder behavior is configured on the task entity and resolved by a planner.
+
+```dart
+enum TaskReminderMode { smart, weekBefore, dayBefore, custom, none }
+
+final reminderTime = TaskReminderPlanner.computeReminderTime(task);
+if (reminderTime != null) {
+  await notificationService.scheduleNotification(
+    id: id,
+    title: 'Task Reminder',
+    body: task.title,
+    scheduledTime: reminderTime,
+    payload: NotificationConstants.taskPayload(taskId: task.id!, projectId: task.projectId),
+  );
+}
+```
+
+Guidelines:
+- `smart` uses 1 week for long tasks and 1 day otherwise.
+- `custom` stores minutes-before as an integer.
+- Keep reminder computation in a pure planner utility so UI and services share logic.
+
 ## Mandatory Follow-Up
 
 When a new pattern is introduced in production code, add it here with:
