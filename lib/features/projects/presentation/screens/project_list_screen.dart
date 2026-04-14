@@ -34,10 +34,7 @@ class ProjectListScreen extends ConsumerWidget {
     final content = ConstrainedContent(
       maxWidth: 980,
       padding: _isEmbedded
-          ? EdgeInsets.symmetric(
-              horizontal: AppConstants.spacing.extraLarge,
-              vertical: AppConstants.spacing.large,
-            )
+          ? EdgeInsets.symmetric(horizontal: AppConstants.spacing.extraLarge, vertical: AppConstants.spacing.large)
           : EdgeInsets.zero,
       child: Column(
         children: [
@@ -171,7 +168,7 @@ class ProjectListScreen extends ConsumerWidget {
               if (context.canPop()) {
                 context.pop();
               } else {
-                context.go(AppRoutes.home);
+                context.go(AppRoutes.home.path);
               }
             },
           ),

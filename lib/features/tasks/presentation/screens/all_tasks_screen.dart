@@ -59,7 +59,7 @@ class AllTasksScreen extends ConsumerWidget {
               if (context.canPop()) {
                 context.pop();
               } else {
-                context.go(AppRoutes.home);
+                context.go(AppRoutes.home.path);
               }
             },
           ),
@@ -71,7 +71,7 @@ class AllTasksScreen extends ConsumerWidget {
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Task'),
-          onPress: () => context.push(AppRoutes.createTaskWithProject),
+          onPress: () => context.push(AppRoutes.createTaskWithProject.path),
         ),
       ),
       child: content,
@@ -123,7 +123,7 @@ class _EmbeddedCreateTaskButton extends StatelessWidget {
         alignment: Alignment.centerRight,
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
-          onPress: () => context.push(AppRoutes.createTaskWithProject),
+          onPress: () => context.push(AppRoutes.createTaskWithProject.path),
           child: const Text('Create Task'),
         ),
       ),

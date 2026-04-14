@@ -14,13 +14,13 @@ class AppKeyboardShortcuts extends StatelessWidget {
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyN, control: true): () {
-          context.push(AppRoutes.createTaskWithProject);
+          context.push(AppRoutes.createTaskWithProject.path);
         },
         const SingleActivator(LogicalKeyboardKey.keyP, control: true): () {
-          context.push(AppRoutes.createProject);
+          context.push(AppRoutes.createProject.path);
         },
         const SingleActivator(LogicalKeyboardKey.space): () {
-          context.push(AppRoutes.focusSession);
+          context.push(AppRoutes.focusSession.path);
         },
         const SingleActivator(LogicalKeyboardKey.escape): () {
           if (context.canPop()) context.pop();

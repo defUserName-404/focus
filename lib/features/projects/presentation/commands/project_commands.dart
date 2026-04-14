@@ -8,7 +8,7 @@ import 'package:focus/features/projects/presentation/providers/project_provider.
 
 class ProjectCommands {
   static void create(BuildContext context) {
-    context.push(AppRoutes.createProject);
+    context.push(AppRoutes.createProject.path);
   }
 
   static void edit(BuildContext context, Project project) {

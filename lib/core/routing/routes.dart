@@ -1,31 +1,39 @@
-/// Centralized route path definitions for go_router.
+/// Route descriptor that stores both path and go_router name.
+class AppRoute {
+  final String path;
+  final String name;
+
+  const AppRoute({required this.path, required this.name});
+}
+
+/// Centralized route definitions for go_router.
 ///
-/// Use these constants when navigating with `context.go()` or `context.push()`.
-/// Paths with parameters use the `:param` syntax for go_router path matching.
+/// This is the single source of truth for both route path and route name.
 abstract final class AppRoutes {
   // Shell routes (bottom nav tabs)
-  static const home = '/';
-  static const tasks = '/tasks';
-  static const projects = '/projects';
-  static const reports = '/reports';
-  static const settings = '/settings';
+  static const home = AppRoute(path: '/', name: 'home');
+  static const tasks = AppRoute(path: '/tasks', name: 'tasks');
+  static const projects = AppRoute(path: '/projects', name: 'projects');
+  static const reports = AppRoute(path: '/reports', name: 'reports');
+  static const notifications = AppRoute(path: '/notifications', name: 'notifications');
+  static const settings = AppRoute(path: '/settings', name: 'settings');
 
   // Project routes
-  static const projectDetail = '/projects/:projectId';
-  static const createProject = '/projects/new';
-  static const editProject = '/projects/:projectId/edit';
+  static const projectDetail = AppRoute(path: '/projects/:projectId', name: 'projectDetail');
+  static const createProject = AppRoute(path: '/projects/new', name: 'createProject');
+  static const editProject = AppRoute(path: '/projects/:projectId/edit', name: 'editProject');
 
   // Task routes
-  static const taskDetail = '/tasks/:taskId';
-  static const createTask = '/projects/:projectId/tasks/new';
-  static const createTaskWithProject = '/tasks/new-with-project';
-  static const editTask = '/tasks/:taskId/edit';
+  static const taskDetail = AppRoute(path: '/tasks/:taskId', name: 'taskDetail');
+  static const createTask = AppRoute(path: '/projects/:projectId/tasks/new', name: 'createTask');
+  static const createTaskWithProject = AppRoute(path: '/tasks/new-with-project', name: 'createTaskWithProject');
+  static const editTask = AppRoute(path: '/tasks/:taskId/edit', name: 'editTask');
 
   // Focus session routes
-  static const focusSession = '/session';
+  static const focusSession = AppRoute(path: '/session', name: 'focusSession');
 
   // Sync routes
-  static const syncConflicts = '/sync/conflicts';
+  static const syncConflicts = AppRoute(path: '/sync/conflicts', name: 'syncConflicts');
 
   // Helper methods to build parameterized paths
 
@@ -43,28 +51,4 @@ abstract final class AppRoutes {
 
   /// Build path for edit task: `/tasks/123/edit`
   static String editTaskPath(int taskId) => '/tasks/$taskId/edit';
-}
-
-/// Named route constants for use with `context.goNamed()`.
-///
-/// Using named routes provides type safety and refactoring support.
-abstract final class RouteNames {
-  static const home = 'home';
-  static const tasks = 'tasks';
-  static const projects = 'projects';
-  static const reports = 'reports';
-  static const settings = 'settings';
-
-  static const projectDetail = 'projectDetail';
-  static const createProject = 'createProject';
-  static const editProject = 'editProject';
-
-  static const taskDetail = 'taskDetail';
-  static const createTask = 'createTask';
-  static const createTaskWithProject = 'createTaskWithProject';
-  static const editTask = 'editTask';
-
-  static const focusSession = 'focusSession';
-
-  static const syncConflicts = 'syncConflicts';
 }

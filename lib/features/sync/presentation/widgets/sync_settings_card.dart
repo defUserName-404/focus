@@ -82,7 +82,7 @@ class SyncSettingsCard extends ConsumerWidget {
                             // If conflicts were detected, navigate to conflict screen.
                             final updatedState = ref.read(syncProvider);
                             if (updatedState.status == SyncStatus.conflictsDetected && context.mounted) {
-                              context.push(AppRoutes.syncConflicts, extra: updatedState.conflicts);
+                              context.push(AppRoutes.syncConflicts.path, extra: updatedState.conflicts);
                             }
                           },
                     child: syncState.status == SyncStatus.syncing

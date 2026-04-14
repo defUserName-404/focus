@@ -31,7 +31,13 @@ class HomeScreen extends ConsumerWidget {
 
     return fu.FScaffold(
       header: fu.FHeader(
-        suffixes: [if (stats.currentStreak > 0) StreakBadge(streak: stats.currentStreak)],
+        suffixes: [
+          if (stats.currentStreak > 0) StreakBadge(streak: stats.currentStreak),
+          fu.FHeaderAction(
+            icon: Icon(fu.FIcons.settings, size: AppConstants.size.icon.regular),
+            onPress: () => context.push(AppRoutes.settings.path),
+          ),
+        ],
         title: Row(
           children: [
             Column(
@@ -54,6 +60,11 @@ class HomeScreen extends ConsumerWidget {
           spacing: AppConstants.spacing.regular,
           children: [
             const QuickSessionButton(),
+            fu.FButton(
+              style: fu.FButtonStyle.outline(),
+              onPress: () => context.push(AppRoutes.reports.path),
+              child: const Text('Open Reports'),
+            ),
             SizedBox(height: AppConstants.spacing.regular),
             SectionHeader(title: 'Upcoming Deadlines'),
             const UpcomingCalendarCard(),
@@ -62,7 +73,7 @@ class HomeScreen extends ConsumerWidget {
               onViewAll: () {
                 final projects = projectsAsync.value;
                 if (projects != null && projects.isNotEmpty) {
-                  context.push(AppRoutes.tasks);
+                  context.push(AppRoutes.tasks.path);
                 }
               },
             ),
@@ -80,7 +91,7 @@ class HomeScreen extends ConsumerWidget {
               },
             ),
             SizedBox(height: AppConstants.spacing.regular),
-            SectionHeader(title: 'Projects', onViewAll: () => context.push(AppRoutes.projects)),
+            SectionHeader(title: 'Projects', onViewAll: () => context.push(AppRoutes.projects.path)),
             projectsAsync.when(
               loading: () => const Center(child: fu.FCircularProgress()),
               error: (err, _) => Padding(
