@@ -3,7 +3,7 @@ import 'dart:async';
 import 'i_notification_service.dart';
 
 /// No-op implementation of notification operations for platforms
-/// that don't support native local notifications (Windows, Linux, Web).
+/// that don't support notifications in the current build/runtime.
 ///
 /// All methods are silent stubs — the app continues to work,
 /// it just doesn't show system notifications.

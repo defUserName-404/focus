@@ -33,6 +33,12 @@ class ProjectListScreen extends ConsumerWidget {
 
     final content = ConstrainedContent(
       maxWidth: 980,
+      padding: _isEmbedded
+          ? EdgeInsets.symmetric(
+              horizontal: AppConstants.spacing.extraLarge,
+              vertical: AppConstants.spacing.large,
+            )
+          : EdgeInsets.zero,
       child: Column(
         children: [
           AppSearchBar(
@@ -173,7 +179,7 @@ class ProjectListScreen extends ConsumerWidget {
         title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
       ),
       footer: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.large),
+        padding: EdgeInsets.all(isCompact ? AppConstants.spacing.regular : AppConstants.spacing.large),
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Project'),

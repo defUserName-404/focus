@@ -31,6 +31,7 @@
 | UI Library | ForUI (forui) |
 | Audio | audioplayers, audio_service, audio_session |
 | Notifications | flutter_local_notifications |
+| Desktop Lifecycle | window_manager, tray_manager, launch_at_startup |
 
 ---
 
@@ -243,10 +244,10 @@ Changes that warrant documentation updates:
 |----------|-------|
 | Android | Full support, media session controls |
 | iOS | Full support, media session controls |
-| macOS | Partial support, local notifications only |
-| Linux | Basic support, no notifications |
-| Windows | Basic support, no notifications |
-| Web | Basic support, no notifications/audio session |
+| macOS | Local notifications supported |
+| Linux | Local notifications supported (scheduled reminders while app is running) |
+| Windows | Local notifications supported (best results when packaged as MSIX) |
+| Web | Not supported (offline native app target) |
 
 Use `PlatformUtils` for platform-specific branching:
 

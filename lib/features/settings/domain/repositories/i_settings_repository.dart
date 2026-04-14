@@ -27,4 +27,10 @@ abstract class ISettingsRepository {
 
   /// Convenience: watch decoded timer preferences reactively.
   Stream<TimerPreferences> watchTimerPreferences();
+
+  /// Convenience: get decoded desktop preferences.
+  Future<DesktopPreferences> getDesktopPreferences();
+
+  /// Convenience: watch decoded desktop preferences reactively.
+  Stream<DesktopPreferences> watchDesktopPreferences();
 }

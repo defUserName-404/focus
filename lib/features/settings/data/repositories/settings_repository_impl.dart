@@ -54,6 +54,17 @@ class SettingsRepositoryImpl implements ISettingsRepository {
     return _local.watchAll().map(_decodeTimerPreferences);
   }
 
+  @override
+  Future<DesktopPreferences> getDesktopPreferences() async {
+    final all = await _local.getAll();
+    return _decodeDesktopPreferences(all);
+  }
+
+  @override
+  Stream<DesktopPreferences> watchDesktopPreferences() {
+    return _local.watchAll().map(_decodeDesktopPreferences);
+  }
+
   /// Decodes an [AudioPreferences] object from a raw settings map.
   ///
   /// Lives here (rather than in a dedicated mapper file) because the
@@ -77,6 +88,13 @@ class SettingsRepositoryImpl implements ISettingsRepository {
     return TimerPreferences(
       focusDurationMinutes: int.tryParse(all[SettingsKeys.focusDurationMinutes] ?? '') ?? 25,
       breakDurationMinutes: int.tryParse(all[SettingsKeys.breakDurationMinutes] ?? '') ?? 5,
+    );
+  }
+
+  DesktopPreferences _decodeDesktopPreferences(Map<String, String> all) {
+    return DesktopPreferences(
+      trayEnabled: (all[SettingsKeys.desktopTrayEnabled] ?? 'true') == 'true',
+      launchAtStartupEnabled: (all[SettingsKeys.desktopLaunchAtStartupEnabled] ?? 'true') == 'true',
     );
   }
 }

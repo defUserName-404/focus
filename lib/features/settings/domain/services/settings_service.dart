@@ -46,6 +46,21 @@ class SettingsService {
   Future<Result<void>> setBreakDuration(int minutes) =>
       _writeValue(SettingsKeys.breakDurationMinutes, minutes.toString(), tag: 'setBreakDuration');
 
+  //  Desktop preferences
+
+  Future<DesktopPreferences> getDesktopPreferences() => _repository.getDesktopPreferences();
+
+  Stream<DesktopPreferences> watchDesktopPreferences() => _repository.watchDesktopPreferences();
+
+  Future<Result<void>> setDesktopTrayEnabled(bool enabled) =>
+      _writeValue(SettingsKeys.desktopTrayEnabled, enabled.toString(), tag: 'setDesktopTrayEnabled');
+
+  Future<Result<void>> setDesktopLaunchAtStartupEnabled(bool enabled) => _writeValue(
+    SettingsKeys.desktopLaunchAtStartupEnabled,
+    enabled.toString(),
+    tag: 'setDesktopLaunchAtStartupEnabled',
+  );
+
   // ---------------------------------------------------------------------------
   // Internal helpers
   // ---------------------------------------------------------------------------

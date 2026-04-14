@@ -6,6 +6,8 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../constants/notification_constants.dart';
 import '../routing/app_router.dart';
+import '../routing/routes.dart';
+import '../utils/platform_utils.dart';
 import 'i_notification_service.dart';
 import 'log_service.dart';
 
@@ -20,12 +22,13 @@ void _onBackgroundNotificationResponse(NotificationResponse response) {
   }
 }
 
-/// Platform notification service for Android, iOS, and macOS.
+/// Platform notification service for Android, iOS, macOS, Linux, and Windows.
 ///
 /// Uses flutter_local_notifications to display system notifications
 /// with action buttons and progress indicators.
 class NotificationService implements INotificationService {
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final Map<int, Timer> _inProcessScheduledTimers = <int, Timer>{};
 
   /// Broadcast stream of notification action IDs (pause, resume, stop).
   static final StreamController<String> _actionController = StreamController<String>.broadcast();
@@ -44,9 +47,21 @@ class NotificationService implements INotificationService {
     tz.initializeTimeZones();
 
     const androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
-    const iosSettings = DarwinInitializationSettings();
+    const darwinSettings = DarwinInitializationSettings();
+    const linuxSettings = LinuxInitializationSettings(defaultActionName: 'Open notification');
+    const windowsSettings = WindowsInitializationSettings(
+      appName: 'Focus',
+      appUserModelId: 'com.defusername.focus',
+      guid: 'd49b0314-ee7a-4626-bf79-97cdb8a991bb',
+    );
 
-    const initSettings = InitializationSettings(android: androidSettings, iOS: iosSettings);
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: darwinSettings,
+      macOS: darwinSettings,
+      linux: linuxSettings,
+      windows: windowsSettings,
+    );
 
     await _notifications.initialize(
       settings: initSettings,
@@ -70,8 +85,35 @@ class NotificationService implements INotificationService {
       );
     }
 
+    // Request user permission on Apple platforms if needed.
+    try {
+      final iosPlugin = _notifications.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+      await iosPlugin?.requestPermissions(alert: true, badge: true, sound: true);
+
+      final macPlugin = _notifications.resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>();
+      await macPlugin?.requestPermissions(alert: true, badge: true, sound: true);
+    } catch (e, stackTrace) {
+      LogService.instance.warning(
+        'requestPermissions failed on Apple platforms',
+        tag: 'NotificationService',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+
     // Handle the case where the app was launched by tapping a notification.
-    final launchDetails = await _notifications.getNotificationAppLaunchDetails();
+    NotificationAppLaunchDetails? launchDetails;
+    try {
+      launchDetails = await _notifications.getNotificationAppLaunchDetails();
+    } catch (e, stackTrace) {
+      LogService.instance.warning(
+        'getNotificationAppLaunchDetails failed',
+        tag: 'NotificationService',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+
     if (launchDetails != null && launchDetails.didNotificationLaunchApp) {
       final payload = launchDetails.notificationResponse?.payload;
       if (payload != null && payload.isNotEmpty) {
@@ -105,8 +147,18 @@ class NotificationService implements INotificationService {
       if (nav != null) {
         navigateToFocusSession();
       } else {
-        // Navigator not yet ready — enqueue for later.
         _tapController.add(payload);
+      }
+    } else if (payload.startsWith(NotificationConstants.taskPayloadPrefix)) {
+      final taskIdStr = payload.substring(NotificationConstants.taskPayloadPrefix.length);
+      final taskId = int.tryParse(taskIdStr);
+      if (taskId != null) {
+        final nav = rootNavigatorKey.currentState;
+        if (nav != null) {
+          appRouter.push('${AppRoutes.taskDetailPath(taskId)}?projectId=0');
+        } else {
+          _tapController.add(payload);
+        }
       }
     }
   }
@@ -148,9 +200,29 @@ class NotificationService implements INotificationService {
       actions: actions,
     );
 
-    const iosDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: false);
+    final linuxDetails = LinuxNotificationDetails(
+      urgency: LinuxNotificationUrgency.low,
+      defaultActionName: 'Open session',
+      actions: <LinuxNotificationAction>[
+        LinuxNotificationAction(
+          key: isRunning ? NotificationConstants.actionPause : NotificationConstants.actionResume,
+          label: isRunning ? 'Pause' : 'Resume',
+        ),
+        const LinuxNotificationAction(key: NotificationConstants.actionSkip, label: 'Skip'),
+        const LinuxNotificationAction(key: NotificationConstants.actionStop, label: 'Stop'),
+      ],
+    );
 
-    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const darwinDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: false);
+    const windowsDetails = WindowsNotificationDetails(scenario: WindowsNotificationScenario.reminder);
+
+    final details = NotificationDetails(
+      android: androidDetails,
+      iOS: darwinDetails,
+      macOS: darwinDetails,
+      linux: linuxDetails,
+      windows: windowsDetails,
+    );
 
     await _notifications.show(
       id: NotificationConstants.focusSessionId,
@@ -173,9 +245,17 @@ class NotificationService implements INotificationService {
       autoCancel: true,
     );
 
-    const iosDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
+    const darwinDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
+    const linuxDetails = LinuxNotificationDetails(urgency: LinuxNotificationUrgency.normal);
+    const windowsDetails = WindowsNotificationDetails(scenario: WindowsNotificationScenario.alarm);
 
-    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final details = NotificationDetails(
+      android: androidDetails,
+      iOS: darwinDetails,
+      macOS: darwinDetails,
+      linux: linuxDetails,
+      windows: windowsDetails,
+    );
 
     await _notifications.show(
       id: NotificationConstants.alarmId,
@@ -203,28 +283,88 @@ class NotificationService implements INotificationService {
       autoCancel: true,
     );
 
-    const iosDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
+    const darwinDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
+    const linuxDetails = LinuxNotificationDetails(urgency: LinuxNotificationUrgency.normal);
+    const windowsDetails = WindowsNotificationDetails(scenario: WindowsNotificationScenario.reminder);
 
-    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
-
-    await _notifications.zonedSchedule(
-      id: id,
-      title: title,
-      body: body,
-      scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
-      notificationDetails: details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      payload: payload,
+    final details = NotificationDetails(
+      android: androidDetails,
+      iOS: darwinDetails,
+      macOS: darwinDetails,
+      linux: linuxDetails,
+      windows: windowsDetails,
     );
+
+    // The Linux notification server doesn't provide scheduling APIs, so we
+    // emulate scheduling while the app process is alive.
+    if (PlatformUtils.isLinux) {
+      _scheduleInProcessNotification(
+        id: id,
+        title: title,
+        body: body,
+        details: details,
+        scheduledTime: scheduledTime,
+        payload: payload,
+      );
+      return;
+    }
+
+    try {
+      await _notifications.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
+        notificationDetails: details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: payload,
+      );
+    } catch (e, stackTrace) {
+      LogService.instance.warning(
+        'zonedSchedule failed, using in-process fallback',
+        tag: 'NotificationService',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
+      _scheduleInProcessNotification(
+        id: id,
+        title: title,
+        body: body,
+        details: details,
+        scheduledTime: scheduledTime,
+        payload: payload,
+      );
+    }
   }
 
   @override
   Future<void> cancelNotification(int id) async {
+    _inProcessScheduledTimers.remove(id)?.cancel();
     await _notifications.cancel(id: id);
   }
 
   @override
   Future<void> cancelFocusNotification() async {
-    await _notifications.cancel(id: NotificationConstants.focusSessionId);
+    await cancelNotification(NotificationConstants.focusSessionId);
+  }
+
+  void _scheduleInProcessNotification({
+    required int id,
+    required String title,
+    required String body,
+    required NotificationDetails details,
+    required DateTime scheduledTime,
+    String? payload,
+  }) {
+    _inProcessScheduledTimers.remove(id)?.cancel();
+
+    final delay = scheduledTime.difference(DateTime.now());
+    if (delay <= Duration.zero) return;
+
+    _inProcessScheduledTimers[id] = Timer(delay, () {
+      _inProcessScheduledTimers.remove(id);
+      unawaited(_notifications.show(id: id, title: title, body: body, notificationDetails: details, payload: payload));
+    });
   }
 }

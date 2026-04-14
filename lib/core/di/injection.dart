@@ -15,6 +15,9 @@ import '../../features/settings/data/datasources/settings_local_datasource.dart'
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/i_settings_repository.dart';
 import '../../features/settings/domain/services/settings_service.dart';
+import '../../features/sync/data/services/google_drive_service.dart';
+import '../../features/sync/domain/services/i_cloud_storage_service.dart';
+import '../../features/sync/domain/services/sync_engine.dart';
 import '../../features/tasks/data/datasources/task_local_datasource.dart';
 import '../../features/tasks/data/datasources/task_stats_local_datasource.dart';
 import '../../features/tasks/data/repositories/task_repository_impl.dart';
@@ -26,6 +29,7 @@ import '../../features/tasks/domain/services/task_service.dart';
 import '../services/audio_service.dart';
 import '../services/audio_session_manager.dart';
 import '../services/db_service.dart';
+import '../services/desktop_lifecycle_service.dart';
 import '../services/focus_audio_handler.dart';
 import '../services/i_notification_service.dart';
 import '../services/no_op_notification_service.dart';
@@ -46,8 +50,7 @@ Future<void> setupDependencyInjection() async {
     getIt.registerSingleton<FocusAudioHandler>(audioHandler);
   }
 
-  // Notification service - use real implementation on supported platforms,
-  // no-op implementation on platforms without notification support
+  // Notification service for native platforms with local notification support.
   if (PlatformUtils.supportsLocalNotifications) {
     final notificationService = NotificationService();
     await notificationService.init();
@@ -66,7 +69,13 @@ Future<void> setupDependencyInjection() async {
   _initProjectsDi();
   _initTasksDi();
   _initSettingsDi();
+
+  if (PlatformUtils.isDesktop) {
+    getIt.registerLazySingleton<DesktopLifecycleService>(() => DesktopLifecycleService(getIt<ISettingsRepository>()));
+  }
+
   _initSessionDi();
+  _initSyncDi();
 }
 
 void _initProjectsDi() {
@@ -115,4 +124,17 @@ void _initSessionDi() {
       () => FocusMediaSessionCoordinator(getIt<FocusAudioHandler>(), getIt<AudioSessionManager>()),
     );
   }
+}
+
+void _initSyncDi() {
+  getIt
+    ..registerLazySingleton<ICloudStorageService>(() => GoogleDriveService())
+    ..registerLazySingleton<SyncEngine>(
+      () => SyncEngine(
+        getIt<ICloudStorageService>(),
+        getIt<IProjectRepository>(),
+        getIt<ITaskRepository>(),
+        getIt<ISettingsRepository>(),
+      ),
+    );
 }

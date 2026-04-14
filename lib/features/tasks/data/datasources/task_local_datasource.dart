@@ -15,6 +15,7 @@ abstract class ITaskLocalDataSource {
   Future<void> updateTask(TaskTableCompanion companion);
   Future<void> deleteTask(int id);
   Stream<List<TaskTableData>> watchTasksByProjectId(int projectId);
+  Stream<List<TaskTableData>> watchTasksWithDeadlines();
   Stream<List<TaskTableData>> watchFilteredTasks({
     required int projectId,
     String searchQuery,
@@ -115,6 +116,14 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   @override
   Stream<List<TaskTableData>> watchTasksByProjectId(int projectId) {
     return (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).watch();
+  }
+
+  @override
+  Stream<List<TaskTableData>> watchTasksWithDeadlines() {
+    return (_db.select(_db.taskTable)
+          ..where((t) => t.endDate.isNotNull() & t.isCompleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.asc(t.endDate)]))
+        .watch();
   }
 
   @override

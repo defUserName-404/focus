@@ -63,8 +63,7 @@ final class Success<T> extends Result<T> {
   const Success(this.value);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is Success<T> && value == other.value;
+  bool operator ==(Object other) => identical(this, other) || other is Success<T> && value == other.value;
 
   @override
   int get hashCode => value.hashCode;
@@ -79,8 +78,7 @@ final class Failure<T> extends Result<T> {
   const Failure(this.failure);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is Failure<T> && failure == other.failure;
+  bool operator ==(Object other) => identical(this, other) || other is Failure<T> && failure == other.failure;
 
   @override
   int get hashCode => failure.hashCode;
@@ -111,10 +109,7 @@ sealed class AppFailure {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other.runtimeType == runtimeType &&
-          other is AppFailure &&
-          message == other.message;
+      identical(this, other) || other.runtimeType == runtimeType && other is AppFailure && message == other.message;
 
   @override
   int get hashCode => Object.hash(runtimeType, message);
@@ -151,4 +146,9 @@ final class NotificationFailure extends AppFailure {
 /// Catch-all for truly unexpected errors.
 final class UnexpectedFailure extends AppFailure {
   const UnexpectedFailure(super.message, {super.error, super.stackTrace});
+}
+
+/// A cloud sync operation failure.
+final class SyncFailure extends AppFailure {
+  const SyncFailure(super.message, {super.error, super.stackTrace});
 }

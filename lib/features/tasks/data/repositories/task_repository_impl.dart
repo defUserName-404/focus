@@ -79,6 +79,11 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   @override
+  Stream<List<Task>> watchTasksWithDeadlines() {
+    return _local.watchTasksWithDeadlines().map((rows) => rows.map((r) => r.toDomain()).toList());
+  }
+
+  @override
   Stream<List<Task>> watchFilteredTasks({
     required int projectId,
     String searchQuery = '',

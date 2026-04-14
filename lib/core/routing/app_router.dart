@@ -7,8 +7,11 @@ import '../../features/projects/presentation/screens/create_project_screen.dart'
 import '../../features/projects/presentation/screens/edit_project_screen.dart';
 import '../../features/projects/presentation/screens/project_detail_screen.dart';
 import '../../features/projects/presentation/screens/projects_screen.dart';
+import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/session/presentation/screens/focus_session_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/sync/domain/entities/sync_state.dart';
+import '../../features/sync/presentation/screens/sync_conflict_screen.dart';
 import '../../features/tasks/domain/entities/task.dart';
 import '../../features/tasks/presentation/screens/create_task_screen.dart';
 import '../../features/tasks/presentation/screens/create_task_with_project_screen.dart';
@@ -140,6 +143,13 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
 
+        // Reports tab
+        GoRoute(
+          path: AppRoutes.reports,
+          name: RouteNames.reports,
+          pageBuilder: (context, state) => const NoTransitionPage(child: ReportsScreen()),
+        ),
+
         // Settings tab
         GoRoute(
           path: AppRoutes.settings,
@@ -160,6 +170,17 @@ final GoRouter appRouter = GoRouter(
           return FadeTransition(opacity: animation, child: child);
         },
       ),
+    ),
+
+    // Sync conflict resolution (full-screen, above shell)
+    GoRoute(
+      path: AppRoutes.syncConflicts,
+      name: RouteNames.syncConflicts,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) {
+        final conflicts = state.extra as List<SyncConflict>;
+        return SyncConflictScreen(conflicts: conflicts);
+      },
     ),
   ],
   errorBuilder: (context, state) => _ErrorScreen(error: state.error),

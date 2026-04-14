@@ -20,6 +20,8 @@ abstract class ITaskRepository {
 
   Stream<List<Task>> watchTasksByProjectId(int projectId);
 
+  Stream<List<Task>> watchTasksWithDeadlines();
+
   Stream<List<Task>> watchFilteredTasks({
     required int projectId,
     String searchQuery,

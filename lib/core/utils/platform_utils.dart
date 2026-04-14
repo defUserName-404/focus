@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -18,16 +16,28 @@ enum FormFactor { compact, expanded }
 /// All platform-specific branching goes through this class so the
 /// decision is made once and consistently.
 abstract final class PlatformUtils {
+  static bool get isAndroid => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  static bool get isIOS => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+  static bool get isMacOS => !kIsWeb && defaultTargetPlatform == TargetPlatform.macOS;
+  static bool get isLinux => !kIsWeb && defaultTargetPlatform == TargetPlatform.linux;
+  static bool get isWindows => !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
+
   /// Whether the app is running on a desktop OS (Windows, Linux, macOS).
   static bool get isDesktop {
     if (kIsWeb) return false;
-    return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.windows || TargetPlatform.linux || TargetPlatform.macOS => true,
+      _ => false,
+    };
   }
 
   /// Whether the app is running on a mobile OS (Android, iOS).
   static bool get isMobile {
     if (kIsWeb) return false;
-    return Platform.isAndroid || Platform.isIOS;
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android || TargetPlatform.iOS => true,
+      _ => false,
+    };
   }
 
   /// Whether the app is running on the web.
@@ -35,18 +45,27 @@ abstract final class PlatformUtils {
 
   /// Whether the platform supports native local notifications.
   ///
-  /// Desktop platforms (except macOS via `flutter_local_notifications`)
-  /// have limited or no support.
+  /// This app intentionally targets native platforms only.
   static bool get supportsLocalNotifications {
     if (kIsWeb) return false;
-    return Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android ||
+      TargetPlatform.iOS ||
+      TargetPlatform.macOS ||
+      TargetPlatform.linux ||
+      TargetPlatform.windows => true,
+      _ => false,
+    };
   }
 
   /// Whether the platform supports OS-level media session controls
   /// (lock-screen, notification shade, headphone buttons).
   static bool get supportsMediaSession {
     if (kIsWeb) return false;
-    return Platform.isAndroid || Platform.isIOS;
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android || TargetPlatform.iOS => true,
+      _ => false,
+    };
   }
 
   /// Resolve the [FormFactor] from the current window width.
