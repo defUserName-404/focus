@@ -6,6 +6,7 @@ import 'core/app.dart';
 import 'core/di/injection.dart';
 import 'core/services/desktop_lifecycle_service.dart';
 import 'core/utils/platform_utils.dart';
+import 'features/notifications/domain/services/notification_inbox_sync_service.dart';
 import 'features/tasks/domain/services/task_notification_service.dart';
 
 void main(List<String> args) async {
@@ -35,6 +36,7 @@ void main(List<String> args) async {
   }
 
   await getIt<TaskNotificationService>().rescheduleAllReminders();
+  await getIt<NotificationInboxSyncService>().init();
 
   runApp(const ProviderScope(child: FocusApp()));
 }

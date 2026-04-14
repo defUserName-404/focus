@@ -127,8 +127,14 @@ Primary files:
 
 Current pattern:
 - `GoRouter` with shell-based app layout
+- `AppRoutes` is the single source of truth for both route path and route name (`AppRoute` descriptors)
 - `context.go`, `context.push`, and route helper paths
 - Use root router helpers for context-free flows (for example notification taps)
+
+Navigation UX split:
+- Mobile shell: 4-item bottom navigation (`Home`, `Tasks`, `Projects`, `Inbox`)
+- Desktop/tablet shell: side rail keeps separate `Reports` and `Notifications` entries
+- Settings is a utility destination (header/rail action), not a primary tab
 
 ## Layout Architecture
 
@@ -152,6 +158,10 @@ Rules for schema changes:
 4. Regenerate code.
 5. Verify migration behavior with existing user data.
 
+Current task schema includes reminder configuration fields:
+- `reminder_mode` (enum-backed)
+- `custom_reminder_minutes_before` (nullable int)
+
 ## Notifications Architecture
 
 Primary file: `lib/core/services/notification_service.dart`
@@ -160,6 +170,11 @@ Android scheduling behavior should be resilient:
 - Try exact scheduling when allowed.
 - Fall back to inexact scheduling when exact alarms are not permitted.
 - Use in-process fallback only as last resort.
+
+Inbox behavior:
+- Notification taps should deep-link to the exact destination payload when possible.
+- Task reminder payloads include both task id and project id.
+- In-app inbox reads a notification event stream plus upcoming task reminder projections.
 
 ## Required Code Generation
 

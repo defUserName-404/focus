@@ -5,6 +5,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/utils/result.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_priority.dart';
+import '../../domain/entities/task_reminder_mode.dart';
 import '../../domain/repositories/i_task_repository.dart';
 import '../../domain/services/task_service.dart';
 import 'task_filter_state.dart';
@@ -94,6 +95,8 @@ class TaskNotifier extends _$TaskNotifier {
     int? parentTaskId,
     required String title,
     TaskPriority? priority,
+    TaskReminderMode reminderMode = TaskReminderMode.smart,
+    int? customReminderMinutesBefore,
     String? description,
     DateTime? startDate,
     DateTime? endDate,
@@ -105,6 +108,8 @@ class TaskNotifier extends _$TaskNotifier {
       title: title,
       description: description,
       priority: priority ?? TaskPriority.medium,
+      reminderMode: reminderMode,
+      customReminderMinutesBefore: customReminderMinutesBefore,
       startDate: startDate,
       endDate: endDate,
       depth: depth,

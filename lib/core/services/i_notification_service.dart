@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'notification_event.dart';
+
 /// Abstract interface for notification services.
 ///
 /// Implemented by [NotificationService] for platforms with native notifications,
@@ -40,4 +42,7 @@ abstract class INotificationService {
 
   /// Stream of notification body taps (payload strings).
   Stream<String> get tapStream;
+
+  /// Stream of notification lifecycle events for in-app inbox UIs.
+  Stream<NotificationEvent> get eventStream;
 }

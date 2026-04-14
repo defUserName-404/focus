@@ -540,6 +540,27 @@ class $TaskTableTable extends TaskTable
         type: DriftSqlType.int,
         requiredDuringInsert: true,
       ).withConverter<TaskPriority>($TaskTableTable.$converterpriority);
+  @override
+  late final GeneratedColumnWithTypeConverter<TaskReminderMode, int>
+  reminderMode = GeneratedColumn<int>(
+    'reminder_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  ).withConverter<TaskReminderMode>($TaskTableTable.$converterreminderMode);
+  static const VerificationMeta _customReminderMinutesBeforeMeta =
+      const VerificationMeta('customReminderMinutesBefore');
+  @override
+  late final GeneratedColumn<int> customReminderMinutesBefore =
+      GeneratedColumn<int>(
+        'custom_reminder_minutes_before',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _startDateMeta = const VerificationMeta(
     'startDate',
   );
@@ -616,6 +637,8 @@ class $TaskTableTable extends TaskTable
     title,
     description,
     priority,
+    reminderMode,
+    customReminderMinutesBefore,
     startDate,
     endDate,
     depth,
@@ -669,6 +692,15 @@ class $TaskTableTable extends TaskTable
         description.isAcceptableOrUnknown(
           data['description']!,
           _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('custom_reminder_minutes_before')) {
+      context.handle(
+        _customReminderMinutesBeforeMeta,
+        customReminderMinutesBefore.isAcceptableOrUnknown(
+          data['custom_reminder_minutes_before']!,
+          _customReminderMinutesBeforeMeta,
         ),
       );
     }
@@ -752,6 +784,16 @@ class $TaskTableTable extends TaskTable
           data['${effectivePrefix}priority'],
         )!,
       ),
+      reminderMode: $TaskTableTable.$converterreminderMode.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}reminder_mode'],
+        )!,
+      ),
+      customReminderMinutesBefore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}custom_reminder_minutes_before'],
+      ),
       startDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}start_date'],
@@ -786,6 +828,8 @@ class $TaskTableTable extends TaskTable
 
   static JsonTypeConverter2<TaskPriority, int, int> $converterpriority =
       const EnumIndexConverter<TaskPriority>(TaskPriority.values);
+  static JsonTypeConverter2<TaskReminderMode, int, int> $converterreminderMode =
+      const EnumIndexConverter<TaskReminderMode>(TaskReminderMode.values);
 }
 
 class TaskTableData extends DataClass implements Insertable<TaskTableData> {
@@ -795,6 +839,8 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   final String title;
   final String? description;
   final TaskPriority priority;
+  final TaskReminderMode reminderMode;
+  final int? customReminderMinutesBefore;
   final DateTime? startDate;
   final DateTime? endDate;
   final int depth;
@@ -808,6 +854,8 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     required this.title,
     this.description,
     required this.priority,
+    required this.reminderMode,
+    this.customReminderMinutesBefore,
     this.startDate,
     this.endDate,
     required this.depth,
@@ -830,6 +878,16 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     {
       map['priority'] = Variable<int>(
         $TaskTableTable.$converterpriority.toSql(priority),
+      );
+    }
+    {
+      map['reminder_mode'] = Variable<int>(
+        $TaskTableTable.$converterreminderMode.toSql(reminderMode),
+      );
+    }
+    if (!nullToAbsent || customReminderMinutesBefore != null) {
+      map['custom_reminder_minutes_before'] = Variable<int>(
+        customReminderMinutesBefore,
       );
     }
     if (!nullToAbsent || startDate != null) {
@@ -857,6 +915,11 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           ? const Value.absent()
           : Value(description),
       priority: Value(priority),
+      reminderMode: Value(reminderMode),
+      customReminderMinutesBefore:
+          customReminderMinutesBefore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customReminderMinutesBefore),
       startDate: startDate == null && nullToAbsent
           ? const Value.absent()
           : Value(startDate),
@@ -884,6 +947,12 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       priority: $TaskTableTable.$converterpriority.fromJson(
         serializer.fromJson<int>(json['priority']),
       ),
+      reminderMode: $TaskTableTable.$converterreminderMode.fromJson(
+        serializer.fromJson<int>(json['reminderMode']),
+      ),
+      customReminderMinutesBefore: serializer.fromJson<int?>(
+        json['customReminderMinutesBefore'],
+      ),
       startDate: serializer.fromJson<DateTime?>(json['startDate']),
       endDate: serializer.fromJson<DateTime?>(json['endDate']),
       depth: serializer.fromJson<int>(json['depth']),
@@ -904,6 +973,12 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       'priority': serializer.toJson<int>(
         $TaskTableTable.$converterpriority.toJson(priority),
       ),
+      'reminderMode': serializer.toJson<int>(
+        $TaskTableTable.$converterreminderMode.toJson(reminderMode),
+      ),
+      'customReminderMinutesBefore': serializer.toJson<int?>(
+        customReminderMinutesBefore,
+      ),
       'startDate': serializer.toJson<DateTime?>(startDate),
       'endDate': serializer.toJson<DateTime?>(endDate),
       'depth': serializer.toJson<int>(depth),
@@ -920,6 +995,8 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     String? title,
     Value<String?> description = const Value.absent(),
     TaskPriority? priority,
+    TaskReminderMode? reminderMode,
+    Value<int?> customReminderMinutesBefore = const Value.absent(),
     Value<DateTime?> startDate = const Value.absent(),
     Value<DateTime?> endDate = const Value.absent(),
     int? depth,
@@ -933,6 +1010,10 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     title: title ?? this.title,
     description: description.present ? description.value : this.description,
     priority: priority ?? this.priority,
+    reminderMode: reminderMode ?? this.reminderMode,
+    customReminderMinutesBefore: customReminderMinutesBefore.present
+        ? customReminderMinutesBefore.value
+        : this.customReminderMinutesBefore,
     startDate: startDate.present ? startDate.value : this.startDate,
     endDate: endDate.present ? endDate.value : this.endDate,
     depth: depth ?? this.depth,
@@ -952,6 +1033,12 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           ? data.description.value
           : this.description,
       priority: data.priority.present ? data.priority.value : this.priority,
+      reminderMode: data.reminderMode.present
+          ? data.reminderMode.value
+          : this.reminderMode,
+      customReminderMinutesBefore: data.customReminderMinutesBefore.present
+          ? data.customReminderMinutesBefore.value
+          : this.customReminderMinutesBefore,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       endDate: data.endDate.present ? data.endDate.value : this.endDate,
       depth: data.depth.present ? data.depth.value : this.depth,
@@ -972,6 +1059,8 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('priority: $priority, ')
+          ..write('reminderMode: $reminderMode, ')
+          ..write('customReminderMinutesBefore: $customReminderMinutesBefore, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('depth: $depth, ')
@@ -990,6 +1079,8 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     title,
     description,
     priority,
+    reminderMode,
+    customReminderMinutesBefore,
     startDate,
     endDate,
     depth,
@@ -1007,6 +1098,9 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           other.title == this.title &&
           other.description == this.description &&
           other.priority == this.priority &&
+          other.reminderMode == this.reminderMode &&
+          other.customReminderMinutesBefore ==
+              this.customReminderMinutesBefore &&
           other.startDate == this.startDate &&
           other.endDate == this.endDate &&
           other.depth == this.depth &&
@@ -1022,6 +1116,8 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   final Value<String> title;
   final Value<String?> description;
   final Value<TaskPriority> priority;
+  final Value<TaskReminderMode> reminderMode;
+  final Value<int?> customReminderMinutesBefore;
   final Value<DateTime?> startDate;
   final Value<DateTime?> endDate;
   final Value<int> depth;
@@ -1035,6 +1131,8 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     this.title = const Value.absent(),
     this.description = const Value.absent(),
     this.priority = const Value.absent(),
+    this.reminderMode = const Value.absent(),
+    this.customReminderMinutesBefore = const Value.absent(),
     this.startDate = const Value.absent(),
     this.endDate = const Value.absent(),
     this.depth = const Value.absent(),
@@ -1049,6 +1147,8 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     required String title,
     this.description = const Value.absent(),
     required TaskPriority priority,
+    this.reminderMode = const Value.absent(),
+    this.customReminderMinutesBefore = const Value.absent(),
     this.startDate = const Value.absent(),
     this.endDate = const Value.absent(),
     required int depth,
@@ -1068,6 +1168,8 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     Expression<String>? title,
     Expression<String>? description,
     Expression<int>? priority,
+    Expression<int>? reminderMode,
+    Expression<int>? customReminderMinutesBefore,
     Expression<DateTime>? startDate,
     Expression<DateTime>? endDate,
     Expression<int>? depth,
@@ -1082,6 +1184,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       if (title != null) 'title': title,
       if (description != null) 'description': description,
       if (priority != null) 'priority': priority,
+      if (reminderMode != null) 'reminder_mode': reminderMode,
+      if (customReminderMinutesBefore != null)
+        'custom_reminder_minutes_before': customReminderMinutesBefore,
       if (startDate != null) 'start_date': startDate,
       if (endDate != null) 'end_date': endDate,
       if (depth != null) 'depth': depth,
@@ -1098,6 +1203,8 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     Value<String>? title,
     Value<String?>? description,
     Value<TaskPriority>? priority,
+    Value<TaskReminderMode>? reminderMode,
+    Value<int?>? customReminderMinutesBefore,
     Value<DateTime?>? startDate,
     Value<DateTime?>? endDate,
     Value<int>? depth,
@@ -1112,6 +1219,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       title: title ?? this.title,
       description: description ?? this.description,
       priority: priority ?? this.priority,
+      reminderMode: reminderMode ?? this.reminderMode,
+      customReminderMinutesBefore:
+          customReminderMinutesBefore ?? this.customReminderMinutesBefore,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       depth: depth ?? this.depth,
@@ -1144,6 +1254,16 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
         $TaskTableTable.$converterpriority.toSql(priority.value),
       );
     }
+    if (reminderMode.present) {
+      map['reminder_mode'] = Variable<int>(
+        $TaskTableTable.$converterreminderMode.toSql(reminderMode.value),
+      );
+    }
+    if (customReminderMinutesBefore.present) {
+      map['custom_reminder_minutes_before'] = Variable<int>(
+        customReminderMinutesBefore.value,
+      );
+    }
     if (startDate.present) {
       map['start_date'] = Variable<DateTime>(startDate.value);
     }
@@ -1174,6 +1294,8 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('priority: $priority, ')
+          ..write('reminderMode: $reminderMode, ')
+          ..write('customReminderMinutesBefore: $customReminderMinutesBefore, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('depth: $depth, ')
@@ -2317,6 +2439,736 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsData> {
   }
 }
 
+class $NotificationInboxTableTable extends NotificationInboxTable
+    with TableInfo<$NotificationInboxTableTable, NotificationInboxTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NotificationInboxTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _notificationIdMeta = const VerificationMeta(
+    'notificationId',
+  );
+  @override
+  late final GeneratedColumn<int> notificationId = GeneratedColumn<int>(
+    'notification_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<NotificationInboxType, int> type =
+      GeneratedColumn<int>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<NotificationInboxType>(
+        $NotificationInboxTableTable.$convertertype,
+      );
+  @override
+  late final GeneratedColumnWithTypeConverter<NotificationInboxState, int>
+  state =
+      GeneratedColumn<int>(
+        'state',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<NotificationInboxState>(
+        $NotificationInboxTableTable.$converterstate,
+      );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _payloadMeta = const VerificationMeta(
+    'payload',
+  );
+  @override
+  late final GeneratedColumn<String> payload = GeneratedColumn<String>(
+    'payload',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
+  @override
+  late final GeneratedColumn<int> taskId = GeneratedColumn<int>(
+    'task_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _projectIdMeta = const VerificationMeta(
+    'projectId',
+  );
+  @override
+  late final GeneratedColumn<int> projectId = GeneratedColumn<int>(
+    'project_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scheduledForMeta = const VerificationMeta(
+    'scheduledFor',
+  );
+  @override
+  late final GeneratedColumn<DateTime> scheduledFor = GeneratedColumn<DateTime>(
+    'scheduled_for',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    notificationId,
+    type,
+    state,
+    title,
+    body,
+    payload,
+    taskId,
+    projectId,
+    scheduledFor,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'notification_inbox_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NotificationInboxTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('notification_id')) {
+      context.handle(
+        _notificationIdMeta,
+        notificationId.isAcceptableOrUnknown(
+          data['notification_id']!,
+          _notificationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_notificationIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    }
+    if (data.containsKey('payload')) {
+      context.handle(
+        _payloadMeta,
+        payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta),
+      );
+    }
+    if (data.containsKey('task_id')) {
+      context.handle(
+        _taskIdMeta,
+        taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
+      );
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(
+        _projectIdMeta,
+        projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta),
+      );
+    }
+    if (data.containsKey('scheduled_for')) {
+      context.handle(
+        _scheduledForMeta,
+        scheduledFor.isAcceptableOrUnknown(
+          data['scheduled_for']!,
+          _scheduledForMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {notificationId, type},
+  ];
+  @override
+  NotificationInboxTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NotificationInboxTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      notificationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}notification_id'],
+      )!,
+      type: $NotificationInboxTableTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
+      state: $NotificationInboxTableTable.$converterstate.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}state'],
+        )!,
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      ),
+      payload: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload'],
+      ),
+      taskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}task_id'],
+      ),
+      projectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}project_id'],
+      ),
+      scheduledFor: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}scheduled_for'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $NotificationInboxTableTable createAlias(String alias) {
+    return $NotificationInboxTableTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<NotificationInboxType, int, int> $convertertype =
+      const EnumIndexConverter<NotificationInboxType>(
+        NotificationInboxType.values,
+      );
+  static JsonTypeConverter2<NotificationInboxState, int, int> $converterstate =
+      const EnumIndexConverter<NotificationInboxState>(
+        NotificationInboxState.values,
+      );
+}
+
+class NotificationInboxTableData extends DataClass
+    implements Insertable<NotificationInboxTableData> {
+  final int id;
+  final int notificationId;
+  final NotificationInboxType type;
+  final NotificationInboxState state;
+  final String title;
+  final String? body;
+  final String? payload;
+  final int? taskId;
+  final int? projectId;
+  final DateTime? scheduledFor;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const NotificationInboxTableData({
+    required this.id,
+    required this.notificationId,
+    required this.type,
+    required this.state,
+    required this.title,
+    this.body,
+    this.payload,
+    this.taskId,
+    this.projectId,
+    this.scheduledFor,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['notification_id'] = Variable<int>(notificationId);
+    {
+      map['type'] = Variable<int>(
+        $NotificationInboxTableTable.$convertertype.toSql(type),
+      );
+    }
+    {
+      map['state'] = Variable<int>(
+        $NotificationInboxTableTable.$converterstate.toSql(state),
+      );
+    }
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || body != null) {
+      map['body'] = Variable<String>(body);
+    }
+    if (!nullToAbsent || payload != null) {
+      map['payload'] = Variable<String>(payload);
+    }
+    if (!nullToAbsent || taskId != null) {
+      map['task_id'] = Variable<int>(taskId);
+    }
+    if (!nullToAbsent || projectId != null) {
+      map['project_id'] = Variable<int>(projectId);
+    }
+    if (!nullToAbsent || scheduledFor != null) {
+      map['scheduled_for'] = Variable<DateTime>(scheduledFor);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  NotificationInboxTableCompanion toCompanion(bool nullToAbsent) {
+    return NotificationInboxTableCompanion(
+      id: Value(id),
+      notificationId: Value(notificationId),
+      type: Value(type),
+      state: Value(state),
+      title: Value(title),
+      body: body == null && nullToAbsent ? const Value.absent() : Value(body),
+      payload: payload == null && nullToAbsent
+          ? const Value.absent()
+          : Value(payload),
+      taskId: taskId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(taskId),
+      projectId: projectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(projectId),
+      scheduledFor: scheduledFor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scheduledFor),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory NotificationInboxTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NotificationInboxTableData(
+      id: serializer.fromJson<int>(json['id']),
+      notificationId: serializer.fromJson<int>(json['notificationId']),
+      type: $NotificationInboxTableTable.$convertertype.fromJson(
+        serializer.fromJson<int>(json['type']),
+      ),
+      state: $NotificationInboxTableTable.$converterstate.fromJson(
+        serializer.fromJson<int>(json['state']),
+      ),
+      title: serializer.fromJson<String>(json['title']),
+      body: serializer.fromJson<String?>(json['body']),
+      payload: serializer.fromJson<String?>(json['payload']),
+      taskId: serializer.fromJson<int?>(json['taskId']),
+      projectId: serializer.fromJson<int?>(json['projectId']),
+      scheduledFor: serializer.fromJson<DateTime?>(json['scheduledFor']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'notificationId': serializer.toJson<int>(notificationId),
+      'type': serializer.toJson<int>(
+        $NotificationInboxTableTable.$convertertype.toJson(type),
+      ),
+      'state': serializer.toJson<int>(
+        $NotificationInboxTableTable.$converterstate.toJson(state),
+      ),
+      'title': serializer.toJson<String>(title),
+      'body': serializer.toJson<String?>(body),
+      'payload': serializer.toJson<String?>(payload),
+      'taskId': serializer.toJson<int?>(taskId),
+      'projectId': serializer.toJson<int?>(projectId),
+      'scheduledFor': serializer.toJson<DateTime?>(scheduledFor),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  NotificationInboxTableData copyWith({
+    int? id,
+    int? notificationId,
+    NotificationInboxType? type,
+    NotificationInboxState? state,
+    String? title,
+    Value<String?> body = const Value.absent(),
+    Value<String?> payload = const Value.absent(),
+    Value<int?> taskId = const Value.absent(),
+    Value<int?> projectId = const Value.absent(),
+    Value<DateTime?> scheduledFor = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => NotificationInboxTableData(
+    id: id ?? this.id,
+    notificationId: notificationId ?? this.notificationId,
+    type: type ?? this.type,
+    state: state ?? this.state,
+    title: title ?? this.title,
+    body: body.present ? body.value : this.body,
+    payload: payload.present ? payload.value : this.payload,
+    taskId: taskId.present ? taskId.value : this.taskId,
+    projectId: projectId.present ? projectId.value : this.projectId,
+    scheduledFor: scheduledFor.present ? scheduledFor.value : this.scheduledFor,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  NotificationInboxTableData copyWithCompanion(
+    NotificationInboxTableCompanion data,
+  ) {
+    return NotificationInboxTableData(
+      id: data.id.present ? data.id.value : this.id,
+      notificationId: data.notificationId.present
+          ? data.notificationId.value
+          : this.notificationId,
+      type: data.type.present ? data.type.value : this.type,
+      state: data.state.present ? data.state.value : this.state,
+      title: data.title.present ? data.title.value : this.title,
+      body: data.body.present ? data.body.value : this.body,
+      payload: data.payload.present ? data.payload.value : this.payload,
+      taskId: data.taskId.present ? data.taskId.value : this.taskId,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      scheduledFor: data.scheduledFor.present
+          ? data.scheduledFor.value
+          : this.scheduledFor,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NotificationInboxTableData(')
+          ..write('id: $id, ')
+          ..write('notificationId: $notificationId, ')
+          ..write('type: $type, ')
+          ..write('state: $state, ')
+          ..write('title: $title, ')
+          ..write('body: $body, ')
+          ..write('payload: $payload, ')
+          ..write('taskId: $taskId, ')
+          ..write('projectId: $projectId, ')
+          ..write('scheduledFor: $scheduledFor, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    notificationId,
+    type,
+    state,
+    title,
+    body,
+    payload,
+    taskId,
+    projectId,
+    scheduledFor,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NotificationInboxTableData &&
+          other.id == this.id &&
+          other.notificationId == this.notificationId &&
+          other.type == this.type &&
+          other.state == this.state &&
+          other.title == this.title &&
+          other.body == this.body &&
+          other.payload == this.payload &&
+          other.taskId == this.taskId &&
+          other.projectId == this.projectId &&
+          other.scheduledFor == this.scheduledFor &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class NotificationInboxTableCompanion
+    extends UpdateCompanion<NotificationInboxTableData> {
+  final Value<int> id;
+  final Value<int> notificationId;
+  final Value<NotificationInboxType> type;
+  final Value<NotificationInboxState> state;
+  final Value<String> title;
+  final Value<String?> body;
+  final Value<String?> payload;
+  final Value<int?> taskId;
+  final Value<int?> projectId;
+  final Value<DateTime?> scheduledFor;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const NotificationInboxTableCompanion({
+    this.id = const Value.absent(),
+    this.notificationId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.state = const Value.absent(),
+    this.title = const Value.absent(),
+    this.body = const Value.absent(),
+    this.payload = const Value.absent(),
+    this.taskId = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.scheduledFor = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  NotificationInboxTableCompanion.insert({
+    this.id = const Value.absent(),
+    required int notificationId,
+    required NotificationInboxType type,
+    required NotificationInboxState state,
+    required String title,
+    this.body = const Value.absent(),
+    this.payload = const Value.absent(),
+    this.taskId = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.scheduledFor = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : notificationId = Value(notificationId),
+       type = Value(type),
+       state = Value(state),
+       title = Value(title),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<NotificationInboxTableData> custom({
+    Expression<int>? id,
+    Expression<int>? notificationId,
+    Expression<int>? type,
+    Expression<int>? state,
+    Expression<String>? title,
+    Expression<String>? body,
+    Expression<String>? payload,
+    Expression<int>? taskId,
+    Expression<int>? projectId,
+    Expression<DateTime>? scheduledFor,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (notificationId != null) 'notification_id': notificationId,
+      if (type != null) 'type': type,
+      if (state != null) 'state': state,
+      if (title != null) 'title': title,
+      if (body != null) 'body': body,
+      if (payload != null) 'payload': payload,
+      if (taskId != null) 'task_id': taskId,
+      if (projectId != null) 'project_id': projectId,
+      if (scheduledFor != null) 'scheduled_for': scheduledFor,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  NotificationInboxTableCompanion copyWith({
+    Value<int>? id,
+    Value<int>? notificationId,
+    Value<NotificationInboxType>? type,
+    Value<NotificationInboxState>? state,
+    Value<String>? title,
+    Value<String?>? body,
+    Value<String?>? payload,
+    Value<int?>? taskId,
+    Value<int?>? projectId,
+    Value<DateTime?>? scheduledFor,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return NotificationInboxTableCompanion(
+      id: id ?? this.id,
+      notificationId: notificationId ?? this.notificationId,
+      type: type ?? this.type,
+      state: state ?? this.state,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      payload: payload ?? this.payload,
+      taskId: taskId ?? this.taskId,
+      projectId: projectId ?? this.projectId,
+      scheduledFor: scheduledFor ?? this.scheduledFor,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (notificationId.present) {
+      map['notification_id'] = Variable<int>(notificationId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<int>(
+        $NotificationInboxTableTable.$convertertype.toSql(type.value),
+      );
+    }
+    if (state.present) {
+      map['state'] = Variable<int>(
+        $NotificationInboxTableTable.$converterstate.toSql(state.value),
+      );
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (payload.present) {
+      map['payload'] = Variable<String>(payload.value);
+    }
+    if (taskId.present) {
+      map['task_id'] = Variable<int>(taskId.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<int>(projectId.value);
+    }
+    if (scheduledFor.present) {
+      map['scheduled_for'] = Variable<DateTime>(scheduledFor.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NotificationInboxTableCompanion(')
+          ..write('id: $id, ')
+          ..write('notificationId: $notificationId, ')
+          ..write('type: $type, ')
+          ..write('state: $state, ')
+          ..write('title: $title, ')
+          ..write('body: $body, ')
+          ..write('payload: $payload, ')
+          ..write('taskId: $taskId, ')
+          ..write('projectId: $projectId, ')
+          ..write('scheduledFor: $scheduledFor, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2327,6 +3179,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DailySessionStatsTableTable dailySessionStatsTable =
       $DailySessionStatsTableTable(this);
   late final $SettingsTableTable settingsTable = $SettingsTableTable(this);
+  late final $NotificationInboxTableTable notificationInboxTable =
+      $NotificationInboxTableTable(this);
   late final Index projectCreatedAtIdx = Index(
     'project_created_at_idx',
     'CREATE INDEX project_created_at_idx ON project_table (created_at)',
@@ -2371,6 +3225,18 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'daily_stats_date_idx',
     'CREATE INDEX daily_stats_date_idx ON daily_session_stats_table (date)',
   );
+  late final Index notificationInboxNotificationIdIdx = Index(
+    'notification_inbox_notification_id_idx',
+    'CREATE INDEX notification_inbox_notification_id_idx ON notification_inbox_table (notification_id)',
+  );
+  late final Index notificationInboxUpdatedAtIdx = Index(
+    'notification_inbox_updated_at_idx',
+    'CREATE INDEX notification_inbox_updated_at_idx ON notification_inbox_table (updated_at)',
+  );
+  late final Index notificationInboxScheduledForIdx = Index(
+    'notification_inbox_scheduled_for_idx',
+    'CREATE INDEX notification_inbox_scheduled_for_idx ON notification_inbox_table (scheduled_for)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2381,6 +3247,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     focusSessionTable,
     dailySessionStatsTable,
     settingsTable,
+    notificationInboxTable,
     projectCreatedAtIdx,
     projectUpdatedAtIdx,
     taskProjectIdIdx,
@@ -2392,6 +3259,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     focusSessionTaskIdIdx,
     focusSessionStartTimeIdx,
     dailyStatsDateIdx,
+    notificationInboxNotificationIdIdx,
+    notificationInboxUpdatedAtIdx,
+    notificationInboxScheduledForIdx,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2763,6 +3633,8 @@ typedef $$TaskTableTableCreateCompanionBuilder =
       required String title,
       Value<String?> description,
       required TaskPriority priority,
+      Value<TaskReminderMode> reminderMode,
+      Value<int?> customReminderMinutesBefore,
       Value<DateTime?> startDate,
       Value<DateTime?> endDate,
       required int depth,
@@ -2778,6 +3650,8 @@ typedef $$TaskTableTableUpdateCompanionBuilder =
       Value<String> title,
       Value<String?> description,
       Value<TaskPriority> priority,
+      Value<TaskReminderMode> reminderMode,
+      Value<int?> customReminderMinutesBefore,
       Value<DateTime?> startDate,
       Value<DateTime?> endDate,
       Value<int> depth,
@@ -2881,6 +3755,17 @@ class $$TaskTableTableFilterComposer
   get priority => $composableBuilder(
     column: $table.priority,
     builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<TaskReminderMode, TaskReminderMode, int>
+  get reminderMode => $composableBuilder(
+    column: $table.reminderMode,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<int> get customReminderMinutesBefore => $composableBuilder(
+    column: $table.customReminderMinutesBefore,
+    builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<DateTime> get startDate => $composableBuilder(
@@ -3014,6 +3899,16 @@ class $$TaskTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get reminderMode => $composableBuilder(
+    column: $table.reminderMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get customReminderMinutesBefore => $composableBuilder(
+    column: $table.customReminderMinutesBefore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startDate => $composableBuilder(
     column: $table.startDate,
     builder: (column) => ColumnOrderings(column),
@@ -3113,6 +4008,17 @@ class $$TaskTableTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<TaskPriority, int> get priority =>
       $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<TaskReminderMode, int> get reminderMode =>
+      $composableBuilder(
+        column: $table.reminderMode,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<int> get customReminderMinutesBefore => $composableBuilder(
+    column: $table.customReminderMinutesBefore,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get startDate =>
       $composableBuilder(column: $table.startDate, builder: (column) => column);
@@ -3245,6 +4151,8 @@ class $$TaskTableTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<TaskPriority> priority = const Value.absent(),
+                Value<TaskReminderMode> reminderMode = const Value.absent(),
+                Value<int?> customReminderMinutesBefore = const Value.absent(),
                 Value<DateTime?> startDate = const Value.absent(),
                 Value<DateTime?> endDate = const Value.absent(),
                 Value<int> depth = const Value.absent(),
@@ -3258,6 +4166,8 @@ class $$TaskTableTableTableManager
                 title: title,
                 description: description,
                 priority: priority,
+                reminderMode: reminderMode,
+                customReminderMinutesBefore: customReminderMinutesBefore,
                 startDate: startDate,
                 endDate: endDate,
                 depth: depth,
@@ -3273,6 +4183,8 @@ class $$TaskTableTableTableManager
                 required String title,
                 Value<String?> description = const Value.absent(),
                 required TaskPriority priority,
+                Value<TaskReminderMode> reminderMode = const Value.absent(),
+                Value<int?> customReminderMinutesBefore = const Value.absent(),
                 Value<DateTime?> startDate = const Value.absent(),
                 Value<DateTime?> endDate = const Value.absent(),
                 required int depth,
@@ -3286,6 +4198,8 @@ class $$TaskTableTableTableManager
                 title: title,
                 description: description,
                 priority: priority,
+                reminderMode: reminderMode,
+                customReminderMinutesBefore: customReminderMinutesBefore,
                 startDate: startDate,
                 endDate: endDate,
                 depth: depth,
@@ -4166,6 +5080,366 @@ typedef $$SettingsTableTableProcessedTableManager =
       SettingsData,
       PrefetchHooks Function()
     >;
+typedef $$NotificationInboxTableTableCreateCompanionBuilder =
+    NotificationInboxTableCompanion Function({
+      Value<int> id,
+      required int notificationId,
+      required NotificationInboxType type,
+      required NotificationInboxState state,
+      required String title,
+      Value<String?> body,
+      Value<String?> payload,
+      Value<int?> taskId,
+      Value<int?> projectId,
+      Value<DateTime?> scheduledFor,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+    });
+typedef $$NotificationInboxTableTableUpdateCompanionBuilder =
+    NotificationInboxTableCompanion Function({
+      Value<int> id,
+      Value<int> notificationId,
+      Value<NotificationInboxType> type,
+      Value<NotificationInboxState> state,
+      Value<String> title,
+      Value<String?> body,
+      Value<String?> payload,
+      Value<int?> taskId,
+      Value<int?> projectId,
+      Value<DateTime?> scheduledFor,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+class $$NotificationInboxTableTableFilterComposer
+    extends Composer<_$AppDatabase, $NotificationInboxTableTable> {
+  $$NotificationInboxTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get notificationId => $composableBuilder(
+    column: $table.notificationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<
+    NotificationInboxType,
+    NotificationInboxType,
+    int
+  >
+  get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<
+    NotificationInboxState,
+    NotificationInboxState,
+    int
+  >
+  get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payload => $composableBuilder(
+    column: $table.payload,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get projectId => $composableBuilder(
+    column: $table.projectId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get scheduledFor => $composableBuilder(
+    column: $table.scheduledFor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$NotificationInboxTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $NotificationInboxTableTable> {
+  $$NotificationInboxTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get notificationId => $composableBuilder(
+    column: $table.notificationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payload => $composableBuilder(
+    column: $table.payload,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get projectId => $composableBuilder(
+    column: $table.projectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get scheduledFor => $composableBuilder(
+    column: $table.scheduledFor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$NotificationInboxTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NotificationInboxTableTable> {
+  $$NotificationInboxTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get notificationId => $composableBuilder(
+    column: $table.notificationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<NotificationInboxType, int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<NotificationInboxState, int> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<String> get payload =>
+      $composableBuilder(column: $table.payload, builder: (column) => column);
+
+  GeneratedColumn<int> get taskId =>
+      $composableBuilder(column: $table.taskId, builder: (column) => column);
+
+  GeneratedColumn<int> get projectId =>
+      $composableBuilder(column: $table.projectId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get scheduledFor => $composableBuilder(
+    column: $table.scheduledFor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$NotificationInboxTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NotificationInboxTableTable,
+          NotificationInboxTableData,
+          $$NotificationInboxTableTableFilterComposer,
+          $$NotificationInboxTableTableOrderingComposer,
+          $$NotificationInboxTableTableAnnotationComposer,
+          $$NotificationInboxTableTableCreateCompanionBuilder,
+          $$NotificationInboxTableTableUpdateCompanionBuilder,
+          (
+            NotificationInboxTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $NotificationInboxTableTable,
+              NotificationInboxTableData
+            >,
+          ),
+          NotificationInboxTableData,
+          PrefetchHooks Function()
+        > {
+  $$NotificationInboxTableTableTableManager(
+    _$AppDatabase db,
+    $NotificationInboxTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NotificationInboxTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$NotificationInboxTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$NotificationInboxTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> notificationId = const Value.absent(),
+                Value<NotificationInboxType> type = const Value.absent(),
+                Value<NotificationInboxState> state = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> body = const Value.absent(),
+                Value<String?> payload = const Value.absent(),
+                Value<int?> taskId = const Value.absent(),
+                Value<int?> projectId = const Value.absent(),
+                Value<DateTime?> scheduledFor = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => NotificationInboxTableCompanion(
+                id: id,
+                notificationId: notificationId,
+                type: type,
+                state: state,
+                title: title,
+                body: body,
+                payload: payload,
+                taskId: taskId,
+                projectId: projectId,
+                scheduledFor: scheduledFor,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int notificationId,
+                required NotificationInboxType type,
+                required NotificationInboxState state,
+                required String title,
+                Value<String?> body = const Value.absent(),
+                Value<String?> payload = const Value.absent(),
+                Value<int?> taskId = const Value.absent(),
+                Value<int?> projectId = const Value.absent(),
+                Value<DateTime?> scheduledFor = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+              }) => NotificationInboxTableCompanion.insert(
+                id: id,
+                notificationId: notificationId,
+                type: type,
+                state: state,
+                title: title,
+                body: body,
+                payload: payload,
+                taskId: taskId,
+                projectId: projectId,
+                scheduledFor: scheduledFor,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$NotificationInboxTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NotificationInboxTableTable,
+      NotificationInboxTableData,
+      $$NotificationInboxTableTableFilterComposer,
+      $$NotificationInboxTableTableOrderingComposer,
+      $$NotificationInboxTableTableAnnotationComposer,
+      $$NotificationInboxTableTableCreateCompanionBuilder,
+      $$NotificationInboxTableTableUpdateCompanionBuilder,
+      (
+        NotificationInboxTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $NotificationInboxTableTable,
+          NotificationInboxTableData
+        >,
+      ),
+      NotificationInboxTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4183,4 +5457,9 @@ class $AppDatabaseManager {
       );
   $$SettingsTableTableTableManager get settingsTable =>
       $$SettingsTableTableTableManager(_db, _db.settingsTable);
+  $$NotificationInboxTableTableTableManager get notificationInboxTable =>
+      $$NotificationInboxTableTableTableManager(
+        _db,
+        _db.notificationInboxTable,
+      );
 }

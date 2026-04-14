@@ -4,6 +4,10 @@ import '../../features/projects/data/datasources/project_local_datasource.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/i_project_repository.dart';
 import '../../features/projects/domain/services/project_service.dart';
+import '../../features/notifications/data/datasources/notification_inbox_local_datasource.dart';
+import '../../features/notifications/data/repositories/notification_inbox_repository_impl.dart';
+import '../../features/notifications/domain/repositories/i_notification_inbox_repository.dart';
+import '../../features/notifications/domain/services/notification_inbox_sync_service.dart';
 import '../../features/session/data/datasources/focus_local_datasource.dart';
 import '../../features/session/data/repositories/focus_session_repository_impl.dart';
 import '../../features/session/domain/repositories/i_focus_session_repository.dart';
@@ -67,6 +71,7 @@ Future<void> setupDependencyInjection() async {
 
   // Feature-based DI modules
   _initProjectsDi();
+  _initNotificationsDi();
   _initTasksDi();
   _initSettingsDi();
 
@@ -83,6 +88,19 @@ void _initProjectsDi() {
     ..registerLazySingleton<IProjectLocalDataSource>(() => ProjectLocalDataSourceImpl(getIt<AppDatabase>()))
     ..registerLazySingleton<IProjectRepository>(() => ProjectRepositoryImpl(getIt<IProjectLocalDataSource>()))
     ..registerLazySingleton<ProjectService>(() => ProjectService(getIt<IProjectRepository>()));
+}
+
+void _initNotificationsDi() {
+  getIt
+    ..registerLazySingleton<INotificationInboxLocalDataSource>(
+      () => NotificationInboxLocalDataSourceImpl(getIt<AppDatabase>()),
+    )
+    ..registerLazySingleton<INotificationInboxRepository>(
+      () => NotificationInboxRepositoryImpl(getIt<INotificationInboxLocalDataSource>()),
+    )
+    ..registerLazySingleton<NotificationInboxSyncService>(
+      () => NotificationInboxSyncService(getIt<INotificationService>(), getIt<INotificationInboxRepository>()),
+    );
 }
 
 void _initTasksDi() {

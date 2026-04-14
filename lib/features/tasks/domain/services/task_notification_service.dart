@@ -4,6 +4,7 @@ import '../../../../core/services/log_service.dart';
 import '../../../../core/utils/result.dart';
 import '../entities/task.dart';
 import '../repositories/i_task_repository.dart';
+import 'task_reminder_planner.dart';
 
 final _log = LogService.instance;
 
@@ -16,8 +17,7 @@ class TaskNotificationService {
   Future<Result<void>> scheduleTaskReminder(Task task) async {
     try {
       if (task.id == null) return const Success(null);
-      if (task.endDate == null) return const Success(null);
-      if (task.isCompleted) {
+      if (task.endDate == null || task.isCompleted) {
         await cancelTaskReminder(task.id!);
         return const Success(null);
       }
@@ -28,15 +28,18 @@ class TaskNotificationService {
         return const Success(null);
       }
 
-      final reminderTime = task.endDate!.subtract(const Duration(minutes: 15));
-      final scheduledTime = reminderTime.isAfter(now) ? reminderTime : now.add(const Duration(seconds: 2));
+      final scheduledTime = TaskReminderPlanner.computeReminderTime(task, now: now);
+      if (scheduledTime == null) {
+        await cancelTaskReminder(task.id!);
+        return const Success(null);
+      }
 
       await _notificationService.scheduleNotification(
         id: _taskNotificationId(task.id!),
         title: 'Task Reminder',
         body: task.title,
         scheduledTime: scheduledTime,
-        payload: '${NotificationConstants.taskPayloadPrefix}${task.id}',
+        payload: NotificationConstants.taskPayload(taskId: task.id!, projectId: task.projectId),
       );
 
       return const Success(null);

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../../tasks/domain/entities/task.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
+import '../../../tasks/domain/entities/task_reminder_mode.dart';
 import '../../../projects/domain/entities/project.dart';
 
 /// Serializable data envelope for cloud sync.
@@ -113,6 +114,8 @@ class SyncTaskData {
   final String title;
   final String? description;
   final int priorityIndex;
+  final int reminderModeIndex;
+  final int? customReminderMinutesBefore;
   final DateTime? startDate;
   final DateTime? endDate;
   final int depth;
@@ -127,6 +130,8 @@ class SyncTaskData {
     required this.title,
     this.description,
     required this.priorityIndex,
+    this.reminderModeIndex = 0,
+    this.customReminderMinutesBefore,
     this.startDate,
     this.endDate,
     required this.depth,
@@ -143,6 +148,8 @@ class SyncTaskData {
       title: json['title'] as String,
       description: json['description'] as String?,
       priorityIndex: json['priorityIndex'] as int,
+      reminderModeIndex: (json['reminderModeIndex'] as int?) ?? TaskReminderMode.smart.index,
+      customReminderMinutesBefore: json['customReminderMinutesBefore'] as int?,
       startDate: json['startDate'] != null ? DateTime.parse(json['startDate'] as String) : null,
       endDate: json['endDate'] != null ? DateTime.parse(json['endDate'] as String) : null,
       depth: json['depth'] as int,
@@ -159,6 +166,8 @@ class SyncTaskData {
     'title': title,
     'description': description,
     'priorityIndex': priorityIndex,
+    'reminderModeIndex': reminderModeIndex,
+    'customReminderMinutesBefore': customReminderMinutesBefore,
     'startDate': startDate?.toIso8601String(),
     'endDate': endDate?.toIso8601String(),
     'depth': depth,
@@ -175,6 +184,8 @@ class SyncTaskData {
       title: task.title,
       description: task.description,
       priorityIndex: task.priority.index,
+      reminderModeIndex: task.reminderMode.index,
+      customReminderMinutesBefore: task.customReminderMinutesBefore,
       startDate: task.startDate,
       endDate: task.endDate,
       depth: task.depth,
@@ -191,6 +202,10 @@ class SyncTaskData {
     title: title,
     description: description,
     priority: TaskPriority.values[priorityIndex],
+    reminderMode: reminderModeIndex >= 0 && reminderModeIndex < TaskReminderMode.values.length
+        ? TaskReminderMode.values[reminderModeIndex]
+        : TaskReminderMode.smart,
+    customReminderMinutesBefore: customReminderMinutesBefore,
     startDate: startDate,
     endDate: endDate,
     depth: depth,

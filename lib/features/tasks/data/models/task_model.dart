@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../projects/data/models/project_model.dart';
 import '../../domain/entities/task_priority.dart';
+import '../../domain/entities/task_reminder_mode.dart';
 
 @TableIndex(name: 'task_project_id_idx', columns: {#projectId})
 @TableIndex(name: 'task_parent_id_idx', columns: {#parentTaskId})
@@ -21,6 +22,10 @@ class TaskTable extends Table {
   TextColumn get description => text().nullable()();
 
   IntColumn get priority => intEnum<TaskPriority>()();
+
+  IntColumn get reminderMode => intEnum<TaskReminderMode>().withDefault(const Constant(0))();
+
+  IntColumn get customReminderMinutesBefore => integer().nullable()();
 
   DateTimeColumn get startDate => dateTime().nullable()();
 

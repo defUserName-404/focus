@@ -52,7 +52,7 @@ class FocusCommands {
 
     if (_isActive(existing)) {
       if (existing!.taskId == taskId) {
-        if (context.mounted) context.push(AppRoutes.focusSession);
+        if (context.mounted) context.push(AppRoutes.focusSession.path);
         return;
       }
       if (context.mounted) {
@@ -118,7 +118,7 @@ class FocusCommands {
         );
 
     if (context.mounted) {
-      context.push(AppRoutes.focusSession);
+      context.push(AppRoutes.focusSession.path);
     }
   }
 }

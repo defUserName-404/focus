@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'i_notification_service.dart';
+import 'notification_event.dart';
 
 /// No-op implementation of notification operations for platforms
 /// that don't support notifications in the current build/runtime.
@@ -11,12 +12,16 @@ class NoOpNotificationService implements INotificationService {
   // Empty broadcast streams that never emit
   final StreamController<String> _actionController = StreamController<String>.broadcast();
   final StreamController<String> _tapController = StreamController<String>.broadcast();
+  final StreamController<NotificationEvent> _eventController = StreamController<NotificationEvent>.broadcast();
 
   @override
   Stream<String> get actionStream => _actionController.stream;
 
   @override
   Stream<String> get tapStream => _tapController.stream;
+
+  @override
+  Stream<NotificationEvent> get eventStream => _eventController.stream;
 
   @override
   Future<void> init() async {}
@@ -51,5 +56,6 @@ class NoOpNotificationService implements INotificationService {
   void dispose() {
     _actionController.close();
     _tapController.close();
+    _eventController.close();
   }
 }

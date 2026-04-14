@@ -3,6 +3,7 @@ import 'package:forui/forui.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/platform_utils.dart';
+import '../config/theme/app_theme.dart';
 import '../sort_criteria.dart';
 
 class SortFilterChips<T extends SortCriteria> extends StatelessWidget {
@@ -46,7 +47,7 @@ class SortFilterChips<T extends SortCriteria> extends StatelessWidget {
               FButton(
                 style: selectedCriteria == criteria ? FButtonStyle.secondary() : FButtonStyle.outline(),
                 onPress: () => onChanged(criteria),
-                child: Text(criteria.label),
+                child: Text(criteria.label, style: context.typography.xs),
               ),
           ],
         ),

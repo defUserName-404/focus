@@ -9,6 +9,10 @@ This document defines the coding style expected from coding agents in Focus.
 - Use 2-space indentation
 - Prefer trailing commas for multi-line parameter lists
 - Keep functions focused and small when practical
+- Must avoid too much unnecessary comments like # Singleton class etc. Only need to add comments where intent might not be clear.
+- Must avoid emdashes on the comments.
+- Within a function, there should not be any blank lines.
+- Between two functions on a class there should exactly be one blank line.
 
 ## Import Order
 
@@ -102,8 +106,12 @@ _log.error('Message', tag: 'ClassName', error: e, stackTrace: st);
 
 - Prefer ForUI widgets and styles already used in the codebase.
 - Use app constants/theme tokens for spacing/sizing.
-- Avoid hardcoded spacing when a semantic constant exists.
+- Must avoid hardcoded spacing when a semantic constant exists.
 - Avoid duplicate padding through nested wrappers (`FScaffold` + extra constrained wrappers).
+- Always put a single widget on their own files, no two widgets should live on the same file.
+- Always break larger widgets into smaller widgets. The widgets which are required by other classes should only be the ones with public. otherwise they should be private. those should be declared as part of directive by only the used screen.
+- Common widgets, re-used widgets should be moved to the core level.
+- Code duplication and non-reuse is heavily discouraged. 
 
 ## Forms and Date/Time Rules
 

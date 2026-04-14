@@ -3,6 +3,7 @@ import '../../../../core/utils/result.dart';
 import '../entities/task.dart';
 import '../entities/task_extensions.dart';
 import '../entities/task_priority.dart';
+import '../entities/task_reminder_mode.dart';
 import '../repositories/i_task_repository.dart';
 import 'task_notification_service.dart';
 
@@ -35,6 +36,8 @@ class TaskService {
     required String title,
     String? description,
     TaskPriority priority = TaskPriority.medium,
+    TaskReminderMode reminderMode = TaskReminderMode.smart,
+    int? customReminderMinutesBefore,
     DateTime? startDate,
     DateTime? endDate,
     required int depth,
@@ -47,6 +50,8 @@ class TaskService {
         title: title,
         description: description,
         priority: priority,
+        reminderMode: reminderMode,
+        customReminderMinutesBefore: customReminderMinutesBefore,
         startDate: startDate,
         endDate: endDate,
         depth: depth,

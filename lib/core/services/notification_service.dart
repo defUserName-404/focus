@@ -10,6 +10,7 @@ import '../routing/routes.dart';
 import '../utils/platform_utils.dart';
 import 'i_notification_service.dart';
 import 'log_service.dart';
+import 'notification_event.dart';
 
 /// Top-level handler required by flutter_local_notifications for
 /// notification actions received while the app is in the background.
@@ -19,6 +20,15 @@ void _onBackgroundNotificationResponse(NotificationResponse response) {
   final actionId = response.actionId;
   if (actionId != null && actionId.isNotEmpty) {
     NotificationService._actionController.add(actionId);
+    NotificationService._eventController.add(
+      NotificationEvent(
+        type: NotificationEventType.action,
+        occurredAt: DateTime.now(),
+        notificationId: response.id,
+        title: 'Notification action',
+        actionId: actionId,
+      ),
+    );
   }
 }
 
@@ -41,6 +51,12 @@ class NotificationService implements INotificationService {
 
   @override
   Stream<String> get tapStream => _tapController.stream;
+
+  /// Broadcast stream for recent notification events shown in-app.
+  static final StreamController<NotificationEvent> _eventController = StreamController<NotificationEvent>.broadcast();
+
+  @override
+  Stream<NotificationEvent> get eventStream => _eventController.stream;
 
   @override
   Future<void> init() async {
@@ -130,12 +146,35 @@ class NotificationService implements INotificationService {
     final actionId = response.actionId;
     if (actionId != null && actionId.isNotEmpty) {
       _actionController.add(actionId);
+      _eventController.add(
+        NotificationEvent(
+          type: NotificationEventType.action,
+          occurredAt: DateTime.now(),
+          notificationId: response.id,
+          title: 'Notification action',
+          actionId: actionId,
+        ),
+      );
       return;
     }
 
     // Handle body tap — navigate to the appropriate screen.
     final payload = response.payload;
     if (payload != null && payload.isNotEmpty) {
+      final parsedTaskPayload = NotificationConstants.parseTaskPayload(payload);
+      _eventController.add(
+        NotificationEvent(
+          type: NotificationEventType.opened,
+          occurredAt: DateTime.now(),
+          notificationId:
+              response.id ??
+              (parsedTaskPayload == null
+                  ? null
+                  : NotificationConstants.taskReminderIdOffset + parsedTaskPayload.taskId),
+          title: 'Notification opened',
+          payload: payload,
+        ),
+      );
       _handleNotificationTapNavigation(payload);
     }
   }
@@ -149,16 +188,18 @@ class NotificationService implements INotificationService {
       } else {
         _tapController.add(payload);
       }
-    } else if (payload.startsWith(NotificationConstants.taskPayloadPrefix)) {
-      final taskIdStr = payload.substring(NotificationConstants.taskPayloadPrefix.length);
-      final taskId = int.tryParse(taskIdStr);
-      if (taskId != null) {
-        final nav = rootNavigatorKey.currentState;
-        if (nav != null) {
-          appRouter.push('${AppRoutes.taskDetailPath(taskId)}?projectId=0');
-        } else {
-          _tapController.add(payload);
-        }
+      return;
+    }
+
+    final taskPayload = NotificationConstants.parseTaskPayload(payload);
+    if (taskPayload != null) {
+      final nav = rootNavigatorKey.currentState;
+      if (nav != null) {
+        final path = AppRoutes.taskDetailPath(taskPayload.taskId);
+        final query = taskPayload.projectId == null ? null : {'projectId': taskPayload.projectId.toString()};
+        appRouter.push(Uri(path: path, queryParameters: query).toString());
+      } else {
+        _tapController.add(payload);
       }
     }
   }
@@ -263,6 +304,10 @@ class NotificationService implements INotificationService {
       body: body,
       notificationDetails: details,
     );
+
+    _eventController.add(
+      NotificationEvent(type: NotificationEventType.alarm, occurredAt: DateTime.now(), title: title, body: body),
+    );
   }
 
   @override
@@ -293,6 +338,20 @@ class NotificationService implements INotificationService {
       macOS: darwinDetails,
       linux: linuxDetails,
       windows: windowsDetails,
+    );
+
+    _eventController.add(
+      NotificationEvent(
+        type: payload != null && payload.startsWith(NotificationConstants.taskPayloadPrefix)
+            ? NotificationEventType.taskReminderScheduled
+            : NotificationEventType.reminderScheduled,
+        occurredAt: DateTime.now(),
+        notificationId: id,
+        title: title,
+        body: body,
+        payload: payload,
+        scheduledFor: scheduledTime,
+      ),
     );
 
     // The Linux notification server doesn't provide scheduling APIs, so we
@@ -441,6 +500,15 @@ class NotificationService implements INotificationService {
   Future<void> cancelNotification(int id) async {
     _inProcessScheduledTimers.remove(id)?.cancel();
     await _notifications.cancel(id: id);
+    _eventController.add(
+      NotificationEvent(
+        type: NotificationEventType.cancelled,
+        occurredAt: DateTime.now(),
+        notificationId: id,
+        title: 'Notification cancelled',
+        body: 'Notification ID $id',
+      ),
+    );
   }
 
   @override

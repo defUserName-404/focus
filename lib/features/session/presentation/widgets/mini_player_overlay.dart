@@ -43,7 +43,7 @@ class MiniPlayerOverlay extends ConsumerWidget {
         : phaseLabel;
 
     return GestureDetector(
-      onTap: () => context.push(AppRoutes.focusSession),
+      onTap: () => context.push(AppRoutes.focusSession.path),
       child: Container(
         height: 60,
         decoration: BoxDecoration(

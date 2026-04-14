@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
 
-import '../constants/app_constants.dart';
-
 /// Reusable time picker field that pairs with an [fu.FDateField.calendar].
 ///
 /// Uses ForUI's picker-only time field for visual consistency with other
@@ -18,31 +16,30 @@ class TimeField extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectedTime = value == null ? null : fu.FTime.fromDateTime(value!);
 
-    return Row(
-      children: [
-        Expanded(
-          child: fu.FTimeField.picker(
-            label: Text(label),
-            hint: value == null ? 'Pick date first' : 'Select time',
-            enabled: value != null,
-            control: fu.FTimeFieldControl.lifted(
-              time: selectedTime,
-              onChange: (time) {
-                if (time == null || value == null) return;
-                onChanged(time.withDate(value!));
-              },
+    return fu.FTimeField.picker(
+      label: Text(label),
+      hint: value == null ? 'Pick date first' : 'Select time',
+      enabled: value != null,
+      control: fu.FTimeFieldControl.lifted(
+        time: selectedTime,
+        onChange: (time) {
+          if (time == null || value == null) return;
+          onChanged(time.withDate(value!));
+        },
+      ),
+      suffixBuilder: value == null
+          ? null
+          : (_, style, states) => Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onChanged(null),
+                child: Opacity(
+                  opacity: states.contains(WidgetState.disabled) ? 0.5 : 1,
+                  child: Icon(fu.FIcons.x, size: style.iconStyle.size),
+                ),
+              ),
             ),
-          ),
-        ),
-        if (value != null) ...[
-          SizedBox(width: AppConstants.spacing.small),
-          fu.FButton.icon(
-            style: fu.FButtonStyle.ghost(),
-            onPress: () => onChanged(null),
-            child: const Icon(fu.FIcons.x),
-          ),
-        ],
-      ],
     );
   }
 }

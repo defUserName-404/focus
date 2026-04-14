@@ -9,6 +9,7 @@ import '../../features/projects/presentation/screens/project_detail_screen.dart'
 import '../../features/projects/presentation/screens/projects_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/session/presentation/screens/focus_session_screen.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/sync/domain/entities/sync_state.dart';
 import '../../features/sync/presentation/screens/sync_conflict_screen.dart';
@@ -34,7 +35,7 @@ final shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 /// This is a singleton instance used throughout the app.
 final GoRouter appRouter = GoRouter(
   navigatorKey: rootNavigatorKey,
-  initialLocation: AppRoutes.home,
+  initialLocation: AppRoutes.home.path,
   debugLogDiagnostics: true,
   routes: [
     // Shell route wraps the main navigation (bottom nav / side rail)
@@ -44,28 +45,28 @@ final GoRouter appRouter = GoRouter(
       routes: [
         // Home tab
         GoRoute(
-          path: AppRoutes.home,
-          name: RouteNames.home,
+          path: AppRoutes.home.path,
+          name: AppRoutes.home.name,
           pageBuilder: (context, state) => const NoTransitionPage(child: HomeScreen()),
         ),
 
         // Tasks tab and sub-routes
         GoRoute(
-          path: AppRoutes.tasks,
-          name: RouteNames.tasks,
+          path: AppRoutes.tasks.path,
+          name: AppRoutes.tasks.name,
           pageBuilder: (context, state) => const NoTransitionPage(child: TasksScreen()),
           routes: [
             // Create task with project selection
             GoRoute(
               path: 'new-with-project',
-              name: RouteNames.createTaskWithProject,
+              name: AppRoutes.createTaskWithProject.name,
               parentNavigatorKey: rootNavigatorKey,
               builder: (context, state) => const CreateTaskWithProjectScreen(),
             ),
             // Task detail
             GoRoute(
               path: ':taskId',
-              name: RouteNames.taskDetail,
+              name: AppRoutes.taskDetail.name,
               builder: (context, state) {
                 final taskId = int.parse(state.pathParameters['taskId']!);
                 // projectId passed via queryParams or extra
@@ -78,7 +79,7 @@ final GoRouter appRouter = GoRouter(
                 // Edit task
                 GoRoute(
                   path: 'edit',
-                  name: RouteNames.editTask,
+                  name: AppRoutes.editTask.name,
                   parentNavigatorKey: rootNavigatorKey,
                   builder: (context, state) {
                     final task = state.extra as Task;
@@ -92,21 +93,21 @@ final GoRouter appRouter = GoRouter(
 
         // Projects tab and sub-routes
         GoRoute(
-          path: AppRoutes.projects,
-          name: RouteNames.projects,
+          path: AppRoutes.projects.path,
+          name: AppRoutes.projects.name,
           pageBuilder: (context, state) => const NoTransitionPage(child: ProjectsScreen()),
           routes: [
             // Create project
             GoRoute(
               path: 'new',
-              name: RouteNames.createProject,
+              name: AppRoutes.createProject.name,
               parentNavigatorKey: rootNavigatorKey,
               builder: (context, state) => const CreateProjectScreen(),
             ),
             // Project detail
             GoRoute(
               path: ':projectId',
-              name: RouteNames.projectDetail,
+              name: AppRoutes.projectDetail.name,
               builder: (context, state) {
                 final projectId = int.parse(state.pathParameters['projectId']!);
                 return ProjectDetailScreen(projectId: projectId);
@@ -115,7 +116,7 @@ final GoRouter appRouter = GoRouter(
                 // Edit project
                 GoRoute(
                   path: 'edit',
-                  name: RouteNames.editProject,
+                  name: AppRoutes.editProject.name,
                   parentNavigatorKey: rootNavigatorKey,
                   builder: (context, state) {
                     final project = state.extra as Project;
@@ -125,7 +126,7 @@ final GoRouter appRouter = GoRouter(
                 // Create task within project
                 GoRoute(
                   path: 'tasks/new',
-                  name: RouteNames.createTask,
+                  name: AppRoutes.createTask.name,
                   parentNavigatorKey: rootNavigatorKey,
                   builder: (context, state) {
                     final projectId = int.parse(state.pathParameters['projectId']!);
@@ -145,15 +146,22 @@ final GoRouter appRouter = GoRouter(
 
         // Reports tab
         GoRoute(
-          path: AppRoutes.reports,
-          name: RouteNames.reports,
+          path: AppRoutes.reports.path,
+          name: AppRoutes.reports.name,
           pageBuilder: (context, state) => const NoTransitionPage(child: ReportsScreen()),
+        ),
+
+        // Notifications tab
+        GoRoute(
+          path: AppRoutes.notifications.path,
+          name: AppRoutes.notifications.name,
+          pageBuilder: (context, state) => const NoTransitionPage(child: NotificationsScreen()),
         ),
 
         // Settings tab
         GoRoute(
-          path: AppRoutes.settings,
-          name: RouteNames.settings,
+          path: AppRoutes.settings.path,
+          name: AppRoutes.settings.name,
           pageBuilder: (context, state) => const NoTransitionPage(child: SettingsScreen()),
         ),
       ],
@@ -161,8 +169,8 @@ final GoRouter appRouter = GoRouter(
 
     // Focus session (full-screen, above shell)
     GoRoute(
-      path: AppRoutes.focusSession,
-      name: RouteNames.focusSession,
+      path: AppRoutes.focusSession.path,
+      name: AppRoutes.focusSession.name,
       parentNavigatorKey: rootNavigatorKey,
       pageBuilder: (context, state) => CustomTransitionPage(
         child: const FocusSessionScreen(),
@@ -174,8 +182,8 @@ final GoRouter appRouter = GoRouter(
 
     // Sync conflict resolution (full-screen, above shell)
     GoRoute(
-      path: AppRoutes.syncConflicts,
-      name: RouteNames.syncConflicts,
+      path: AppRoutes.syncConflicts.path,
+      name: AppRoutes.syncConflicts.name,
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) {
         final conflicts = state.extra as List<SyncConflict>;
@@ -193,16 +201,16 @@ void navigateToFocusSession({BuildContext? context}) {
   // Use the router from context if available
   if (context != null) {
     final currentLocation = GoRouterState.of(context).uri.path;
-    if (currentLocation != AppRoutes.focusSession) {
-      context.push(AppRoutes.focusSession);
+    if (currentLocation != AppRoutes.focusSession.path) {
+      context.push(AppRoutes.focusSession.path);
     }
     return;
   }
 
   // Fallback to using appRouter directly
   final currentLocation = appRouter.routerDelegate.currentConfiguration.uri.path;
-  if (currentLocation != AppRoutes.focusSession) {
-    appRouter.push(AppRoutes.focusSession);
+  if (currentLocation != AppRoutes.focusSession.path) {
+    appRouter.push(AppRoutes.focusSession.path);
   }
 }
 
@@ -232,7 +240,7 @@ class _ErrorScreen extends StatelessWidget {
                 style: const TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 24),
-              ElevatedButton(onPressed: () => context.go(AppRoutes.home), child: const Text('Go Home')),
+              ElevatedButton(onPressed: () => context.go(AppRoutes.home.path), child: const Text('Go Home')),
             ],
           ),
         ),

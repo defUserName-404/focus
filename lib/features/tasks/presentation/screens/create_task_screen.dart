@@ -9,6 +9,7 @@ import '../../../../core/widgets/filter_select.dart';
 import '../../../../core/widgets/time_field.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../domain/entities/task_priority.dart';
+import '../../domain/entities/task_reminder_mode.dart';
 import '../providers/task_provider.dart';
 
 class CreateTaskScreen extends ConsumerStatefulWidget {
@@ -25,14 +26,17 @@ class CreateTaskScreen extends ConsumerStatefulWidget {
 class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _customReminderHoursController = TextEditingController();
   DateTime? _startDate;
   DateTime? _endDate;
   TaskPriority _priority = TaskPriority.medium;
+  TaskReminderMode _reminderMode = TaskReminderMode.smart;
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _customReminderHoursController.dispose();
     super.dispose();
   }
 
@@ -87,6 +91,31 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           clearable: true,
         ),
         TimeField(label: 'End Time', value: _endDate, onChanged: (date) => setState(() => _endDate = date)),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text('Reminder', style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
+        ),
+        FilterSelect<TaskReminderMode>(
+          selected: _reminderMode,
+          onChanged: (value) => setState(() => _reminderMode = value),
+          options: TaskReminderMode.values,
+          hint: 'Reminder',
+        ),
+        if (_reminderMode == TaskReminderMode.custom)
+          FTextFormField(
+            control: FTextFieldControl.managed(controller: _customReminderHoursController),
+            label: const Text('Custom Reminder (Hours Before Deadline)'),
+            hint: 'e.g. 6',
+            keyboardType: TextInputType.number,
+            validator: (value) {
+              final parsed = int.tryParse(value ?? '');
+              if (parsed == null || parsed <= 0) {
+                return 'Enter a positive number of hours';
+              }
+              return null;
+            },
+            autovalidateMode: AutovalidateMode.onUnfocus,
+          ),
       ],
     );
   }
@@ -94,6 +123,13 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   Future<void> _submit() async {
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
+
+    final customMinutesBefore = _reminderMode == TaskReminderMode.custom
+        ? int.tryParse(_customReminderHoursController.text.trim())
+        : null;
+    if (_reminderMode == TaskReminderMode.custom && (customMinutesBefore == null || customMinutesBefore <= 0)) {
+      return;
+    }
 
     await ref
         .read(taskProvider(widget.projectId.toString()).notifier)
@@ -103,6 +139,8 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           title: title,
           description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
           priority: _priority,
+          reminderMode: _reminderMode,
+          customReminderMinutesBefore: customMinutesBefore == null ? null : customMinutesBefore * 60,
           startDate: _startDate,
           endDate: _endDate,
           depth: widget.depth,

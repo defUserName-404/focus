@@ -236,96 +236,91 @@ class _CalendarContentState extends ConsumerState<_CalendarContent> {
 
     return CompositedTransformTarget(
       link: _calendarLayerLink,
-      child: fu.FCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  viewMode == CalendarViewMode.month ? 'Focus Month' : 'Focus Week',
-                  style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('This', style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
+              _CalendarViewToggle(
+                view: viewMode,
+                onChanged: (nextView) {
+                  _switchView(
+                    currentView: viewMode,
+                    nextView: nextView,
+                    uiState: uiState,
+                    selectedDay: effectiveSelectedDay,
+                  );
+                },
+              ),
+            ],
+          ),
+          SizedBox(height: AppConstants.spacing.regular),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () => _previousPeriod(viewMode),
+                child: Icon(
+                  fu.FIcons.chevronLeft,
+                  size: AppConstants.size.icon.regular,
+                  color: context.colors.mutedForeground,
                 ),
-                _CalendarViewToggle(
-                  view: viewMode,
-                  onChanged: (nextView) {
-                    _switchView(
-                      currentView: viewMode,
-                      nextView: nextView,
-                      uiState: uiState,
-                      selectedDay: effectiveSelectedDay,
-                    );
-                  },
+              ),
+              Text(
+                _periodLabel(viewMode: viewMode, displayMonth: displayMonth, displayWeekStart: displayWeekStart),
+                style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
+              ),
+              GestureDetector(
+                onTap: () => _nextPeriod(viewMode),
+                child: Icon(
+                  fu.FIcons.chevronRight,
+                  size: AppConstants.size.icon.regular,
+                  color: context.colors.mutedForeground,
                 ),
-              ],
-            ),
-            SizedBox(height: AppConstants.spacing.regular),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                  onTap: () => _previousPeriod(viewMode),
-                  child: Icon(
-                    fu.FIcons.chevronLeft,
-                    size: AppConstants.size.icon.regular,
-                    color: context.colors.mutedForeground,
-                  ),
-                ),
-                Text(
-                  _periodLabel(viewMode: viewMode, displayMonth: displayMonth, displayWeekStart: displayWeekStart),
-                  style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
-                ),
-                GestureDetector(
-                  onTap: () => _nextPeriod(viewMode),
-                  child: Icon(
-                    fu.FIcons.chevronRight,
-                    size: AppConstants.size.icon.regular,
-                    color: context.colors.mutedForeground,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: AppConstants.spacing.regular),
+              ),
+            ],
+          ),
+          SizedBox(height: AppConstants.spacing.regular),
 
-            if (viewMode == CalendarViewMode.month) ...[
-              Row(
-                children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                    .map(
-                      (d) => Expanded(
-                        child: Center(
-                          child: Text(
-                            d,
-                            style: context.typography.xs.copyWith(
-                              color: context.colors.mutedForeground,
-                              fontWeight: FontWeight.w500,
-                            ),
+          if (viewMode == CalendarViewMode.month) ...[
+            Row(
+              children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                  .map(
+                    (d) => Expanded(
+                      child: Center(
+                        child: Text(
+                          d,
+                          style: context.typography.xs.copyWith(
+                            color: context.colors.mutedForeground,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
-                    )
-                    .toList(),
-              ),
-              SizedBox(height: AppConstants.spacing.small),
-              ..._buildWeeks(
-                context,
-                displayMonth: displayMonth,
-                daysInMonth: daysInMonth,
-                firstWeekday: firstWeekday,
-                tasksByDate: tasksByDate,
-                now: now,
-                selectedDay: effectiveSelectedDay,
-              ),
-            ] else
-              _buildWeekStrip(
-                context,
-                weekStart: displayWeekStart,
-                tasksByDate: tasksByDate,
-                now: now,
-                selectedDay: effectiveSelectedDay,
-              ),
-          ],
-        ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            SizedBox(height: AppConstants.spacing.small),
+            ..._buildWeeks(
+              context,
+              displayMonth: displayMonth,
+              daysInMonth: daysInMonth,
+              firstWeekday: firstWeekday,
+              tasksByDate: tasksByDate,
+              now: now,
+              selectedDay: effectiveSelectedDay,
+            ),
+          ] else
+            _buildWeekStrip(
+              context,
+              weekStart: displayWeekStart,
+              tasksByDate: tasksByDate,
+              now: now,
+              selectedDay: effectiveSelectedDay,
+            ),
+        ],
       ),
     );
   }
@@ -495,13 +490,13 @@ class _CalendarViewToggle extends StatelessWidget {
         fu.FButton(
           style: view == CalendarViewMode.week ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
           onPress: () => onChanged(CalendarViewMode.week),
-          child: const Text('Week'),
+          child: Text('Week', style: context.typography.xs),
         ),
         SizedBox(width: AppConstants.spacing.extraSmall),
         fu.FButton(
           style: view == CalendarViewMode.month ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
           onPress: () => onChanged(CalendarViewMode.month),
-          child: const Text('Month'),
+          child: Text('Month', style: context.typography.xs),
         ),
       ],
     );
