@@ -10,22 +10,16 @@ import '../../../../core/constants/date_time_constants.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../tasks/domain/entities/daily_session_stats.dart';
 import '../../../tasks/presentation/providers/task_stats_provider.dart';
+import '../providers/reports_insights_window_provider.dart';
 
-enum _InsightsWindow { weekly, monthly }
-
-class ProductivityInsightsSection extends ConsumerStatefulWidget {
+class ProductivityInsightsSection extends ConsumerWidget {
   const ProductivityInsightsSection({super.key});
 
   @override
-  ConsumerState<ProductivityInsightsSection> createState() => _ProductivityInsightsSectionState();
-}
-
-class _ProductivityInsightsSectionState extends ConsumerState<ProductivityInsightsSection> {
-  _InsightsWindow _window = _InsightsWindow.weekly;
-
-  @override
-  Widget build(BuildContext context) {
-    final range = _dateRangeForWindow(_window);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final windowAsync = ref.watch(reportsInsightsWindowProvider);
+    final window = windowAsync.value ?? InsightsWindowMode.weekly;
+    final range = _dateRangeForWindow(window);
     final rangeKey = '${range.start.toShortDateKey()}|${range.end.toShortDateKey()}';
     final statsAsync = ref.watch(dailyStatsForRangeProvider(rangeKey));
 
@@ -37,7 +31,12 @@ class _ProductivityInsightsSectionState extends ConsumerState<ProductivityInsigh
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Productivity Insights', style: context.typography.base.copyWith(fontWeight: FontWeight.w700)),
-              _InsightsWindowToggle(window: _window, onChanged: (value) => setState(() => _window = value)),
+              _InsightsWindowToggle(
+                window: window,
+                onChanged: (value) {
+                  ref.read(reportsInsightsWindowProvider.notifier).setWindow(value);
+                },
+              ),
             ],
           ),
           SizedBox(height: AppConstants.spacing.regular),
@@ -48,8 +47,8 @@ class _ProductivityInsightsSectionState extends ConsumerState<ProductivityInsigh
               child: Center(child: Text('Error: $err')),
             ),
             data: (stats) {
-              final insights = _buildInsightsData(stats: stats, window: _window, range: range);
-              return _InsightsContent(window: _window, data: insights);
+              final insights = _buildInsightsData(stats: stats, window: window, range: range);
+              return _InsightsContent(window: window, data: insights);
             },
           ),
         ],
@@ -57,11 +56,11 @@ class _ProductivityInsightsSectionState extends ConsumerState<ProductivityInsigh
     );
   }
 
-  _DateRange _dateRangeForWindow(_InsightsWindow window) {
+  _DateRange _dateRangeForWindow(InsightsWindowMode window) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    if (window == _InsightsWindow.weekly) {
+    if (window == InsightsWindowMode.weekly) {
       final weekStart = today.subtract(Duration(days: today.weekday - DateTime.monday));
       return _DateRange(start: weekStart, end: weekStart.add(const Duration(days: 6)));
     }
@@ -73,7 +72,7 @@ class _ProductivityInsightsSectionState extends ConsumerState<ProductivityInsigh
 
   _InsightsData _buildInsightsData({
     required List<DailySessionStats> stats,
-    required _InsightsWindow window,
+    required InsightsWindowMode window,
     required _DateRange range,
   }) {
     final byDate = {for (final stat in stats) stat.date: stat};
@@ -84,7 +83,7 @@ class _ProductivityInsightsSectionState extends ConsumerState<ProductivityInsigh
     final focusRatio = totalSessions == 0 ? 0.0 : completedSessions / totalSessions;
     final breakSessions = math.max(totalSessions - completedSessions, 0);
 
-    final bars = window == _InsightsWindow.weekly
+    final bars = window == InsightsWindowMode.weekly
         ? _weeklyBars(byDate: byDate, start: range.start)
         : _monthlyBars(byDate: byDate, monthStart: range.start);
 
@@ -145,8 +144,8 @@ class _ProductivityInsightsSectionState extends ConsumerState<ProductivityInsigh
 }
 
 class _InsightsWindowToggle extends StatelessWidget {
-  final _InsightsWindow window;
-  final ValueChanged<_InsightsWindow> onChanged;
+  final InsightsWindowMode window;
+  final ValueChanged<InsightsWindowMode> onChanged;
 
   const _InsightsWindowToggle({required this.window, required this.onChanged});
 
@@ -155,14 +154,14 @@ class _InsightsWindowToggle extends StatelessWidget {
     return Row(
       children: [
         fu.FButton(
-          style: window == _InsightsWindow.weekly ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
-          onPress: () => onChanged(_InsightsWindow.weekly),
+          style: window == InsightsWindowMode.weekly ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          onPress: () => onChanged(InsightsWindowMode.weekly),
           child: const Text('Weekly'),
         ),
         SizedBox(width: AppConstants.spacing.extraSmall),
         fu.FButton(
-          style: window == _InsightsWindow.monthly ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
-          onPress: () => onChanged(_InsightsWindow.monthly),
+          style: window == InsightsWindowMode.monthly ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          onPress: () => onChanged(InsightsWindowMode.monthly),
           child: const Text('Monthly'),
         ),
       ],
@@ -171,7 +170,7 @@ class _InsightsWindowToggle extends StatelessWidget {
 }
 
 class _InsightsContent extends StatelessWidget {
-  final _InsightsWindow window;
+  final InsightsWindowMode window;
   final _InsightsData data;
 
   const _InsightsContent({required this.window, required this.data});
@@ -220,7 +219,7 @@ class _InsightsContent extends StatelessWidget {
 }
 
 class _FocusHoursChart extends StatelessWidget {
-  final _InsightsWindow window;
+  final InsightsWindowMode window;
   final List<_BarDatum> bars;
 
   const _FocusHoursChart({required this.window, required this.bars});
@@ -229,7 +228,7 @@ class _FocusHoursChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxHours = bars.fold<double>(0, (maxValue, bar) => math.max(maxValue, bar.focusHours));
     const barHeight = 88.0;
-    final title = window == _InsightsWindow.weekly
+    final title = window == InsightsWindowMode.weekly
         ? 'Focus Hours per Day (Current Week)'
         : 'Focus Hours per Week (Current Month)';
 
