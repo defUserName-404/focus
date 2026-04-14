@@ -20,43 +20,46 @@ class QuickSessionButton extends ConsumerWidget {
       child: GestureDetector(
         onTap: () => FocusCommands.startQuickSession(context, ref),
         behavior: HitTestBehavior.opaque,
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: context.colors.background.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: context.colors.background.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+                ),
+                child: Icon(fu.FIcons.play, color: context.colors.background, size: AppConstants.size.icon.large),
               ),
-              child: Icon(fu.FIcons.play, color: context.colors.background, size: AppConstants.size.icon.regular),
-            ),
-            SizedBox(width: AppConstants.spacing.regular),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Quick Session',
-                    style: context.typography.base.copyWith(
-                      color: context.colors.background,
-                      fontWeight: FontWeight.w600,
+              SizedBox(width: AppConstants.spacing.regular),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Start Focus Session',
+                      style: context.typography.lg.copyWith(
+                        color: context.colors.background,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: AppConstants.spacing.extraSmall),
-                  Text(
-                    'Start a quick focus session',
-                    style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
-                  ),
-                ],
+                    SizedBox(height: AppConstants.spacing.extraSmall),
+                    Text(
+                      'Tap to begin a quick session',
+                      style: context.typography.sm.copyWith(color: context.colors.background.withValues(alpha: 0.7)),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Icon(
-              fu.FIcons.chevronRight,
-              size: AppConstants.size.icon.extraSmall,
-              color: context.colors.mutedForeground,
-            ),
-          ],
+              Icon(
+                fu.FIcons.chevronRight,
+                size: AppConstants.size.icon.regular,
+                color: context.colors.background.withValues(alpha: 0.7),
+              ),
+            ],
+          ),
         ),
       ),
     );

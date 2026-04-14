@@ -6,6 +6,7 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/audio_assets.dart';
 import '../../../../core/utils/platform_utils.dart';
+import '../../../sync/presentation/widgets/sync_settings_card.dart';
 import '../../domain/entities/setting.dart';
 import '../providers/settings_provider.dart';
 import 'ambience_toggle_card.dart';
@@ -89,6 +90,10 @@ class SettingsContent extends ConsumerWidget {
             ),
           ),
         ],
+        SizedBox(height: AppConstants.spacing.large),
+        const SectionTitle(title: 'Cloud Sync'),
+        SizedBox(height: AppConstants.spacing.regular),
+        const SyncSettingsCard(),
         SizedBox(height: AppConstants.spacing.extraLarge),
       ],
     );

@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/utils/datetime_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
-import 'package:go_router/go_router.dart';
-import 'package:focus/features/home/presentation/widgets/empty_section.dart';
-import 'package:focus/features/home/presentation/widgets/global_stats_row.dart';
-import 'package:focus/features/home/presentation/widgets/recent_project_tile.dart';
-import 'package:focus/features/home/presentation/widgets/recent_task_tile.dart';
-import 'package:focus/features/home/presentation/widgets/section_header.dart';
+import 'package:focus/core/utils/datetime_formatter.dart';
 import 'package:focus/features/home/presentation/widgets/streak_badge.dart';
-import 'package:focus/features/home/presentation/widgets/today_summary_card.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../../tasks/domain/entities/global_stats.dart';
 import '../../../tasks/presentation/providers/task_stats_provider.dart';
+import '../widgets/empty_section.dart';
 import '../widgets/quick_session_button.dart';
-import '../widgets/year_activity_graph.dart';
+import '../widgets/recent_project_tile.dart';
+import '../widgets/recent_task_tile.dart';
+import '../widgets/section_header.dart';
+import '../widgets/upcoming_calendar_card.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -55,15 +53,10 @@ class HomeScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: AppConstants.spacing.regular,
           children: [
-            QuickSessionButton(),
-            SizedBox(height: AppConstants.spacing.regular),
-            TodaySummaryCard(stats: stats),
-            SizedBox(height: AppConstants.spacing.regular),
-            SectionHeader(title: 'Overall Stats'),
-            GlobalStatsRow(stats: stats),
-            SizedBox(height: AppConstants.spacing.regular),
-            const YearActivityGraph(),
-            SizedBox(height: AppConstants.spacing.regular),
+            const QuickSessionButton(),
+
+            SectionHeader(title: 'Upcoming Reminders'),
+            const UpcomingCalendarCard(),
             SectionHeader(
               title: 'Recent Tasks',
               onViewAll: () {

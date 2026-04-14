@@ -92,7 +92,7 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
     _tooltip?.remove();
     _tooltip?.dispose();
     _tooltip = null;
-    if (ref.read(tappedDateProvider) != null && mounted) {
+    if (mounted && ref.read(tappedDateProvider) != null) {
       ref.read(tappedDateProvider.notifier).setDate(null);
     }
   }

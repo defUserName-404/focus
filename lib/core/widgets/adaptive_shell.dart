@@ -26,6 +26,7 @@ class AdaptiveShell extends ConsumerWidget {
     _TabDefinition(icon: fu.FIcons.house, label: 'Home', route: AppRoutes.home),
     _TabDefinition(icon: fu.FIcons.squareCheck, label: 'Tasks', route: AppRoutes.tasks),
     _TabDefinition(icon: fu.FIcons.folderOpen, label: 'Projects', route: AppRoutes.projects),
+    _TabDefinition(icon: fu.FIcons.chartBar, label: 'Reports', route: AppRoutes.reports),
     _TabDefinition(icon: fu.FIcons.settings, label: 'Settings', route: AppRoutes.settings),
   ];
 
@@ -54,7 +55,8 @@ class AdaptiveShell extends ConsumerWidget {
   int _getIndexFromLocation(String location) {
     if (location.startsWith('/tasks')) return 1;
     if (location.startsWith('/projects')) return 2;
-    if (location.startsWith('/settings')) return 3;
+    if (location.startsWith('/reports')) return 3;
+    if (location.startsWith('/settings')) return 4;
     return 0; // Home
   }
 

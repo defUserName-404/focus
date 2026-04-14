@@ -14,6 +14,7 @@ import '../../../../core/widgets/sort_filter_chips.dart';
 import '../../../../core/widgets/sort_order_selector.dart';
 import '../../domain/entities/all_tasks_filter_state.dart';
 import '../../domain/entities/task_priority.dart';
+import '../models/task_selection.dart';
 import '../providers/all_tasks_provider.dart';
 import '../widgets/all_task_card.dart';
 
@@ -31,160 +32,21 @@ class AllTasksScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final filteredAsync = ref.watch(filteredAllTasksProvider);
-    final filter = ref.watch(allTasksFilterProvider);
     final isCompact = context.isCompact;
 
     final content = ConstrainedContent(
       maxWidth: 980,
-      child: Column(
-        children: [
-          if (!isCompact && _isEmbedded)
-            Padding(
-              padding: EdgeInsets.only(bottom: AppConstants.spacing.small),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: fu.FButton(
-                  prefix: Icon(fu.FIcons.plus),
-                  onPress: () => context.push(AppRoutes.createTaskWithProject),
-                  child: const Text('Create Task'),
-                ),
-              ),
-            ),
-          AppSearchBar(
-            hint: 'Search tasks...',
-            onChanged: (query) {
-              ref.read(allTasksFilterProvider.notifier).updateFilter(searchQuery: query);
-            },
-          ),
-          if (isCompact)
-            Row(
-              children: [
-                SizedBox(
-                  width: 120.0,
-                  child: SortOrderSelector<AllTasksSortOrder>(
-                    selectedOrder: filter.sortOrder,
-                    onChanged: (order) {
-                      ref.read(allTasksFilterProvider.notifier).updateFilter(sortOrder: order);
-                    },
-                    orderOptions: AllTasksSortOrder.values,
-                  ),
-                ),
-                Expanded(
-                  child: SortFilterChips<AllTasksSortCriteria>(
-                    selectedCriteria: filter.sortCriteria,
-                    onChanged: (criteria) {
-                      ref.read(allTasksFilterProvider.notifier).updateFilter(sortCriteria: criteria);
-                    },
-                    criteriaOptions: AllTasksSortCriteria.values,
-                  ),
-                ),
-              ],
+      padding: _isEmbedded
+          ? EdgeInsets.symmetric(
+              horizontal: AppConstants.spacing.extraLarge,
+              vertical: AppConstants.spacing.large,
             )
-          else
-            Row(
-              children: [
-                Expanded(
-                  child: FilterSelect<AllTasksSortCriteria>(
-                    selected: filter.sortCriteria,
-                    onChanged: (criteria) {
-                      ref.read(allTasksFilterProvider.notifier).updateFilter(sortCriteria: criteria);
-                    },
-                    options: AllTasksSortCriteria.values,
-                    hint: 'Sort by',
-                  ),
-                ),
-                SizedBox(width: AppConstants.spacing.regular),
-                Expanded(
-                  child: FilterSelect<AllTasksSortOrder>(
-                    selected: filter.sortOrder,
-                    onChanged: (order) {
-                      ref.read(allTasksFilterProvider.notifier).updateFilter(sortOrder: order);
-                    },
-                    options: AllTasksSortOrder.values,
-                    hint: 'Order',
-                  ),
-                ),
-              ],
-            ),
-          Row(
-            children: [
-              SizedBox(
-                width: 120.0,
-                child: FilterSelect<TaskPriority?>(
-                  selected: filter.priorityFilter,
-                  onChanged: (value) {
-                    ref.read(allTasksFilterProvider.notifier).updateFilter(priorityFilter: value);
-                  },
-                  options: TaskPriority.values,
-                  hint: 'Priority',
-                  allLabel: 'All',
-                ),
-              ),
-              SizedBox(width: AppConstants.spacing.small),
-              ...TaskCompletionFilter.values.map(
-                (f) => Padding(
-                  padding: EdgeInsets.only(right: AppConstants.spacing.small),
-                  child: fu.FButton(
-                    style: filter.completionFilter == f ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
-                    onPress: () {
-                      ref.read(allTasksFilterProvider.notifier).updateFilter(completionFilter: f);
-                    },
-                    child: Text(f.label),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: filteredAsync.when(
-              loading: () => const Center(child: fu.FCircularProgress()),
-              error: (err, _) => Center(child: Text('Error: $err')),
-              data: (tasks) {
-                if (tasks.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: AppConstants.spacing.regular,
-                      children: [
-                        Icon(
-                          fu.FIcons.squareCheck,
-                          size: AppConstants.size.icon.extraExtraLarge,
-                          color: Theme.of(context).disabledColor,
-                        ),
-                        Text(
-                          'No tasks found',
-                          style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
-                  itemCount: tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = tasks[index];
-                    return AllTaskCard(
-                      task: task,
-                      isSelected: selectedTaskId != null && selectedTaskId == task.id,
-                      onTap: () {
-                        if (task.id == null) return;
-                        if (onTaskSelected != null) {
-                          final selection = TaskSelection(taskId: task.id!, projectId: task.projectId);
-                          onTaskSelected!(selection);
-                          return;
-                        }
-                        context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId});
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+          : EdgeInsets.zero,
+      child: _AllTasksContent(
+        isCompact: isCompact,
+        isEmbedded: _isEmbedded,
+        selectedTaskId: selectedTaskId,
+        onTaskSelected: onTaskSelected,
       ),
     );
 
@@ -208,7 +70,7 @@ class AllTasksScreen extends ConsumerWidget {
         title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
       ),
       footer: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.large),
+        padding: EdgeInsets.all(isCompact ? AppConstants.spacing.regular : AppConstants.spacing.large),
         child: fu.FButton(
           prefix: Icon(fu.FIcons.plus),
           child: const Text('Create New Task'),
@@ -220,9 +82,211 @@ class AllTasksScreen extends ConsumerWidget {
   }
 }
 
-class TaskSelection {
-  final int taskId;
-  final int projectId;
+class _AllTasksContent extends ConsumerWidget {
+  final bool isCompact;
+  final bool isEmbedded;
+  final int? selectedTaskId;
+  final ValueChanged<TaskSelection>? onTaskSelected;
 
-  const TaskSelection({required this.taskId, required this.projectId});
+  const _AllTasksContent({
+    required this.isCompact,
+    required this.isEmbedded,
+    required this.selectedTaskId,
+    required this.onTaskSelected,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      children: [
+        if (!isCompact && isEmbedded) const _EmbeddedCreateTaskButton(),
+        AppSearchBar(
+          hint: 'Search tasks...',
+          onChanged: (query) {
+            ref.read(allTasksFilterProvider.notifier).updateFilter(searchQuery: query);
+          },
+        ),
+        _TaskFilters(isCompact: isCompact),
+        Expanded(
+          child: _TaskList(
+            selectedTaskId: selectedTaskId,
+            onTaskSelected: onTaskSelected,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EmbeddedCreateTaskButton extends StatelessWidget {
+  const _EmbeddedCreateTaskButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppConstants.spacing.small),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: fu.FButton(
+          prefix: Icon(fu.FIcons.plus),
+          onPress: () => context.push(AppRoutes.createTaskWithProject),
+          child: const Text('Create Task'),
+        ),
+      ),
+    );
+  }
+}
+
+class _TaskFilters extends ConsumerWidget {
+  final bool isCompact;
+
+  const _TaskFilters({required this.isCompact});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filter = ref.watch(allTasksFilterProvider);
+
+    return Column(
+      children: [
+        if (isCompact)
+          Row(
+            children: [
+              SizedBox(
+                width: 120.0,
+                child: SortOrderSelector<AllTasksSortOrder>(
+                  selectedOrder: filter.sortOrder,
+                  onChanged: (order) {
+                    ref.read(allTasksFilterProvider.notifier).updateFilter(sortOrder: order);
+                  },
+                  orderOptions: AllTasksSortOrder.values,
+                ),
+              ),
+              Expanded(
+                child: SortFilterChips<AllTasksSortCriteria>(
+                  selectedCriteria: filter.sortCriteria,
+                  onChanged: (criteria) {
+                    ref.read(allTasksFilterProvider.notifier).updateFilter(sortCriteria: criteria);
+                  },
+                  criteriaOptions: AllTasksSortCriteria.values,
+                ),
+              ),
+            ],
+          )
+        else
+          Row(
+            children: [
+              Expanded(
+                child: FilterSelect<AllTasksSortCriteria>(
+                  selected: filter.sortCriteria,
+                  onChanged: (criteria) {
+                    ref.read(allTasksFilterProvider.notifier).updateFilter(sortCriteria: criteria);
+                  },
+                  options: AllTasksSortCriteria.values,
+                  hint: 'Sort by',
+                ),
+              ),
+              SizedBox(width: AppConstants.spacing.regular),
+              Expanded(
+                child: FilterSelect<AllTasksSortOrder>(
+                  selected: filter.sortOrder,
+                  onChanged: (order) {
+                    ref.read(allTasksFilterProvider.notifier).updateFilter(sortOrder: order);
+                  },
+                  options: AllTasksSortOrder.values,
+                  hint: 'Order',
+                ),
+              ),
+            ],
+          ),
+        Row(
+          children: [
+            SizedBox(
+              width: 120.0,
+              child: FilterSelect<TaskPriority?>(
+                selected: filter.priorityFilter,
+                onChanged: (value) {
+                  ref.read(allTasksFilterProvider.notifier).updateFilter(priorityFilter: value);
+                },
+                options: TaskPriority.values,
+                hint: 'Priority',
+                allLabel: 'All',
+              ),
+            ),
+            SizedBox(width: AppConstants.spacing.small),
+            ...TaskCompletionFilter.values.map(
+              (f) => Padding(
+                padding: EdgeInsets.only(right: AppConstants.spacing.small),
+                child: fu.FButton(
+                  style: filter.completionFilter == f ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+                  onPress: () {
+                    ref.read(allTasksFilterProvider.notifier).updateFilter(completionFilter: f);
+                  },
+                  child: Text(f.label),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _TaskList extends ConsumerWidget {
+  final int? selectedTaskId;
+  final ValueChanged<TaskSelection>? onTaskSelected;
+
+  const _TaskList({required this.selectedTaskId, required this.onTaskSelected});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filteredAsync = ref.watch(filteredAllTasksProvider);
+
+    return filteredAsync.when(
+      loading: () => const Center(child: fu.FCircularProgress()),
+      error: (err, _) => Center(child: Text('Error: $err')),
+      data: (tasks) {
+        if (tasks.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: AppConstants.spacing.regular,
+              children: [
+                Icon(
+                  fu.FIcons.squareCheck,
+                  size: AppConstants.size.icon.extraExtraLarge,
+                  color: Theme.of(context).disabledColor,
+                ),
+                Text(
+                  'No tasks found',
+                  style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
+          itemCount: tasks.length,
+          itemBuilder: (context, index) {
+            final task = tasks[index];
+            return AllTaskCard(
+              task: task,
+              isSelected: selectedTaskId != null && selectedTaskId == task.id,
+              onTap: () {
+                if (task.id == null) return;
+                if (onTaskSelected != null) {
+                  final selection = TaskSelection(taskId: task.id!, projectId: task.projectId);
+                  onTaskSelected!(selection);
+                  return;
+                }
+                context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId});
+              },
+            );
+          },
+        );
+      },
+    );
+  }
 }

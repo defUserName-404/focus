@@ -6,6 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../constants/notification_constants.dart';
 import '../routing/app_router.dart';
+import '../routing/routes.dart';
 import '../utils/platform_utils.dart';
 import 'i_notification_service.dart';
 import 'log_service.dart';
@@ -147,6 +148,17 @@ class NotificationService implements INotificationService {
         navigateToFocusSession();
       } else {
         _tapController.add(payload);
+      }
+    } else if (payload.startsWith(NotificationConstants.taskPayloadPrefix)) {
+      final taskIdStr = payload.substring(NotificationConstants.taskPayloadPrefix.length);
+      final taskId = int.tryParse(taskIdStr);
+      if (taskId != null) {
+        final nav = rootNavigatorKey.currentState;
+        if (nav != null) {
+          appRouter.push('${AppRoutes.taskDetailPath(taskId)}?projectId=0');
+        } else {
+          _tapController.add(payload);
+        }
       }
     }
   }

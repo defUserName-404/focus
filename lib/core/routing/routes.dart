@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const home = '/';
   static const tasks = '/tasks';
   static const projects = '/projects';
+  static const reports = '/reports';
   static const settings = '/settings';
 
   // Project routes
@@ -22,6 +23,9 @@ abstract final class AppRoutes {
 
   // Focus session routes
   static const focusSession = '/session';
+
+  // Sync routes
+  static const syncConflicts = '/sync/conflicts';
 
   // Helper methods to build parameterized paths
 
@@ -48,6 +52,7 @@ abstract final class RouteNames {
   static const home = 'home';
   static const tasks = 'tasks';
   static const projects = 'projects';
+  static const reports = 'reports';
   static const settings = 'settings';
 
   static const projectDetail = 'projectDetail';
@@ -60,4 +65,6 @@ abstract final class RouteNames {
   static const editTask = 'editTask';
 
   static const focusSession = 'focusSession';
+
+  static const syncConflicts = 'syncConflicts';
 }
