@@ -15,6 +15,9 @@ import '../../features/settings/data/datasources/settings_local_datasource.dart'
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/i_settings_repository.dart';
 import '../../features/settings/domain/services/settings_service.dart';
+import '../../features/sync/data/services/google_drive_service.dart';
+import '../../features/sync/domain/services/i_cloud_storage_service.dart';
+import '../../features/sync/domain/services/sync_engine.dart';
 import '../../features/tasks/data/datasources/task_local_datasource.dart';
 import '../../features/tasks/data/datasources/task_stats_local_datasource.dart';
 import '../../features/tasks/data/repositories/task_repository_impl.dart';
@@ -72,6 +75,7 @@ Future<void> setupDependencyInjection() async {
   }
 
   _initSessionDi();
+  _initSyncDi();
 }
 
 void _initProjectsDi() {
@@ -120,4 +124,17 @@ void _initSessionDi() {
       () => FocusMediaSessionCoordinator(getIt<FocusAudioHandler>(), getIt<AudioSessionManager>()),
     );
   }
+}
+
+void _initSyncDi() {
+  getIt
+    ..registerLazySingleton<ICloudStorageService>(() => GoogleDriveService())
+    ..registerLazySingleton<SyncEngine>(
+      () => SyncEngine(
+        getIt<ICloudStorageService>(),
+        getIt<IProjectRepository>(),
+        getIt<ITaskRepository>(),
+        getIt<ISettingsRepository>(),
+      ),
+    );
 }

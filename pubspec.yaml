@@ -52,6 +52,12 @@ dependencies:
   # Mapping / code-gen for data-layer models
   dart_mappable: ^4.4.0
 
+  # Cloud sync (Google Drive)
+  google_sign_in: ^6.2.2
+  googleapis: ^13.2.0
+  extension_google_sign_in_as_googleapis_auth: ^2.0.12
+  http: ^1.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
