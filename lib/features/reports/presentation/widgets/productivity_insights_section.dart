@@ -23,36 +23,34 @@ class ProductivityInsightsSection extends ConsumerWidget {
     final rangeKey = '${range.start.toShortDateKey()}|${range.end.toShortDateKey()}';
     final statsAsync = ref.watch(dailyStatsForRangeProvider(rangeKey));
 
-    return fu.FCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Productivity Insights', style: context.typography.base.copyWith(fontWeight: FontWeight.w700)),
-              _InsightsWindowToggle(
-                window: window,
-                onChanged: (value) {
-                  ref.read(reportsInsightsWindowProvider.notifier).setWindow(value);
-                },
-              ),
-            ],
-          ),
-          SizedBox(height: AppConstants.spacing.regular),
-          statsAsync.when(
-            loading: () => const SizedBox(height: 160, child: Center(child: fu.FCircularProgress())),
-            error: (err, _) => Padding(
-              padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.large),
-              child: Center(child: Text('Error: $err')),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Productivity Insights', style: context.typography.base.copyWith(fontWeight: FontWeight.w700)),
+            _InsightsWindowToggle(
+              window: window,
+              onChanged: (value) {
+                ref.read(reportsInsightsWindowProvider.notifier).setWindow(value);
+              },
             ),
-            data: (stats) {
-              final insights = _buildInsightsData(stats: stats, window: window, range: range);
-              return _InsightsContent(window: window, data: insights);
-            },
+          ],
+        ),
+        SizedBox(height: AppConstants.spacing.regular),
+        statsAsync.when(
+          loading: () => const SizedBox(height: 160, child: Center(child: fu.FCircularProgress())),
+          error: (err, _) => Padding(
+            padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.large),
+            child: Center(child: Text('Error: $err')),
           ),
-        ],
-      ),
+          data: (stats) {
+            final insights = _buildInsightsData(stats: stats, window: window, range: range);
+            return _InsightsContent(window: window, data: insights);
+          },
+        ),
+      ],
     );
   }
 
@@ -156,13 +154,13 @@ class _InsightsWindowToggle extends StatelessWidget {
         fu.FButton(
           style: window == InsightsWindowMode.weekly ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
           onPress: () => onChanged(InsightsWindowMode.weekly),
-          child: const Text('Weekly'),
+          child: Text('Weekly', style: context.typography.xs),
         ),
         SizedBox(width: AppConstants.spacing.extraSmall),
         fu.FButton(
           style: window == InsightsWindowMode.monthly ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
           onPress: () => onChanged(InsightsWindowMode.monthly),
-          child: const Text('Monthly'),
+          child: Text('Monthly', style: context.typography.xs),
         ),
       ],
     );

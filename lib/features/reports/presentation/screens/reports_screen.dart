@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../home/presentation/widgets/global_stats_row.dart';
 import '../../../home/presentation/widgets/section_header.dart';
 import '../../../home/presentation/widgets/today_summary_card.dart';
@@ -23,7 +25,18 @@ class ReportsScreen extends ConsumerWidget {
     final stats = globalStatsAsync.value ?? GlobalStats.empty;
 
     return fu.FScaffold(
-      header: fu.FHeader(
+      header: fu.FHeader.nested(
+        prefixes: [
+          fu.FHeaderAction.back(
+            onPress: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.home);
+              }
+            },
+          ),
+        ],
         title: Text('Reports', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
       ),
       child: SingleChildScrollView(
@@ -35,13 +48,13 @@ class ReportsScreen extends ConsumerWidget {
             // Overall stats
             SizedBox(height: AppConstants.spacing.regular),
             SectionHeader(title: 'Overall Stats'),
-            SizedBox(height: AppConstants.spacing.small),
             GlobalStatsRow(stats: stats),
             SizedBox(height: AppConstants.spacing.regular),
             // Activity heatmap
             const YearActivityGraph(),
             SizedBox(height: AppConstants.spacing.regular),
             const ProductivityInsightsSection(),
+            SizedBox(height: AppConstants.spacing.regular),
           ],
         ),
       ),

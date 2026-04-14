@@ -37,10 +37,7 @@ class AllTasksScreen extends ConsumerWidget {
     final content = ConstrainedContent(
       maxWidth: 980,
       padding: _isEmbedded
-          ? EdgeInsets.symmetric(
-              horizontal: AppConstants.spacing.extraLarge,
-              vertical: AppConstants.spacing.large,
-            )
+          ? EdgeInsets.symmetric(horizontal: AppConstants.spacing.extraLarge, vertical: AppConstants.spacing.large)
           : EdgeInsets.zero,
       child: _AllTasksContent(
         isCompact: isCompact,
@@ -108,10 +105,7 @@ class _AllTasksContent extends ConsumerWidget {
         ),
         _TaskFilters(isCompact: isCompact),
         Expanded(
-          child: _TaskList(
-            selectedTaskId: selectedTaskId,
-            onTaskSelected: onTaskSelected,
-          ),
+          child: _TaskList(selectedTaskId: selectedTaskId, onTaskSelected: onTaskSelected),
         ),
       ],
     );
@@ -221,7 +215,7 @@ class _TaskFilters extends ConsumerWidget {
                   onPress: () {
                     ref.read(allTasksFilterProvider.notifier).updateFilter(completionFilter: f);
                   },
-                  child: Text(f.label),
+                  child: Text(f.label, style: context.typography.xs),
                 ),
               ),
             ),
@@ -257,10 +251,7 @@ class _TaskList extends ConsumerWidget {
                   size: AppConstants.size.icon.extraExtraLarge,
                   color: Theme.of(context).disabledColor,
                 ),
-                Text(
-                  'No tasks found',
-                  style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
-                ),
+                Text('No tasks found', style: context.typography.sm.copyWith(color: context.colors.mutedForeground)),
               ],
             ),
           );

@@ -54,8 +54,8 @@ class HomeScreen extends ConsumerWidget {
           spacing: AppConstants.spacing.regular,
           children: [
             const QuickSessionButton(),
-
-            SectionHeader(title: 'Upcoming Reminders'),
+            SizedBox(height: AppConstants.spacing.regular),
+            SectionHeader(title: 'Upcoming Deadlines'),
             const UpcomingCalendarCard(),
             SectionHeader(
               title: 'Recent Tasks',
