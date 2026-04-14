@@ -340,7 +340,7 @@ final class TaskNotifierProvider
   }
 }
 
-String _$taskNotifierHash() => r'd9af62269cb8bb5a2bacad33221c7a73ec79c8b5';
+String _$taskNotifierHash() => r'2ae3787b3fa223fe0de554a7f355b1b4ffbb231b';
 
 final class TaskNotifierFamily extends $Family
     with

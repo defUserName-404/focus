@@ -12,6 +12,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../projects/domain/entities/project.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../domain/entities/task_priority.dart';
+import '../../domain/entities/task_reminder_mode.dart';
 import '../providers/task_provider.dart';
 
 /// Full-screen form that creates a task and optionally a new project.
@@ -27,9 +28,11 @@ class CreateTaskWithProjectScreen extends ConsumerStatefulWidget {
 class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProjectScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _customReminderHoursController = TextEditingController();
   final _projectController = FAutocompleteController();
   DateTime? _startDate;
   DateTime? _endDate;
+  TaskReminderMode _reminderMode = TaskReminderMode.smart;
   final ValueNotifier<TaskPriority> _priority = ValueNotifier(TaskPriority.medium);
   final ValueNotifier<Project?> _selectedProject = ValueNotifier(null);
   final ValueNotifier<bool> _isNewProject = ValueNotifier(false);
@@ -38,6 +41,7 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _customReminderHoursController.dispose();
     _projectController.dispose();
     _priority.dispose();
     _selectedProject.dispose();
@@ -125,6 +129,31 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
           clearable: true,
         ),
         TimeField(label: 'End Time', value: _endDate, onChanged: (date) => setState(() => _endDate = date)),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text('Reminder', style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
+        ),
+        FilterSelect<TaskReminderMode>(
+          selected: _reminderMode,
+          onChanged: (value) => setState(() => _reminderMode = value),
+          options: TaskReminderMode.values,
+          hint: 'Reminder',
+        ),
+        if (_reminderMode == TaskReminderMode.custom)
+          FTextFormField(
+            control: FTextFieldControl.managed(controller: _customReminderHoursController),
+            label: const Text('Custom Reminder (Hours Before Deadline)'),
+            hint: 'e.g. 6',
+            keyboardType: TextInputType.number,
+            validator: (value) {
+              final parsed = int.tryParse(value ?? '');
+              if (parsed == null || parsed <= 0) {
+                return 'Enter a positive number of hours';
+              }
+              return null;
+            },
+            autovalidateMode: AutovalidateMode.onUnfocus,
+          ),
       ],
     );
   }
@@ -133,6 +162,13 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
     final title = _titleController.text.trim();
     final projectName = _projectController.text.trim();
     if (title.isEmpty || projectName.isEmpty) return;
+
+    final customMinutesBefore = _reminderMode == TaskReminderMode.custom
+        ? int.tryParse(_customReminderHoursController.text.trim())
+        : null;
+    if (_reminderMode == TaskReminderMode.custom && (customMinutesBefore == null || customMinutesBefore <= 0)) {
+      return;
+    }
 
     int projectId;
 
@@ -150,6 +186,8 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
           title: title,
           description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
           priority: _priority.value,
+          reminderMode: _reminderMode,
+          customReminderMinutesBefore: customMinutesBefore == null ? null : customMinutesBefore * 60,
           startDate: _startDate,
           endDate: _endDate,
           depth: 0,

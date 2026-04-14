@@ -22,4 +22,22 @@ abstract final class NotificationConstants {
   // Notification Payloads (for body tap navigation)
   static const String focusSessionPayload = 'focus_session';
   static const String taskPayloadPrefix = 'task:';
+
+  static String taskPayload({required int taskId, required int projectId}) {
+    return '$taskPayloadPrefix$taskId:$projectId';
+  }
+
+  static ({int taskId, int? projectId})? parseTaskPayload(String payload) {
+    if (!payload.startsWith(taskPayloadPrefix)) return null;
+
+    final body = payload.substring(taskPayloadPrefix.length);
+    final parts = body.split(':');
+    if (parts.isEmpty) return null;
+
+    final taskId = int.tryParse(parts.first);
+    if (taskId == null) return null;
+
+    final projectId = parts.length > 1 ? int.tryParse(parts[1]) : null;
+    return (taskId: taskId, projectId: projectId);
+  }
 }

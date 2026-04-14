@@ -1,23 +1,28 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:focus/features/settings/data/models/settings_model.dart';
+import 'package:focus/features/notifications/data/models/notification_inbox_model.dart';
 import 'package:focus/features/tasks/data/models/daily_session_stats_model.dart';
 import 'package:focus/features/tasks/data/models/task_model.dart';
 
 import '../../features/projects/data/models/project_model.dart';
 import '../../features/session/data/models/focus_session_model.dart';
 import '../../features/session/domain/entities/session_state.dart';
+import '../../features/notifications/domain/entities/notification_inbox_item.dart';
 import '../../features/tasks/domain/entities/task_priority.dart';
+import '../../features/tasks/domain/entities/task_reminder_mode.dart';
 import '../utils/datetime_formatter.dart';
 
 part 'db_service.g.dart';
 
-@DriftDatabase(tables: [ProjectTable, TaskTable, FocusSessionTable, DailySessionStatsTable, SettingsTable])
+@DriftDatabase(
+  tables: [ProjectTable, TaskTable, FocusSessionTable, DailySessionStatsTable, SettingsTable, NotificationInboxTable],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -146,6 +151,17 @@ class AppDatabase extends _$AppDatabase {
       // preserving accurate focus time data across app restarts.
       if (from < 3) {
         await customStatement('ALTER TABLE focus_session_table ADD COLUMN focus_phase_ended_at INTEGER');
+      }
+
+      // v3 → v4: Add reminder strategy fields to task_table.
+      if (from < 4) {
+        await customStatement('ALTER TABLE task_table ADD COLUMN reminder_mode INTEGER NOT NULL DEFAULT 0');
+        await customStatement('ALTER TABLE task_table ADD COLUMN custom_reminder_minutes_before INTEGER');
+      }
+
+      // v4 → v5: Add persisted notification inbox table.
+      if (from < 5) {
+        await m.createTable(notificationInboxTable);
       }
     },
     beforeOpen: (details) async {

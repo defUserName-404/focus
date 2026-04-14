@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
 import 'task_priority.dart';
+import 'task_reminder_mode.dart';
 
 /// Immutable representation of a user task.
 ///
@@ -14,6 +15,8 @@ class Task extends Equatable {
   final String title;
   final String? description;
   final TaskPriority priority;
+  final TaskReminderMode reminderMode;
+  final int? customReminderMinutesBefore;
   final DateTime? startDate;
   final DateTime? endDate;
   final int depth;
@@ -28,6 +31,8 @@ class Task extends Equatable {
     required this.title,
     this.description,
     required this.priority,
+    this.reminderMode = TaskReminderMode.smart,
+    this.customReminderMinutesBefore,
     this.startDate,
     this.endDate,
     required this.depth,
@@ -38,8 +43,19 @@ class Task extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, projectId, parentTaskId, title, description,
-    priority, startDate, endDate, depth, isCompleted,
-    createdAt, updatedAt,
+    id,
+    projectId,
+    parentTaskId,
+    title,
+    description,
+    priority,
+    reminderMode,
+    customReminderMinutesBefore,
+    startDate,
+    endDate,
+    depth,
+    isCompleted,
+    createdAt,
+    updatedAt,
   ];
 }

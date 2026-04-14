@@ -1,4 +1,5 @@
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
+import 'package:focus/features/tasks/domain/entities/task_reminder_mode.dart';
 
 import 'task.dart';
 
@@ -20,6 +21,8 @@ extension TaskCopyWith on Task {
     String? title,
     String? description,
     TaskPriority? priority,
+    TaskReminderMode? reminderMode,
+    Object? customReminderMinutesBefore = _taskCopyWithUnset,
     Object? startDate = _taskCopyWithUnset,
     Object? endDate = _taskCopyWithUnset,
     int? depth,
@@ -33,6 +36,10 @@ extension TaskCopyWith on Task {
     title: title ?? this.title,
     description: description ?? this.description,
     priority: priority ?? this.priority,
+    reminderMode: reminderMode ?? this.reminderMode,
+    customReminderMinutesBefore: customReminderMinutesBefore == _taskCopyWithUnset
+        ? this.customReminderMinutesBefore
+        : customReminderMinutesBefore as int?,
     startDate: startDate == _taskCopyWithUnset ? this.startDate : startDate as DateTime?,
     endDate: endDate == _taskCopyWithUnset ? this.endDate : endDate as DateTime?,
     depth: depth ?? this.depth,
