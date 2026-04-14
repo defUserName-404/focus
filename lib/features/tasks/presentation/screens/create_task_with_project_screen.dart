@@ -108,7 +108,7 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
           label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
           start: DateTime.now(),
-          control: FDateFieldControl.managed(onChange: (date) => setState(() => _startDate = date)),
+          control: FDateFieldControl.lifted(date: _startDate, onChange: (date) => setState(() => _startDate = date)),
           clearable: true,
         ),
         TimeField(label: 'Start Time', value: _startDate, onChanged: (date) => setState(() => _startDate = date)),
@@ -116,7 +116,8 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
           label: const Text('End Date'),
           hint: 'Select End Date (Optional)',
           start: DateTime.now(),
-          control: FDateFieldControl.managed(
+          control: FDateFieldControl.lifted(
+            date: _endDate,
             onChange: (date) => setState(() => _endDate = date),
             validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           ),

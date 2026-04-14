@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
+import '../../../../core/widgets/time_field.dart';
 import '../../domain/entities/project.dart';
 import '../../domain/entities/project_extensions.dart';
 import '../providers/project_provider.dart';
@@ -65,23 +66,23 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
           label: const Text('Start Date'),
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
           start: DateTime.now(),
-          control: FDateFieldControl.managed(
-            initial: _startDate,
-            onChange: (date) => setState(() => _startDate = date),
-          ),
+          control: FDateFieldControl.lifted(date: _startDate, onChange: (date) => setState(() => _startDate = date)),
           clearable: true,
         ),
+        TimeField(label: 'Start Time', value: _startDate, onChanged: (date) => setState(() => _startDate = date)),
         FDateField.calendar(
           label: const Text('Deadline'),
           hint: _deadline?.toDateString() ?? 'Select Deadline (Optional)',
           start: DateTime.now(),
-          control: FDateFieldControl.managed(
-            onChange: (date) => _deadline = date,
+          control: FDateFieldControl.lifted(
+            date: _deadline,
+            onChange: (date) => setState(() => _deadline = date),
             validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           ),
           autovalidateMode: AutovalidateMode.onUnfocus,
           clearable: true,
         ),
+        TimeField(label: 'Deadline Time', value: _deadline, onChanged: (date) => setState(() => _deadline = date)),
       ],
     );
   }

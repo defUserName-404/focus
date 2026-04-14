@@ -14,9 +14,8 @@ import '../providers/upcoming_tasks_provider.dart';
 
 /// A calendar-style view that shows upcoming task deadlines on the home screen.
 ///
-/// Displays a compact month grid for the current month, highlighting days
-/// that have upcoming deadlines. Tapping a day shows an overlay popup with
-/// that day's tasks.
+/// Supports month and week views, highlighting days with upcoming deadlines.
+/// Tapping a day shows an overlay popup with that day's tasks.
 class UpcomingCalendarCard extends ConsumerWidget {
   const UpcomingCalendarCard({super.key});
 
@@ -35,6 +34,8 @@ class UpcomingCalendarCard extends ConsumerWidget {
   }
 }
 
+enum _CalendarView { month, week }
+
 class _CalendarContent extends StatefulWidget {
   final List<Task> tasks;
 
@@ -46,6 +47,8 @@ class _CalendarContent extends StatefulWidget {
 
 class _CalendarContentState extends State<_CalendarContent> {
   late DateTime _displayMonth;
+  late DateTime _displayWeekStart;
+  _CalendarView _view = _CalendarView.month;
   DateTime? _selectedDay;
   OverlayEntry? _taskOverlay;
   final LayerLink _calendarLayerLink = LayerLink();
@@ -53,7 +56,9 @@ class _CalendarContentState extends State<_CalendarContent> {
   @override
   void initState() {
     super.initState();
-    _displayMonth = DateTime(DateTime.now().year, DateTime.now().month);
+    final now = DateTime.now();
+    _displayMonth = DateTime(now.year, now.month);
+    _displayWeekStart = _startOfWeek(now);
     // Auto-select today if it has tasks
     _autoSelectToday();
   }
@@ -73,54 +78,108 @@ class _CalendarContentState extends State<_CalendarContent> {
     super.dispose();
   }
 
+  DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
+  DateTime _startOfWeek(DateTime date) {
+    final normalized = _dateOnly(date);
+    return normalized.subtract(Duration(days: normalized.weekday - DateTime.monday));
+  }
+
+  bool _isDateVisibleInCurrentView(DateTime date) {
+    if (_view == _CalendarView.month) {
+      return date.year == _displayMonth.year && date.month == _displayMonth.month;
+    }
+
+    final weekEnd = _displayWeekStart.add(const Duration(days: 6));
+    return !date.isBefore(_displayWeekStart) && !date.isAfter(weekEnd);
+  }
+
   void _autoSelectToday() {
-    final now = DateTime.now();
-    if (_displayMonth.year == now.year && _displayMonth.month == now.month) {
-      final tasksByDay = _tasksByDay;
-      if (tasksByDay.containsKey(now.day)) {
-        _selectedDay = DateTime(now.year, now.month, now.day);
-      }
+    final today = _dateOnly(DateTime.now());
+    if (_isDateVisibleInCurrentView(today) && _tasksByDate.containsKey(today)) {
+      _selectedDay = today;
+    } else {
+      _selectedDay = null;
     }
   }
 
-  /// Maps day-of-month to list of tasks with deadlines on that day.
-  Map<int, List<Task>> get _tasksByDay {
-    final map = <int, List<Task>>{};
+  /// Maps a calendar date to tasks with deadlines on that day.
+  Map<DateTime, List<Task>> get _tasksByDate {
+    final map = <DateTime, List<Task>>{};
     for (final task in widget.tasks) {
       final end = task.endDate;
-      if (end != null && end.year == _displayMonth.year && end.month == _displayMonth.month) {
-        map.putIfAbsent(end.day, () => []).add(task);
+      if (end != null) {
+        final key = _dateOnly(end);
+        map.putIfAbsent(key, () => []).add(task);
       }
     }
+
+    for (final tasks in map.values) {
+      tasks.sort((a, b) {
+        final aEnd = a.endDate;
+        final bEnd = b.endDate;
+        if (aEnd == null && bEnd == null) return 0;
+        if (aEnd == null) return -1;
+        if (bEnd == null) return 1;
+        return aEnd.compareTo(bEnd);
+      });
+    }
+
     return map;
   }
 
-  void _previousMonth() {
+  void _switchView(_CalendarView view) {
+    if (_view == view) return;
+
+    final anchor = _selectedDay ?? DateTime.now();
     _removeOverlay();
     setState(() {
-      _displayMonth = DateTime(_displayMonth.year, _displayMonth.month - 1);
+      _view = view;
+      _selectedDay = null;
+      if (view == _CalendarView.week) {
+        _displayWeekStart = _startOfWeek(anchor);
+      } else {
+        _displayMonth = DateTime(anchor.year, anchor.month);
+      }
+      _autoSelectToday();
+    });
+  }
+
+  void _previousPeriod() {
+    _removeOverlay();
+    setState(() {
+      if (_view == _CalendarView.month) {
+        _displayMonth = DateTime(_displayMonth.year, _displayMonth.month - 1);
+      } else {
+        _displayWeekStart = _displayWeekStart.subtract(const Duration(days: 7));
+      }
       _selectedDay = null;
     });
   }
 
-  void _nextMonth() {
+  void _nextPeriod() {
     _removeOverlay();
     setState(() {
-      _displayMonth = DateTime(_displayMonth.year, _displayMonth.month + 1);
+      if (_view == _CalendarView.month) {
+        _displayMonth = DateTime(_displayMonth.year, _displayMonth.month + 1);
+      } else {
+        _displayWeekStart = _displayWeekStart.add(const Duration(days: 7));
+      }
       _selectedDay = null;
     });
   }
 
-  void _onDayTapped(int day, Map<int, List<Task>> tasksByDay) {
+  void _onDateTapped(DateTime date) {
     _removeOverlay();
-    final tasks = tasksByDay[day];
+    final normalized = _dateOnly(date);
+    final tasks = _tasksByDate[normalized];
     if (tasks == null || tasks.isEmpty) {
       setState(() => _selectedDay = null);
       return;
     }
 
     setState(() {
-      _selectedDay = DateTime(_displayMonth.year, _displayMonth.month, day);
+      _selectedDay = normalized;
     });
 
     // Show overlay popup with tasks
@@ -187,12 +246,10 @@ class _CalendarContentState extends State<_CalendarContent> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = _dateOnly(DateTime.now());
+    final tasksByDate = _tasksByDate;
     final daysInMonth = DateTime(_displayMonth.year, _displayMonth.month + 1, 0).day;
     final firstWeekday = DateTime(_displayMonth.year, _displayMonth.month, 1).weekday; // 1=Mon
-    final tasksByDay = _tasksByDay;
-
-    final monthName = DateTimeConstants.shortMonthNames[_displayMonth.month - 1];
 
     return CompositedTransformTarget(
       link: _calendarLayerLink,
@@ -200,24 +257,31 @@ class _CalendarContentState extends State<_CalendarContent> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Month navigation header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _view == _CalendarView.month ? 'Focus Month' : 'Focus Week',
+                  style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
+                ),
+                _CalendarViewToggle(view: _view, onChanged: _switchView),
+              ],
+            ),
+            SizedBox(height: AppConstants.spacing.regular),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: _previousMonth,
+                  onTap: _previousPeriod,
                   child: Icon(
                     fu.FIcons.chevronLeft,
                     size: AppConstants.size.icon.regular,
                     color: context.colors.mutedForeground,
                   ),
                 ),
-                Text(
-                  '$monthName ${_displayMonth.year}',
-                  style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
-                ),
+                Text(_periodLabel, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
                 GestureDetector(
-                  onTap: _nextMonth,
+                  onTap: _nextPeriod,
                   child: Icon(
                     fu.FIcons.chevronRight,
                     size: AppConstants.size.icon.regular,
@@ -228,31 +292,64 @@ class _CalendarContentState extends State<_CalendarContent> {
             ),
             SizedBox(height: AppConstants.spacing.regular),
 
-            // Day-of-week header
-            Row(
-              children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                  .map(
-                    (d) => Expanded(
-                      child: Center(
-                        child: Text(
-                          d,
-                          style: context.typography.xs.copyWith(
-                            color: context.colors.mutedForeground,
-                            fontWeight: FontWeight.w500,
+            if (_view == _CalendarView.month) ...[
+              Row(
+                children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                    .map(
+                      (d) => Expanded(
+                        child: Center(
+                          child: Text(
+                            d,
+                            style: context.typography.xs.copyWith(
+                              color: context.colors.mutedForeground,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  )
-                  .toList(),
-            ),
-            SizedBox(height: AppConstants.spacing.small),
-
-            // Calendar grid
-            ..._buildWeeks(context, daysInMonth, firstWeekday, tasksByDay, now),
+                    )
+                    .toList(),
+              ),
+              SizedBox(height: AppConstants.spacing.small),
+              ..._buildWeeks(context, daysInMonth, firstWeekday, tasksByDate, now),
+            ] else
+              _buildWeekStrip(context, tasksByDate, now),
           ],
         ),
       ),
+    );
+  }
+
+  String get _periodLabel {
+    if (_view == _CalendarView.month) {
+      final monthName = DateTimeConstants.shortMonthNames[_displayMonth.month - 1];
+      return '$monthName ${_displayMonth.year}';
+    }
+
+    final weekEnd = _displayWeekStart.add(const Duration(days: 6));
+    return '${_displayWeekStart.toShortDateString()} - ${weekEnd.toShortDateString()}';
+  }
+
+  Widget _buildWeekStrip(BuildContext context, Map<DateTime, List<Task>> tasksByDate, DateTime now) {
+    final days = List.generate(7, (index) => _displayWeekStart.add(Duration(days: index)));
+
+    return Row(
+      children: [
+        for (var index = 0; index < days.length; index++) ...[
+          Expanded(
+            child: GestureDetector(
+              onTap: tasksByDate.containsKey(days[index]) ? () => _onDateTapped(days[index]) : null,
+              child: _WeekDayCell(
+                date: days[index],
+                taskCount: tasksByDate[days[index]]?.length ?? 0,
+                isToday: DateUtils.isSameDay(days[index], now),
+                isSelected: DateUtils.isSameDay(days[index], _selectedDay),
+              ),
+            ),
+          ),
+          if (index < days.length - 1) SizedBox(width: AppConstants.spacing.extraSmall),
+        ],
+      ],
     );
   }
 
@@ -260,7 +357,7 @@ class _CalendarContentState extends State<_CalendarContent> {
     BuildContext context,
     int daysInMonth,
     int firstWeekday,
-    Map<int, List<Task>> tasksByDay,
+    Map<DateTime, List<Task>> tasksByDate,
     DateTime now,
   ) {
     final weeks = <Widget>[];
@@ -280,14 +377,15 @@ class _CalendarContentState extends State<_CalendarContent> {
 
     while (dayCounter <= daysInMonth) {
       final day = dayCounter;
-      final hasTasks = tasksByDay.containsKey(day);
+      final date = DateTime(_displayMonth.year, _displayMonth.month, day);
+      final hasTasks = tasksByDate.containsKey(date);
       final isToday = now.year == _displayMonth.year && now.month == _displayMonth.month && now.day == day;
-      final isSelected = _selectedDay != null && _selectedDay!.day == day;
+      final isSelected = DateUtils.isSameDay(_selectedDay, date);
 
       currentWeekCells.add(
         Expanded(
           child: GestureDetector(
-            onTap: hasTasks ? () => _onDayTapped(day, tasksByDay) : null,
+            onTap: hasTasks ? () => _onDateTapped(date) : null,
             child: _DayCell(day: day, hasTasks: hasTasks, isToday: isToday, isSelected: isSelected),
           ),
         ),
@@ -356,6 +454,102 @@ class _DayCell extends StatelessWidget {
               margin: const EdgeInsets.only(top: 1),
               decoration: BoxDecoration(color: context.colors.primary, shape: BoxShape.circle),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CalendarViewToggle extends StatelessWidget {
+  final _CalendarView view;
+  final ValueChanged<_CalendarView> onChanged;
+
+  const _CalendarViewToggle({required this.view, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        fu.FButton(
+          style: view == _CalendarView.week ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          onPress: () => onChanged(_CalendarView.week),
+          child: const Text('Week'),
+        ),
+        SizedBox(width: AppConstants.spacing.extraSmall),
+        fu.FButton(
+          style: view == _CalendarView.month ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          onPress: () => onChanged(_CalendarView.month),
+          child: const Text('Month'),
+        ),
+      ],
+    );
+  }
+}
+
+class _WeekDayCell extends StatelessWidget {
+  final DateTime date;
+  final int taskCount;
+  final bool isToday;
+  final bool isSelected;
+
+  const _WeekDayCell({required this.date, required this.taskCount, required this.isToday, required this.isSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    final dayLabel = DateTimeConstants.shortWeekdayNames[date.weekday - 1];
+    final indicatorCount = taskCount.clamp(0, 3);
+
+    return Container(
+      height: 64,
+      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.small, vertical: AppConstants.spacing.small),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? context.colors.primary
+            : isToday
+            ? context.colors.primary.withValues(alpha: 0.1)
+            : context.colors.muted.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            dayLabel,
+            style: context.typography.xs.copyWith(
+              color: isSelected ? context.colors.primaryForeground : context.colors.mutedForeground,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: AppConstants.spacing.extraSmall),
+          Text(
+            '${date.day}',
+            style: context.typography.sm.copyWith(
+              color: isSelected ? context.colors.primaryForeground : context.colors.foreground,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: AppConstants.spacing.extraSmall),
+          if (indicatorCount > 0)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < indicatorCount; i++) ...[
+                  Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? context.colors.primaryForeground.withValues(alpha: 0.85)
+                          : context.colors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  if (i < indicatorCount - 1) SizedBox(width: AppConstants.spacing.extraSmall),
+                ],
+              ],
+            )
+          else
+            const SizedBox(height: 4),
         ],
       ),
     );

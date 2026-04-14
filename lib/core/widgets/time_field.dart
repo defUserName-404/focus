@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../constants/app_constants.dart';
-import '../utils/datetime_formatter.dart';
 
-/// Reusable time picker field that pairs with an [FDateField.calendar].
+/// Reusable time picker field that pairs with an [fu.FDateField.calendar].
 ///
-/// Displays a button that opens a [showTimePicker] dialog when a date has
-/// been selected. Disabled with a hint when [value] is `null` (no date yet).
+/// Uses ForUI's picker-only time field for visual consistency with other
+/// form inputs. Clearing time also clears the bound date-time value.
 class TimeField extends StatelessWidget {
   final String label;
   final DateTime? value;
@@ -17,28 +16,30 @@ class TimeField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final selectedTime = value == null ? null : fu.FTime.fromDateTime(value!);
+
     return Row(
       children: [
         Expanded(
-          child: fu.FButton(
-            style: fu.FButtonStyle.outline(),
-            onPress: value == null
-                ? null
-                : () async {
-                    final initial = TimeOfDay.fromDateTime(value!);
-                    final selected = await showTimePicker(context: context, initialTime: initial);
-                    if (selected == null) return;
-                    onChanged(DateTime(value!.year, value!.month, value!.day, selected.hour, selected.minute));
-                  },
-            child: Text(value == null ? '$label (pick date first)' : '$label: ${value!.toTimeString()}'),
+          child: fu.FTimeField.picker(
+            label: Text(label),
+            hint: value == null ? 'Pick date first' : 'Select time',
+            enabled: value != null,
+            control: fu.FTimeFieldControl.lifted(
+              time: selectedTime,
+              onChange: (time) {
+                if (time == null || value == null) return;
+                onChanged(time.withDate(value!));
+              },
+            ),
           ),
         ),
         if (value != null) ...[
           SizedBox(width: AppConstants.spacing.small),
-          fu.FButton(
+          fu.FButton.icon(
             style: fu.FButtonStyle.ghost(),
-            onPress: () => onChanged(DateTime(value!.year, value!.month, value!.day)),
-            child: const Text('Clear'),
+            onPress: () => onChanged(null),
+            child: const Icon(fu.FIcons.x),
           ),
         ],
       ],

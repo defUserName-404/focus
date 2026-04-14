@@ -10,6 +10,7 @@ import '../../../home/presentation/widgets/today_summary_card.dart';
 import '../../../home/presentation/widgets/year_activity_graph.dart';
 import '../../../tasks/domain/entities/global_stats.dart';
 import '../../../tasks/presentation/providers/task_stats_provider.dart';
+import '../widgets/productivity_insights_section.dart';
 
 /// Dedicated Reports screen that houses overall stats, activity heatmap,
 /// and streak information previously shown on the home screen.
@@ -39,6 +40,8 @@ class ReportsScreen extends ConsumerWidget {
             SizedBox(height: AppConstants.spacing.regular),
             // Activity heatmap
             const YearActivityGraph(),
+            SizedBox(height: AppConstants.spacing.regular),
+            const ProductivityInsightsSection(),
           ],
         ),
       ),
