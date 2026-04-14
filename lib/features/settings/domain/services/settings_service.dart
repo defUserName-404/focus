@@ -16,6 +16,14 @@ class SettingsService {
 
   SettingsService(this._repository);
 
+  //  Generic key-value access
+
+  Future<String?> getValue(String key) => _repository.getValue(key);
+
+  Stream<String?> watchValue(String key) => _repository.watchValue(key);
+
+  Future<Result<void>> setValue(String key, String value) => _writeValue(key, value, tag: 'setValue');
+
   //  Audio preferences
 
   Future<AudioPreferences> getAudioPreferences() => _repository.getAudioPreferences();

@@ -309,13 +309,75 @@ class NotificationService implements INotificationService {
       return;
     }
 
+    final scheduledDate = tz.TZDateTime.from(scheduledTime, tz.local);
+
+    if (PlatformUtils.isAndroid) {
+      final canUseExactAlarms = await _canUseExactAlarms();
+      final primaryMode = canUseExactAlarms
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle;
+
+      try {
+        await _scheduleZonedNotification(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+          details: details,
+          androidScheduleMode: primaryMode,
+          payload: payload,
+        );
+        return;
+      } catch (e, stackTrace) {
+        if (primaryMode == AndroidScheduleMode.exactAllowWhileIdle) {
+          try {
+            await _scheduleZonedNotification(
+              id: id,
+              title: title,
+              body: body,
+              scheduledDate: scheduledDate,
+              details: details,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+              payload: payload,
+            );
+            LogService.instance.warning(
+              'Exact alarm scheduling failed, used inexact Android scheduling',
+              tag: 'NotificationService',
+              error: e,
+              stackTrace: stackTrace,
+            );
+            return;
+          } catch (_) {
+            // Fall through to in-process fallback below.
+          }
+        }
+
+        LogService.instance.warning(
+          'zonedSchedule failed, using in-process fallback',
+          tag: 'NotificationService',
+          error: e,
+          stackTrace: stackTrace,
+        );
+
+        _scheduleInProcessNotification(
+          id: id,
+          title: title,
+          body: body,
+          details: details,
+          scheduledTime: scheduledTime,
+          payload: payload,
+        );
+        return;
+      }
+    }
+
     try {
-      await _notifications.zonedSchedule(
+      await _scheduleZonedNotification(
         id: id,
         title: title,
         body: body,
-        scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
-        notificationDetails: details,
+        scheduledDate: scheduledDate,
+        details: details,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         payload: payload,
       );
@@ -336,6 +398,43 @@ class NotificationService implements INotificationService {
         payload: payload,
       );
     }
+  }
+
+  Future<bool> _canUseExactAlarms() async {
+    try {
+      final androidPlugin = _notifications
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      final canScheduleExact = await androidPlugin?.canScheduleExactNotifications();
+      return canScheduleExact ?? true;
+    } catch (e, stackTrace) {
+      LogService.instance.warning(
+        'canScheduleExactNotifications failed; using inexact Android scheduling',
+        tag: 'NotificationService',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<void> _scheduleZonedNotification({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledDate,
+    required NotificationDetails details,
+    required AndroidScheduleMode androidScheduleMode,
+    String? payload,
+  }) {
+    return _notifications.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      notificationDetails: details,
+      androidScheduleMode: androidScheduleMode,
+      payload: payload,
+    );
   }
 
   @override

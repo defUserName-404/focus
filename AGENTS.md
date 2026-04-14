@@ -1,296 +1,215 @@
 # Focus - AI Agent Guidelines
 
-> This document provides comprehensive instructions for AI coding agents working on the Focus codebase.
-> For detailed documentation, see the `.agents/` directory.
+This is the primary onboarding file for coding agents working in Focus.
+Canonical agent documentation now lives in structured paths under `.agents/`.
 
 ## Quick Reference
 
-| Category | Document |
-|----------|----------|
-| Code Style | [.agents/CODING_STYLE.md](.agents/CODING_STYLE.md) |
-| Architecture | [.agents/ARCHITECTURE.md](.agents/ARCHITECTURE.md) |
-| Commands | [.agents/COMMANDS.md](.agents/COMMANDS.md) |
-| Patterns | [.agents/PATTERNS.md](.agents/PATTERNS.md) |
-| **Audit Results** | [.agents/AUDIT_RESULTS.md](.agents/AUDIT_RESULTS.md) |
-| **Feature Plans** | [.agents/FEATURE_PLANS.md](.agents/FEATURE_PLANS.md) |
-
----
+| Category | Path |
+|----------|------|
+| Architecture | [.agents/docs/architecture.md](.agents/docs/architecture.md) |
+| Coding Style | [.agents/docs/coding_style.md](.agents/docs/coding_style.md) |
+| Commands | [.agents/docs/commands.md](.agents/docs/commands.md) |
+| Patterns | [.agents/docs/patterns.md](.agents/docs/patterns.md) |
+| Audit Snapshot | [.agents/docs/audit_results.md](.agents/docs/audit_results.md) |
+| Feature Plans | [.agents/docs/feature_plans.md](.agents/docs/feature_plans.md) |
+| Feature Skill | [.agents/skills/new_feature.md](.agents/skills/new_feature.md) |
+| Review Skill | [.agents/skills/review.md](.agents/skills/review.md) |
+| Regression Skill | [.agents/skills/regression_test.md](.agents/skills/regression_test.md) |
+| Commit Writer Skill | [.agents/skills/git_commit_writer.md](.agents/skills/git_commit_writer.md) |
+| PR Description Skill | [.agents/skills/pr_description_generator.md](.agents/skills/pr_description_generator.md) |
+| Commit Optimizer Skill | [.agents/skills/commit_optimizer.md](.agents/skills/commit_optimizer.md) |
 
 ## Project Overview
 
-**Focus** is a cross-platform Flutter productivity app for managing deep work sessions, projects, and tasks. It is fully offline and privacy-first - all data stays on the user's device.
+Focus is a cross-platform Flutter productivity app for deep work sessions, projects, and tasks.
 
-### Tech Stack
+Key principles:
+- Offline-first and privacy-first (local device data)
+- Feature-first clean architecture
+- Riverpod + GetIt + Drift
+- ForUI-first component styling
+
+## Core Stack
 
 | Category | Technology |
 |----------|------------|
 | Framework | Flutter (Dart SDK >=3.10.0 <4.0.0) |
-| State Management | Riverpod with code generation |
-| Dependency Injection | GetIt |
-| Database/ORM | Drift (SQLite) |
-| UI Library | ForUI (forui) |
-| Audio | audioplayers, audio_service, audio_session |
+| State | Riverpod with code generation |
+| DI | GetIt |
+| Local DB | Drift (SQLite) |
+| Routing | go_router |
+| UI | ForUI (`forui`) |
 | Notifications | flutter_local_notifications |
-| Desktop Lifecycle | window_manager, tray_manager, launch_at_startup |
+| Audio | audioplayers, audio_service, audio_session |
 
----
+## `.agents` Layout
+
+```text
+.agents/
+  docs/
+    architecture.md
+    coding_style.md
+    commands.md
+    patterns.md
+    audit_results.md
+    feature_plans.md
+  commands/
+    new_feature.command
+    review.command
+    regression_test.command
+      commit_optimizer.command
+      git_commit_writer.command
+      pr_description_generator.command
+  skills/
+    new_feature.md
+    review.md
+    regression_test.md
+      commit_optimizer.md
+      git_commit_writer.md
+      pr_description_generator.md
+  tools/
+    README.md
+```
 
 ## Essential Commands
 
 ```bash
-# Install dependencies
 flutter pub get
-
-# Run code generation (REQUIRED after changing providers, models, or DB schema)
 dart run build_runner build --delete-conflicting-outputs
-
-# Watch mode for code generation during development
-dart run build_runner watch --delete-conflicting-outputs
-
-# Run the app (debug mode)
-flutter run
-
-# Analyze code for issues
 flutter analyze
-
-# Format code (120 char line width)
 dart format . --line-length=120
-
-# Build release APK
-flutter build apk --release --split-per-abi
-
-# Build release iOS (unsigned)
-flutter build ios --release --no-codesign
+flutter test
+flutter run
 ```
 
-### Testing (No tests currently exist)
+Agent helper scripts:
 
 ```bash
-# Run all tests
-flutter test
-
-# Run a single test file
-flutter test test/path/to/test_file.dart
-
-# Run tests with coverage
-flutter test --coverage
+bash .agents/commands/new_feature.command <feature_name>
+bash .agents/commands/review.command
+bash .agents/commands/regression_test.command
+bash .agents/commands/commit_optimizer.command main
+bash .agents/commands/git_commit_writer.command <type> <scope> "<summary>" "<why>"
+bash .agents/commands/pr_description_generator.command main "<labels>" "<title>"
 ```
 
----
+## Critical Rules For Agents
 
-## Project Structure
+### 1) Run Codegen When Required
 
-```
-lib/
-├── main.dart                    # App entry point
-├── core/                        # Shared infrastructure
-│   ├── app.dart                 # Root FocusApp widget
-│   ├── config/theme/            # Theme configuration
-│   ├── constants/               # App-wide constants
-│   ├── di/injection.dart        # GetIt dependency injection setup
-│   ├── providers/               # Core Riverpod providers
-│   ├── routing/                 # go_router routes and configuration
-│   ├── services/                # Core services (DB, audio, notifications, logging)
-│   ├── utils/                   # Utility functions
-│   └── widgets/                 # Reusable UI widgets
-└── features/                    # Feature modules (Clean Architecture)
-    ├── home/                    # Home screen
-    ├── projects/                # Project management
-    ├── tasks/                   # Task management
-    ├── session/                 # Focus session management
-    └── settings/                # App settings
+Run this after changing Riverpod annotations, Drift schema/queries, or `part '*.g.dart'` files:
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
 ```
 
-### Feature Module Structure
+### 2) Preserve Architecture Boundaries
 
-Each feature follows Clean Architecture:
+- Domain does not depend on data or presentation.
+- Data implements domain contracts.
+- Presentation owns UI state and interaction models.
 
-```
-features/<feature>/
-├── data/
-│   ├── datasources/             # Local/remote data sources
-│   ├── mappers/                 # DB model <-> Domain entity mappers
-│   ├── models/                  # Drift table definitions
-│   └── repositories/            # Repository implementations
-├── domain/
-│   ├── entities/                # Immutable domain entities
-│   ├── repositories/            # Repository interfaces (abstract)
-│   └── services/                # Business logic services
-└── presentation/
-    ├── commands/                # UI action handlers
-    ├── providers/               # Riverpod providers
-    ├── screens/                 # Full-screen pages
-    └── widgets/                 # Feature-specific widgets
-```
+### 3) Use `Result<T>` For Service-Level Failures
 
----
+Service methods should return `Result<T>` for fallible operations and avoid throwing for expected failures.
 
-## Critical Rules for Agents
+### 4) Use `LogService` For Logging
 
-### 1. Always Run Code Generation
+Do not use `print` or `debugPrint`.
 
-After modifying any of these, run `dart run build_runner build --delete-conflicting-outputs`:
-- Riverpod providers (`@Riverpod`, `@riverpod` annotations)
-- Drift database tables or queries
-- Files with `part '*.g.dart'` directives
+### 5) Use GetIt For DI Registration
 
-### 2. Follow Clean Architecture
+Register dependencies in `lib/core/di/injection.dart` and bridge to Riverpod providers as needed.
 
-- **Domain layer** has NO dependencies on data or presentation
-- **Data layer** depends only on domain
-- **Presentation layer** depends on domain (via providers)
+### 6) Keep Domain Entities Immutable
 
-### 3. Use the Result Type for Error Handling
+- `@immutable`
+- `Equatable`
+- `const` constructors
+- `copyWith` extension support
 
-Services return `Result<T>` instead of throwing exceptions:
+### 7) Handle Drift Migrations Explicitly
 
-```dart
-Future<Result<Project>> createProject(...) async {
-  try {
-    // ... operation
-    return Success(project);
-  } catch (e, st) {
-    return Failure(DatabaseFailure('Failed to create project', error: e, stackTrace: st));
-  }
-}
+When schema changes:
+1. Increment `schemaVersion`.
+2. Add `onUpgrade` migration logic.
+3. Validate behavior with existing data.
 
-// Caller uses pattern matching:
-switch (result) {
-  case Success(:final value): // handle success
-  case Failure(:final failure): // handle failure
-}
-```
+### 8) Persist Durable UI Preferences Via Providers + Settings
 
-### 4. Use LogService for Logging
+If users expect a switcher/filter/view mode to survive restarts, persist it via settings-backed provider patterns (not ad-hoc widget `setState`).
 
-Never use `print()` or `debugPrint()`. Always use:
+### 9) Run Core Git Skills After Every User Task
 
-```dart
-final _log = LogService.instance;
+After each user task is completed, agents must run this sequence for the change group:
 
-_log.debug('Debug message', tag: 'ClassName');
-_log.info('Info message', tag: 'ClassName');
-_log.warning('Warning', tag: 'ClassName', error: e, stackTrace: st);
-_log.error('Error', tag: 'ClassName', error: e, stackTrace: st);
-```
+1. Optimize commit grouping (atomic, one logical concern per commit):
+   `bash .agents/commands/commit_optimizer.command main`
+2. Write a Conventional Commit message and commit staged files:
+   `bash .agents/commands/git_commit_writer.command <type> <scope> "<summary>" "<why>"`
+3. Generate PR description and create PR using GitHub CLI:
+   `bash .agents/commands/pr_description_generator.command main "<labels>" "<title>"`
 
-### 5. Use GetIt for Dependency Injection
+PR creation must include:
+- `--assignee @me`
+- `--label`
+- `--title`
+- Description via `--body` or `--body-file`
 
-All services are registered in `lib/core/di/injection.dart`. Access via:
+Commit titles should default to Conventional Commit types (`feat`, `fix`, `refactor`, `docs`, `test`, `chore`) to support semantic versioning.
 
-```dart
-import 'package:focus/core/di/injection.dart';
-
-final service = getIt<ServiceType>();
-```
-
-### 6. Immutable Domain Entities
-
-Domain entities must be:
-- Marked with `@immutable`
-- Extend `Equatable`
-- Have `const` constructors
-- Use `copyWith` for modifications (defined in `*_extensions.dart`)
-
-### 7. Database Migrations
-
-When changing the database schema:
-1. Increment `schemaVersion` in `db_service.dart`
-2. Add migration logic in the `onUpgrade` callback
-3. Test migration with existing data
-
----
-
-## Important Files to Know
+## Important Source Files
 
 | File | Purpose |
 |------|---------|
-| `lib/core/di/injection.dart` | All dependency registration |
-| `lib/core/services/db_service.dart` | Database definition and migrations |
-| `lib/core/utils/result.dart` | Result type for error handling |
+| `lib/core/di/injection.dart` | DI registration |
+| `lib/core/services/db_service.dart` | Drift database and migrations |
 | `lib/core/services/log_service.dart` | Centralized logging |
-| `lib/core/routing/app_router.dart` | GoRouter configuration |
-| `lib/core/routing/routes.dart` | Route paths and helper builders |
-| `lib/core/constants/app_constants.dart` | UI constants (spacing, sizes) |
-| `lib/core/config/theme/app_theme.dart` | Theme configuration |
-| `pubspec.yaml` | Dependencies and assets |
-| `analysis_options.yaml` | Linter rules |
+| `lib/core/utils/result.dart` | `Result<T>` and failure types |
+| `lib/core/routing/app_router.dart` | go_router config |
+| `lib/core/routing/routes.dart` | Route constants/helpers |
+| `lib/core/constants/app_constants.dart` | Shared spacing/sizing constants |
 
----
+## Agent Self-Update Protocol (Mandatory)
 
-## Agent Self-Update Protocol
+When making significant codebase changes, update agent docs in the same change.
 
-**IMPORTANT**: When making significant changes to the codebase, update the agent documentation:
+Required updates by change type:
 
-1. **New feature added**: Update `.agents/ARCHITECTURE.md` and `.agents/PATTERNS.md` with new patterns
-2. **New dependency added**: Update tech stack in this file
-3. **Build/test process changed**: Update `.agents/COMMANDS.md`
-4. **Code style changed**: Update `.agents/CODING_STYLE.md`
-5. **New patterns established**: Add examples to `.agents/PATTERNS.md`
+1. Architecture change:
+   update `.agents/docs/architecture.md` and `.agents/docs/patterns.md`
+2. Code style/convention change:
+   update `.agents/docs/coding_style.md`
+3. Build/test workflow change:
+   update `.agents/docs/commands.md` and relevant `.agents/commands/*.command`
+4. Risk profile or known issues changed:
+   update `.agents/docs/audit_results.md`
+5. Roadmap/priorities changed:
+   update `.agents/docs/feature_plans.md`
+6. Any significant change:
+   ensure this `AGENTS.md` remains accurate
 
-Changes that warrant documentation updates:
-- New architectural patterns or layers
-- New utility classes or services
-- Changes to the DI setup
-- Database schema changes
-- New code generation requirements
-- Breaking changes to existing patterns
+Significant changes include:
+- New architecture patterns or layers
+- New core services or DI registration strategy
+- Routing model changes
+- Drift schema/migration changes
+- Notification/audio/lifecycle behavior changes
+- New persistent state patterns
 
----
+## Platform Notes
 
-## Platform Support
+| Platform | Status |
+|----------|--------|
+| Android | Supported |
+| iOS | Supported |
+| macOS | Supported |
+| Linux | Supported |
+| Windows | Supported |
+| Web | Not supported target |
 
-| Platform | Notes |
-|----------|-------|
-| Android | Full support, media session controls |
-| iOS | Full support, media session controls |
-| macOS | Local notifications supported |
-| Linux | Local notifications supported (scheduled reminders while app is running) |
-| Windows | Local notifications supported (best results when packaged as MSIX) |
-| Web | Not supported (offline native app target) |
-
-Use `PlatformUtils` for platform-specific branching:
-
-```dart
-if (PlatformUtils.supportsLocalNotifications) { ... }
-if (PlatformUtils.supportsMediaSession) { ... }
-if (PlatformUtils.isDesktop) { ... }
-if (PlatformUtils.isMobile) { ... }
-```
-
----
-
-## Common Tasks
-
-### Adding a New Feature
-
-1. Create feature directory: `lib/features/<name>/`
-2. Create subdirectories: `data/`, `domain/`, `presentation/`
-3. Define domain entities in `domain/entities/`
-4. Define repository interface in `domain/repositories/i_<name>_repository.dart`
-5. Implement repository in `data/repositories/<name>_repository_impl.dart`
-6. Create service in `domain/services/<name>_service.dart`
-7. Register in `lib/core/di/injection.dart`
-8. Create Riverpod providers in `presentation/providers/`
-9. Create screens and widgets
-
-### Adding a New Drift Table
-
-1. Create model in `data/models/<name>_model.dart`
-2. Add table to `@DriftDatabase` annotation in `db_service.dart`
-3. Run code generation
-4. Create mapper extensions in `data/mappers/`
-5. Create datasource interface and implementation
-
-### Adding a New Screen
-
-1. Create screen in `presentation/screens/<name>_screen.dart`
-2. Use `ConsumerWidget` or `ConsumerStatefulWidget` for Riverpod
-3. Add route constant/helper in `lib/core/routing/routes.dart`
-4. Add route handling in `lib/core/routing/app_router.dart`
-5. Use `context.go` / `context.push` from UI/commands
-
----
+Use platform guards via `PlatformUtils` for platform-specific behavior.
 
 ## License
 

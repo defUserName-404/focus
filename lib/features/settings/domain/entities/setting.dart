@@ -28,6 +28,12 @@ abstract final class SettingsKeys {
 
   /// Whether the desktop app should auto-launch after login/startup.
   static const String desktopLaunchAtStartupEnabled = 'desktop_launch_at_startup_enabled';
+
+  /// Home calendar default view mode (`month` or `week`).
+  static const String homeCalendarViewMode = 'home_calendar_view_mode';
+
+  /// Reports productivity insights window (`weekly` or `monthly`).
+  static const String reportsInsightsWindowMode = 'reports_insights_window_mode';
 }
 
 /// Domain entity representing a user preference.

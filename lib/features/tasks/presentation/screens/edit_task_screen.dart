@@ -81,10 +81,7 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
           label: const Text('Start Date'),
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
           start: DateTime.now(),
-          control: FDateFieldControl.managed(
-            initial: _startDate,
-            onChange: (date) => setState(() => _startDate = date),
-          ),
+          control: FDateFieldControl.lifted(date: _startDate, onChange: (date) => setState(() => _startDate = date)),
           clearable: true,
         ),
         TimeField(label: 'Start Time', value: _startDate, onChanged: (date) => setState(() => _startDate = date)),
@@ -92,8 +89,8 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
           label: const Text('End Date'),
           hint: _endDate?.toDateString() ?? 'Select End Date (Optional)',
           start: DateTime.now(),
-          control: FDateFieldControl.managed(
-            initial: _endDate,
+          control: FDateFieldControl.lifted(
+            date: _endDate,
             onChange: (date) => setState(() => _endDate = date),
             validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           ),

@@ -10,13 +10,14 @@ import '../../../../core/routing/routes.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../tasks/domain/entities/task.dart';
 import '../../../tasks/presentation/widgets/task_priority_badge.dart';
+import '../providers/upcoming_calendar_state_provider.dart';
+import '../providers/upcoming_calendar_view_provider.dart';
 import '../providers/upcoming_tasks_provider.dart';
 
 /// A calendar-style view that shows upcoming task deadlines on the home screen.
 ///
-/// Displays a compact month grid for the current month, highlighting days
-/// that have upcoming deadlines. Tapping a day shows an overlay popup with
-/// that day's tasks.
+/// Supports month and week views, highlighting days with upcoming deadlines.
+/// Tapping a day shows an overlay popup with that day's tasks.
 class UpcomingCalendarCard extends ConsumerWidget {
   const UpcomingCalendarCard({super.key});
 
@@ -35,37 +36,18 @@ class UpcomingCalendarCard extends ConsumerWidget {
   }
 }
 
-class _CalendarContent extends StatefulWidget {
+class _CalendarContent extends ConsumerStatefulWidget {
   final List<Task> tasks;
 
   const _CalendarContent({required this.tasks});
 
   @override
-  State<_CalendarContent> createState() => _CalendarContentState();
+  ConsumerState<_CalendarContent> createState() => _CalendarContentState();
 }
 
-class _CalendarContentState extends State<_CalendarContent> {
-  late DateTime _displayMonth;
-  DateTime? _selectedDay;
+class _CalendarContentState extends ConsumerState<_CalendarContent> {
   OverlayEntry? _taskOverlay;
   final LayerLink _calendarLayerLink = LayerLink();
-
-  @override
-  void initState() {
-    super.initState();
-    _displayMonth = DateTime(DateTime.now().year, DateTime.now().month);
-    // Auto-select today if it has tasks
-    _autoSelectToday();
-  }
-
-  @override
-  void didUpdateWidget(covariant _CalendarContent oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Re-check auto-select when tasks change
-    if (oldWidget.tasks != widget.tasks && _selectedDay == null) {
-      _autoSelectToday();
-    }
-  }
 
   @override
   void dispose() {
@@ -73,61 +55,110 @@ class _CalendarContentState extends State<_CalendarContent> {
     super.dispose();
   }
 
-  void _autoSelectToday() {
-    final now = DateTime.now();
-    if (_displayMonth.year == now.year && _displayMonth.month == now.month) {
-      final tasksByDay = _tasksByDay;
-      if (tasksByDay.containsKey(now.day)) {
-        _selectedDay = DateTime(now.year, now.month, now.day);
-      }
+  DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
+  bool _isDateVisibleInCurrentView({
+    required CalendarViewMode viewMode,
+    required UpcomingCalendarUiState uiState,
+    required DateTime date,
+  }) {
+    if (viewMode == CalendarViewMode.month) {
+      return date.year == uiState.displayMonth.year && date.month == uiState.displayMonth.month;
     }
+
+    final weekEnd = uiState.displayWeekStart.add(const Duration(days: 6));
+    return !date.isBefore(uiState.displayWeekStart) && !date.isAfter(weekEnd);
   }
 
-  /// Maps day-of-month to list of tasks with deadlines on that day.
-  Map<int, List<Task>> get _tasksByDay {
-    final map = <int, List<Task>>{};
+  DateTime? _effectiveSelectedDay({
+    required CalendarViewMode viewMode,
+    required UpcomingCalendarUiState uiState,
+    required Map<DateTime, List<Task>> tasksByDate,
+    required DateTime today,
+  }) {
+    final selected = uiState.selectedDay;
+
+    if (selected != null &&
+        tasksByDate.containsKey(selected) &&
+        _isDateVisibleInCurrentView(viewMode: viewMode, uiState: uiState, date: selected)) {
+      return selected;
+    }
+
+    if (selected == null &&
+        tasksByDate.containsKey(today) &&
+        _isDateVisibleInCurrentView(viewMode: viewMode, uiState: uiState, date: today)) {
+      return today;
+    }
+
+    return null;
+  }
+
+  /// Maps a calendar date to tasks with deadlines on that day.
+  Map<DateTime, List<Task>> get _tasksByDate {
+    final map = <DateTime, List<Task>>{};
     for (final task in widget.tasks) {
       final end = task.endDate;
-      if (end != null && end.year == _displayMonth.year && end.month == _displayMonth.month) {
-        map.putIfAbsent(end.day, () => []).add(task);
+      if (end != null) {
+        final key = _dateOnly(end);
+        map.putIfAbsent(key, () => []).add(task);
       }
     }
+
+    for (final tasks in map.values) {
+      tasks.sort((a, b) {
+        final aEnd = a.endDate;
+        final bEnd = b.endDate;
+        if (aEnd == null && bEnd == null) return 0;
+        if (aEnd == null) return -1;
+        if (bEnd == null) return 1;
+        return aEnd.compareTo(bEnd);
+      });
+    }
+
     return map;
   }
 
-  void _previousMonth() {
+  void _switchView({
+    required CalendarViewMode currentView,
+    required CalendarViewMode nextView,
+    required UpcomingCalendarUiState uiState,
+    required DateTime? selectedDay,
+  }) {
+    if (currentView == nextView) return;
+
+    final anchor = selectedDay ?? uiState.selectedDay ?? DateTime.now();
     _removeOverlay();
-    setState(() {
-      _displayMonth = DateTime(_displayMonth.year, _displayMonth.month - 1);
-      _selectedDay = null;
-    });
+
+    ref.read(upcomingCalendarUiStateProvider.notifier).switchView(nextView, anchor: anchor);
+    ref.read(upcomingCalendarViewModeProvider.notifier).setMode(nextView);
   }
 
-  void _nextMonth() {
+  void _previousPeriod(CalendarViewMode viewMode) {
     _removeOverlay();
-    setState(() {
-      _displayMonth = DateTime(_displayMonth.year, _displayMonth.month + 1);
-      _selectedDay = null;
-    });
+    ref.read(upcomingCalendarUiStateProvider.notifier).previousPeriod(viewMode);
   }
 
-  void _onDayTapped(int day, Map<int, List<Task>> tasksByDay) {
+  void _nextPeriod(CalendarViewMode viewMode) {
     _removeOverlay();
-    final tasks = tasksByDay[day];
+    ref.read(upcomingCalendarUiStateProvider.notifier).nextPeriod(viewMode);
+  }
+
+  void _onDateTapped(DateTime date) {
+    _removeOverlay();
+    final normalized = _dateOnly(date);
+    final tasks = _tasksByDate[normalized];
     if (tasks == null || tasks.isEmpty) {
-      setState(() => _selectedDay = null);
+      ref.read(upcomingCalendarUiStateProvider.notifier).selectDay(null);
       return;
     }
 
-    setState(() {
-      _selectedDay = DateTime(_displayMonth.year, _displayMonth.month, day);
-    });
+    ref.read(upcomingCalendarUiStateProvider.notifier).selectDay(normalized);
 
     // Show overlay popup with tasks
-    _showTaskOverlay(tasks);
+    _showTaskOverlay(selectedDay: normalized, tasks: tasks);
   }
 
-  void _showTaskOverlay(List<Task> tasks) {
+  void _showTaskOverlay({required DateTime selectedDay, required List<Task> tasks}) {
     _removeOverlay();
 
     final overlay = Overlay.of(context);
@@ -141,7 +172,7 @@ class _CalendarContentState extends State<_CalendarContent> {
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
                   _removeOverlay();
-                  setState(() => _selectedDay = null);
+                  ref.read(upcomingCalendarUiStateProvider.notifier).selectDay(null);
                 },
               ),
             ),
@@ -157,16 +188,16 @@ class _CalendarContentState extends State<_CalendarContent> {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 320, maxHeight: 280),
                   child: _TaskPopupContent(
-                    selectedDay: _selectedDay!,
+                    selectedDay: selectedDay,
                     tasks: tasks,
                     onTaskTap: (task) {
                       _removeOverlay();
-                      setState(() => _selectedDay = null);
+                      ref.read(upcomingCalendarUiStateProvider.notifier).selectDay(null);
                       context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId});
                     },
                     onClose: () {
                       _removeOverlay();
-                      setState(() => _selectedDay = null);
+                      ref.read(upcomingCalendarUiStateProvider.notifier).selectDay(null);
                     },
                   ),
                 ),
@@ -187,12 +218,21 @@ class _CalendarContentState extends State<_CalendarContent> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final daysInMonth = DateTime(_displayMonth.year, _displayMonth.month + 1, 0).day;
-    final firstWeekday = DateTime(_displayMonth.year, _displayMonth.month, 1).weekday; // 1=Mon
-    final tasksByDay = _tasksByDay;
-
-    final monthName = DateTimeConstants.shortMonthNames[_displayMonth.month - 1];
+    final now = _dateOnly(DateTime.now());
+    final viewModeAsync = ref.watch(upcomingCalendarViewModeProvider);
+    final viewMode = viewModeAsync.value ?? CalendarViewMode.month;
+    final uiState = ref.watch(upcomingCalendarUiStateProvider);
+    final tasksByDate = _tasksByDate;
+    final effectiveSelectedDay = _effectiveSelectedDay(
+      viewMode: viewMode,
+      uiState: uiState,
+      tasksByDate: tasksByDate,
+      today: now,
+    );
+    final displayMonth = uiState.displayMonth;
+    final displayWeekStart = uiState.displayWeekStart;
+    final daysInMonth = DateTime(displayMonth.year, displayMonth.month + 1, 0).day;
+    final firstWeekday = DateTime(displayMonth.year, displayMonth.month, 1).weekday; // 1=Mon
 
     return CompositedTransformTarget(
       link: _calendarLayerLink,
@@ -200,12 +240,32 @@ class _CalendarContentState extends State<_CalendarContent> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Month navigation header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  viewMode == CalendarViewMode.month ? 'Focus Month' : 'Focus Week',
+                  style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
+                ),
+                _CalendarViewToggle(
+                  view: viewMode,
+                  onChanged: (nextView) {
+                    _switchView(
+                      currentView: viewMode,
+                      nextView: nextView,
+                      uiState: uiState,
+                      selectedDay: effectiveSelectedDay,
+                    );
+                  },
+                ),
+              ],
+            ),
+            SizedBox(height: AppConstants.spacing.regular),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: _previousMonth,
+                  onTap: () => _previousPeriod(viewMode),
                   child: Icon(
                     fu.FIcons.chevronLeft,
                     size: AppConstants.size.icon.regular,
@@ -213,11 +273,11 @@ class _CalendarContentState extends State<_CalendarContent> {
                   ),
                 ),
                 Text(
-                  '$monthName ${_displayMonth.year}',
+                  _periodLabel(viewMode: viewMode, displayMonth: displayMonth, displayWeekStart: displayWeekStart),
                   style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
                 ),
                 GestureDetector(
-                  onTap: _nextMonth,
+                  onTap: () => _nextPeriod(viewMode),
                   child: Icon(
                     fu.FIcons.chevronRight,
                     size: AppConstants.size.icon.regular,
@@ -228,41 +288,100 @@ class _CalendarContentState extends State<_CalendarContent> {
             ),
             SizedBox(height: AppConstants.spacing.regular),
 
-            // Day-of-week header
-            Row(
-              children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                  .map(
-                    (d) => Expanded(
-                      child: Center(
-                        child: Text(
-                          d,
-                          style: context.typography.xs.copyWith(
-                            color: context.colors.mutedForeground,
-                            fontWeight: FontWeight.w500,
+            if (viewMode == CalendarViewMode.month) ...[
+              Row(
+                children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                    .map(
+                      (d) => Expanded(
+                        child: Center(
+                          child: Text(
+                            d,
+                            style: context.typography.xs.copyWith(
+                              color: context.colors.mutedForeground,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  )
-                  .toList(),
-            ),
-            SizedBox(height: AppConstants.spacing.small),
-
-            // Calendar grid
-            ..._buildWeeks(context, daysInMonth, firstWeekday, tasksByDay, now),
+                    )
+                    .toList(),
+              ),
+              SizedBox(height: AppConstants.spacing.small),
+              ..._buildWeeks(
+                context,
+                displayMonth: displayMonth,
+                daysInMonth: daysInMonth,
+                firstWeekday: firstWeekday,
+                tasksByDate: tasksByDate,
+                now: now,
+                selectedDay: effectiveSelectedDay,
+              ),
+            ] else
+              _buildWeekStrip(
+                context,
+                weekStart: displayWeekStart,
+                tasksByDate: tasksByDate,
+                now: now,
+                selectedDay: effectiveSelectedDay,
+              ),
           ],
         ),
       ),
     );
   }
 
+  String _periodLabel({
+    required CalendarViewMode viewMode,
+    required DateTime displayMonth,
+    required DateTime displayWeekStart,
+  }) {
+    if (viewMode == CalendarViewMode.month) {
+      final monthName = DateTimeConstants.shortMonthNames[displayMonth.month - 1];
+      return '$monthName ${displayMonth.year}';
+    }
+
+    final weekEnd = displayWeekStart.add(const Duration(days: 6));
+    return '${displayWeekStart.toShortDateString()} - ${weekEnd.toShortDateString()}';
+  }
+
+  Widget _buildWeekStrip(
+    BuildContext context, {
+    required DateTime weekStart,
+    required Map<DateTime, List<Task>> tasksByDate,
+    required DateTime now,
+    required DateTime? selectedDay,
+  }) {
+    final days = List.generate(7, (index) => weekStart.add(Duration(days: index)));
+
+    return Row(
+      children: [
+        for (var index = 0; index < days.length; index++) ...[
+          Expanded(
+            child: GestureDetector(
+              onTap: tasksByDate.containsKey(days[index]) ? () => _onDateTapped(days[index]) : null,
+              child: _WeekDayCell(
+                date: days[index],
+                taskCount: tasksByDate[days[index]]?.length ?? 0,
+                isToday: DateUtils.isSameDay(days[index], now),
+                isSelected: DateUtils.isSameDay(days[index], selectedDay),
+              ),
+            ),
+          ),
+          if (index < days.length - 1) SizedBox(width: AppConstants.spacing.extraSmall),
+        ],
+      ],
+    );
+  }
+
   List<Widget> _buildWeeks(
-    BuildContext context,
-    int daysInMonth,
-    int firstWeekday,
-    Map<int, List<Task>> tasksByDay,
-    DateTime now,
-  ) {
+    BuildContext context, {
+    required DateTime displayMonth,
+    required int daysInMonth,
+    required int firstWeekday,
+    required Map<DateTime, List<Task>> tasksByDate,
+    required DateTime now,
+    required DateTime? selectedDay,
+  }) {
     final weeks = <Widget>[];
     var dayCounter = 1;
     // firstWeekday: 1=Mon. We need (firstWeekday-1) empty cells before day 1.
@@ -280,14 +399,15 @@ class _CalendarContentState extends State<_CalendarContent> {
 
     while (dayCounter <= daysInMonth) {
       final day = dayCounter;
-      final hasTasks = tasksByDay.containsKey(day);
-      final isToday = now.year == _displayMonth.year && now.month == _displayMonth.month && now.day == day;
-      final isSelected = _selectedDay != null && _selectedDay!.day == day;
+      final date = DateTime(displayMonth.year, displayMonth.month, day);
+      final hasTasks = tasksByDate.containsKey(date);
+      final isToday = now.year == displayMonth.year && now.month == displayMonth.month && now.day == day;
+      final isSelected = DateUtils.isSameDay(selectedDay, date);
 
       currentWeekCells.add(
         Expanded(
           child: GestureDetector(
-            onTap: hasTasks ? () => _onDayTapped(day, tasksByDay) : null,
+            onTap: hasTasks ? () => _onDateTapped(date) : null,
             child: _DayCell(day: day, hasTasks: hasTasks, isToday: isToday, isSelected: isSelected),
           ),
         ),
@@ -356,6 +476,102 @@ class _DayCell extends StatelessWidget {
               margin: const EdgeInsets.only(top: 1),
               decoration: BoxDecoration(color: context.colors.primary, shape: BoxShape.circle),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CalendarViewToggle extends StatelessWidget {
+  final CalendarViewMode view;
+  final ValueChanged<CalendarViewMode> onChanged;
+
+  const _CalendarViewToggle({required this.view, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        fu.FButton(
+          style: view == CalendarViewMode.week ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          onPress: () => onChanged(CalendarViewMode.week),
+          child: const Text('Week'),
+        ),
+        SizedBox(width: AppConstants.spacing.extraSmall),
+        fu.FButton(
+          style: view == CalendarViewMode.month ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          onPress: () => onChanged(CalendarViewMode.month),
+          child: const Text('Month'),
+        ),
+      ],
+    );
+  }
+}
+
+class _WeekDayCell extends StatelessWidget {
+  final DateTime date;
+  final int taskCount;
+  final bool isToday;
+  final bool isSelected;
+
+  const _WeekDayCell({required this.date, required this.taskCount, required this.isToday, required this.isSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    final dayLabel = DateTimeConstants.shortWeekdayNames[date.weekday - 1];
+    final indicatorCount = taskCount.clamp(0, 3);
+
+    return Container(
+      height: 64,
+      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.small, vertical: AppConstants.spacing.small),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? context.colors.primary
+            : isToday
+            ? context.colors.primary.withValues(alpha: 0.1)
+            : context.colors.muted.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            dayLabel,
+            style: context.typography.xs.copyWith(
+              color: isSelected ? context.colors.primaryForeground : context.colors.mutedForeground,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: AppConstants.spacing.extraSmall),
+          Text(
+            '${date.day}',
+            style: context.typography.sm.copyWith(
+              color: isSelected ? context.colors.primaryForeground : context.colors.foreground,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: AppConstants.spacing.extraSmall),
+          if (indicatorCount > 0)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < indicatorCount; i++) ...[
+                  Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? context.colors.primaryForeground.withValues(alpha: 0.85)
+                          : context.colors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  if (i < indicatorCount - 1) SizedBox(width: AppConstants.spacing.extraSmall),
+                ],
+              ],
+            )
+          else
+            const SizedBox(height: 4),
         ],
       ),
     );
