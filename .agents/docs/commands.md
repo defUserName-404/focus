@@ -113,7 +113,12 @@ git add <files>
 bash .agents/commands/git_commit_writer.command <type> <scope> "<summary>" "<why>"
 ```
 
-3. Create PR with assignee, labels, title, and generated description:
+3. Push to remote
+```
+git push -u origin feature
+```
+
+4. Create PR with assignee, labels, title, and generated description:
 
 ```bash
 bash .agents/commands/pr_description_generator.command main "<labels>" "<title>"
