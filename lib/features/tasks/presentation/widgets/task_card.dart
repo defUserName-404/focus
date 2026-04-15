@@ -13,7 +13,9 @@ import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/task.dart';
 import '../commands/task_commands.dart';
 import '../providers/task_provider.dart';
+import 'add_subtask_chip.dart';
 import 'subtask_row.dart';
+import 'subtask_count_chip.dart';
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
 
@@ -72,13 +74,13 @@ class TaskCard extends ConsumerWidget {
         isOverdue: isOverdue && !task.isCompleted,
       ),
       footerActions: [
-        _AddSubtaskChip(
+        AddSubtaskChip(
           onPressed: () =>
               TaskCommands.create(context, projectId: task.projectId, parentTaskId: task.id, depth: task.depth + 1),
         ),
         SizedBox(width: AppConstants.spacing.regular),
         if (subtasks.isNotEmpty)
-          _SubtaskCountChip(
+          SubtaskCountChip(
             count: subtasks.length,
             expanded: isExpanded,
             onToggle: () => ref.read(expansionProvider.notifier).toggle(task.id!.toString(), defaultValue: true),
@@ -104,40 +106,6 @@ class TaskCard extends ConsumerWidget {
                 .toList(),
           ),
       ],
-    );
-  }
-}
-
-class _AddSubtaskChip extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const _AddSubtaskChip({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return fu.FButton(
-      style: fu.FButtonStyle.outline(),
-      onPress: onPressed,
-      prefix: Icon(fu.FIcons.plus, size: AppConstants.size.icon.small),
-      child: Text('subtask', style: context.typography.xs),
-    );
-  }
-}
-
-class _SubtaskCountChip extends StatelessWidget {
-  final int count;
-  final bool expanded;
-  final VoidCallback onToggle;
-
-  const _SubtaskCountChip({required this.count, required this.expanded, required this.onToggle});
-
-  @override
-  Widget build(BuildContext context) {
-    return fu.FButton(
-      style: fu.FButtonStyle.outline(),
-      onPress: onToggle,
-      suffix: Icon(expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight, size: AppConstants.size.icon.small),
-      child: Text('$count', style: context.typography.xs),
     );
   }
 }

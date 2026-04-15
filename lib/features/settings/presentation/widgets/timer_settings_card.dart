@@ -3,6 +3,7 @@ import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
+import 'timer_step_button.dart';
 
 /// A card with increment / decrement buttons for setting a duration in minutes.
 class TimerSettingsCard extends StatelessWidget {
@@ -49,40 +50,16 @@ class TimerSettingsCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _StepButton(icon: fu.FIcons.minus, onTap: value > min ? () => onChanged(value - step) : null),
+                TimerStepButton(icon: fu.FIcons.minus, onTap: value > min ? () => onChanged(value - step) : null),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
                   child: Text('${value}m', style: context.typography.base.copyWith(fontWeight: FontWeight.w700)),
                 ),
-                _StepButton(icon: fu.FIcons.plus, onTap: value < max ? () => onChanged(value + step) : null),
+                TimerStepButton(icon: fu.FIcons.plus, onTap: value < max ? () => onChanged(value + step) : null),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _StepButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  const _StepButton({required this.icon, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = onTap != null;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.regular),
-        child: Icon(
-          icon,
-          size: AppConstants.size.icon.regular,
-          color: enabled ? context.colors.foreground : context.colors.mutedForeground,
-        ),
       ),
     );
   }

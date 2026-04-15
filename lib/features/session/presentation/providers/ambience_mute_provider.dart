@@ -7,6 +7,7 @@ import 'focus_progress_provider.dart';
 import 'focus_providers.dart';
 
 part 'ambience_mute_provider.g.dart';
+part 'ambience_marquee_provider.part.dart';
 
 /// Whether the focus-session ambience audio is currently muted.
 ///
@@ -29,32 +30,4 @@ class AmbienceMute extends _$AmbienceMute {
 
   /// Reset mute state (e.g. when a session ends).
   void reset() => state = false;
-}
-
-//  Computed marquee display state
-
-@riverpod
-AmbienceMarqueeState ambienceMarquee(Ref ref) {
-  final isMuted = ref.watch(ambienceMuteProvider);
-
-  // Resolve sound label from audio preferences.
-  final prefsAsync = ref.watch(audioPreferencesProvider);
-  final soundLabel = prefsAsync.whenOrNull(
-    data: (prefs) {
-      if (!prefs.ambienceEnabled) return null;
-      SoundPreset? preset;
-      if (prefs.ambienceSoundId != null) {
-        preset = AudioAssets.findById(prefs.ambienceSoundId!);
-      }
-      preset ??= AudioAssets.defaultAmbience;
-      return preset.label;
-    },
-  );
-
-  // Resolve session phase.
-  final progress = ref.watch(focusProgressProvider);
-  final isBreak = progress != null && !progress.isFocusPhase && !progress.isIdle;
-  final isPaused = progress != null && progress.isPaused;
-
-  return AmbienceMarqueeState(soundLabel: soundLabel, isMuted: isMuted, isPaused: isPaused, isBreak: isBreak);
 }

@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 import 'package:go_router/go_router.dart';
 
-import '../../../features/session/presentation/widgets/mini_player_overlay.dart';
-import '../constants/layout_breakpoints.dart';
 import '../routing/routes.dart';
 import '../utils/platform_utils.dart';
-import 'keyboard_shortcuts.dart';
+import 'adaptive_shell_desktop_layout.dart';
+import 'adaptive_shell_mobile_layout.dart';
 
 /// Root shell that adapts its navigation chrome to the current form factor.
 ///
@@ -43,17 +42,21 @@ class AdaptiveShell extends ConsumerWidget {
     final isExpanded = context.isExpanded;
     final tabs = isExpanded ? _desktopTabs : _mobileTabs;
     final currentIndex = _getIndexFromLocation(location, tabs);
+    final desktopDestinations = [
+      for (final tab in tabs) NavigationRailDestination(icon: Icon(tab.icon), label: Text(tab.label)),
+    ];
+    final mobileItems = [for (final tab in tabs) fu.FBottomNavigationBarItem(icon: Icon(tab.icon), label: Text(tab.label))];
 
     return isExpanded
-        ? _DesktopLayout(
+        ? AdaptiveShellDesktopLayout(
             currentIndex: currentIndex,
-            tabs: tabs,
+            destinations: desktopDestinations,
             onTabChanged: (index) => _onTabChanged(context, index),
             child: child,
           )
-        : _MobileLayout(
+        : AdaptiveShellMobileLayout(
             currentIndex: currentIndex,
-            tabs: tabs,
+            items: mobileItems,
             onTabChanged: (index) => _onTabChanged(context, index),
             child: child,
           );
@@ -86,100 +89,6 @@ class AdaptiveShell extends ConsumerWidget {
       // Navigate to the new tab
       context.go(tabs[index].route);
     }
-  }
-}
-
-// Desktop layout (side rail + content)
-
-class _DesktopLayout extends StatelessWidget {
-  final int currentIndex;
-  final List<_TabDefinition> tabs;
-  final ValueChanged<int> onTabChanged;
-  final Widget child;
-
-  const _DesktopLayout({
-    required this.currentIndex,
-    required this.tabs,
-    required this.onTabChanged,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final sizeClass = LayoutBreakpoints.getWindowSizeClass(context);
-    final spacing = ResponsiveSpacing.small(sizeClass);
-
-    return Scaffold(
-      body: AppKeyboardShortcuts(
-        child: Row(
-          children: [
-            NavigationRail(
-              selectedIndex: currentIndex,
-              onDestinationSelected: onTabChanged,
-              extended: true,
-              minExtendedWidth: 200,
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              leading: Padding(
-                padding: EdgeInsets.all(spacing),
-                child: Text(
-                  'Focus',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
-              destinations: [
-                for (final tab in tabs) NavigationRailDestination(icon: Icon(tab.icon), label: Text(tab.label)),
-              ],
-            ),
-            const VerticalDivider(thickness: 1, width: 1),
-            Expanded(
-              child: Column(
-                children: [
-                  const MiniPlayerOverlay(),
-                  Expanded(child: child),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-//  Mobile layout (bottom nav + content)
-
-class _MobileLayout extends StatelessWidget {
-  final int currentIndex;
-  final List<_TabDefinition> tabs;
-  final ValueChanged<int> onTabChanged;
-  final Widget child;
-
-  const _MobileLayout({
-    required this.currentIndex,
-    required this.tabs,
-    required this.onTabChanged,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return fu.FScaffold(
-      childPad: false,
-      footer: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const MiniPlayerOverlay(),
-          fu.FBottomNavigationBar(
-            index: currentIndex,
-            onChange: onTabChanged,
-            children: [
-              for (final tab in tabs) fu.FBottomNavigationBarItem(icon: Icon(tab.icon), label: Text(tab.label)),
-            ],
-          ),
-        ],
-      ),
-      child: child,
-    );
   }
 }
 

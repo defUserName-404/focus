@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
+
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/presentation/providers/task_filter_state.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
-import 'package:forui/forui.dart' as fu;
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/action_menu_button.dart';
 import '../../../../core/widgets/app_search_bar.dart';

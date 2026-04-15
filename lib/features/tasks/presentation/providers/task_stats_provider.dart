@@ -8,46 +8,14 @@ import '../../domain/entities/task.dart';
 import '../../domain/entities/task_stats.dart';
 import '../../domain/repositories/i_task_stats_repository.dart';
 
+part 'daily_stats_for_range_provider.part.dart';
+part 'global_daily_completed_sessions_provider.part.dart';
+part 'global_stats_provider.part.dart';
+part 'recent_sessions_provider.part.dart';
+part 'recent_tasks_provider.part.dart';
+part 'task_stats_stream_provider.part.dart';
+
 /// Provides the [ITaskStatsRepository] singleton from DI.
 final taskStatsRepositoryProvider = Provider<ITaskStatsRepository>((ref) {
   return getIt<ITaskStatsRepository>();
-});
-
-/// Watches aggregated stats for a single task.
-final taskStatsProvider = StreamProvider.family<TaskStats, String>((ref, taskIdString) {
-  final repository = ref.watch(taskStatsRepositoryProvider);
-  return repository.watchTaskStats(int.parse(taskIdString));
-});
-
-/// Watches the most recent focus sessions for a task (max 10).
-final recentSessionsProvider = StreamProvider.family<List<FocusSession>, String>((ref, taskIdString) {
-  final repository = ref.watch(taskStatsRepositoryProvider);
-  return repository.watchRecentSessions(int.parse(taskIdString));
-});
-
-/// Watches daily completed sessions across ALL tasks for the activity heatmap.
-/// Keys are ISO date strings (`YYYY-MM-DD`).
-final globalDailyCompletedSessionsProvider = StreamProvider<Map<String, int>>((ref) {
-  final repository = ref.watch(taskStatsRepositoryProvider);
-  return repository.watchGlobalDailyCompletedSessions();
-});
-
-/// Watches pre-aggregated daily stats for a date range.
-/// The argument is `'startDate|endDate'` in ISO format.
-final dailyStatsForRangeProvider = StreamProvider.family<List<DailySessionStats>, String>((ref, rangeKey) {
-  final parts = rangeKey.split('|');
-  final repository = ref.watch(taskStatsRepositoryProvider);
-  return repository.watchDailyStatsForRange(parts[0], parts[1]);
-});
-
-/// Watches aggregated global stats across all tasks and sessions.
-final globalStatsProvider = StreamProvider<GlobalStats>((ref) {
-  final repository = ref.watch(taskStatsRepositoryProvider);
-  return repository.watchGlobalStats();
-});
-
-/// Watches recently updated tasks (root level) across all projects.
-final recentTasksProvider = StreamProvider<List<Task>>((ref) {
-  final repository = ref.watch(taskStatsRepositoryProvider);
-  return repository.watchRecentTasks();
 });

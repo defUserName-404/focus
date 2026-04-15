@@ -6,8 +6,7 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/task.dart';
 import '../commands/task_commands.dart';
-import '../providers/task_provider.dart';
-import 'task_priority_badge.dart';
+import 'subtask_tile.dart';
 
 /// Displays a progress bar and list of subtasks for a parent task.
 class SubtasksSection extends ConsumerWidget {
@@ -57,42 +56,6 @@ class SubtasksSection extends ConsumerWidget {
         //  Subtask list
         ...subtasks.map((subtask) => SubtaskTile(subtask: subtask, projectIdString: projectIdString)),
       ],
-    );
-  }
-}
-
-/// A single subtask tile with checkbox, title, and priority badge.
-class SubtaskTile extends ConsumerWidget {
-  final Task subtask;
-  final String projectIdString;
-
-  const SubtaskTile({super.key, required this.subtask, required this.projectIdString});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return fu.FCard(
-      child: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.regular),
-        child: Row(
-          children: [
-            fu.FCheckbox(
-              value: subtask.isCompleted,
-              onChange: (_) => ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(subtask),
-            ),
-            SizedBox(width: AppConstants.spacing.regular),
-            Expanded(
-              child: Text(
-                subtask.title,
-                style: context.typography.sm.copyWith(
-                  color: subtask.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
-                  decoration: subtask.isCompleted ? TextDecoration.lineThrough : null,
-                ),
-              ),
-            ),
-            TaskPriorityBadge(priority: subtask.priority),
-          ],
-        ),
-      ),
     );
   }
 }

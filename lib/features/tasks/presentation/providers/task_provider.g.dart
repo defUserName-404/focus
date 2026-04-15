@@ -9,191 +9,6 @@ part of 'task_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(taskRepository)
-final taskRepositoryProvider = TaskRepositoryProvider._();
-
-final class TaskRepositoryProvider
-    extends
-        $FunctionalProvider<ITaskRepository, ITaskRepository, ITaskRepository>
-    with $Provider<ITaskRepository> {
-  TaskRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'taskRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$taskRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<ITaskRepository> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  ITaskRepository create(Ref ref) {
-    return taskRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ITaskRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ITaskRepository>(value),
-    );
-  }
-}
-
-String _$taskRepositoryHash() => r'da775b732415adca8ed0ee67aa5a687abc5d8dee';
-
-@ProviderFor(tasksByProject)
-final tasksByProjectProvider = TasksByProjectFamily._();
-
-final class TasksByProjectProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<Task>>,
-          List<Task>,
-          Stream<List<Task>>
-        >
-    with $FutureModifier<List<Task>>, $StreamProvider<List<Task>> {
-  TasksByProjectProvider._({
-    required TasksByProjectFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'tasksByProjectProvider',
-         isAutoDispose: false,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
-
-  @override
-  String debugGetCreateSourceHash() => _$tasksByProjectHash();
-
-  @override
-  String toString() {
-    return r'tasksByProjectProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $StreamProviderElement<List<Task>> $createElement($ProviderPointer pointer) =>
-      $StreamProviderElement(pointer);
-
-  @override
-  Stream<List<Task>> create(Ref ref) {
-    final argument = this.argument as String;
-    return tasksByProject(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is TasksByProjectProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
-}
-
-String _$tasksByProjectHash() => r'69507b636c1cad187fc639b422f6b4ad3960c285';
-
-final class TasksByProjectFamily extends $Family
-    with $FunctionalFamilyOverride<Stream<List<Task>>, String> {
-  TasksByProjectFamily._()
-    : super(
-        retry: null,
-        name: r'tasksByProjectProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: false,
-      );
-
-  TasksByProjectProvider call(String projectId) =>
-      TasksByProjectProvider._(argument: projectId, from: this);
-
-  @override
-  String toString() => r'tasksByProjectProvider';
-}
-
-@ProviderFor(taskById)
-final taskByIdProvider = TaskByIdFamily._();
-
-final class TaskByIdProvider
-    extends $FunctionalProvider<AsyncValue<Task>, Task, FutureOr<Task>>
-    with $FutureModifier<Task>, $FutureProvider<Task> {
-  TaskByIdProvider._({
-    required TaskByIdFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'taskByIdProvider',
-         isAutoDispose: false,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
-
-  @override
-  String debugGetCreateSourceHash() => _$taskByIdHash();
-
-  @override
-  String toString() {
-    return r'taskByIdProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $FutureProviderElement<Task> $createElement($ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<Task> create(Ref ref) {
-    final argument = this.argument as String;
-    return taskById(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is TaskByIdProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
-}
-
-String _$taskByIdHash() => r'c0d356fa04de8f9ce25b87949aa641d2c0265d78';
-
-final class TaskByIdFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Task>, String> {
-  TaskByIdFamily._()
-    : super(
-        retry: null,
-        name: r'taskByIdProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: false,
-      );
-
-  TaskByIdProvider call(String taskId) =>
-      TaskByIdProvider._(argument: taskId, from: this);
-
-  @override
-  String toString() => r'taskByIdProvider';
-}
-
 @ProviderFor(TaskListFilter)
 final taskListFilterProvider = TaskListFilterFamily._();
 
@@ -387,4 +202,189 @@ abstract class _$TaskNotifier extends $Notifier<AsyncValue<List<Task>>> {
             >;
     element.handleCreate(ref, () => build(_$args));
   }
+}
+
+@ProviderFor(taskRepository)
+final taskRepositoryProvider = TaskRepositoryProvider._();
+
+final class TaskRepositoryProvider
+    extends
+        $FunctionalProvider<ITaskRepository, ITaskRepository, ITaskRepository>
+    with $Provider<ITaskRepository> {
+  TaskRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'taskRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$taskRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<ITaskRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ITaskRepository create(Ref ref) {
+    return taskRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ITaskRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ITaskRepository>(value),
+    );
+  }
+}
+
+String _$taskRepositoryHash() => r'da775b732415adca8ed0ee67aa5a687abc5d8dee';
+
+@ProviderFor(taskById)
+final taskByIdProvider = TaskByIdFamily._();
+
+final class TaskByIdProvider
+    extends $FunctionalProvider<AsyncValue<Task>, Task, FutureOr<Task>>
+    with $FutureModifier<Task>, $FutureProvider<Task> {
+  TaskByIdProvider._({
+    required TaskByIdFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'taskByIdProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$taskByIdHash();
+
+  @override
+  String toString() {
+    return r'taskByIdProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Task> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Task> create(Ref ref) {
+    final argument = this.argument as String;
+    return taskById(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is TaskByIdProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$taskByIdHash() => r'c0d356fa04de8f9ce25b87949aa641d2c0265d78';
+
+final class TaskByIdFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Task>, String> {
+  TaskByIdFamily._()
+    : super(
+        retry: null,
+        name: r'taskByIdProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
+
+  TaskByIdProvider call(String taskId) =>
+      TaskByIdProvider._(argument: taskId, from: this);
+
+  @override
+  String toString() => r'taskByIdProvider';
+}
+
+@ProviderFor(tasksByProject)
+final tasksByProjectProvider = TasksByProjectFamily._();
+
+final class TasksByProjectProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Task>>,
+          List<Task>,
+          Stream<List<Task>>
+        >
+    with $FutureModifier<List<Task>>, $StreamProvider<List<Task>> {
+  TasksByProjectProvider._({
+    required TasksByProjectFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'tasksByProjectProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$tasksByProjectHash();
+
+  @override
+  String toString() {
+    return r'tasksByProjectProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<List<Task>> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<Task>> create(Ref ref) {
+    final argument = this.argument as String;
+    return tasksByProject(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is TasksByProjectProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$tasksByProjectHash() => r'69507b636c1cad187fc639b422f6b4ad3960c285';
+
+final class TasksByProjectFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<List<Task>>, String> {
+  TasksByProjectFamily._()
+    : super(
+        retry: null,
+        name: r'tasksByProjectProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
+
+  TasksByProjectProvider call(String projectId) =>
+      TasksByProjectProvider._(argument: projectId, from: this);
+
+  @override
+  String toString() => r'tasksByProjectProvider';
 }

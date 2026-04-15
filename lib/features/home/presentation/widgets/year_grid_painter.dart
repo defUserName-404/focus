@@ -31,11 +31,10 @@ class YearGridPainter extends CustomPainter {
     final jan1 = DateTime(year, 1, 1);
     final dec31 = DateTime(year, 12, 31);
     final totalWeeks = DateTimeExtensions.weekIndex(dec31, jan1) + 1;
-    final firstMonday = DateTimeExtensions.getFirstMonday(year);
 
     _paintMonthLabels(canvas, jan1);
     _paintDayLabels(canvas);
-    _paintCells(canvas, totalWeeks, firstMonday);
+    _paintCells(canvas, totalWeeks);
   }
 
   void _paintMonthLabels(Canvas canvas, DateTime jan1) {
@@ -73,9 +72,7 @@ class YearGridPainter extends CustomPainter {
     }
   }
 
-  void _paintCells(Canvas canvas, int totalWeeks, DateTime firstMonday) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+  void _paintCells(Canvas canvas, int totalWeeks) {
     final highlightPaint = Paint()
       ..color = highlightColor
       ..style = PaintingStyle.stroke
@@ -83,10 +80,10 @@ class YearGridPainter extends CustomPainter {
 
     for (int week = 0; week < totalWeeks; week++) {
       for (int dayRow = 0; dayRow < 7; dayRow++) {
-        final date = firstMonday.add(Duration(days: week * 7 + dayRow));
+        final date = ActivityGraphUtils.dateFromGridCell(year: year, weekCol: week, dayRow: dayRow);
 
         if (date.year != year) continue;
-        if (date.isAfter(today)) continue;
+        if (ActivityGraphUtils.isFutureDate(date)) continue;
 
         final dateKey = ActivityGraphUtils.dateKey(date);
         final sessions = lookup[dateKey] ?? 0;

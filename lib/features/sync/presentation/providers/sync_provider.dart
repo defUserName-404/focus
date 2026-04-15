@@ -7,16 +7,8 @@ import '../../domain/services/i_cloud_storage_service.dart';
 import '../../domain/services/sync_engine.dart';
 
 part 'sync_provider.g.dart';
-
-// ---------------------------------------------------------------------------
-// Infrastructure
-// ---------------------------------------------------------------------------
-
-@Riverpod(keepAlive: true)
-ICloudStorageService cloudStorageService(Ref ref) => getIt<ICloudStorageService>();
-
-@Riverpod(keepAlive: true)
-SyncEngine syncEngine(Ref ref) => getIt<SyncEngine>();
+part 'cloud_storage_service_provider.part.dart';
+part 'sync_engine_provider.part.dart';
 
 // ---------------------------------------------------------------------------
 // Sync state notifier

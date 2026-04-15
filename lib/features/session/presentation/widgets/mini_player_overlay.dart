@@ -9,6 +9,7 @@ import '../../../../core/routing/routes.dart';
 import '../../domain/entities/session_state.dart';
 import '../providers/focus_progress_provider.dart';
 import '../providers/focus_session_provider.dart';
+import 'mini_control_button.dart';
 
 /// A compact "mini-player" bar that appears above the bottom navigation
 /// when a focus session is active but the user is on another screen.
@@ -103,7 +104,7 @@ class MiniPlayerOverlay extends ConsumerWidget {
               SizedBox(width: AppConstants.spacing.regular),
 
               // Play/Pause button
-              _MiniControlButton(
+              MiniControlButton(
                 icon: progress.isIdle || progress.isPaused ? FIcons.play : FIcons.pause,
                 onTap: () => notifier.togglePlayPause(),
                 color: context.colors.primary,
@@ -111,27 +112,6 @@ class MiniPlayerOverlay extends ConsumerWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _MiniControlButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  final Color color;
-
-  const _MiniControlButton({required this.icon, required this.onTap, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-        child: Icon(icon, size: 16, color: context.colors.primaryForeground),
       ),
     );
   }

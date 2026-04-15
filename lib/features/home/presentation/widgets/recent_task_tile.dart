@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
+
 import 'package:focus/core/utils/datetime_formatter.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/presentation/widgets/task_priority_badge.dart';
-import 'package:forui/forui.dart' as fu;
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/routes.dart';
 

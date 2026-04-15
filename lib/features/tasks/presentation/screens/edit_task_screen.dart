@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:focus/core/utils/date_time_utils.dart';
+
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
@@ -90,7 +92,7 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
-          start: DateTime.now(),
+          start: DateTimeUtils.now(),
           control: FDateFieldControl.lifted(date: _startDate, onChange: (date) => setState(() => _startDate = date)),
           clearable: true,
         ),
@@ -98,7 +100,7 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
         FDateField.calendar(
           label: const Text('End Date'),
           hint: _endDate?.toDateString() ?? 'Select End Date (Optional)',
-          start: DateTime.now(),
+          start: DateTimeUtils.now(),
           control: FDateFieldControl.lifted(
             date: _endDate,
             onChange: (date) => setState(() => _endDate = date),
@@ -156,7 +158,7 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
       customReminderMinutesBefore: customMinutesBefore == null ? null : customMinutesBefore * 60,
       startDate: _startDate,
       endDate: _endDate,
-      updatedAt: DateTime.now(),
+      updatedAt: DateTimeUtils.now(),
     );
 
     await ref.read(taskProvider(widget.task.projectId.toString()).notifier).updateTask(updated);

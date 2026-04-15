@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
+
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/tasks/domain/entities/global_stats.dart';
-import 'package:forui/forui.dart';
 
 import '../utils/stats_formatting.dart';
 

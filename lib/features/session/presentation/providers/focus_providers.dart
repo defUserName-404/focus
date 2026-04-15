@@ -9,6 +9,10 @@ import '../../domain/services/focus_notification_coordinator.dart';
 import '../../domain/services/focus_session_service.dart';
 
 part 'focus_providers.g.dart';
+part 'focus_audio_coordinator_provider.part.dart';
+part 'focus_media_session_coordinator_provider.part.dart';
+part 'focus_notification_coordinator_provider.part.dart';
+part 'focus_session_repository_provider.part.dart';
 
 /// Riverpod wrappers for GetIt-registered focus singletons.
 ///
@@ -19,21 +23,3 @@ part 'focus_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 FocusSessionService focusSessionService(Ref ref) => getIt<FocusSessionService>();
-
-@Riverpod(keepAlive: true)
-FocusAudioCoordinator focusAudioCoordinator(Ref ref) => getIt<FocusAudioCoordinator>();
-
-@Riverpod(keepAlive: true)
-FocusNotificationCoordinator? focusNotificationCoordinator(Ref ref) {
-  if (!PlatformUtils.supportsLocalNotifications) return null;
-  return getIt<FocusNotificationCoordinator>();
-}
-
-@Riverpod(keepAlive: true)
-FocusMediaSessionCoordinator? focusMediaSessionCoordinator(Ref ref) {
-  if (!PlatformUtils.supportsMediaSession) return null;
-  return getIt<FocusMediaSessionCoordinator>();
-}
-
-@Riverpod(keepAlive: true)
-IFocusSessionRepository focusSessionRepository(Ref ref) => getIt<IFocusSessionRepository>();

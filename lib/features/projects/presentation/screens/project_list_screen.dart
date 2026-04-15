@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:focus/core/constants/app_constants.dart';
 import 'package:forui/forui.dart' as fu;
 import 'package:go_router/go_router.dart';
+
+import 'package:focus/core/constants/app_constants.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/routing/routes.dart';

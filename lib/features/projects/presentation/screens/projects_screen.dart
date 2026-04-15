@@ -8,6 +8,7 @@ import 'project_detail_screen.dart';
 import 'project_list_screen.dart';
 
 part 'projects_screen.g.dart';
+part '../providers/selected_project_id_provider.part.dart';
 
 class ProjectsScreen extends ConsumerWidget {
   const ProjectsScreen({super.key});
@@ -32,14 +33,4 @@ class ProjectsScreen extends ConsumerWidget {
       emptyDetail: const Center(child: Text('Select a project to view details')),
     );
   }
-}
-
-@Riverpod(keepAlive: true)
-class SelectedProjectId extends _$SelectedProjectId {
-  @override
-  int? build() => null;
-
-  void select(int? projectId) => state = projectId;
-
-  void clear() => state = null;
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
+import 'package:focus/core/utils/date_time_utils.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:forui/forui.dart' as fu;
 
@@ -16,7 +17,7 @@ class SubtaskRow extends StatelessWidget {
 
   const SubtaskRow({super.key, required this.subtask, required this.onToggle, this.onTap, this.onEdit, this.onDelete});
 
-  bool get _isOverdue => subtask.endDate != null && subtask.endDate!.isBefore(DateTime.now()) && !subtask.isCompleted;
+  bool get _isOverdue => subtask.endDate != null && DateTimeUtils.isBeforeNow(subtask.endDate!) && !subtask.isCompleted;
 
   @override
   Widget build(BuildContext context) {
