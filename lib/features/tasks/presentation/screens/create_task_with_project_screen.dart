@@ -3,17 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:focus/core/utils/date_time_utils.dart';
+
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
 import '../../../../core/widgets/filter_select.dart';
 import '../../../../core/widgets/time_field.dart';
 import '../../../../core/config/theme/app_theme.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../projects/domain/entities/project.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/entities/task_reminder_mode.dart';
 import '../providers/task_provider.dart';
+import '../widgets/create_task_priority_selector.dart';
+import '../widgets/create_task_project_autocomplete.dart';
 
 /// Full-screen form that creates a task and optionally a new project.
 ///
@@ -76,7 +79,7 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
       onSubmit: _submit,
       fields: [
         projectsAsync.when(
-          data: (projects) => _ProjectAutocomplete(
+          data: (projects) => CreateTaskProjectAutocomplete(
             controller: _projectController,
             projects: projects,
             onSelected: (project) {
@@ -107,11 +110,11 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
           alignment: Alignment.centerLeft,
           child: Text('Priority', style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
         ),
-        _PrioritySelector(priority: _priority),
+        CreateTaskPrioritySelector(priority: _priority),
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
-          start: DateTime.now(),
+          start: DateTimeUtils.now(),
           control: FDateFieldControl.lifted(date: _startDate, onChange: (date) => setState(() => _startDate = date)),
           clearable: true,
         ),
@@ -119,7 +122,7 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
         FDateField.calendar(
           label: const Text('End Date'),
           hint: 'Select End Date (Optional)',
-          start: DateTime.now(),
+          start: DateTimeUtils.now(),
           control: FDateFieldControl.lifted(
             date: _endDate,
             onChange: (date) => setState(() => _endDate = date),
@@ -194,132 +197,5 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
         );
 
     if (mounted) context.pop();
-  }
-}
-
-//  Private helper widgets
-
-class _PrioritySelector extends StatelessWidget {
-  final ValueNotifier<TaskPriority> priority;
-
-  const _PrioritySelector({required this.priority});
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<TaskPriority>(
-      valueListenable: priority,
-      builder: (context, selected, _) {
-        return FilterSelect<TaskPriority>(
-          selected: selected,
-          onChanged: (value) => priority.value = value,
-          options: TaskPriority.values,
-          hint: 'Priority',
-        );
-      },
-    );
-  }
-}
-
-class _ProjectAutocomplete extends StatefulWidget {
-  final FAutocompleteController controller;
-  final List<Project> projects;
-  final ValueChanged<Project> onSelected;
-  final ValueChanged<String> onQueryChanged;
-  final ValueNotifier<bool> isNewProject;
-
-  const _ProjectAutocomplete({
-    required this.controller,
-    required this.projects,
-    required this.onSelected,
-    required this.onQueryChanged,
-    required this.isNewProject,
-  });
-
-  @override
-  State<_ProjectAutocomplete> createState() => _ProjectAutocompleteState();
-}
-
-class _ProjectAutocompleteState extends State<_ProjectAutocomplete> {
-  String _lastText = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _lastText = widget.controller.text;
-    widget.controller.addListener(_onControllerChanged);
-  }
-
-  void _onControllerChanged() {
-    final text = widget.controller.text;
-    if (text == _lastText) return;
-    _lastText = text;
-    widget.onQueryChanged(text);
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(_onControllerChanged);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        FAutocomplete.builder(
-          control: FAutocompleteControl.managed(controller: widget.controller),
-          hint: 'Search or type a project name',
-          label: const Text('Project'),
-          validator: (value) => AppFormValidator.isNotEmpty(value),
-          filter: (query) {
-            final trimmed = query.trim().toLowerCase();
-            if (trimmed.isEmpty) return widget.projects.map((p) => p.title);
-            return widget.projects.where((p) => p.title.toLowerCase().contains(trimmed)).map((p) => p.title);
-          },
-          contentBuilder: (context, query, values) => [
-            for (final title in values) FAutocompleteItem(value: title, title: Text(title)),
-          ],
-        ),
-        _NewProjectHint(isNewProject: widget.isNewProject, controller: widget.controller),
-      ],
-    );
-  }
-}
-
-class _NewProjectHint extends StatelessWidget {
-  final ValueNotifier<bool> isNewProject;
-  final FAutocompleteController controller;
-
-  const _NewProjectHint({required this.isNewProject, required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([isNewProject, controller]),
-      builder: (context, _) {
-        final isNew = isNewProject.value;
-        final projectName = controller.text.trim();
-        if (!isNew || projectName.isEmpty) return const SizedBox.shrink();
-        return Padding(
-          padding: EdgeInsets.only(top: AppConstants.spacing.small),
-          child: Row(
-            children: [
-              Icon(FIcons.info, size: 12, color: context.colors.mutedForeground),
-              SizedBox(width: AppConstants.spacing.small),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(top: AppConstants.spacing.small),
-                  child: Text(
-                    'A new project "$projectName" will be created.',
-                    style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 }

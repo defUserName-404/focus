@@ -7,6 +7,7 @@ import '../../domain/entities/all_tasks_filter_state.dart';
 import 'task_provider.dart';
 
 part 'all_tasks_provider.g.dart';
+part 'filtered_all_tasks_provider.part.dart';
 
 //  Filter state provider
 
@@ -37,18 +38,3 @@ class AllTasksFilter extends _$AllTasksFilter {
     state = state.copyWith(priorityFilter: null);
   }
 }
-
-//  Filtered all-tasks list
-
-final filteredAllTasksProvider = StreamProvider<List<Task>>((ref) {
-  final repository = ref.watch(taskRepositoryProvider);
-  final filter = ref.watch(allTasksFilterProvider);
-
-  return repository.watchAllFilteredTasks(
-    searchQuery: filter.searchQuery,
-    sortCriteria: filter.sortCriteria,
-    sortOrder: filter.sortOrder,
-    priorityFilter: filter.priorityFilter,
-    completionFilter: filter.completionFilter,
-  );
-});

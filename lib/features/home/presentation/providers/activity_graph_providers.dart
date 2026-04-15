@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'activity_graph_providers.g.dart';
+part 'tapped_date_provider.part.dart';
 
 @riverpod
 class SelectedYearNotifier extends _$SelectedYearNotifier {
@@ -11,17 +12,5 @@ class SelectedYearNotifier extends _$SelectedYearNotifier {
 
   void setYear(int year) {
     state = year;
-  }
-}
-
-@riverpod
-class TappedDateNotifier extends _$TappedDateNotifier {
-  @override
-  String? build() {
-    return null;
-  }
-
-  void setDate(String? date) {
-    state = date;
   }
 }

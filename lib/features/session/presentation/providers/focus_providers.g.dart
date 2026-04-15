@@ -124,57 +124,6 @@ final class FocusAudioCoordinatorProvider
 String _$focusAudioCoordinatorHash() =>
     r'3a4ac7e2e6b0eeb8237bec4df5b1b4af68504c02';
 
-@ProviderFor(focusNotificationCoordinator)
-final focusNotificationCoordinatorProvider =
-    FocusNotificationCoordinatorProvider._();
-
-final class FocusNotificationCoordinatorProvider
-    extends
-        $FunctionalProvider<
-          FocusNotificationCoordinator?,
-          FocusNotificationCoordinator?,
-          FocusNotificationCoordinator?
-        >
-    with $Provider<FocusNotificationCoordinator?> {
-  FocusNotificationCoordinatorProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'focusNotificationCoordinatorProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$focusNotificationCoordinatorHash();
-
-  @$internal
-  @override
-  $ProviderElement<FocusNotificationCoordinator?> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  FocusNotificationCoordinator? create(Ref ref) {
-    return focusNotificationCoordinator(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FocusNotificationCoordinator? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<FocusNotificationCoordinator?>(
-        value,
-      ),
-    );
-  }
-}
-
-String _$focusNotificationCoordinatorHash() =>
-    r'dc5862250de393596b8c3f027e1fc25d0ffbfb6e';
-
 @ProviderFor(focusMediaSessionCoordinator)
 final focusMediaSessionCoordinatorProvider =
     FocusMediaSessionCoordinatorProvider._();
@@ -225,6 +174,57 @@ final class FocusMediaSessionCoordinatorProvider
 
 String _$focusMediaSessionCoordinatorHash() =>
     r'3011944f2794f076a0e7b7ebbd3fa60112727f46';
+
+@ProviderFor(focusNotificationCoordinator)
+final focusNotificationCoordinatorProvider =
+    FocusNotificationCoordinatorProvider._();
+
+final class FocusNotificationCoordinatorProvider
+    extends
+        $FunctionalProvider<
+          FocusNotificationCoordinator?,
+          FocusNotificationCoordinator?,
+          FocusNotificationCoordinator?
+        >
+    with $Provider<FocusNotificationCoordinator?> {
+  FocusNotificationCoordinatorProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'focusNotificationCoordinatorProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$focusNotificationCoordinatorHash();
+
+  @$internal
+  @override
+  $ProviderElement<FocusNotificationCoordinator?> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  FocusNotificationCoordinator? create(Ref ref) {
+    return focusNotificationCoordinator(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(FocusNotificationCoordinator? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FocusNotificationCoordinator?>(
+        value,
+      ),
+    );
+  }
+}
+
+String _$focusNotificationCoordinatorHash() =>
+    r'dc5862250de393596b8c3f027e1fc25d0ffbfb6e';
 
 @ProviderFor(focusSessionRepository)
 final focusSessionRepositoryProvider = FocusSessionRepositoryProvider._();

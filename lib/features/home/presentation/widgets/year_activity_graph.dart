@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
+
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:focus/features/home/presentation/providers/activity_graph_providers.dart';
+import 'package:focus/features/home/presentation/widgets/activity_graph_legend.dart';
 import 'package:focus/features/home/presentation/widgets/year_grid_painter.dart';
 import 'package:focus/features/tasks/presentation/providers/task_stats_provider.dart';
-import 'package:forui/forui.dart';
 
 import '../../../../core/utils/datetime_formatter.dart';
 import '../utils/activity_graph_constants.dart';
@@ -38,13 +40,11 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
 
   void _scrollToToday() {
     if (!_scrollController.hasClients) return;
-    final now = DateTime.now();
     final selectedYear = ref.read(selectedYearProvider);
-    if (selectedYear != now.year) return;
+    final currentYear = ActivityGraphUtils.today().year;
+    if (selectedYear != currentYear) return;
 
-    final jan1 = DateTime(selectedYear, 1, 1);
-    final dayOfYear = now.difference(jan1).inDays;
-    final weekIndex = (dayOfYear + (jan1.weekday - 1)) ~/ 7;
+    final weekIndex = ActivityGraphUtils.weekIndexForToday(selectedYear);
     final offset = weekIndex * ActivityGraphConstants.cellStep;
     _scrollController.jumpTo(offset.clamp(0.0, _scrollController.position.maxScrollExtent));
   }
@@ -101,8 +101,8 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
   Widget build(BuildContext context) {
     final selectedYear = ref.watch(selectedYearProvider);
     final tappedDateKey = ref.watch(tappedDateProvider);
-    final now = DateTime.now();
-    final years = List.generate(now.year - (ActivityGraphConstants.startYear - 1), (i) => now.year - i);
+    final currentYear = ActivityGraphUtils.today().year;
+    final years = ActivityGraphUtils.selectableYears(startYear: ActivityGraphConstants.startYear);
 
     final startDate = '$selectedYear-01-01';
     final endDate = '$selectedYear-12-31';
@@ -124,7 +124,7 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
               style: context.typography.sm.copyWith(fontWeight: FontWeight.w600, color: context.colors.foreground),
             ),
             const Spacer(),
-            _buildLegend(context),
+            const ActivityGraphLegend(),
           ],
         ),
         SizedBox(height: AppConstants.spacing.regular),
@@ -140,7 +140,7 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
                   _removeTooltip();
                   ref.read(selectedYearProvider.notifier).setYear(y);
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (y == now.year) {
+                    if (y == currentYear) {
                       _scrollToToday();
                     } else {
                       _scrollController.jumpTo(0);
@@ -163,8 +163,7 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 child: GestureDetector(
-                  onTapUp: (details) =>
-                      _onCellTap(context, details.localPosition, details.globalPosition, lookup, jan1),
+                  onTapUp: (details) => _onCellTap(context, details.localPosition, details.globalPosition, lookup),
                   child: CustomPaint(
                     size: Size(gridWidth, ActivityGraphConstants.monthLabelHeight + ActivityGraphConstants.graphHeight),
                     painter: YearGridPainter(
@@ -187,7 +186,7 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
     );
   }
 
-  void _onCellTap(BuildContext context, Offset localPos, Offset globalPos, Map<String, int> lookup, DateTime jan1) {
+  void _onCellTap(BuildContext context, Offset localPos, Offset globalPos, Map<String, int> lookup) {
     final x = localPos.dx - ActivityGraphConstants.dayLabelWidth;
     final y = localPos.dy - ActivityGraphConstants.monthLabelHeight;
     if (x < 0 || y < 0) return;
@@ -196,47 +195,14 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
     final dayRow = (y / ActivityGraphConstants.cellStep).floor();
     if (dayRow < 0 || dayRow > 6) return;
 
-    final firstMonday = DateTimeExtensions.getFirstMonday(ref.read(selectedYearProvider));
-    final date = firstMonday.add(Duration(days: weekCol * 7 + dayRow));
+    final selectedYear = ref.read(selectedYearProvider);
+    final date = ActivityGraphUtils.dateFromGridCell(year: selectedYear, weekCol: weekCol, dayRow: dayRow);
 
-    if (date.year != ref.read(selectedYearProvider)) return;
-    final now = DateTime.now();
-    if (date.isAfter(DateTime(now.year, now.month, now.day))) return;
+    if (date.year != selectedYear) return;
+    if (ActivityGraphUtils.isFutureDate(date)) return;
 
     final dateKey = ActivityGraphUtils.dateKey(date);
     final sessions = lookup[dateKey] ?? 0;
     _showTooltip(context, globalPos, dateKey, sessions);
-  }
-
-  Widget _buildLegend(BuildContext context) {
-    final emptyColor = context.colors.mutedForeground.withValues(alpha: 0.12);
-    final cellColor = context.colors.primary;
-    final levels = [
-      emptyColor,
-      cellColor.withValues(alpha: 0.25),
-      cellColor.withValues(alpha: 0.50),
-      cellColor.withValues(alpha: 0.75),
-      cellColor,
-    ];
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text('Less', style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
-        SizedBox(width: AppConstants.spacing.small),
-        ...levels.map(
-          (color) => Container(
-            width: ActivityGraphConstants.legendCellSize,
-            height: ActivityGraphConstants.legendCellSize,
-            margin: const EdgeInsets.only(right: ActivityGraphConstants.legendCellMargin),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(ActivityGraphConstants.legendCellRadius),
-            ),
-          ),
-        ),
-        SizedBox(width: AppConstants.spacing.small),
-        Text('More', style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
-      ],
-    );
   }
 }

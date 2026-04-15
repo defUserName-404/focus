@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:focus/core/utils/date_time_utils.dart';
+
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
 import '../../../../core/widgets/filter_select.dart';
@@ -73,7 +75,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
-          start: DateTime.now(),
+          start: DateTimeUtils.now(),
           control: FDateFieldControl.lifted(date: _startDate, onChange: (date) => setState(() => _startDate = date)),
           clearable: true,
         ),
@@ -81,7 +83,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
         FDateField.calendar(
           label: const Text('End Date'),
           hint: 'Select End Date (Optional)',
-          start: DateTime.now(),
+          start: DateTimeUtils.now(),
           control: FDateFieldControl.lifted(
             date: _endDate,
             onChange: (date) => setState(() => _endDate = date),

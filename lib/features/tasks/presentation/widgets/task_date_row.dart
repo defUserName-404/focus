@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:focus/core/utils/datetime_formatter.dart';
+import 'package:focus/core/utils/date_time_utils.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
 import 'package:forui/forui.dart' as fu;
@@ -73,7 +74,7 @@ class TaskDateRow extends StatelessWidget {
     return value.hasExplicitTime ? value.toDateTimeString() : value.toShortDateString();
   }
 
-  bool _isApproaching(DateTime dt) => dt.difference(DateTime.now()).inDays <= 3;
+  bool _isApproaching(DateTime dt) => DateTimeUtils.isApproaching(dt, withinDays: 3);
 
   bool _isActuallyOverdue(DateTime dt) => isOverdue || dt.isOverdue;
 

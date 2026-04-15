@@ -12,36 +12,12 @@ import '../../domain/repositories/i_settings_repository.dart';
 import '../../domain/services/settings_service.dart';
 
 part 'settings_provider.g.dart';
-
-// ---------------------------------------------------------------------------
-// Infrastructure
-// ---------------------------------------------------------------------------
-
-@Riverpod(keepAlive: true)
-ISettingsRepository settingsRepository(Ref ref) => getIt<ISettingsRepository>();
-
-@Riverpod(keepAlive: true)
-AudioService audioService(Ref ref) => getIt<AudioService>();
-
-// ---------------------------------------------------------------------------
-// Audio preferences (reactive stream — used outside settings if needed)
-// ---------------------------------------------------------------------------
-
-final audioPreferencesProvider = StreamProvider<AudioPreferences>((ref) {
-  return ref.watch(settingsRepositoryProvider).watchAudioPreferences();
-});
-
-// ---------------------------------------------------------------------------
-// Preview state
-// ---------------------------------------------------------------------------
-
-@riverpod
-class PreviewingIdNotifier extends _$PreviewingIdNotifier {
-  @override
-  String? build() => null;
-
-  void set(String? id) => state = id;
-}
+part 'audio_preferences_provider.part.dart';
+part 'audio_service_provider.part.dart';
+part 'desktop_settings_provider.part.dart';
+part 'previewing_id_provider.part.dart';
+part 'settings_repository_provider.part.dart';
+part 'timer_settings_provider.part.dart';
 
 // ---------------------------------------------------------------------------
 // Settings notifier
@@ -181,15 +157,3 @@ class SettingsNotifier extends _$SettingsNotifier {
     ref.read(previewingIdProvider.notifier).set(null);
   }
 }
-
-// ---------------------------------------------------------------------------
-// Timer preferences (reactive stream)
-// ---------------------------------------------------------------------------
-
-final timerSettingsProvider = StreamProvider<TimerPreferences>((ref) {
-  return ref.watch(settingsRepositoryProvider).watchTimerPreferences();
-});
-
-final desktopSettingsProvider = StreamProvider<DesktopPreferences>((ref) {
-  return ref.watch(settingsRepositoryProvider).watchDesktopPreferences();
-});
