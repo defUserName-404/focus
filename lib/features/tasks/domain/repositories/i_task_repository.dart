@@ -52,4 +52,7 @@ abstract class ITaskRepository {
   Future<void> softDeleteCompletion(int id);
 
   Stream<List<TaskCompletion>> watchCompletionsForTask(int taskId);
+
+  /// Watches all non-deleted occurrence completions.
+  Stream<List<TaskCompletion>> watchAllCompletions();
 }

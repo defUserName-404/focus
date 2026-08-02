@@ -46,6 +46,9 @@ abstract class ITaskLocalDataSource {
   Future<void> softDeleteCompletion(int id);
 
   Stream<List<TaskCompletionTableData>> watchCompletionsForTask(int taskId);
+
+  /// Watches all non-deleted occurrence completions (for agenda / habit strip).
+  Stream<List<TaskCompletionTableData>> watchAllCompletions();
 }
 
 class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
@@ -376,6 +379,14 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   Stream<List<TaskCompletionTableData>> watchCompletionsForTask(int taskId) {
     return (_db.select(_db.taskCompletionTable)
           ..where((t) => t.taskId.equals(taskId) & t.deletedAt.isNull())
+          ..orderBy([(t) => OrderingTerm.asc(t.occurrenceDate)]))
+        .watch();
+  }
+
+  @override
+  Stream<List<TaskCompletionTableData>> watchAllCompletions() {
+    return (_db.select(_db.taskCompletionTable)
+          ..where((t) => t.deletedAt.isNull())
           ..orderBy([(t) => OrderingTerm.asc(t.occurrenceDate)]))
         .watch();
   }

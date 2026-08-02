@@ -155,4 +155,9 @@ class TaskRepositoryImpl implements ITaskRepository {
   Stream<List<TaskCompletion>> watchCompletionsForTask(int taskId) {
     return _local.watchCompletionsForTask(taskId).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
+
+  @override
+  Stream<List<TaskCompletion>> watchAllCompletions() {
+    return _local.watchAllCompletions().map((rows) => rows.map((r) => r.toDomain()).toList());
+  }
 }

@@ -6,17 +6,19 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/calendar/calendar_day_info.dart';
-import '../../../../core/widgets/calendar/calendar_month_grid.dart';
 import '../../../../core/widgets/calendar/calendar_week_strip.dart';
 import '../../../tasks/domain/entities/task.dart';
-import '../models/upcoming_calendar_ui_state.dart';
+import '../../../tasks/domain/services/calendar_event_grouping.dart';
 import '../providers/upcoming_calendar_state_provider.dart';
 import '../providers/upcoming_calendar_view_provider.dart';
 import '../utils/upcoming_calendar_utils.dart';
-import 'calendar_view_toggle.dart';
 import 'task_popup_content.dart';
 
+/// Compact "Next 7 Days" week strip for the home dashboard.
+///
+/// Month grid lives on the Tasks calendar tab.
 class CalendarContent extends ConsumerStatefulWidget {
   final List<Task> tasks;
 
@@ -36,46 +38,29 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
     super.dispose();
   }
 
-  Map<DateTime, List<Task>> get _tasksByDate {
-    return UpcomingCalendarUtils.groupTasksByDate(widget.tasks);
+  Map<DateTime, List<Task>> _tasksByDateForWeek(DateTime weekStart) {
+    final weekEnd = DateTimeUtils.addDays(weekStart, 6);
+    return CalendarEventGrouping.groupTasksByDate(tasks: widget.tasks, from: weekStart, to: weekEnd);
   }
 
-  Map<DateTime, CalendarDayInfo> get _dayInfo {
-    return {for (final entry in _tasksByDate.entries) entry.key: CalendarDayInfo(taskCount: entry.value.length)};
+  Map<DateTime, CalendarDayInfo> _dayInfo(Map<DateTime, List<Task>> tasksByDate) {
+    return {for (final entry in tasksByDate.entries) entry.key: CalendarDayInfo(taskCount: entry.value.length)};
   }
 
-  void _switchView({
-    required CalendarViewMode currentView,
-    required CalendarViewMode nextView,
-    required UpcomingCalendarUiState uiState,
-    required DateTime? selectedDay,
-  }) {
-    if (currentView == nextView) return;
-
-    final anchor = UpcomingCalendarUtils.resolveViewAnchor(
-      selectedDay: selectedDay,
-      uiSelectedDay: uiState.selectedDay,
-    );
+  void _previousWeek() {
     _removeOverlay();
-
-    ref.read(upcomingCalendarUiStateProvider.notifier).switchView(nextView, anchor: anchor);
-    ref.read(upcomingCalendarViewModeProvider.notifier).setMode(nextView);
+    ref.read(upcomingCalendarUiStateProvider.notifier).previousPeriod(CalendarViewMode.week);
   }
 
-  void _previousPeriod(CalendarViewMode viewMode) {
+  void _nextWeek() {
     _removeOverlay();
-    ref.read(upcomingCalendarUiStateProvider.notifier).previousPeriod(viewMode);
+    ref.read(upcomingCalendarUiStateProvider.notifier).nextPeriod(CalendarViewMode.week);
   }
 
-  void _nextPeriod(CalendarViewMode viewMode) {
-    _removeOverlay();
-    ref.read(upcomingCalendarUiStateProvider.notifier).nextPeriod(viewMode);
-  }
-
-  void _onDateTapped(DateTime date) {
+  void _onDateTapped(DateTime date, Map<DateTime, List<Task>> tasksByDate) {
     _removeOverlay();
     final normalized = UpcomingCalendarUtils.normalizeDate(date);
-    final tasks = _tasksByDate[normalized];
+    final tasks = tasksByDate[normalized];
     if (tasks == null || tasks.isEmpty) {
       ref.read(upcomingCalendarUiStateProvider.notifier).selectDay(null);
       return;
@@ -144,21 +129,16 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
   @override
   Widget build(BuildContext context) {
     final now = UpcomingCalendarUtils.today();
-    final viewModeAsync = ref.watch(upcomingCalendarViewModeProvider);
-    final viewMode = viewModeAsync.value ?? CalendarViewMode.month;
     final uiState = ref.watch(upcomingCalendarUiStateProvider);
-    final tasksByDate = _tasksByDate;
-    final dayInfo = _dayInfo;
+    final displayWeekStart = uiState.displayWeekStart;
+    final tasksByDate = _tasksByDateForWeek(displayWeekStart);
+    final dayInfo = _dayInfo(tasksByDate);
     final effectiveSelectedDay = UpcomingCalendarUtils.effectiveSelectedDay(
-      viewMode: viewMode,
+      viewMode: CalendarViewMode.week,
       uiState: uiState,
       tasksByDate: tasksByDate,
       today: now,
     );
-    final displayMonth = uiState.displayMonth;
-    final displayWeekStart = uiState.displayWeekStart;
-    final daysInMonth = UpcomingCalendarUtils.daysInMonth(displayMonth);
-    final firstWeekday = UpcomingCalendarUtils.firstWeekday(displayMonth);
 
     return CompositedTransformTarget(
       link: _calendarLayerLink,
@@ -168,26 +148,8 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('This', style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
-              CalendarViewToggle(
-                view: viewMode,
-                onChanged: (nextView) {
-                  _switchView(
-                    currentView: viewMode,
-                    nextView: nextView,
-                    uiState: uiState,
-                    selectedDay: effectiveSelectedDay,
-                  );
-                },
-              ),
-            ],
-          ),
-          SizedBox(height: AppConstants.spacing.regular),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
               GestureDetector(
-                onTap: () => _previousPeriod(viewMode),
+                onTap: _previousWeek,
                 child: Icon(
                   fu.FLucideIcons.chevronLeft,
                   size: AppConstants.size.icon.regular,
@@ -196,14 +158,14 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
               ),
               Text(
                 UpcomingCalendarUtils.periodLabel(
-                  viewMode: viewMode,
-                  displayMonth: displayMonth,
+                  viewMode: CalendarViewMode.week,
+                  displayMonth: uiState.displayMonth,
                   displayWeekStart: displayWeekStart,
                 ),
                 style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
               ),
               GestureDetector(
-                onTap: () => _nextPeriod(viewMode),
+                onTap: _nextWeek,
                 child: Icon(
                   fu.FLucideIcons.chevronRight,
                   size: AppConstants.size.icon.regular,
@@ -213,42 +175,13 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
             ],
           ),
           SizedBox(height: AppConstants.spacing.regular),
-          if (viewMode == CalendarViewMode.month) ...[
-            Row(
-              children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                  .map(
-                    (d) => Expanded(
-                      child: Center(
-                        child: Text(
-                          d,
-                          style: context.typography.xs.copyWith(
-                            color: context.colors.mutedForeground,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-            SizedBox(height: AppConstants.spacing.small),
-            CalendarMonthGrid<Task>(
-              displayMonth: displayMonth,
-              daysInMonth: daysInMonth,
-              firstWeekday: firstWeekday,
-              dayInfo: dayInfo,
-              now: now,
-              selectedDay: effectiveSelectedDay,
-              onDateTap: _onDateTapped,
-            ),
-          ] else
-            CalendarWeekStrip<Task>(
-              weekStart: displayWeekStart,
-              dayInfo: dayInfo,
-              now: now,
-              selectedDay: effectiveSelectedDay,
-              onDateTap: _onDateTapped,
-            ),
+          CalendarWeekStrip<Task>(
+            weekStart: displayWeekStart,
+            dayInfo: dayInfo,
+            now: now,
+            selectedDay: effectiveSelectedDay,
+            onDateTap: (date) => _onDateTapped(date, tasksByDate),
+          ),
         ],
       ),
     );

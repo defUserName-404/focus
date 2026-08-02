@@ -36,6 +36,10 @@ class TaskService {
 
   Stream<List<TaskCompletion>> watchCompletionsForTask(int taskId) => _repository.watchCompletionsForTask(taskId);
 
+  Stream<List<TaskCompletion>> watchAllCompletions() => _repository.watchAllCompletions();
+
+  Stream<List<Task>> watchTasksWithDeadlines() => _repository.watchTasksWithDeadlines();
+
   //  Write
 
   Future<Result<Task>> createTask({
