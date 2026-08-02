@@ -46,7 +46,7 @@ class AgendaTaskTile extends ConsumerWidget {
       },
       child: fu.FCard(
         child: Padding(
-          padding: EdgeInsets.all(AppConstants.spacing.regular),
+          padding: EdgeInsets.all(AppConstants.spacing.large),
           child: Row(
             children: [
               fu.FCheckbox(value: item.isCompleted, onChange: item.isCompleted ? null : (_) => _onToggle()),
@@ -66,10 +66,16 @@ class AgendaTaskTile extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: AppConstants.spacing.extraSmall),
-                    Text(_subtitle, style: context.typography.xs.copyWith(color: _subtitleColor(context))),
+                    Text(
+                      _subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typography.xs.copyWith(color: _subtitleColor(context)),
+                    ),
                   ],
                 ),
               ),
+              SizedBox(width: AppConstants.spacing.small),
               TaskPriorityBadge(priority: task.priority),
               if (!item.isCompleted && task.id != null) ...[
                 SizedBox(width: AppConstants.spacing.small),

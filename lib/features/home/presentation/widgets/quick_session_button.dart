@@ -18,10 +18,7 @@ class QuickSessionButton extends ConsumerWidget {
         onTap: () => FocusCommands.startQuickSession(context, ref),
         borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppConstants.spacing.regular,
-            vertical: AppConstants.spacing.regular,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large, vertical: AppConstants.spacing.large),
           child: Row(
             children: [
               Container(
@@ -40,6 +37,8 @@ class QuickSessionButton extends ConsumerWidget {
                   children: [
                     Text(
                       'Start Focus Session',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: context.typography.lg.copyWith(
                         color: context.colors.background,
                         fontWeight: FontWeight.w700,
@@ -48,6 +47,8 @@ class QuickSessionButton extends ConsumerWidget {
                     SizedBox(height: AppConstants.spacing.extraSmall),
                     Text(
                       'Tap to begin a quick session',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: context.typography.sm.copyWith(color: context.colors.background.withValues(alpha: 0.7)),
                     ),
                   ],

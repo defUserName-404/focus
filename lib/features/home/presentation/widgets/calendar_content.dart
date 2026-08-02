@@ -156,13 +156,18 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
                   color: context.colors.mutedForeground,
                 ),
               ),
-              Text(
-                UpcomingCalendarUtils.periodLabel(
-                  viewMode: CalendarViewMode.week,
-                  displayMonth: uiState.displayMonth,
-                  displayWeekStart: displayWeekStart,
+              Flexible(
+                child: Text(
+                  UpcomingCalendarUtils.periodLabel(
+                    viewMode: CalendarViewMode.week,
+                    displayMonth: uiState.displayMonth,
+                    displayWeekStart: displayWeekStart,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
                 ),
-                style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
               ),
               GestureDetector(
                 onTap: _nextWeek,

@@ -10,6 +10,8 @@ import 'package:focus/features/home/presentation/widgets/streak_badge.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/utils/platform_utils.dart';
+import '../../../../core/widgets/constrained_content.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../../tasks/domain/entities/global_stats.dart';
 import '../../../tasks/presentation/providers/task_stats_provider.dart';
@@ -48,10 +50,12 @@ class HomeScreen extends ConsumerWidget {
       header: fu.FHeader(
         suffixes: [
           if (stats.currentStreak > 0) StreakBadge(streak: stats.currentStreak),
-          fu.FHeaderAction(
-            icon: Icon(fu.FLucideIcons.chartBar, size: AppConstants.size.icon.regular),
-            onPress: () => context.push(AppRoutes.reports.path),
-          ),
+          // Reports lives in the desktop sidebar; keep header entry on compact only.
+          if (context.isCompact)
+            fu.FHeaderAction(
+              icon: Icon(fu.FLucideIcons.chartBar, size: AppConstants.size.icon.regular),
+              onPress: () => context.push(AppRoutes.reports.path),
+            ),
           fu.FHeaderAction(
             icon: Icon(fu.FLucideIcons.settings, size: AppConstants.size.icon.regular),
             onPress: () => context.push(AppRoutes.settings.path),
@@ -73,22 +77,26 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: AppConstants.spacing.regular,
-          children: [
-            const QuickSessionButton(),
-            if (showOnboarding)
-              const HomeOnboardingCard()
-            else ...[
-              const TodayAgendaSection(),
-              SizedBox(height: AppConstants.spacing.small),
-              const HabitsStripSection(),
-              SizedBox(height: AppConstants.spacing.small),
-              const UpcomingCalendarCard(),
+      child: ConstrainedContent(
+        maxWidth: 800,
+        padding: EdgeInsets.zero,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppConstants.spacing.regular,
+            children: [
+              const QuickSessionButton(),
+              if (showOnboarding)
+                const HomeOnboardingCard()
+              else ...[
+                const TodayAgendaSection(),
+                SizedBox(height: AppConstants.spacing.small),
+                const HabitsStripSection(),
+                SizedBox(height: AppConstants.spacing.small),
+                const UpcomingCalendarCard(),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
