@@ -272,6 +272,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               _searchFocusNode.requestFocus();
             },
           ),
+          fu.FHeaderAction(
+            icon: const Icon(fu.FLucideIcons.plus),
+            onPress: () => TaskCommands.create(context, projectId: widget.projectId),
+          ),
           projectAsync.maybeWhen(
             data: (project) {
               if (project == null) return const SizedBox.shrink();
@@ -284,14 +288,6 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             orElse: () => const SizedBox.shrink(),
           ),
         ],
-      ),
-      footer: Padding(
-        padding: EdgeInsets.all(AppConstants.spacing.large),
-        child: fu.FButton(
-          prefix: Icon(fu.FLucideIcons.plus),
-          child: const Text('Create New Task'),
-          onPress: () => TaskCommands.create(context, projectId: widget.projectId),
-        ),
       ),
       child: content,
     );
