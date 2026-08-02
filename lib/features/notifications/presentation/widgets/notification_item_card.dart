@@ -36,7 +36,10 @@ class NotificationItemCard extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: AppConstants.spacing.small),
       child: fu.FCard(
-        child: onTap == null ? content : InkWell(onTap: onTap, borderRadius: BorderRadius.circular(12), child: content),
+        // GestureDetector matches AppCard — FCard has no Material ancestor for InkWell.
+        child: onTap == null
+            ? content
+            : GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: content),
       ),
     );
   }
