@@ -63,13 +63,20 @@ class HomeScreen extends ConsumerWidget {
         ? Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: AppConstants.spacing.regular,
-            children: const [QuickSessionButton(), TodayAgendaSection(), HabitsStripSection(), UpcomingCalendarCard()],
+            children: [
+              const QuickSessionButton(),
+              _StatsSummaryRow(stats: stats),
+              const TodayAgendaSection(),
+              const HabitsStripSection(),
+              const UpcomingCalendarCard(),
+            ],
           )
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: AppConstants.spacing.regular,
             children: [
               const QuickSessionButton(),
+              _StatsSummaryRow(stats: stats),
               const YearActivityGraph(),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,7 +99,7 @@ class HomeScreen extends ConsumerWidget {
       header: fu.FHeader(
         suffixes: [
           if (stats.currentStreak > 0) StreakBadge(streak: stats.currentStreak),
-          if (context.isCompact)
+          if (context.isCompact) ...[
             fu.FTooltip(
               tipBuilder: (context, _) => const Text('Reports'),
               child: fu.FHeaderAction(
@@ -101,6 +108,15 @@ class HomeScreen extends ConsumerWidget {
                 onPress: () => context.push(AppRoutes.reports.path),
               ),
             ),
+            fu.FTooltip(
+              tipBuilder: (context, _) => const Text('Settings'),
+              child: fu.FHeaderAction(
+                icon: Icon(fu.FLucideIcons.settings, size: AppConstants.size.icon.regular),
+                semanticsLabel: 'Settings',
+                onPress: () => context.push(AppRoutes.settings.path),
+              ),
+            ),
+          ],
         ],
         title: _DashboardTitle(),
       ),
@@ -130,6 +146,90 @@ class _DashboardTitle extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _StatsSummaryRow extends StatelessWidget {
+  final GlobalStats stats;
+
+  const _StatsSummaryRow({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _StatCard(
+            icon: fu.FLucideIcons.flame,
+            value: stats.currentStreak > 0 ? '${stats.currentStreak}' : '—',
+            label: stats.currentStreak > 0 ? 'day streak' : 'No streak',
+            iconColor: stats.currentStreak > 0 ? context.colors.primary : context.colors.mutedForeground,
+          ),
+        ),
+        SizedBox(width: AppConstants.spacing.small),
+        Expanded(
+          child: _StatCard(
+            icon: fu.FLucideIcons.timer,
+            value: stats.todayFocusMinutes > 0 ? stats.todayFocusMinutes.toHourMinuteString() : '—',
+            label: 'focus today',
+            iconColor: context.colors.primary,
+          ),
+        ),
+        SizedBox(width: AppConstants.spacing.small),
+        Expanded(
+          child: _StatCard(
+            icon: fu.FLucideIcons.checkCircle,
+            value: stats.completedTasks > 0 ? '${stats.completedTasks}' : '—',
+            label: 'tasks done',
+            iconColor: context.colors.primary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color iconColor;
+
+  const _StatCard({required this.icon, required this.value, required this.label, required this.iconColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return fu.FCard(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular, vertical: AppConstants.spacing.small),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            SizedBox(width: AppConstants.spacing.small),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    value,
+                    style: context.typography.lg.copyWith(fontWeight: FontWeight.w700),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    label,
+                    style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

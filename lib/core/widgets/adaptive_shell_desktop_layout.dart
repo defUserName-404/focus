@@ -42,6 +42,15 @@ class AdaptiveShellDesktopLayout extends StatelessWidget {
                   padding: EdgeInsets.all(AppConstants.spacing.regular),
                   child: Text('Focus', style: context.typography.xl.copyWith(fontWeight: FontWeight.w700)),
                 ),
+                footer: Padding(
+                  padding: EdgeInsets.all(AppConstants.spacing.regular),
+                  child: fu.FSidebarItem(
+                    icon: Icon(fu.FLucideIcons.settings),
+                    label: Text('Settings', style: context.typography.md.copyWith(fontWeight: FontWeight.w600)),
+                    selected: false,
+                    onPress: () => context.push(AppRoutes.settings.path),
+                  ),
+                ),
                 children: [
                   for (var i = 0; i < destinations.length; i++)
                     fu.FSidebarItem(
@@ -53,13 +62,6 @@ class AdaptiveShellDesktopLayout extends StatelessWidget {
                       selected: i == currentIndex,
                       onPress: () => onTabChanged(i),
                     ),
-                  const Spacer(),
-                  fu.FSidebarItem(
-                    icon: Icon(fu.FLucideIcons.settings),
-                    label: Text('Settings', style: context.typography.md.copyWith(fontWeight: FontWeight.w600)),
-                    selected: false,
-                    onPress: () => context.push(AppRoutes.settings.path),
-                  ),
                 ],
               ),
             ),
