@@ -394,6 +394,37 @@ Gotchas:
 - Compact boards page one column at a time; expanded boards show all four columns.
 - Calendar day-cell drops reschedule `endDate` (skip recurring tasks — occurrences are expanded).
 
+## Reports Insights Aggregates
+
+Phase 6 report sections read window-scoped SQL aggregates from `ITaskStatsLocalDataSource`,
+mapped through `ITaskStatsRepository`, then bound to `reportsInsightsWindowProvider`.
+
+```dart
+// Window key stays ISO `start|end` (same as dailyStatsForRangeProvider)
+final range = ProductivityInsightsUtils.dateRangeForWindow(window);
+
+// SQL aggregates (watch + readsFrom) — prefer DB-side SUM/COUNT/GROUP BY
+watchEstimateAccuracy(start, end);
+watchTimeByProject(start, end);
+watchTimeByTag(start, end);
+watchTaskCompletionsByDate(start, end);
+watchAverageCycleTime(start, end);
+watchHabitCompletionHeatmap(start, end);
+
+// Habit rate/streak still uses pure HabitStreakCalculator after SQL loads sources
+ReportInsightsCalculator.buildHabitConsistency(sources: ..., from: ..., to: ...);
+
+// CSV is a pure string builder — UI copies to clipboard
+ReportInsightsCalculator.buildCsvExport(...);
+```
+
+Gotchas:
+- Keep custom-painted charts (no chart package). Habit heatmap reuses `YearGridPainter`.
+- Cycle time approximates in-progress start as first focus session (else `startDate` / `createdAt`)
+  because there is no status-history table yet.
+- Tag time double-counts sessions on multi-tagged tasks (intentional for tag breakdowns).
+- Export respects the selected insights window; heatmap uses the current calendar year.
+
 ## Mandatory Follow-Up
 
 When a new pattern is introduced in production code, add it here with:

@@ -135,6 +135,8 @@ Navigation UX split:
 - Mobile shell: 4-item bottom navigation (`Home`, `Tasks`, `Projects`, `Inbox`)
 - Desktop/tablet shell: side rail keeps separate `Reports` and `Notifications` entries
 - Settings is a utility destination (header/rail action), not a primary tab
+- Reports expands window-scoped insights (habit consistency, estimates, time breakdowns,
+  throughput) via `ITaskStatsRepository` SQL aggregates; CSV export copies the active window
 
 ## Layout Architecture
 

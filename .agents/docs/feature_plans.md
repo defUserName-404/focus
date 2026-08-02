@@ -50,6 +50,11 @@ Suggested scope:
 - Better empty states and no-data messaging
 - Evaluate caching/aggregation improvements for heavier stats views
 
+Status (Phase 6):
+- Habit consistency, estimate accuracy, time-by-project/tag, throughput, and CSV export
+  are implemented on `ReportsScreen` via window-scoped SQL aggregates in
+  `task_stats_local_datasource.dart` and `ReportInsightsCalculator`.
+
 ## Backlog Candidates
 
 - Import/export and backup restore workflows
