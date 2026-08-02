@@ -12,10 +12,15 @@ import '../../../home/presentation/widgets/today_summary_card.dart';
 import '../../../home/presentation/widgets/year_activity_graph.dart';
 import '../../../tasks/domain/entities/global_stats.dart';
 import '../../../tasks/presentation/providers/task_stats_provider.dart';
+import '../widgets/estimate_accuracy_section.dart';
+import '../widgets/habit_consistency_section.dart';
 import '../widgets/productivity_insights_section.dart';
+import '../widgets/reports_csv_export_button.dart';
+import '../widgets/task_throughput_section.dart';
+import '../widgets/time_breakdown_section.dart';
 
 /// Dedicated Reports screen that houses overall stats, activity heatmap,
-/// and streak information previously shown on the home screen.
+/// productivity insights, and Phase 6 report expansions.
 class ReportsScreen extends ConsumerWidget {
   const ReportsScreen({super.key});
 
@@ -38,6 +43,7 @@ class ReportsScreen extends ConsumerWidget {
           ),
         ],
         title: Text('Reports', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
+        suffixes: const [ReportsCsvExportButton()],
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -45,15 +51,21 @@ class ReportsScreen extends ConsumerWidget {
           spacing: AppConstants.spacing.regular,
           children: [
             TodaySummaryCard(stats: stats),
-            // Overall stats
             SizedBox(height: AppConstants.spacing.regular),
             SectionHeader(title: 'Overall Stats'),
             GlobalStatsRow(stats: stats),
             SizedBox(height: AppConstants.spacing.regular),
-            // Activity heatmap
             const YearActivityGraph(),
             SizedBox(height: AppConstants.spacing.regular),
             const ProductivityInsightsSection(),
+            SizedBox(height: AppConstants.spacing.large),
+            const HabitConsistencySection(),
+            SizedBox(height: AppConstants.spacing.large),
+            const EstimateAccuracySection(),
+            SizedBox(height: AppConstants.spacing.large),
+            const TimeBreakdownSection(),
+            SizedBox(height: AppConstants.spacing.large),
+            const TaskThroughputSection(),
             SizedBox(height: AppConstants.spacing.regular),
           ],
         ),

@@ -3,7 +3,9 @@ import 'package:drift/drift.dart';
 import '../../../../core/services/db_service.dart';
 import '../../../../core/services/log_service.dart';
 import '../../../session/domain/entities/session_state.dart';
+import '../../domain/entities/task_status.dart';
 import '../models/global_stats_model.dart';
+import '../models/report_stats_models.dart';
 import '../models/task_stats_model.dart';
 
 abstract class ITaskStatsLocalDataSource {
@@ -29,6 +31,27 @@ abstract class ITaskStatsLocalDataSource {
   /// [startDate] and [endDate] are ISO `YYYY-MM-DD` strings.
   /// Ideal for lazy-loading monthly pages in a horizontal scroll graph.
   Stream<List<DailySessionStatsData>> watchDailyStatsForRange(String startDate, String endDate);
+
+  /// Watches habit metadata plus completion dates in `[startDate, endDate]`.
+  Stream<List<HabitConsistencySourceRow>> watchHabitConsistencySources(String startDate, String endDate);
+
+  /// Watches habit completion counts by day for a heatmap range.
+  Stream<Map<String, int>> watchHabitCompletionHeatmap(String startDate, String endDate);
+
+  /// Watches estimated vs actual focus minutes per task in the window.
+  Stream<List<EstimateAccuracyRow>> watchEstimateAccuracy(String startDate, String endDate);
+
+  /// Watches focus seconds grouped by project for sessions in the window.
+  Stream<List<TimeBreakdownRow>> watchTimeByProject(String startDate, String endDate);
+
+  /// Watches focus seconds grouped by tag for sessions in the window.
+  Stream<List<TimeBreakdownRow>> watchTimeByTag(String startDate, String endDate);
+
+  /// Watches task + habit completion counts keyed by ISO date.
+  Stream<Map<String, int>> watchTaskCompletionsByDate(String startDate, String endDate);
+
+  /// Watches average cycle seconds (work-start proxy → done) for the window.
+  Stream<CycleTimeAggregateRow> watchAverageCycleTime(String startDate, String endDate);
 }
 
 class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
@@ -204,5 +227,240 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
           ..where((t) => t.date.isBiggerOrEqualValue(startDate) & t.date.isSmallerOrEqualValue(endDate))
           ..orderBy([(t) => OrderingTerm.asc(t.date)]))
         .watch();
+  }
+
+  @override
+  Stream<List<HabitConsistencySourceRow>> watchHabitConsistencySources(String startDate, String endDate) {
+    return _db
+        .customSelect(
+          'SELECT id, title, recurrence_rule, recurrence_anchor_date, start_date, created_at '
+          'FROM task_table '
+          'WHERE is_habit = 1 AND deleted_at IS NULL AND recurrence_rule IS NOT NULL',
+          readsFrom: {_db.taskTable, _db.taskCompletionTable},
+        )
+        .watch()
+        .asyncMap((rows) async {
+          final completionRows = await _db
+              .customSelect(
+                'SELECT task_id, occurrence_date '
+                'FROM task_completion_table '
+                'WHERE deleted_at IS NULL '
+                'AND occurrence_date >= ? AND occurrence_date <= ?',
+                variables: [Variable<String>(startDate), Variable<String>(endDate)],
+                readsFrom: {_db.taskCompletionTable},
+              )
+              .get();
+          final byTask = <int, List<String>>{};
+          for (final row in completionRows) {
+            final taskId = row.read<int>('task_id');
+            byTask.putIfAbsent(taskId, () => []).add(row.read<String>('occurrence_date'));
+          }
+          return [
+            for (final row in rows)
+              HabitConsistencySourceRow(
+                taskId: row.read<int>('id'),
+                title: row.read<String>('title'),
+                recurrenceRuleJson: row.read<String>('recurrence_rule'),
+                recurrenceAnchorDate: row.readNullable<DateTime>('recurrence_anchor_date'),
+                startDate: row.readNullable<DateTime>('start_date'),
+                createdAt: row.read<DateTime>('created_at'),
+                completionDateKeys: byTask[row.read<int>('id')] ?? const [],
+              ),
+          ];
+        });
+  }
+
+  @override
+  Stream<Map<String, int>> watchHabitCompletionHeatmap(String startDate, String endDate) {
+    return _db
+        .customSelect(
+          'SELECT tc.occurrence_date AS d, COUNT(*) AS cnt '
+          'FROM task_completion_table tc '
+          'INNER JOIN task_table t ON t.id = tc.task_id '
+          'WHERE tc.deleted_at IS NULL AND t.deleted_at IS NULL AND t.is_habit = 1 '
+          'AND tc.occurrence_date >= ? AND tc.occurrence_date <= ? '
+          'GROUP BY tc.occurrence_date',
+          variables: [Variable<String>(startDate), Variable<String>(endDate)],
+          readsFrom: {_db.taskCompletionTable, _db.taskTable},
+        )
+        .watch()
+        .map((rows) {
+          final map = <String, int>{};
+          for (final row in rows) {
+            map[row.read<String>('d')] = row.read<int>('cnt');
+          }
+          return map;
+        });
+  }
+
+  @override
+  Stream<List<EstimateAccuracyRow>> watchEstimateAccuracy(String startDate, String endDate) {
+    return _db
+        .customSelect(
+          'SELECT t.id AS task_id, t.title AS title, t.estimated_minutes AS estimated_minutes, '
+          'CAST(COALESCE(SUM(MIN(s.elapsed_seconds, s.focus_duration_minutes * 60)), 0) / 60 AS INTEGER) '
+          'AS actual_minutes '
+          'FROM task_table t '
+          'INNER JOIN focus_session_table s ON s.task_id = t.id AND s.deleted_at IS NULL '
+          "AND date(s.start_time, 'unixepoch', 'localtime') >= ? "
+          "AND date(s.start_time, 'unixepoch', 'localtime') <= ? "
+          'WHERE t.deleted_at IS NULL '
+          'AND t.estimated_minutes IS NOT NULL AND t.estimated_minutes > 0 '
+          'GROUP BY t.id, t.title, t.estimated_minutes '
+          'HAVING actual_minutes > 0 '
+          'ORDER BY actual_minutes DESC',
+          variables: [Variable<String>(startDate), Variable<String>(endDate)],
+          readsFrom: {_db.taskTable, _db.focusSessionTable},
+        )
+        .watch()
+        .map(
+          (rows) => [
+            for (final row in rows)
+              EstimateAccuracyRow(
+                taskId: row.read<int>('task_id'),
+                title: row.read<String>('title'),
+                estimatedMinutes: row.read<int>('estimated_minutes'),
+                actualMinutes: row.read<int>('actual_minutes'),
+              ),
+          ],
+        );
+  }
+
+  @override
+  Stream<List<TimeBreakdownRow>> watchTimeByProject(String startDate, String endDate) {
+    return _db
+        .customSelect(
+          'SELECT p.id AS id, p.title AS name, '
+          'COALESCE(SUM(MIN(s.elapsed_seconds, s.focus_duration_minutes * 60)), 0) AS focus_seconds, '
+          'p.color AS color '
+          'FROM project_table p '
+          'INNER JOIN task_table t ON t.project_id = p.id AND t.deleted_at IS NULL '
+          'INNER JOIN focus_session_table s ON s.task_id = t.id AND s.deleted_at IS NULL '
+          "AND date(s.start_time, 'unixepoch', 'localtime') >= ? "
+          "AND date(s.start_time, 'unixepoch', 'localtime') <= ? "
+          'WHERE p.deleted_at IS NULL '
+          'GROUP BY p.id, p.title, p.color '
+          'HAVING focus_seconds > 0 '
+          'ORDER BY focus_seconds DESC',
+          variables: [Variable<String>(startDate), Variable<String>(endDate)],
+          readsFrom: {_db.projectTable, _db.taskTable, _db.focusSessionTable},
+        )
+        .watch()
+        .map(
+          (rows) => [
+            for (final row in rows)
+              TimeBreakdownRow(
+                id: row.read<int>('id'),
+                name: row.read<String>('name'),
+                focusSeconds: row.read<int>('focus_seconds'),
+                color: row.readNullable<int>('color'),
+              ),
+          ],
+        );
+  }
+
+  @override
+  Stream<List<TimeBreakdownRow>> watchTimeByTag(String startDate, String endDate) {
+    return _db
+        .customSelect(
+          'SELECT tag.id AS id, tag.name AS name, '
+          'COALESCE(SUM(MIN(s.elapsed_seconds, s.focus_duration_minutes * 60)), 0) AS focus_seconds, '
+          'tag.color AS color '
+          'FROM tag_table tag '
+          'INNER JOIN task_tag_table tt ON tt.tag_id = tag.id '
+          'INNER JOIN focus_session_table s ON s.task_id = tt.task_id AND s.deleted_at IS NULL '
+          "AND date(s.start_time, 'unixepoch', 'localtime') >= ? "
+          "AND date(s.start_time, 'unixepoch', 'localtime') <= ? "
+          'WHERE tag.deleted_at IS NULL '
+          'GROUP BY tag.id, tag.name, tag.color '
+          'HAVING focus_seconds > 0 '
+          'ORDER BY focus_seconds DESC',
+          variables: [Variable<String>(startDate), Variable<String>(endDate)],
+          readsFrom: {_db.tagTable, _db.taskTagTable, _db.focusSessionTable},
+        )
+        .watch()
+        .map(
+          (rows) => [
+            for (final row in rows)
+              TimeBreakdownRow(
+                id: row.read<int>('id'),
+                name: row.read<String>('name'),
+                focusSeconds: row.read<int>('focus_seconds'),
+                color: row.readNullable<int>('color'),
+              ),
+          ],
+        );
+  }
+
+  @override
+  Stream<Map<String, int>> watchTaskCompletionsByDate(String startDate, String endDate) {
+    final doneStatus = TaskStatus.done.index;
+    return _db
+        .customSelect(
+          'SELECT d, SUM(cnt) AS cnt FROM ('
+          "SELECT date(updated_at, 'unixepoch', 'localtime') AS d, COUNT(*) AS cnt "
+          'FROM task_table '
+          'WHERE status = $doneStatus AND deleted_at IS NULL AND is_habit = 0 '
+          "AND date(updated_at, 'unixepoch', 'localtime') >= ? "
+          "AND date(updated_at, 'unixepoch', 'localtime') <= ? "
+          'GROUP BY d '
+          'UNION ALL '
+          'SELECT occurrence_date AS d, COUNT(*) AS cnt '
+          'FROM task_completion_table '
+          'WHERE deleted_at IS NULL '
+          'AND occurrence_date >= ? AND occurrence_date <= ? '
+          'GROUP BY occurrence_date'
+          ') GROUP BY d',
+          variables: [
+            Variable<String>(startDate),
+            Variable<String>(endDate),
+            Variable<String>(startDate),
+            Variable<String>(endDate),
+          ],
+          readsFrom: {_db.taskTable, _db.taskCompletionTable},
+        )
+        .watch()
+        .map((rows) {
+          final map = <String, int>{};
+          for (final row in rows) {
+            map[row.read<String>('d')] = row.read<int>('cnt');
+          }
+          return map;
+        });
+  }
+
+  @override
+  Stream<CycleTimeAggregateRow> watchAverageCycleTime(String startDate, String endDate) {
+    final doneStatus = TaskStatus.done.index;
+    return _db
+        .customSelect(
+          'SELECT '
+          'AVG('
+          't.updated_at - COALESCE('
+          '(SELECT MIN(fs.start_time) FROM focus_session_table fs '
+          'WHERE fs.task_id = t.id AND fs.deleted_at IS NULL), '
+          't.start_date, t.created_at'
+          ')'
+          ') AS avg_cycle_seconds, '
+          'COUNT(*) AS sample_count '
+          'FROM task_table t '
+          'WHERE t.status = $doneStatus AND t.deleted_at IS NULL AND t.is_habit = 0 '
+          "AND date(t.updated_at, 'unixepoch', 'localtime') >= ? "
+          "AND date(t.updated_at, 'unixepoch', 'localtime') <= ? "
+          'AND t.updated_at > COALESCE('
+          '(SELECT MIN(fs.start_time) FROM focus_session_table fs '
+          'WHERE fs.task_id = t.id AND fs.deleted_at IS NULL), '
+          't.start_date, t.created_at'
+          ')',
+          variables: [Variable<String>(startDate), Variable<String>(endDate)],
+          readsFrom: {_db.taskTable, _db.focusSessionTable},
+        )
+        .watchSingle()
+        .map((row) {
+          final sampleCount = row.read<int>('sample_count');
+          if (sampleCount <= 0) return CycleTimeAggregateRow.empty;
+          final avg = row.readNullable<double>('avg_cycle_seconds');
+          return CycleTimeAggregateRow(averageCycleSeconds: avg, sampleCount: sampleCount);
+        });
   }
 }
