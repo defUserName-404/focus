@@ -13,6 +13,10 @@ abstract final class NotificationConstants {
   static const int alarmId = 1002;
   static const int taskReminderIdOffset = 20000;
 
+  /// Extra slots for rolling-window occurrence reminders (slot 0 uses the legacy id).
+  static const int taskReminderExtraSlotOffset = 300000;
+  static const int taskReminderSlotStride = 8;
+
   // Action IDs (notification buttons)
   static const String actionPause = 'focus_pause';
   static const String actionResume = 'focus_resume';
@@ -39,5 +43,13 @@ abstract final class NotificationConstants {
 
     final projectId = parts.length > 1 ? int.tryParse(parts[1]) : null;
     return (taskId: taskId, projectId: projectId);
+  }
+
+  /// Notification id for [taskId] reminder slot [slot] (0-based).
+  ///
+  /// Slot 0 preserves the pre-v8 id (`taskReminderIdOffset + taskId`).
+  static int taskReminderNotificationId(int taskId, [int slot = 0]) {
+    if (slot <= 0) return taskReminderIdOffset + taskId;
+    return taskReminderExtraSlotOffset + taskId * taskReminderSlotStride + slot;
   }
 }

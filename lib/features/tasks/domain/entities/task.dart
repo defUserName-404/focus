@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
+import 'recurrence_rule.dart';
 import 'task_priority.dart';
 import 'task_reminder_mode.dart';
 import 'task_status.dart';
@@ -9,6 +10,9 @@ import 'task_status.dart';
 ///
 /// [depth] encodes nesting: 0 = root task, 1 = subtask, 2 = sub-subtask, etc.
 /// [isCompleted] is derived from [status] == [TaskStatus.done].
+///
+/// Recurring tasks keep a single row; occurrences are expanded via
+/// [RecurrenceExpander] and completions are logged separately.
 @immutable
 class Task extends Equatable {
   final int? id;
@@ -27,6 +31,9 @@ class Task extends Equatable {
   final int? estimatedMinutes;
   final double sortOrder;
   final int? milestoneId;
+  final RecurrenceRule? recurrenceRule;
+  final DateTime? recurrenceAnchorDate;
+  final bool isHabit;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
@@ -48,6 +55,9 @@ class Task extends Equatable {
     this.estimatedMinutes,
     this.sortOrder = 0,
     this.milestoneId,
+    this.recurrenceRule,
+    this.recurrenceAnchorDate,
+    this.isHabit = false,
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
@@ -55,6 +65,9 @@ class Task extends Equatable {
 
   /// Compatibility getter — true when [status] is [TaskStatus.done].
   bool get isCompleted => status == TaskStatus.done;
+
+  /// Whether this task expands into multiple occurrences.
+  bool get isRecurring => recurrenceRule != null;
 
   @override
   List<Object?> get props => [
@@ -74,6 +87,9 @@ class Task extends Equatable {
     estimatedMinutes,
     sortOrder,
     milestoneId,
+    recurrenceRule,
+    recurrenceAnchorDate,
+    isHabit,
     createdAt,
     updatedAt,
     deletedAt,

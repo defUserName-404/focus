@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:focus/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:focus/features/tasks/domain/entities/task_reminder_mode.dart';
 import 'package:focus/features/tasks/domain/services/task_reminder_planner.dart';
 
@@ -83,6 +84,30 @@ void main() {
       );
       final reminder = TaskReminderPlanner.computeReminderTime(task, now: testNow);
       expect(reminder, deadline.subtract(const Duration(days: 1)));
+    });
+  });
+
+  group('TaskReminderPlanner.computeReminderTimes (rolling window)', () {
+    test('returns multiple reminders for recurring tasks', () {
+      final task = buildTask(
+        reminderMode: TaskReminderMode.dayBefore,
+        recurrenceRule: const RecurrenceRule(frequency: RecurrenceFrequency.daily),
+        recurrenceAnchorDate: DateTime(2026, 8, 1, 10),
+        endDate: null,
+      );
+      final reminders = TaskReminderPlanner.computeReminderTimes(
+        task,
+        now: DateTime(2026, 8, 2, 8),
+        windowSize: 3,
+      );
+      expect(reminders, hasLength(3));
+      // Each reminder is 1 day before the occurrence (or now+2s if past).
+      expect(reminders[0].isBefore(reminders[1]), isTrue);
+    });
+
+    test('returns empty for completed one-shot tasks', () {
+      final task = buildTask(isCompleted: true);
+      expect(TaskReminderPlanner.computeReminderTimes(task, now: testNow), isEmpty);
     });
   });
 }

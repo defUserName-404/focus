@@ -17,30 +17,32 @@ class TaskNotificationService {
   Future<Result<void>> scheduleTaskReminder(Task task) async {
     try {
       if (task.id == null) return const Success(null);
-      if (task.endDate == null || task.isCompleted) {
-        await cancelTaskReminder(task.id!);
+
+      await cancelTaskReminder(task.id!);
+
+      if (!task.isRecurring && (task.endDate == null || task.isCompleted)) {
         return const Success(null);
       }
 
       final now = DateTime.now();
-      if (!task.endDate!.isAfter(now)) {
-        await cancelTaskReminder(task.id!);
+      if (!task.isRecurring && task.endDate != null && !task.endDate!.isAfter(now)) {
         return const Success(null);
       }
 
-      final scheduledTime = TaskReminderPlanner.computeReminderTime(task, now: now);
-      if (scheduledTime == null) {
-        await cancelTaskReminder(task.id!);
+      final scheduledTimes = TaskReminderPlanner.computeReminderTimes(task, now: now);
+      if (scheduledTimes.isEmpty) {
         return const Success(null);
       }
 
-      await _notificationService.scheduleNotification(
-        id: _taskNotificationId(task.id!),
-        title: 'Task Reminder',
-        body: task.title,
-        scheduledTime: scheduledTime,
-        payload: NotificationConstants.taskPayload(taskId: task.id!, projectId: task.projectId),
-      );
+      for (var i = 0; i < scheduledTimes.length; i++) {
+        await _notificationService.scheduleNotification(
+          id: NotificationConstants.taskReminderNotificationId(task.id!, i),
+          title: 'Task Reminder',
+          body: task.title,
+          scheduledTime: scheduledTimes[i],
+          payload: NotificationConstants.taskPayload(taskId: task.id!, projectId: task.projectId),
+        );
+      }
 
       return const Success(null);
     } catch (e, st) {
@@ -56,7 +58,11 @@ class TaskNotificationService {
 
   Future<Result<void>> cancelTaskReminder(int taskId) async {
     try {
-      await _notificationService.cancelNotification(_taskNotificationId(taskId));
+      for (var slot = 0; slot < NotificationConstants.taskReminderSlotStride; slot++) {
+        await _notificationService.cancelNotification(
+          NotificationConstants.taskReminderNotificationId(taskId, slot),
+        );
+      }
       return const Success(null);
     } catch (e, st) {
       _log.warning(
@@ -81,6 +87,4 @@ class TaskNotificationService {
       return Failure(NotificationFailure('Failed to reschedule task reminders', error: e, stackTrace: st));
     }
   }
-
-  int _taskNotificationId(int taskId) => NotificationConstants.taskReminderIdOffset + taskId;
 }

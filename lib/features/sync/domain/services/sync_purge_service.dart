@@ -21,12 +21,16 @@ class SyncPurgeService {
 
   /// Hard-deletes soft-deleted rows whose [deletedAt] is older than [retention].
   ///
-  /// Order respects FK dependents: task_tag → sessions → tasks → milestones →
-  /// tags → projects.
+  /// Order respects FK dependents: completions → task_tag → sessions → tasks →
+  /// milestones → tags → projects.
   Future<Result<int>> purgeExpiredTombstones({DateTime? now}) async {
     try {
       final cutoff = (now ?? DateTime.now()).subtract(retention);
       return await _db.transaction(() async {
+        final completions = await (_db.delete(
+          _db.taskCompletionTable,
+        )..where((t) => t.deletedAt.isNotNull() & t.deletedAt.isSmallerThanValue(cutoff))).go();
+
         // Remove junction rows for tasks about to be purged.
         final expiredTaskIds =
             await (_db.selectOnly(_db.taskTable)
@@ -36,6 +40,8 @@ class SyncPurgeService {
                 .get();
         var taskTags = 0;
         if (expiredTaskIds.isNotEmpty) {
+          // Also hard-delete any remaining completions for purged tasks.
+          await (_db.delete(_db.taskCompletionTable)..where((t) => t.taskId.isIn(expiredTaskIds))).go();
           taskTags = await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(expiredTaskIds))).go();
         }
 
@@ -64,10 +70,10 @@ class SyncPurgeService {
         final projects = await (_db.delete(
           _db.projectTable,
         )..where((t) => t.deletedAt.isNotNull() & t.deletedAt.isSmallerThanValue(cutoff))).go();
-        final total = taskTags + sessions + tasks + milestones + tags + projects;
+        final total = completions + taskTags + sessions + tasks + milestones + tags + projects;
         _log.info(
           'Purged $total expired tombstones '
-          '(taskTags=$taskTags, sessions=$sessions, tasks=$tasks, '
+          '(completions=$completions, taskTags=$taskTags, sessions=$sessions, tasks=$tasks, '
           'milestones=$milestones, tags=$tags, projects=$projects)',
           tag: 'SyncPurgeService',
         );

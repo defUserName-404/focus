@@ -2,6 +2,7 @@ import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/domain/entities/task_reminder_mode.dart';
 import 'package:focus/features/tasks/domain/entities/task_status.dart';
 
+import 'recurrence_rule.dart';
 import 'task.dart';
 
 /// Sentinel object used in [TaskCopyWith.copyWith] to distinguish
@@ -32,6 +33,9 @@ extension TaskCopyWith on Task {
     Object? estimatedMinutes = _taskCopyWithUnset,
     double? sortOrder,
     Object? milestoneId = _taskCopyWithUnset,
+    Object? recurrenceRule = _taskCopyWithUnset,
+    Object? recurrenceAnchorDate = _taskCopyWithUnset,
+    bool? isHabit,
     DateTime? createdAt,
     DateTime? updatedAt,
     Object? deletedAt = _taskCopyWithUnset,
@@ -56,6 +60,13 @@ extension TaskCopyWith on Task {
         : estimatedMinutes as int?,
     sortOrder: sortOrder ?? this.sortOrder,
     milestoneId: milestoneId == _taskCopyWithUnset ? this.milestoneId : milestoneId as int?,
+    recurrenceRule: recurrenceRule == _taskCopyWithUnset
+        ? this.recurrenceRule
+        : recurrenceRule as RecurrenceRule?,
+    recurrenceAnchorDate: recurrenceAnchorDate == _taskCopyWithUnset
+        ? this.recurrenceAnchorDate
+        : recurrenceAnchorDate as DateTime?,
+    isHabit: isHabit ?? this.isHabit,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt == _taskCopyWithUnset ? this.deletedAt : deletedAt as DateTime?,

@@ -158,7 +158,7 @@ Rules for schema changes:
 4. Regenerate code.
 5. Verify migration behavior with existing user data.
 
-Current sync-ready schema (v7) includes on `project_table`, `task_table`, and `focus_session_table`:
+Current sync-ready schema (v8) includes on `project_table`, `task_table`, and `focus_session_table`:
 - `uuid` (TEXT, unique) — stable sync identity, generated on create and backfilled on migration
 - `deleted_at` (nullable DateTime) — soft-delete tombstone; all reads filter `deletedAt IS NULL`
 
@@ -169,11 +169,18 @@ PM model (v7) adds:
 - Domain `Task.isCompleted` is a computed getter (`status == done`); DB still keeps `is_completed`
   synced from status for one compatibility cycle
 
+Recurrence / habits (v8) adds:
+- `task_table.recurrence_rule` (nullable JSON text), `recurrence_anchor_date`, `is_habit`
+- `task_completion_table` — occurrence log keyed by `(task_id, occurrence_date)` with soft-delete
+  and a partial unique index among live rows
+- Occurrences are expanded in pure domain code (`RecurrenceExpander`); habits are recurring tasks
+  with `isHabit = true` and streaks via `HabitStreakCalculator`
+
 Deletes are soft deletes. `ON DELETE CASCADE` no longer fires for app-level deletes, so project/task
-deletion must cascade soft-deletes to dependents inside a transaction (including milestones and
-clearing `task_tag` associations). `SyncPurgeService` hard-deletes tombstones older than the retention
-window (default 30 days). A stable `device_id` setting UUID is generated once on first launch for sync
-provenance.
+deletion must cascade soft-deletes to dependents inside a transaction (including milestones,
+completions, and clearing `task_tag` associations). `SyncPurgeService` hard-deletes tombstones older
+than the retention window (default 30 days), including completion rows before tasks. A stable
+`device_id` setting UUID is generated once on first launch for sync provenance.
 
 Current task schema also includes reminder configuration fields:
 - `reminder_mode` (enum-backed)

@@ -3,6 +3,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:focus/features/settings/data/models/settings_model.dart';
 import 'package:focus/features/notifications/data/models/notification_inbox_model.dart';
 import 'package:focus/features/tasks/data/models/daily_session_stats_model.dart';
+import 'package:focus/features/tasks/data/models/task_completion_model.dart';
 import 'package:focus/features/tasks/data/models/task_model.dart';
 import 'package:focus/features/tags/data/models/tag_model.dart';
 import 'package:focus/features/tags/data/models/task_tag_model.dart';
@@ -32,6 +33,7 @@ part 'db_service.g.dart';
     TagTable,
     TaskTagTable,
     MilestoneTable,
+    TaskCompletionTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -41,7 +43,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -76,6 +78,11 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
+      // Partial unique index is not expressible via Drift annotations.
+      await customStatement(
+        'CREATE UNIQUE INDEX IF NOT EXISTS task_completion_task_occurrence_live_idx '
+        'ON task_completion_table(task_id, occurrence_date) WHERE deleted_at IS NULL',
+      );
     },
     onUpgrade: (m, from, to) async {
       if (from < 2) {
@@ -239,6 +246,37 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS milestone_uuid_idx ON milestone_table(uuid)');
         await customStatement('CREATE INDEX IF NOT EXISTS milestone_project_id_idx ON milestone_table(project_id)');
         await customStatement('CREATE INDEX IF NOT EXISTS milestone_deleted_at_idx ON milestone_table(deleted_at)');
+      }
+
+      // v7 → v8: Recurrence / habits — rule JSON, anchor, isHabit, and
+      // per-occurrence completion log with soft-delete-aware uniqueness.
+      if (from < 8) {
+        await customStatement('ALTER TABLE task_table ADD COLUMN recurrence_rule TEXT');
+        await customStatement('ALTER TABLE task_table ADD COLUMN recurrence_anchor_date INTEGER');
+        await customStatement(
+          'ALTER TABLE task_table ADD COLUMN is_habit INTEGER NOT NULL DEFAULT 0',
+        );
+
+        await m.createTable(taskCompletionTable);
+
+        await customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS task_completion_uuid_idx ON task_completion_table(uuid)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS task_completion_task_id_idx ON task_completion_table(task_id)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS task_completion_occurrence_date_idx '
+          'ON task_completion_table(occurrence_date)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS task_completion_deleted_at_idx ON task_completion_table(deleted_at)',
+        );
+        // Unique (taskId, occurrenceDate) among live rows only.
+        await customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS task_completion_task_occurrence_live_idx '
+          'ON task_completion_table(task_id, occurrence_date) WHERE deleted_at IS NULL',
+        );
       }
     },
     beforeOpen: (details) async {

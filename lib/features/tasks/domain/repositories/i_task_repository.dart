@@ -1,5 +1,6 @@
 import '../entities/all_tasks_filter_state.dart';
 import '../entities/task.dart';
+import '../entities/task_completion.dart';
 import '../entities/task_filter_state.dart';
 import '../entities/task_priority.dart';
 import '../entities/task_status.dart';
@@ -41,4 +42,14 @@ abstract class ITaskRepository {
     TaskStatus? statusFilter,
     TaskCompletionFilter completionFilter,
   });
+
+  Future<List<TaskCompletion>> getCompletionsForTask(int taskId);
+
+  Future<TaskCompletion?> getCompletion(int taskId, DateTime occurrenceDate);
+
+  Future<TaskCompletion> upsertCompletion(TaskCompletion completion);
+
+  Future<void> softDeleteCompletion(int id);
+
+  Stream<List<TaskCompletion>> watchCompletionsForTask(int taskId);
 }

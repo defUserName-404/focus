@@ -35,6 +35,17 @@ abstract class ITaskLocalDataSource {
     TaskStatus? statusFilter,
     TaskCompletionFilter completionFilter,
   });
+
+  Future<List<TaskCompletionTableData>> getCompletionsForTask(int taskId);
+
+  Future<TaskCompletionTableData?> getCompletion(int taskId, String occurrenceDateKey);
+
+  /// Inserts or undeletes a completion for `(taskId, occurrenceDate)`.
+  Future<TaskCompletionTableData> upsertCompletion(TaskCompletionTableCompanion companion);
+
+  Future<void> softDeleteCompletion(int id);
+
+  Stream<List<TaskCompletionTableData>> watchCompletionsForTask(int taskId);
 }
 
 class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
@@ -80,9 +91,13 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   @override
   Future<List<TaskTableData>> getTasksWithDeadlines() async {
     try {
-      return await (_db.select(
-        _db.taskTable,
-      )..where((t) => t.endDate.isNotNull() & t.status.equalsValue(TaskStatus.done).not() & t.deletedAt.isNull())).get();
+      return await (_db.select(_db.taskTable)..where(
+            (t) =>
+                (t.endDate.isNotNull() | t.recurrenceRule.isNotNull()) &
+                t.status.equalsValue(TaskStatus.done).not() &
+                t.deletedAt.isNull(),
+          ))
+          .get();
     } catch (e, st) {
       _log.error('getTasksWithDeadlines failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
       rethrow;
@@ -111,7 +126,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
 
   @override
   Future<void> deleteTask(int id) async {
-    // Soft-delete the task, all descendants, and their focus sessions.
+    // Soft-delete the task, all descendants, their completions, and sessions.
     try {
       await _db.transaction(() async {
         final now = DateTime.now();
@@ -120,6 +135,13 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
 
         await (_db.update(_db.focusSessionTable)..where((t) => t.taskId.isIn(idsToDelete) & t.deletedAt.isNull()))
             .write(FocusSessionTableCompanion(deletedAt: Value(now)));
+
+        await (_db
+                .update(_db.taskCompletionTable)
+              ..where((t) => t.taskId.isIn(idsToDelete) & t.deletedAt.isNull()))
+            .write(
+              TaskCompletionTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+            );
 
         await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(idsToDelete))).go();
 
@@ -158,7 +180,12 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   @override
   Stream<List<TaskTableData>> watchTasksWithDeadlines() {
     return (_db.select(_db.taskTable)
-          ..where((t) => t.endDate.isNotNull() & t.status.equalsValue(TaskStatus.done).not() & t.deletedAt.isNull())
+          ..where(
+            (t) =>
+                (t.endDate.isNotNull() | t.recurrenceRule.isNotNull()) &
+                t.status.equalsValue(TaskStatus.done).not() &
+                t.deletedAt.isNull(),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.endDate)]))
         .watch();
   }
@@ -269,5 +296,95 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     }
 
     return query.watch();
+  }
+
+  @override
+  Future<List<TaskCompletionTableData>> getCompletionsForTask(int taskId) async {
+    try {
+      return await (_db.select(_db.taskCompletionTable)
+            ..where((t) => t.taskId.equals(taskId) & t.deletedAt.isNull())
+            ..orderBy([(t) => OrderingTerm.asc(t.occurrenceDate)]))
+          .get();
+    } catch (e, st) {
+      _log.error('getCompletionsForTask failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TaskCompletionTableData?> getCompletion(int taskId, String occurrenceDateKey) async {
+    try {
+      return await (_db.select(_db.taskCompletionTable)..where(
+            (t) =>
+                t.taskId.equals(taskId) & t.occurrenceDate.equals(occurrenceDateKey) & t.deletedAt.isNull(),
+          ))
+          .getSingleOrNull();
+    } catch (e, st) {
+      _log.error('getCompletion failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TaskCompletionTableData> upsertCompletion(TaskCompletionTableCompanion companion) async {
+    try {
+      return await _db.transaction(() async {
+        final taskId = companion.taskId.value;
+        final dateKey = companion.occurrenceDate.value;
+
+        // Prefer an existing live row (idempotent complete).
+        final live = await (_db.select(_db.taskCompletionTable)..where(
+              (t) => t.taskId.equals(taskId) & t.occurrenceDate.equals(dateKey) & t.deletedAt.isNull(),
+            ))
+            .getSingleOrNull();
+        if (live != null) return live;
+
+        // Revive a soft-deleted row for the same occurrence if present.
+        final tombstoned = await (_db.select(_db.taskCompletionTable)..where(
+              (t) => t.taskId.equals(taskId) & t.occurrenceDate.equals(dateKey) & t.deletedAt.isNotNull(),
+            ))
+            .getSingleOrNull();
+        if (tombstoned != null) {
+          final now = DateTime.now();
+          await (_db.update(_db.taskCompletionTable)..where((t) => t.id.equals(tombstoned.id))).write(
+            TaskCompletionTableCompanion(
+              completedAt: companion.completedAt.present ? companion.completedAt : Value(now),
+              updatedAt: companion.updatedAt.present ? companion.updatedAt : Value(now),
+              deletedAt: const Value(null),
+            ),
+          );
+          return (await (_db.select(
+            _db.taskCompletionTable,
+          )..where((t) => t.id.equals(tombstoned.id))).getSingle());
+        }
+
+        final id = await _db.into(_db.taskCompletionTable).insert(companion);
+        return (await (_db.select(_db.taskCompletionTable)..where((t) => t.id.equals(id))).getSingle());
+      });
+    } catch (e, st) {
+      _log.error('upsertCompletion failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> softDeleteCompletion(int id) async {
+    try {
+      final now = DateTime.now();
+      await (_db.update(_db.taskCompletionTable)..where((t) => t.id.equals(id) & t.deletedAt.isNull())).write(
+        TaskCompletionTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+      );
+    } catch (e, st) {
+      _log.error('softDeleteCompletion failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<List<TaskCompletionTableData>> watchCompletionsForTask(int taskId) {
+    return (_db.select(_db.taskCompletionTable)
+          ..where((t) => t.taskId.equals(taskId) & t.deletedAt.isNull())
+          ..orderBy([(t) => OrderingTerm.asc(t.occurrenceDate)]))
+        .watch();
   }
 }
