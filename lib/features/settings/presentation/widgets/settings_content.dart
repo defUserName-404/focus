@@ -11,6 +11,7 @@ import '../providers/settings_provider.dart';
 import 'audio_accordion.dart';
 import 'ambience_toggle_card.dart';
 import 'desktop_toggle_card.dart';
+import 'keyboard_shortcuts_section.dart';
 import 'section_title.dart';
 import 'timer_settings_card.dart';
 
@@ -93,6 +94,8 @@ class SettingsContent extends ConsumerWidget {
                   enabled: desktopPrefs.launchAtStartupEnabled,
                   onChanged: notifier.setDesktopLaunchAtStartupEnabled,
                 ),
+                SizedBox(height: AppConstants.spacing.small),
+                const KeyboardShortcutsSection(),
               ],
             ),
           ),
