@@ -1,5 +1,6 @@
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/domain/entities/task_reminder_mode.dart';
+import 'package:focus/features/tasks/domain/entities/task_status.dart';
 
 import 'task.dart';
 
@@ -22,12 +23,15 @@ extension TaskCopyWith on Task {
     String? title,
     String? description,
     TaskPriority? priority,
+    TaskStatus? status,
     TaskReminderMode? reminderMode,
     Object? customReminderMinutesBefore = _taskCopyWithUnset,
     Object? startDate = _taskCopyWithUnset,
     Object? endDate = _taskCopyWithUnset,
     int? depth,
-    bool? isCompleted,
+    Object? estimatedMinutes = _taskCopyWithUnset,
+    double? sortOrder,
+    Object? milestoneId = _taskCopyWithUnset,
     DateTime? createdAt,
     DateTime? updatedAt,
     Object? deletedAt = _taskCopyWithUnset,
@@ -39,6 +43,7 @@ extension TaskCopyWith on Task {
     title: title ?? this.title,
     description: description ?? this.description,
     priority: priority ?? this.priority,
+    status: status ?? this.status,
     reminderMode: reminderMode ?? this.reminderMode,
     customReminderMinutesBefore: customReminderMinutesBefore == _taskCopyWithUnset
         ? this.customReminderMinutesBefore
@@ -46,7 +51,11 @@ extension TaskCopyWith on Task {
     startDate: startDate == _taskCopyWithUnset ? this.startDate : startDate as DateTime?,
     endDate: endDate == _taskCopyWithUnset ? this.endDate : endDate as DateTime?,
     depth: depth ?? this.depth,
-    isCompleted: isCompleted ?? this.isCompleted,
+    estimatedMinutes: estimatedMinutes == _taskCopyWithUnset
+        ? this.estimatedMinutes
+        : estimatedMinutes as int?,
+    sortOrder: sortOrder ?? this.sortOrder,
+    milestoneId: milestoneId == _taskCopyWithUnset ? this.milestoneId : milestoneId as int?,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt == _taskCopyWithUnset ? this.deletedAt : deletedAt as DateTime?,

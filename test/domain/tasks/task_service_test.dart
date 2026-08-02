@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus/core/utils/result.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/domain/entities/task_extensions.dart';
+import 'package:focus/features/tasks/domain/entities/task_status.dart';
 import 'package:focus/features/tasks/domain/repositories/i_task_repository.dart';
 import 'package:focus/features/tasks/domain/services/task_notification_service.dart';
 import 'package:focus/features/tasks/domain/services/task_service.dart';
@@ -70,6 +71,7 @@ void main() {
     expect(result, isA<Success<void>>());
     final captured = verify(() => repository.updateTask(captureAny())).captured.single as Task;
     expect(captured.isCompleted, isTrue);
+    expect(captured.status, TaskStatus.done);
     verify(() => notifications.cancelTaskReminder(8)).called(1);
     verifyNever(() => notifications.scheduleTaskReminder(any()));
   });

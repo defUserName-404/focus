@@ -3,6 +3,7 @@ import '../../domain/entities/task.dart';
 import '../../domain/entities/task_extensions.dart';
 import '../../domain/entities/task_filter_state.dart';
 import '../../domain/entities/task_priority.dart';
+import '../../domain/entities/task_status.dart';
 import '../../domain/repositories/i_task_repository.dart';
 import '../datasources/task_local_datasource.dart';
 import '../mappers/task_extensions.dart';
@@ -90,6 +91,7 @@ class TaskRepositoryImpl implements ITaskRepository {
     TaskSortCriteria sortCriteria = TaskSortCriteria.recentlyModified,
     TaskSortOrder sortOrder = TaskSortOrder.none,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
   }) {
     return _local
         .watchFilteredTasks(
@@ -98,6 +100,7 @@ class TaskRepositoryImpl implements ITaskRepository {
           sortCriteria: sortCriteria,
           sortOrder: sortOrder,
           priorityFilter: priorityFilter,
+          statusFilter: statusFilter,
         )
         .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
@@ -108,6 +111,7 @@ class TaskRepositoryImpl implements ITaskRepository {
     AllTasksSortCriteria sortCriteria = AllTasksSortCriteria.recentlyModified,
     AllTasksSortOrder sortOrder = AllTasksSortOrder.none,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
     TaskCompletionFilter completionFilter = TaskCompletionFilter.all,
   }) {
     return _local
@@ -116,6 +120,7 @@ class TaskRepositoryImpl implements ITaskRepository {
           sortCriteria: sortCriteria,
           sortOrder: sortOrder,
           priorityFilter: priorityFilter,
+          statusFilter: statusFilter,
           completionFilter: completionFilter,
         )
         .map((rows) => rows.map((r) => r.toDomain()).toList());

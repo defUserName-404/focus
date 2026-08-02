@@ -5,6 +5,7 @@ import '../entities/task.dart';
 import '../entities/task_extensions.dart';
 import '../entities/task_priority.dart';
 import '../entities/task_reminder_mode.dart';
+import '../entities/task_status.dart';
 import '../repositories/i_task_repository.dart';
 import 'task_notification_service.dart';
 
@@ -37,10 +38,14 @@ class TaskService {
     required String title,
     String? description,
     TaskPriority priority = TaskPriority.medium,
+    TaskStatus status = TaskStatus.todo,
     TaskReminderMode reminderMode = TaskReminderMode.smart,
     int? customReminderMinutesBefore,
     DateTime? startDate,
     DateTime? endDate,
+    int? estimatedMinutes,
+    double sortOrder = 0,
+    int? milestoneId,
     required int depth,
   }) async {
     try {
@@ -52,12 +57,15 @@ class TaskService {
         title: title,
         description: description,
         priority: priority,
+        status: status,
         reminderMode: reminderMode,
         customReminderMinutesBefore: customReminderMinutesBefore,
         startDate: startDate,
         endDate: endDate,
+        estimatedMinutes: estimatedMinutes,
+        sortOrder: sortOrder,
+        milestoneId: milestoneId,
         depth: depth,
-        isCompleted: false,
         createdAt: now,
         updatedAt: now,
       );
@@ -100,7 +108,8 @@ class TaskService {
 
   Future<Result<void>> toggleTaskCompletion(Task task) async {
     try {
-      final updated = task.copyWith(isCompleted: !task.isCompleted, updatedAt: DateTime.now());
+      final nextStatus = task.isCompleted ? TaskStatus.todo : TaskStatus.done;
+      final updated = task.copyWith(status: nextStatus, updatedAt: DateTime.now());
       await _repository.updateTask(updated);
       if (updated.isCompleted && updated.id != null) {
         await _taskNotificationService.cancelTaskReminder(updated.id!);

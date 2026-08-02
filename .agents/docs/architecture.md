@@ -158,14 +158,22 @@ Rules for schema changes:
 4. Regenerate code.
 5. Verify migration behavior with existing user data.
 
-Current sync-ready schema (v6) includes on `project_table`, `task_table`, and `focus_session_table`:
+Current sync-ready schema (v7) includes on `project_table`, `task_table`, and `focus_session_table`:
 - `uuid` (TEXT, unique) — stable sync identity, generated on create and backfilled on migration
 - `deleted_at` (nullable DateTime) — soft-delete tombstone; all reads filter `deletedAt IS NULL`
 
+PM model (v7) adds:
+- `task_table.status` (`TaskStatus` intEnum), `estimated_minutes`, `sort_order`, `milestone_id`
+- `project_table.status` (`ProjectStatus` intEnum), `color` (nullable ARGB int)
+- `tag_table` / `task_tag_table` (many-to-many) / `milestone_table`
+- Domain `Task.isCompleted` is a computed getter (`status == done`); DB still keeps `is_completed`
+  synced from status for one compatibility cycle
+
 Deletes are soft deletes. `ON DELETE CASCADE` no longer fires for app-level deletes, so project/task
-deletion must cascade soft-deletes to dependents inside a transaction. `SyncPurgeService` hard-deletes
-tombstones older than the retention window (default 30 days). A stable `device_id` setting UUID is
-generated once on first launch for sync provenance.
+deletion must cascade soft-deletes to dependents inside a transaction (including milestones and
+clearing `task_tag` associations). `SyncPurgeService` hard-deletes tombstones older than the retention
+window (default 30 days). A stable `device_id` setting UUID is generated once on first launch for sync
+provenance.
 
 Current task schema also includes reminder configuration fields:
 - `reminder_mode` (enum-backed)

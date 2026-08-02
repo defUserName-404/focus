@@ -12,7 +12,8 @@ part of 'all_tasks_provider.dart';
 @ProviderFor(AllTasksFilter)
 final allTasksFilterProvider = AllTasksFilterProvider._();
 
-final class AllTasksFilterProvider extends $NotifierProvider<AllTasksFilter, AllTasksFilterState> {
+final class AllTasksFilterProvider
+    extends $NotifierProvider<AllTasksFilter, AllTasksFilterState> {
   AllTasksFilterProvider._()
     : super(
         from: null,
@@ -33,11 +34,14 @@ final class AllTasksFilterProvider extends $NotifierProvider<AllTasksFilter, All
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AllTasksFilterState value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<AllTasksFilterState>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AllTasksFilterState>(value),
+    );
   }
 }
 
-String _$allTasksFilterHash() => r'e930d19380f83611a13065e043682afecca3ae08';
+String _$allTasksFilterHash() => r'2131da495617e008bdce4b52d4e9a5259106856d';
 
 abstract class _$AllTasksFilter extends $Notifier<AllTasksFilterState> {
   AllTasksFilterState build();

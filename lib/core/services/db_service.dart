@@ -4,6 +4,9 @@ import 'package:focus/features/settings/data/models/settings_model.dart';
 import 'package:focus/features/notifications/data/models/notification_inbox_model.dart';
 import 'package:focus/features/tasks/data/models/daily_session_stats_model.dart';
 import 'package:focus/features/tasks/data/models/task_model.dart';
+import 'package:focus/features/tags/data/models/tag_model.dart';
+import 'package:focus/features/tags/data/models/task_tag_model.dart';
+import 'package:focus/features/milestones/data/models/milestone_model.dart';
 
 import '../../features/projects/data/models/project_model.dart';
 import '../../features/session/data/models/focus_session_model.dart';
@@ -11,13 +14,25 @@ import '../../features/session/domain/entities/session_state.dart';
 import '../../features/notifications/domain/entities/notification_inbox_item.dart';
 import '../../features/tasks/domain/entities/task_priority.dart';
 import '../../features/tasks/domain/entities/task_reminder_mode.dart';
+import '../../features/tasks/domain/entities/task_status.dart';
+import '../../features/projects/domain/entities/project_status.dart';
 import '../utils/datetime_formatter.dart';
 import '../utils/id_utils.dart';
 
 part 'db_service.g.dart';
 
 @DriftDatabase(
-  tables: [ProjectTable, TaskTable, FocusSessionTable, DailySessionStatsTable, SettingsTable, NotificationInboxTable],
+  tables: [
+    ProjectTable,
+    TaskTable,
+    FocusSessionTable,
+    DailySessionStatsTable,
+    SettingsTable,
+    NotificationInboxTable,
+    TagTable,
+    TaskTagTable,
+    MilestoneTable,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
@@ -26,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -186,6 +201,44 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'CREATE INDEX IF NOT EXISTS focus_session_deleted_at_idx ON focus_session_table(deleted_at)',
         );
+      }
+
+      // v6 → v7: PM model — task/project status, estimates, sort order,
+      // milestones, tags, and task↔tag associations.
+      if (from < 7) {
+        await m.createTable(tagTable);
+        await m.createTable(milestoneTable);
+        await m.createTable(taskTagTable);
+
+        await customStatement(
+          'ALTER TABLE task_table ADD COLUMN status INTEGER NOT NULL DEFAULT ${TaskStatus.todo.index}',
+        );
+        await customStatement('ALTER TABLE task_table ADD COLUMN estimated_minutes INTEGER');
+        await customStatement('ALTER TABLE task_table ADD COLUMN sort_order REAL NOT NULL DEFAULT 0.0');
+        await customStatement('ALTER TABLE task_table ADD COLUMN milestone_id INTEGER '
+            'REFERENCES milestone_table(id) ON DELETE SET NULL');
+
+        await customStatement(
+          'ALTER TABLE project_table ADD COLUMN status INTEGER NOT NULL DEFAULT ${ProjectStatus.active.index}',
+        );
+        await customStatement('ALTER TABLE project_table ADD COLUMN color INTEGER');
+
+        // Backfill task status from legacy is_completed bool.
+        await customStatement(
+          'UPDATE task_table SET status = CASE WHEN is_completed = 1 '
+          'THEN ${TaskStatus.done.index} ELSE ${TaskStatus.todo.index} END',
+        );
+
+        await customStatement('CREATE INDEX IF NOT EXISTS task_status_idx ON task_table(status)');
+        await customStatement('CREATE INDEX IF NOT EXISTS task_sort_order_idx ON task_table(sort_order)');
+        await customStatement('CREATE INDEX IF NOT EXISTS task_milestone_id_idx ON task_table(milestone_id)');
+        await customStatement('CREATE INDEX IF NOT EXISTS project_status_idx ON project_table(status)');
+        await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS tag_uuid_idx ON tag_table(uuid)');
+        await customStatement('CREATE INDEX IF NOT EXISTS tag_deleted_at_idx ON tag_table(deleted_at)');
+        await customStatement('CREATE INDEX IF NOT EXISTS tag_name_idx ON tag_table(name)');
+        await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS milestone_uuid_idx ON milestone_table(uuid)');
+        await customStatement('CREATE INDEX IF NOT EXISTS milestone_project_id_idx ON milestone_table(project_id)');
+        await customStatement('CREATE INDEX IF NOT EXISTS milestone_deleted_at_idx ON milestone_table(deleted_at)');
       }
     },
     beforeOpen: (details) async {

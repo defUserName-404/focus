@@ -1,6 +1,7 @@
 import '../../../../core/services/log_service.dart';
 import '../../../../core/utils/result.dart';
 import '../../../tasks/domain/entities/task_extensions.dart';
+import '../../../tasks/domain/entities/task_status.dart';
 import '../../../tasks/domain/repositories/i_task_repository.dart';
 import '../entities/focus_session.dart';
 import '../entities/focus_session_extensions.dart';
@@ -74,7 +75,7 @@ class FocusSessionService {
     try {
       final task = await _taskRepo.getTaskById(taskId);
       if (task != null && !task.isCompleted) {
-        final completedTask = task.copyWith(isCompleted: true, updatedAt: DateTime.now());
+        final completedTask = task.copyWith(status: TaskStatus.done, updatedAt: DateTime.now());
         await _taskRepo.updateTask(completedTask);
         _log.info('Task $taskId marked as completed', tag: 'FocusSessionService');
       }

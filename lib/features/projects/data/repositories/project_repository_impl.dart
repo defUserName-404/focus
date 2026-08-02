@@ -2,6 +2,7 @@ import '../../../../core/services/log_service.dart';
 import '../../domain/entities/project.dart';
 import '../../domain/entities/project_extensions.dart';
 import '../../domain/entities/project_list_filter_state.dart';
+import '../../domain/entities/project_status.dart';
 import '../../domain/repositories/i_project_repository.dart';
 import '../datasources/project_local_datasource.dart';
 import '../mappers/project_extensions.dart';
@@ -74,9 +75,15 @@ class ProjectRepositoryImpl implements IProjectRepository {
     String searchQuery = '',
     ProjectSortCriteria sortCriteria = ProjectSortCriteria.recentlyModified,
     ProjectSortOrder sortOrder = ProjectSortOrder.none,
+    ProjectStatus? statusFilter,
   }) {
     return _localDataSource
-        .watchFilteredProjects(searchQuery: searchQuery, sortCriteria: sortCriteria, sortOrder: sortOrder)
+        .watchFilteredProjects(
+          searchQuery: searchQuery,
+          sortCriteria: sortCriteria,
+          sortOrder: sortOrder,
+          statusFilter: statusFilter,
+        )
         .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 }

@@ -8,5 +8,6 @@ final filteredProjectListProvider = StreamProvider<List<Project>>((ref) {
     searchQuery: filter.searchQuery,
     sortCriteria: filter.sortCriteria,
     sortOrder: filter.sortOrder,
+    statusFilter: filter.statusFilter,
   );
 });

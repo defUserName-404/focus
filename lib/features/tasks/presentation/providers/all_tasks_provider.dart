@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_priority.dart';
+import '../../domain/entities/task_status.dart';
 import '../../domain/entities/all_tasks_filter_state.dart';
 import 'task_provider.dart';
 
@@ -23,6 +24,7 @@ class AllTasksFilter extends _$AllTasksFilter {
     AllTasksSortCriteria? sortCriteria,
     AllTasksSortOrder? sortOrder,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
     TaskCompletionFilter? completionFilter,
   }) {
     state = state.copyWith(
@@ -30,11 +32,16 @@ class AllTasksFilter extends _$AllTasksFilter {
       sortCriteria: sortCriteria,
       sortOrder: sortOrder,
       priorityFilter: priorityFilter,
+      statusFilter: statusFilter,
       completionFilter: completionFilter,
     );
   }
 
   void clearPriorityFilter() {
     state = state.copyWith(priorityFilter: null);
+  }
+
+  void clearStatusFilter() {
+    state = state.copyWith(statusFilter: null);
   }
 }

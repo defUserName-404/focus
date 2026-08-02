@@ -1,6 +1,7 @@
 import '../../../../core/sort_criteria.dart';
 import '../../../../core/sort_order.dart';
 import '../../domain/entities/task_priority.dart';
+import '../../domain/entities/task_status.dart';
 
 /// Sort criteria for the global (all-projects) task list.
 enum AllTasksSortCriteria implements SortCriteria {
@@ -45,6 +46,7 @@ class AllTasksFilterState {
   final AllTasksSortCriteria sortCriteria;
   final AllTasksSortOrder sortOrder;
   final TaskPriority? priorityFilter;
+  final TaskStatus? statusFilter;
   final TaskCompletionFilter completionFilter;
 
   const AllTasksFilterState({
@@ -52,6 +54,7 @@ class AllTasksFilterState {
     this.sortCriteria = AllTasksSortCriteria.recentlyModified,
     this.sortOrder = AllTasksSortOrder.none,
     this.priorityFilter,
+    this.statusFilter,
     this.completionFilter = TaskCompletionFilter.all,
   });
 
@@ -60,6 +63,7 @@ class AllTasksFilterState {
     AllTasksSortCriteria? sortCriteria,
     AllTasksSortOrder? sortOrder,
     Object? priorityFilter = _unset,
+    Object? statusFilter = _unset,
     TaskCompletionFilter? completionFilter,
   }) {
     return AllTasksFilterState(
@@ -67,6 +71,7 @@ class AllTasksFilterState {
       sortCriteria: sortCriteria ?? this.sortCriteria,
       sortOrder: sortOrder ?? this.sortOrder,
       priorityFilter: priorityFilter == _unset ? this.priorityFilter : priorityFilter as TaskPriority?,
+      statusFilter: statusFilter == _unset ? this.statusFilter : statusFilter as TaskStatus?,
       completionFilter: completionFilter ?? this.completionFilter,
     );
   }

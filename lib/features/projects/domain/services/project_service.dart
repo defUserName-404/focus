@@ -4,6 +4,7 @@ import '../../../../core/utils/result.dart';
 import '../entities/project.dart';
 import '../entities/project_extensions.dart';
 import '../entities/project_list_filter_state.dart';
+import '../entities/project_status.dart';
 import '../repositories/i_project_repository.dart';
 
 final _log = LogService.instance;
@@ -30,11 +31,13 @@ class ProjectService {
     String searchQuery = '',
     ProjectSortCriteria sortCriteria = ProjectSortCriteria.recentlyModified,
     ProjectSortOrder sortOrder = ProjectSortOrder.none,
+    ProjectStatus? statusFilter,
   }) {
     return _repository.watchFilteredProjects(
       searchQuery: searchQuery,
       sortCriteria: sortCriteria,
       sortOrder: sortOrder,
+      statusFilter: statusFilter,
     );
   }
 
@@ -43,6 +46,8 @@ class ProjectService {
   Future<Result<Project>> createProject({
     required String title,
     String? description,
+    ProjectStatus status = ProjectStatus.active,
+    int? color,
     DateTime? startDate,
     DateTime? deadline,
   }) async {
@@ -52,6 +57,8 @@ class ProjectService {
         uuid: generateUuid(),
         title: title,
         description: description,
+        status: status,
+        color: color,
         startDate: startDate,
         deadline: deadline,
         createdAt: now,

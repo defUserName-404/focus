@@ -4,6 +4,10 @@ import '../../features/projects/data/datasources/project_local_datasource.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/i_project_repository.dart';
 import '../../features/projects/domain/services/project_service.dart';
+import '../../features/milestones/data/datasources/milestone_local_datasource.dart';
+import '../../features/milestones/data/repositories/milestone_repository_impl.dart';
+import '../../features/milestones/domain/repositories/i_milestone_repository.dart';
+import '../../features/milestones/domain/services/milestone_service.dart';
 import '../../features/notifications/data/datasources/notification_inbox_local_datasource.dart';
 import '../../features/notifications/data/repositories/notification_inbox_repository_impl.dart';
 import '../../features/notifications/domain/repositories/i_notification_inbox_repository.dart';
@@ -23,6 +27,10 @@ import '../../features/sync/data/services/google_drive_service.dart';
 import '../../features/sync/domain/services/i_cloud_storage_service.dart';
 import '../../features/sync/domain/services/sync_engine.dart';
 import '../../features/sync/domain/services/sync_purge_service.dart';
+import '../../features/tags/data/datasources/tag_local_datasource.dart';
+import '../../features/tags/data/repositories/tag_repository_impl.dart';
+import '../../features/tags/domain/repositories/i_tag_repository.dart';
+import '../../features/tags/domain/services/tag_service.dart';
 import '../../features/tasks/data/datasources/task_local_datasource.dart';
 import '../../features/tasks/data/datasources/task_stats_local_datasource.dart';
 import '../../features/tasks/data/repositories/task_repository_impl.dart';
@@ -72,6 +80,8 @@ Future<void> setupDependencyInjection() async {
 
   // Feature-based DI modules
   _initProjectsDi();
+  _initMilestonesDi();
+  _initTagsDi();
   _initNotificationsDi();
   _initTasksDi();
   _initSettingsDi();
@@ -89,6 +99,20 @@ void _initProjectsDi() {
     ..registerLazySingleton<IProjectLocalDataSource>(() => ProjectLocalDataSourceImpl(getIt<AppDatabase>()))
     ..registerLazySingleton<IProjectRepository>(() => ProjectRepositoryImpl(getIt<IProjectLocalDataSource>()))
     ..registerLazySingleton<ProjectService>(() => ProjectService(getIt<IProjectRepository>()));
+}
+
+void _initMilestonesDi() {
+  getIt
+    ..registerLazySingleton<IMilestoneLocalDataSource>(() => MilestoneLocalDataSourceImpl(getIt<AppDatabase>()))
+    ..registerLazySingleton<IMilestoneRepository>(() => MilestoneRepositoryImpl(getIt<IMilestoneLocalDataSource>()))
+    ..registerLazySingleton<MilestoneService>(() => MilestoneService(getIt<IMilestoneRepository>()));
+}
+
+void _initTagsDi() {
+  getIt
+    ..registerLazySingleton<ITagLocalDataSource>(() => TagLocalDataSourceImpl(getIt<AppDatabase>()))
+    ..registerLazySingleton<ITagRepository>(() => TagRepositoryImpl(getIt<ITagLocalDataSource>()))
+    ..registerLazySingleton<TagService>(() => TagService(getIt<ITagRepository>()));
 }
 
 void _initNotificationsDi() {

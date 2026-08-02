@@ -12,7 +12,8 @@ part of 'focus_session_provider.dart';
 @ProviderFor(FocusTimer)
 final focusTimerProvider = FocusTimerProvider._();
 
-final class FocusTimerProvider extends $NotifierProvider<FocusTimer, FocusSession?> {
+final class FocusTimerProvider
+    extends $NotifierProvider<FocusTimer, FocusSession?> {
   FocusTimerProvider._()
     : super(
         from: null,
@@ -33,7 +34,10 @@ final class FocusTimerProvider extends $NotifierProvider<FocusTimer, FocusSessio
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(FocusSession? value) {
-    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<FocusSession?>(value));
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<FocusSession?>(value),
+    );
   }
 }
 
@@ -47,7 +51,12 @@ abstract class _$FocusTimer extends $Notifier<FocusSession?> {
     final ref = this.ref as $Ref<FocusSession?, FocusSession?>;
     final element =
         ref.element
-            as $ClassProviderElement<AnyNotifier<FocusSession?, FocusSession?>, FocusSession?, Object?, Object?>;
+            as $ClassProviderElement<
+              AnyNotifier<FocusSession?, FocusSession?>,
+              FocusSession?,
+              Object?,
+              Object?
+            >;
     return element.handleCreate(ref, build);
   }
 }

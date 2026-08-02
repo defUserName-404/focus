@@ -12,12 +12,18 @@ class TaskListFilter extends _$TaskListFilter {
     TaskSortCriteria? sortCriteria,
     TaskSortOrder? sortOrder,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
   }) {
     state = state.copyWith(
       searchQuery: searchQuery,
       sortCriteria: sortCriteria,
       sortOrder: sortOrder,
       priorityFilter: priorityFilter,
+      statusFilter: statusFilter,
     );
+  }
+
+  void clearStatusFilter() {
+    state = state.copyWith(statusFilter: null);
   }
 }
