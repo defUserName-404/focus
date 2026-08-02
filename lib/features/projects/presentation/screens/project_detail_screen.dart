@@ -269,17 +269,25 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         prefixes: [fu.FHeaderAction.back(onPress: () => context.pop())],
         title: Text('Project Details'),
         suffixes: [
-          fu.FHeaderAction(
-            icon: Icon(fu.FLucideIcons.search),
-            onPress: () {
-              _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
-              setState(() => _tab = ProjectDetailTab.tasks);
-              _searchFocusNode.requestFocus();
-            },
+          fu.FTooltip(
+            tipBuilder: (context, _) => const Text('Search tasks'),
+            child: fu.FHeaderAction(
+              icon: Icon(fu.FLucideIcons.search),
+              semanticsLabel: 'Search tasks',
+              onPress: () {
+                _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                setState(() => _tab = ProjectDetailTab.tasks);
+                _searchFocusNode.requestFocus();
+              },
+            ),
           ),
-          fu.FHeaderAction(
-            icon: const Icon(fu.FLucideIcons.plus),
-            onPress: () => TaskCommands.create(context, projectId: widget.projectId),
+          fu.FTooltip(
+            tipBuilder: (context, _) => const Text('Create task'),
+            child: fu.FHeaderAction(
+              icon: const Icon(fu.FLucideIcons.plus),
+              semanticsLabel: 'Create task',
+              onPress: () => TaskCommands.create(context, projectId: widget.projectId),
+            ),
           ),
           projectAsync.maybeWhen(
             data: (project) {
