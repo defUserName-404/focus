@@ -106,18 +106,11 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
                     opacity: screenState.isControlsVisible ? 1.0 : 0.0,
                     child: const AmbienceMarqueeRow(),
                   ),
-                  Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: .min,
-                        children: [
-                          const CircularTimer(),
-                          SizedBox(height: AppConstants.spacing.extraLarge),
-                          FocusControlsWithCallback(controlsVisible: screenState.isControlsVisible),
-                        ],
-                      ),
-                    ),
-                  ),
+                  const Spacer(flex: 1),
+                  const CircularTimer(),
+                  SizedBox(height: AppConstants.spacing.extraLarge),
+                  FocusControlsWithCallback(controlsVisible: screenState.isControlsVisible),
+                  const Spacer(flex: 2),
                 ],
               ),
             ),
