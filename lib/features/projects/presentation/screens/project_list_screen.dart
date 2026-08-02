@@ -74,7 +74,7 @@ class ProjectListScreen extends ConsumerWidget {
                   child: Text(filter.sortOrder.label),
                 ),
             ],
-            onCreate: () => ProjectCommands.create(context),
+            onCreate: _isEmbedded ? () => ProjectCommands.create(context) : null,
             createLabel: 'Create Project',
           ),
           SizedBox(height: AppConstants.spacing.small),
