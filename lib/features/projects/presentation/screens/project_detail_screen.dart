@@ -5,17 +5,15 @@ import 'package:go_router/go_router.dart';
 
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/constants/app_constants.dart';
-import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/presentation/providers/task_filter_state.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 
 import '../../../../core/widgets/action_menu_button.dart';
-import '../../../../core/widgets/app_search_bar.dart';
-import '../../../../core/widgets/filter_select.dart';
-import '../../../../core/widgets/sort_filter_chips.dart';
-import '../../../../core/widgets/sort_order_selector.dart';
+import '../../../../core/widgets/app_empty_state.dart';
+import '../../../../core/widgets/list_toolbar.dart';
 import '../../../tasks/domain/entities/task.dart';
 import '../../../tasks/presentation/commands/task_commands.dart';
+import '../../../tasks/presentation/widgets/project_tasks_filter_panel.dart';
 import '../../../tasks/presentation/widgets/task_card.dart';
 import '../../../tasks/presentation/widgets/tasks_board_view.dart';
 import '../commands/project_commands.dart';
@@ -50,51 +48,60 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     super.dispose();
   }
 
-  Widget _buildTasksFilters(TaskListFilterState filter) {
-    return Column(
-      children: [
-        AppSearchBar(
-          focusNode: _searchFocusNode,
-          hint: 'Search tasks...',
-          onChanged: (query) {
-            ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(searchQuery: query);
-          },
-        ),
-        Row(
-          children: [
-            SizedBox(
-              width: 120,
-              child: FilterSelect<TaskPriority?>(
-                selected: filter.priorityFilter,
-                onChanged: (priority) {
-                  ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(priorityFilter: priority);
-                },
-                options: TaskPriority.values,
-                hint: 'Priority',
-                allLabel: 'All',
-              ),
-            ),
-            SizedBox(
-              width: 100,
-              child: SortOrderSelector<TaskSortOrder>(
-                selectedOrder: filter.sortOrder,
-                onChanged: (order) {
-                  ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(sortOrder: order);
-                },
-                orderOptions: TaskSortOrder.values,
-              ),
-            ),
-            Expanded(
-              child: SortFilterChips<TaskSortCriteria>(
-                selectedCriteria: filter.sortCriteria,
-                onChanged: (criteria) {
-                  ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(sortCriteria: criteria);
-                },
-                criteriaOptions: TaskSortCriteria.values,
-              ),
-            ),
-          ],
-        ),
+  int _activeFilterCount(TaskListFilterState filter) {
+    var count = 0;
+    if (filter.priorityFilter != null) count++;
+    if (filter.completionFilter != TaskCompletionFilter.all) count++;
+    if (filter.sortCriteria != TaskSortCriteria.recentlyModified) count++;
+    if (filter.sortOrder != TaskSortOrder.none) count++;
+    return count;
+  }
+
+  Widget _buildTasksToolbar(TaskListFilterState filter) {
+    final notifier = ref.read(taskListFilterProvider(_projectIdString).notifier);
+    return ListToolbar(
+      searchHint: 'Search tasks...',
+      searchFocusNode: _searchFocusNode,
+      onSearchChanged: (query) => notifier.updateFilter(searchQuery: query),
+      filterPanel: ProjectTasksFilterPanel(projectIdString: _projectIdString),
+      activeFilterCount: _activeFilterCount(filter),
+      activeFilters: [
+        if (filter.priorityFilter != null)
+          fu.FButton(
+            size: .xs,
+            mainAxisSize: .min,
+            variant: .secondary,
+            suffix: const Icon(fu.FLucideIcons.x),
+            onPress: () => notifier.updateFilter(priorityFilter: null),
+            child: Text(filter.priorityFilter!.label),
+          ),
+        if (filter.completionFilter != TaskCompletionFilter.all)
+          fu.FButton(
+            size: .xs,
+            mainAxisSize: .min,
+            variant: .secondary,
+            suffix: const Icon(fu.FLucideIcons.x),
+            onPress: () => notifier.updateFilter(completionFilter: TaskCompletionFilter.all),
+            child: Text(filter.completionFilter.label),
+          ),
+        if (filter.sortCriteria != TaskSortCriteria.recentlyModified)
+          fu.FButton(
+            size: .xs,
+            mainAxisSize: .min,
+            variant: .secondary,
+            suffix: const Icon(fu.FLucideIcons.x),
+            onPress: () => notifier.updateFilter(sortCriteria: TaskSortCriteria.recentlyModified),
+            child: Text(filter.sortCriteria.label),
+          ),
+        if (filter.sortOrder != TaskSortOrder.none)
+          fu.FButton(
+            size: .xs,
+            mainAxisSize: .min,
+            variant: .secondary,
+            suffix: const Icon(fu.FLucideIcons.x),
+            onPress: () => notifier.updateFilter(sortOrder: TaskSortOrder.none),
+            child: Text(filter.sortOrder.label),
+          ),
       ],
     );
   }
@@ -103,25 +110,16 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     final rootTasks = filteredTasks.where((t) => t.parentTaskId == null).toList();
 
     if (rootTasks.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppConstants.spacing.regular,
-          children: [
-            Icon(
-              fu.FLucideIcons.clipboardList,
-              size: AppConstants.size.icon.extraExtraLarge,
-              color: context.colors.mutedForeground,
-            ),
-            Text('No tasks yet', style: context.typography.md.copyWith(color: context.colors.mutedForeground)),
-          ],
-        ),
+      return const AppEmptyState(
+        icon: fu.FLucideIcons.clipboardList,
+        message: 'No tasks yet',
+        detail: 'Create a task to get started on this project.',
       );
     }
 
     return ListView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.small),
+      padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
       itemCount: rootTasks.length,
       itemBuilder: (context, index) {
         final task = rootTasks[index];
@@ -131,6 +129,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     );
   }
 
+  List<Task> _boardTasks(List<Task> filteredTasks) {
+    return filteredTasks.where((t) => t.parentTaskId == null).toList();
+  }
+
   Widget _buildTabBody({
     required List<Task> filteredTasks,
     required List<Task> allTasks,
@@ -138,7 +140,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   }) {
     return switch (_tab) {
       ProjectDetailTab.overview => ListView(
-        padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.small),
+        padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
         children: [
           Text('Project overview', style: context.typography.sm.copyWith(fontWeight: FontWeight.w700)),
           SizedBox(height: AppConstants.spacing.small),
@@ -156,15 +158,18 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       ),
       ProjectDetailTab.tasks => Column(
         children: [
-          _buildTasksFilters(filter),
-          Expanded(
-            child: filteredTasks.isEmpty && filter.searchQuery.isEmpty && filter.priorityFilter == null
-                ? _buildTasksList(const [])
-                : _buildTasksList(filteredTasks),
-          ),
+          _buildTasksToolbar(filter),
+          SizedBox(height: AppConstants.spacing.small),
+          Expanded(child: _buildTasksList(filteredTasks)),
         ],
       ),
-      ProjectDetailTab.board => TasksBoardView(tasks: allTasks.where((t) => t.parentTaskId == null).toList()),
+      ProjectDetailTab.board => Column(
+        children: [
+          _buildTasksToolbar(filter),
+          SizedBox(height: AppConstants.spacing.small),
+          Expanded(child: TasksBoardView(tasks: _boardTasks(filteredTasks))),
+        ],
+      ),
       ProjectDetailTab.milestones => ProjectMilestonesPanel(projectId: widget.projectId),
       ProjectDetailTab.timeline => ProjectTimelineView(projectId: widget.projectId, tasks: allTasks),
     };

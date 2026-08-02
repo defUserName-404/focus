@@ -1,9 +1,11 @@
+import '../../../tasks/domain/entities/all_tasks_filter_state.dart';
 import '../../../tasks/domain/entities/task_filter_state.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
 import '../../../tasks/domain/entities/task_status.dart';
 
 // Re-export so existing presentation imports keep working.
 export '../../../tasks/domain/entities/task_filter_state.dart' show TaskSortCriteria, TaskSortOrder;
+export '../../../tasks/domain/entities/all_tasks_filter_state.dart' show TaskCompletionFilter;
 
 /// Immutable state for task list filtering and sorting.
 class TaskListFilterState {
@@ -12,6 +14,7 @@ class TaskListFilterState {
   final TaskSortOrder sortOrder;
   final TaskPriority? priorityFilter;
   final TaskStatus? statusFilter;
+  final TaskCompletionFilter completionFilter;
 
   const TaskListFilterState({
     this.searchQuery = '',
@@ -19,6 +22,7 @@ class TaskListFilterState {
     this.sortOrder = TaskSortOrder.none,
     this.priorityFilter,
     this.statusFilter,
+    this.completionFilter = TaskCompletionFilter.all,
   });
 
   TaskListFilterState copyWith({
@@ -27,6 +31,7 @@ class TaskListFilterState {
     TaskSortOrder? sortOrder,
     Object? priorityFilter = _unset,
     Object? statusFilter = _unset,
+    TaskCompletionFilter? completionFilter,
   }) {
     return TaskListFilterState(
       searchQuery: searchQuery ?? this.searchQuery,
@@ -34,6 +39,7 @@ class TaskListFilterState {
       sortOrder: sortOrder ?? this.sortOrder,
       priorityFilter: priorityFilter == _unset ? this.priorityFilter : priorityFilter as TaskPriority?,
       statusFilter: statusFilter == _unset ? this.statusFilter : statusFilter as TaskStatus?,
+      completionFilter: completionFilter ?? this.completionFilter,
     );
   }
 }

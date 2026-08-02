@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../models/task_selection.dart';
 import '../providers/all_tasks_provider.dart';
-import 'all_task_card.dart';
+import 'task_card.dart';
 
 class AllTasksList extends ConsumerWidget {
   final int? selectedTaskId;
@@ -25,20 +25,7 @@ class AllTasksList extends ConsumerWidget {
       error: (err, _) => Center(child: Text('Error: $err')),
       data: (tasks) {
         if (tasks.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: AppConstants.spacing.regular,
-              children: [
-                Icon(
-                  fu.FLucideIcons.squareCheck,
-                  size: AppConstants.size.icon.extraExtraLarge,
-                  color: Theme.of(context).disabledColor,
-                ),
-                Text('No tasks found', style: context.typography.sm.copyWith(color: context.colors.mutedForeground)),
-              ],
-            ),
-          );
+          return const AppEmptyState(icon: fu.FLucideIcons.squareCheck, message: 'No tasks found');
         }
 
         return ListView.builder(
@@ -46,10 +33,12 @@ class AllTasksList extends ConsumerWidget {
           itemCount: tasks.length,
           itemBuilder: (context, index) {
             final task = tasks[index];
-            return AllTaskCard(
+            return TaskCard(
               task: task,
+              projectIdString: task.projectId.toString(),
+              showHierarchy: false,
               isSelected: selectedTaskId != null && selectedTaskId == task.id,
-              onTap: () {
+              onTaskTap: () {
                 if (task.id == null) return;
                 if (onTaskSelected != null) {
                   final selection = TaskSelection(taskId: task.id!, projectId: task.projectId);

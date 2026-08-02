@@ -13,6 +13,7 @@ class TaskListFilter extends _$TaskListFilter {
     TaskSortOrder? sortOrder,
     TaskPriority? priorityFilter,
     TaskStatus? statusFilter,
+    TaskCompletionFilter? completionFilter,
   }) {
     state = state.copyWith(
       searchQuery: searchQuery,
@@ -20,10 +21,15 @@ class TaskListFilter extends _$TaskListFilter {
       sortOrder: sortOrder,
       priorityFilter: priorityFilter,
       statusFilter: statusFilter,
+      completionFilter: completionFilter,
     );
   }
 
   void clearStatusFilter() {
     state = state.copyWith(statusFilter: null);
+  }
+
+  void reset() {
+    state = const TaskListFilterState();
   }
 }

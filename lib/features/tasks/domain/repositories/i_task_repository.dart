@@ -31,6 +31,7 @@ abstract class ITaskRepository {
     TaskSortCriteria sortCriteria,
     TaskPriority? priorityFilter,
     TaskStatus? statusFilter,
+    TaskCompletionFilter completionFilter,
   });
 
   /// Watch ALL tasks across all projects with filtering/sorting.
