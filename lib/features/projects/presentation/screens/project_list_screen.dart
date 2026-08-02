@@ -7,16 +7,12 @@ import 'package:focus/core/constants/app_constants.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/routing/routes.dart';
-import '../../../../core/utils/platform_utils.dart';
-import '../../../../core/widgets/app_search_bar.dart';
 import '../../../../core/widgets/constrained_content.dart';
-import '../../../../core/widgets/filter_select.dart';
-import '../../../../core/widgets/sort_filter_chips.dart';
-import '../../../../core/widgets/sort_order_selector.dart';
-import '../../domain/entities/project_list_filter_state.dart';
+import '../../../../core/widgets/list_toolbar.dart';
 import '../commands/project_commands.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
+import '../widgets/project_filter_panel.dart';
 
 class ProjectListScreen extends ConsumerWidget {
   final int? selectedId;
@@ -29,81 +25,25 @@ class ProjectListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAsync = ref.watch(filteredProjectListProvider);
-    final filter = ref.watch(projectListFilterProvider);
-    final isCompact = context.isCompact;
 
     final content = ConstrainedContent(
-      maxWidth: 980,
-      padding: _isEmbedded
-          ? EdgeInsets.symmetric(horizontal: AppConstants.spacing.extraLarge, vertical: AppConstants.spacing.large)
-          : EdgeInsets.zero,
+      maxWidth: _isEmbedded ? double.infinity : 980,
+      padding: EdgeInsets.symmetric(
+        horizontal: _isEmbedded ? AppConstants.spacing.regular : AppConstants.spacing.large,
+        vertical: AppConstants.spacing.regular,
+      ),
       child: Column(
         children: [
-          AppSearchBar(
-            hint: 'Search projects...',
-            onChanged: (query) {
+          ListToolbar(
+            searchHint: 'Search projects...',
+            onSearchChanged: (query) {
               ref.read(projectListFilterProvider.notifier).updateFilter(searchQuery: query);
             },
+            filterPanel: const ProjectFilterPanel(),
+            onCreate: () => ProjectCommands.create(context),
+            createLabel: 'Create Project',
           ),
-          if (isCompact)
-            Row(
-              children: [
-                SizedBox(
-                  width: 120.0,
-                  child: SortOrderSelector<ProjectSortOrder>(
-                    selectedOrder: filter.sortOrder,
-                    onChanged: (order) {
-                      ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
-                    },
-                    orderOptions: ProjectSortOrder.values,
-                  ),
-                ),
-                Expanded(
-                  child: SortFilterChips<ProjectSortCriteria>(
-                    selectedCriteria: filter.sortCriteria,
-                    onChanged: (criteria) {
-                      ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
-                    },
-                    criteriaOptions: ProjectSortCriteria.values,
-                  ),
-                ),
-              ],
-            )
-          else
-            Row(
-              children: [
-                if (!isCompact && _isEmbedded)
-                  Padding(
-                    padding: EdgeInsets.only(left: AppConstants.spacing.regular),
-                    child: fu.FButton(
-                      prefix: Icon(fu.FLucideIcons.plus),
-                      onPress: () => ProjectCommands.create(context),
-                      child: const Text('Create Project'),
-                    ),
-                  ),
-                Expanded(
-                  child: FilterSelect<ProjectSortCriteria>(
-                    selected: filter.sortCriteria,
-                    onChanged: (criteria) {
-                      ref.read(projectListFilterProvider.notifier).updateFilter(sortCriteria: criteria);
-                    },
-                    options: ProjectSortCriteria.values,
-                    hint: 'Sort by',
-                  ),
-                ),
-                SizedBox(width: AppConstants.spacing.regular),
-                Expanded(
-                  child: FilterSelect<ProjectSortOrder>(
-                    selected: filter.sortOrder,
-                    onChanged: (order) {
-                      ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: order);
-                    },
-                    options: ProjectSortOrder.values,
-                    hint: 'Order',
-                  ),
-                ),
-              ],
-            ),
+          SizedBox(height: AppConstants.spacing.small),
           Expanded(
             child: filteredAsync.when(
               loading: () => const Center(child: fu.FCircularProgress()),
@@ -112,13 +52,13 @@ class ProjectListScreen extends ConsumerWidget {
                 if (projects.isEmpty) {
                   return Center(
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisSize: .min,
                       spacing: AppConstants.spacing.regular,
                       children: [
                         Icon(
                           fu.FLucideIcons.folderOpen,
                           size: AppConstants.size.icon.extraExtraLarge,
-                          color: Theme.of(context).disabledColor,
+                          color: context.colors.mutedForeground,
                         ),
                         Text(
                           'No projects found',
@@ -175,14 +115,9 @@ class ProjectListScreen extends ConsumerWidget {
           ),
         ],
         title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-      ),
-      footer: Padding(
-        padding: EdgeInsets.all(isCompact ? AppConstants.spacing.regular : AppConstants.spacing.large),
-        child: fu.FButton(
-          prefix: Icon(fu.FLucideIcons.plus),
-          child: const Text('Create New Project'),
-          onPress: () => ProjectCommands.create(context),
-        ),
+        suffixes: [
+          fu.FHeaderAction(icon: const Icon(fu.FLucideIcons.plus), onPress: () => ProjectCommands.create(context)),
+        ],
       ),
       child: content,
     );
