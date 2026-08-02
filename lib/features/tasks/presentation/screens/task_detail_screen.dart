@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/action_menu_button.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../home/presentation/widgets/section_header.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../../session/domain/entities/session_state.dart';
@@ -31,6 +32,14 @@ class TaskDetailScreen extends ConsumerWidget {
 
   String get _projectIdString => projectId.toString();
 
+  void _safePop(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.tasks.path);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allTasksAsync = ref.watch(tasksByProjectProvider(_projectIdString));
@@ -48,7 +57,7 @@ class TaskDetailScreen extends ConsumerWidget {
           return fu.FScaffold(
             header: fu.FHeader.nested(
               title: const Text('Task Details'),
-              prefixes: [fu.FHeaderAction.back(onPress: () => context.pop())],
+              prefixes: [fu.FHeaderAction.back(onPress: () => _safePop(context))],
             ),
             child: const Center(child: Text('Task not found')),
           );
@@ -136,12 +145,12 @@ class TaskDetailScreen extends ConsumerWidget {
         return fu.FScaffold(
           header: fu.FHeader.nested(
             title: const Text('Task Details'),
-            prefixes: [fu.FHeaderAction.back(onPress: () => context.pop())],
+            prefixes: [fu.FHeaderAction.back(onPress: () => _safePop(context))],
             suffixes: [
               ActionMenuButton(
                 onEdit: () => TaskCommands.edit(context, task),
                 onDelete: () =>
-                    TaskCommands.delete(context, ref, task, _projectIdString, onDeleted: () => context.pop()),
+                    TaskCommands.delete(context, ref, task, _projectIdString, onDeleted: () => _safePop(context)),
               ),
             ],
           ),
