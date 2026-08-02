@@ -12,7 +12,6 @@ import '../widgets/circular_timer.dart';
 import '../widgets/completion_overlay.dart';
 import '../widgets/focus_task_info.dart';
 import '../widgets/focus_controls_with_callback.dart';
-import '../widgets/focus_end_session_button.dart';
 
 class FocusSessionScreen extends ConsumerStatefulWidget {
   const FocusSessionScreen({super.key});
@@ -49,10 +48,6 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
     // Guard with hasPopped to prevent multiple pops (which would pop the
     // underlying shell route and cause a black screen).
     if (session == null && !screenState.showCompletion && !screenState.hasPopped) {
-      // Mark as popped immediately to prevent re-entry
-      // We can't update state during build easily, but we can schedule it or just rely on the local check for this frame?
-      // Actually, updating the provider here might trigger a rebuild which is bad during build.
-      // But we are popping, so the widget will unmount.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ref.read(focusScreenProvider.notifier).markAsPopped();
@@ -71,51 +66,48 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
           children: [
             FScaffold(
               header: FHeader.nested(prefixes: [FHeaderAction.back(onPress: () => context.pop())]),
-              footer: FocusEndSessionButton(
-                onCompleteTask: _onCompleteTask,
-                controlsVisible: screenState.isControlsVisible,
-              ),
-              child: Column(
-                children: [
-                  AnimatedOpacity(
-                    duration: AppConstants.animation.medium,
-                    opacity: screenState.isControlsVisible ? 1.0 : 0.0,
-                    child: const FocusTaskInfo(),
-                  ),
-                  SizedBox(height: AppConstants.spacing.small),
-                  // Phase indicator with animated transition
-                  if (progress != null) ...[
-                    (() {
-                      final label = progress.isFocusPhase ? 'FOCUS' : 'BREAK';
-                      return AnimatedOpacity(
-                        duration: AppConstants.animation.medium,
-                        opacity: screenState.isControlsVisible ? 1.0 : 0.0,
-                        child: AnimatedSwitcher(
+              child: Center(
+                child: Column(
+                  children: [
+                    AnimatedOpacity(
+                      duration: AppConstants.animation.medium,
+                      opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                      child: const FocusTaskInfo(),
+                    ),
+                    SizedBox(height: AppConstants.spacing.small),
+                    if (progress != null) ...[
+                      (() {
+                        final label = progress.isFocusPhase ? 'FOCUS' : 'BREAK';
+                        return AnimatedOpacity(
                           duration: AppConstants.animation.medium,
-                          switchInCurve: Curves.easeOut,
-                          switchOutCurve: Curves.easeIn,
-                          child: FBadge(key: ValueKey(label), variant: .secondary, child: Text(label)),
-                        ),
-                      );
-                    })(),
+                          opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                          child: AnimatedSwitcher(
+                            duration: AppConstants.animation.medium,
+                            switchInCurve: Curves.easeOut,
+                            switchOutCurve: Curves.easeIn,
+                            child: FBadge(key: ValueKey(label), variant: .secondary, child: Text(label)),
+                          ),
+                        );
+                      })(),
+                    ],
+                    SizedBox(height: AppConstants.spacing.regular),
+                    AnimatedOpacity(
+                      duration: AppConstants.animation.medium,
+                      opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                      child: const AmbienceMarqueeRow(),
+                    ),
+                    const Spacer(flex: 1),
+                    const CircularTimer(),
+                    SizedBox(height: AppConstants.spacing.extraLarge),
+                    FocusControlsWithCallback(
+                      onCompleteTask: _onCompleteTask,
+                      controlsVisible: screenState.isControlsVisible,
+                    ),
+                    const Spacer(flex: 2),
                   ],
-                  SizedBox(height: AppConstants.spacing.regular),
-                  // Ambience sound marquee + mute button
-                  AnimatedOpacity(
-                    duration: AppConstants.animation.medium,
-                    opacity: screenState.isControlsVisible ? 1.0 : 0.0,
-                    child: const AmbienceMarqueeRow(),
-                  ),
-                  const Spacer(flex: 1),
-                  const CircularTimer(),
-                  SizedBox(height: AppConstants.spacing.extraLarge),
-                  FocusControlsWithCallback(controlsVisible: screenState.isControlsVisible),
-                  const Spacer(flex: 2),
-                ],
+                ),
               ),
             ),
-
-            // Completion animation overlay
             if (screenState.showCompletion) CompletionOverlay(onDismiss: _onAnimationDone),
           ],
         ),
