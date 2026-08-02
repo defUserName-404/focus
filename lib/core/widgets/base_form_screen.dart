@@ -10,14 +10,16 @@ import 'constrained_content.dart';
 /// Adaptive form layout.
 ///
 /// - Compact: full-screen [FScaffold] with nested header.
-/// - Expanded: centered 560px card-style form so create/edit flows are not
-///   stretched across wide windows.
+/// - Expanded (routed): centered 560px card-style form.
+/// - Embedded (side pane): pane header + scrollable fields, no centered card.
 class BaseFormScreen extends StatelessWidget {
   final String title;
   final List<Widget> fields;
   final VoidCallback onSubmit;
   final String submitButtonText;
   final IconData submitIcon;
+  final bool isEmbedded;
+  final VoidCallback? onDismiss;
 
   const BaseFormScreen({
     super.key,
@@ -26,7 +28,19 @@ class BaseFormScreen extends StatelessWidget {
     required this.onSubmit,
     required this.submitButtonText,
     this.submitIcon = FLucideIcons.check,
+    this.isEmbedded = false,
+    this.onDismiss,
   });
+
+  void _dismiss(BuildContext context) {
+    if (onDismiss != null) {
+      onDismiss!();
+      return;
+    }
+    if (context.canPop()) {
+      context.pop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,11 +54,54 @@ class BaseFormScreen extends StatelessWidget {
       ],
     );
 
+    if (isEmbedded) {
+      return Column(
+        crossAxisAlignment: .stretch,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              AppConstants.spacing.large,
+              AppConstants.spacing.large,
+              AppConstants.spacing.large,
+              AppConstants.spacing.small,
+            ),
+            child: Row(
+              children: [
+                FHeaderAction.back(onPress: () => _dismiss(context)),
+                SizedBox(width: AppConstants.spacing.small),
+                Expanded(
+                  child: Text(title, style: context.typography.xl.copyWith(fontWeight: FontWeight.w700)),
+                ),
+                FButton(
+                  variant: .ghost,
+                  size: .sm,
+                  mainAxisSize: .min,
+                  onPress: () => _dismiss(context),
+                  child: const Icon(FLucideIcons.x),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                AppConstants.spacing.large,
+                0,
+                AppConstants.spacing.large,
+                AppConstants.spacing.large,
+              ),
+              child: formBody,
+            ),
+          ),
+        ],
+      );
+    }
+
     if (context.isCompact) {
       return FScaffold(
         header: FHeader.nested(
           title: Text(title),
-          prefixes: [FHeaderAction.back(onPress: () => context.pop())],
+          prefixes: [FHeaderAction.back(onPress: () => _dismiss(context))],
         ),
         child: SingleChildScrollView(child: formBody),
       );
@@ -80,7 +137,7 @@ class BaseFormScreen extends StatelessWidget {
                           variant: .ghost,
                           size: .sm,
                           mainAxisSize: .min,
-                          onPress: () => context.pop(),
+                          onPress: () => _dismiss(context),
                           child: const Icon(FLucideIcons.x),
                         ),
                       ],

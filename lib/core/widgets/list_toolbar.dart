@@ -78,6 +78,7 @@ class ListToolbar extends StatelessWidget {
                           tipBuilder: (context, _) => Text(createLabel),
                           child: fu.FButton.icon(
                             size: .sm,
+                            variant: .primary,
                             semanticsLabel: createLabel,
                             onPress: onCreate,
                             child: const Icon(fu.FLucideIcons.plus),
@@ -86,6 +87,7 @@ class ListToolbar extends StatelessWidget {
                       else
                         fu.FButton(
                           size: .sm,
+                          variant: .primary,
                           mainAxisSize: .min,
                           prefix: const Icon(fu.FLucideIcons.plus),
                           onPress: onCreate,

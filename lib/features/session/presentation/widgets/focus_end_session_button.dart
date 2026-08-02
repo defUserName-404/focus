@@ -44,18 +44,24 @@ class FocusEndSessionButton extends ConsumerWidget {
               ? Padding(
                   key: const ValueKey('complete-btn'),
                   padding: EdgeInsets.all(AppConstants.spacing.large),
-                  child: FButton(
-                    variant: .outline,
-                    onPress: () {
-                      ref.read(focusScreenProvider.notifier).onUserInteraction();
-                      if (isQuickSession) {
-                        ref.read(focusTimerProvider.notifier).completeSessionEarly();
-                      } else {
-                        onCompleteTask();
-                      }
-                    },
-                    prefix: Icon(isQuickSession ? FLucideIcons.check : FLucideIcons.checkCheck),
-                    child: Text(isQuickSession ? 'End Session' : 'Complete Task'),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 320),
+                      child: FButton(
+                        variant: .outline,
+                        mainAxisSize: .min,
+                        onPress: () {
+                          ref.read(focusScreenProvider.notifier).onUserInteraction();
+                          if (isQuickSession) {
+                            ref.read(focusTimerProvider.notifier).completeSessionEarly();
+                          } else {
+                            onCompleteTask();
+                          }
+                        },
+                        prefix: Icon(isQuickSession ? FLucideIcons.check : FLucideIcons.checkCheck),
+                        child: Text(isQuickSession ? 'End Session' : 'Complete Task'),
+                      ),
+                    ),
                   ),
                 )
               : const SizedBox.shrink(key: ValueKey('empty-btn')),

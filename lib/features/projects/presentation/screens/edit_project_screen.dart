@@ -15,8 +15,11 @@ import '../providers/project_provider.dart';
 
 class EditProjectScreen extends ConsumerStatefulWidget {
   final Project project;
+  final bool isEmbedded;
+  final VoidCallback? onDismiss;
+  final ValueChanged<Project>? onSaved;
 
-  const EditProjectScreen({super.key, required this.project});
+  const EditProjectScreen({super.key, required this.project, this.isEmbedded = false, this.onDismiss, this.onSaved});
 
   @override
   ConsumerState<EditProjectScreen> createState() => _EditProjectScreenState();
@@ -44,11 +47,25 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
     super.dispose();
   }
 
+  void _finish(Project project) {
+    if (widget.onSaved != null) {
+      widget.onSaved!(project);
+      return;
+    }
+    if (widget.onDismiss != null) {
+      widget.onDismiss!();
+      return;
+    }
+    if (mounted) context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseFormScreen(
       title: 'Edit Project',
       submitButtonText: 'Save',
+      isEmbedded: widget.isEmbedded,
+      onDismiss: widget.onDismiss,
       onSubmit: _submit,
       fields: [
         FTextFormField(
@@ -103,6 +120,6 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
     );
 
     await ref.read(projectProvider.notifier).updateProject(updated);
-    if (mounted) context.pop();
+    if (mounted) _finish(updated);
   }
 }

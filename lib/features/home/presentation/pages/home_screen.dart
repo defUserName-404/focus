@@ -46,11 +46,44 @@ class HomeScreen extends ConsumerWidget {
         agenda.isEmpty &&
         habits.isEmpty;
 
+    final body = showOnboarding
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppConstants.spacing.regular,
+            children: const [QuickSessionButton(), HomeOnboardingCard()],
+          )
+        : context.isCompact
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppConstants.spacing.regular,
+            children: const [QuickSessionButton(), TodayAgendaSection(), HabitsStripSection(), UpcomingCalendarCard()],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppConstants.spacing.regular,
+            children: [
+              const QuickSessionButton(),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Expanded(flex: 3, child: TodayAgendaSection()),
+                  SizedBox(width: AppConstants.spacing.large),
+                  const Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [HabitsStripSection(), SizedBox(height: 16), UpcomingCalendarCard()],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+
     return fu.FScaffold(
       header: fu.FHeader(
         suffixes: [
           if (stats.currentStreak > 0) StreakBadge(streak: stats.currentStreak),
-          // Reports lives in the desktop sidebar; keep header entry on compact only.
           if (context.isCompact)
             fu.FTooltip(
               tipBuilder: (context, _) => const Text('Reports'),
@@ -85,26 +118,7 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
       ),
-      child: ConstrainedContent(
-        maxWidth: 800,
-        padding: EdgeInsets.zero,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: AppConstants.spacing.regular,
-            children: [
-              const QuickSessionButton(),
-              if (showOnboarding)
-                const HomeOnboardingCard()
-              else ...[
-                const TodayAgendaSection(),
-                const HabitsStripSection(),
-                const UpcomingCalendarCard(),
-              ],
-            ],
-          ),
-        ),
-      ),
+      child: ConstrainedContent(maxWidth: 840, child: SingleChildScrollView(child: body)),
     );
   }
 }

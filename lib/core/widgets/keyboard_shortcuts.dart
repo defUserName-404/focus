@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/projects/presentation/commands/project_commands.dart';
+import '../../features/tasks/presentation/commands/task_commands.dart';
 import '../routing/routes.dart';
 import '../utils/platform_utils.dart';
 
@@ -16,10 +18,10 @@ class AppKeyboardShortcuts extends StatelessWidget {
     return CallbackShortcuts(
       bindings: {
         SingleActivator(LogicalKeyboardKey.keyN, control: !meta, meta: meta): () {
-          context.push(AppRoutes.createTaskWithProject.path);
+          TaskCommands.createWithProject(context);
         },
         SingleActivator(LogicalKeyboardKey.keyP, control: !meta, meta: meta): () {
-          context.push(AppRoutes.createProject.path);
+          ProjectCommands.create(context);
         },
         const SingleActivator(LogicalKeyboardKey.space): () {
           context.push(AppRoutes.focusSession.path);

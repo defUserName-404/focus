@@ -4,14 +4,23 @@ import 'package:go_router/go_router.dart';
 import 'package:focus/core/widgets/confirmation_dialog.dart';
 import 'package:focus/core/di/injection.dart';
 import 'package:focus/core/routing/routes.dart';
+import 'package:focus/core/utils/platform_utils.dart';
 import 'package:focus/core/utils/result.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/domain/entities/today_agenda_item.dart';
 import 'package:focus/features/tasks/domain/services/task_service.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
+import 'package:focus/features/tasks/presentation/providers/tasks_pane_form_provider.dart';
 
 class TaskCommands {
   static void create(BuildContext context, {required int projectId, int? parentTaskId, int depth = 0}) {
+    if (!context.isCompact) {
+      ProviderScope.containerOf(
+        context,
+      ).read(tasksPaneFormProvider.notifier).showCreate(projectId: projectId, parentTaskId: parentTaskId, depth: depth);
+      return;
+    }
+
     var path = AppRoutes.createTaskPath(projectId);
     final queryParams = <String, String>{};
     if (parentTaskId != null) queryParams['parentTaskId'] = parentTaskId.toString();
@@ -24,8 +33,22 @@ class TaskCommands {
     context.push(path);
   }
 
+  /// Opens the global create-task form (with project picker) on desktop in the
+  /// Tasks detail pane; otherwise pushes the full-screen route.
+  static void createWithProject(BuildContext context) {
+    if (!context.isCompact) {
+      ProviderScope.containerOf(context).read(tasksPaneFormProvider.notifier).showCreate();
+      return;
+    }
+    context.push(AppRoutes.createTaskWithProject.path);
+  }
+
   static void edit(BuildContext context, Task task) {
     if (task.id == null) return;
+    if (!context.isCompact) {
+      ProviderScope.containerOf(context).read(tasksPaneFormProvider.notifier).showEdit(task);
+      return;
+    }
     context.push(AppRoutes.editTaskPath(task.id!), extra: task);
   }
 

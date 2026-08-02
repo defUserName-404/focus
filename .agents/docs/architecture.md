@@ -136,18 +136,23 @@ Navigation UX split:
 - Desktop/tablet shell: side rail keeps separate `Reports` and `Notifications` entries
 - Settings is a utility destination (header/rail action), not a primary tab
 - Reports expands window-scoped insights (habit consistency, estimates, time breakdowns,
-  throughput) via `ITaskStatsRepository` SQL aggregates; CSV export copies the active window
+  throughput) via `ITaskStatsRepository` SQL aggregates; CSV export uses a save-file dialog
+  (clipboard fallback if cancelled)
 
 ## Layout Architecture
 
 Core layout widgets:
 - `AdaptiveShell`
-- `MasterDetailLayout`
+- `MasterDetailLayout` (resizable; Tasks/Projects master widths persist via settings)
 - `ConstrainedContent`
+- `BaseFormScreen` (`isEmbedded` for detail-pane create/edit on desktop)
 
 Guidelines:
 - Compact/mobile layouts should avoid double-applied page padding.
 - Embedded list screens and standalone list screens may use different spacing strategies.
+- On expanded Tasks/Projects, create/edit open in the detail pane via pane-form providers
+  (`tasksPaneFormProvider` / `projectsPaneFormProvider`); compact keeps full-screen routes.
+- Embedded detail headers use an explicit back/close that clears selection (not `context.pop`).
 
 ## Database Architecture
 

@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +16,7 @@ import '../providers/report_insights_providers.dart';
 import '../providers/reports_insights_window_provider.dart';
 import '../utils/productivity_insights_utils.dart';
 
-/// Copies a CSV snapshot of the current report window to the clipboard.
+/// Exports a CSV snapshot of the current report window via a save dialog.
 class ReportsCsvExportButton extends ConsumerWidget {
   const ReportsCsvExportButton({super.key});
 
@@ -49,8 +53,37 @@ class ReportsCsvExportButton extends ConsumerWidget {
       byTag: byTag,
       throughput: throughput,
     );
-    await Clipboard.setData(ClipboardData(text: csv));
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report CSV copied to clipboard')));
+
+    final fileName = 'focus_report_${window.storageValue}_${range.start.toShortDateKey()}.csv';
+    try {
+      final path = await FilePicker.saveFile(
+        dialogTitle: 'Export report CSV',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: const ['csv'],
+        bytes: utf8.encode(csv),
+      );
+      if (!context.mounted) return;
+      if (path == null) {
+        await Clipboard.setData(ClipboardData(text: csv));
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Export cancelled — CSV copied to clipboard')));
+        return;
+      }
+      final file = File(path);
+      if (!await file.exists() || await file.length() == 0) {
+        await file.writeAsString(csv);
+      }
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Report CSV saved to $path')));
+    } catch (_) {
+      await Clipboard.setData(ClipboardData(text: csv));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not save file — CSV copied to clipboard')));
+    }
   }
 }

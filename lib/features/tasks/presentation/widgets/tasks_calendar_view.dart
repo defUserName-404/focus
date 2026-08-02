@@ -260,7 +260,6 @@ class _TasksCalendarViewState extends ConsumerState<TasksCalendarView> {
             selectedDay: _selectedDay,
             onDateTap: (date) => setState(() {
               _selectedDay = date;
-              _scope = _TasksCalendarScope.day;
             }),
             onAcceptDrop: (date, task) => _reschedule(task, date),
           ),
@@ -273,7 +272,6 @@ class _TasksCalendarViewState extends ConsumerState<TasksCalendarView> {
             selectedDay: _selectedDay,
             onDateTap: (date) => setState(() {
               _selectedDay = date;
-              _scope = _TasksCalendarScope.day;
             }),
             onAcceptDrop: (date, task) => _reschedule(task, date),
           ),

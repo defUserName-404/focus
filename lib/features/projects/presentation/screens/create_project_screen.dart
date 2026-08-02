@@ -8,13 +8,18 @@ import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/base_form_screen.dart';
 import '../../../../core/widgets/time_field.dart';
 import '../../../../core/routing/routes.dart';
+import '../../domain/entities/project.dart';
 import '../../domain/entities/project_template.dart';
 import '../providers/project_provider.dart';
 import '../providers/project_template_provider.dart';
 import '../widgets/project_template_picker.dart';
 
 class CreateProjectScreen extends ConsumerStatefulWidget {
-  const CreateProjectScreen({super.key});
+  final bool isEmbedded;
+  final VoidCallback? onDismiss;
+  final ValueChanged<Project>? onCreated;
+
+  const CreateProjectScreen({super.key, this.isEmbedded = false, this.onDismiss, this.onCreated});
 
   @override
   ConsumerState<CreateProjectScreen> createState() => _CreateProjectScreenState();
@@ -48,11 +53,28 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
     });
   }
 
+  void _finish(Project project) {
+    if (widget.onCreated != null) {
+      widget.onCreated!(project);
+      return;
+    }
+    if (widget.onDismiss != null) {
+      widget.onDismiss!();
+      return;
+    }
+    if (mounted && project.id != null) {
+      context.pop();
+      context.push(AppRoutes.projectDetailPath(project.id!));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseFormScreen(
       title: 'New Project',
       submitButtonText: _selectedTemplate == null ? 'Create Project' : 'Create from Template',
+      isEmbedded: widget.isEmbedded,
+      onDismiss: widget.onDismiss,
       onSubmit: _submit,
       fields: [
         ProjectTemplatePicker(selected: _selectedTemplate, onChanged: _onTemplateChanged),
@@ -115,10 +137,7 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
         case Success(:final value):
           await ref.read(projectProvider.notifier).reload();
           if (!mounted) return;
-          if (value.id != null) {
-            context.pop();
-            context.push(AppRoutes.projectDetailPath(value.id!));
-          }
+          _finish(value);
         case Failure(:final failure):
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failure.message)));
       }
@@ -127,9 +146,6 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
     final project = await ref
         .read(projectProvider.notifier)
         .createProject(title: title, description: description, startDate: _startDate, deadline: _deadline);
-    if (mounted && project.id != null) {
-      context.pop();
-      context.push(AppRoutes.projectDetailPath(project.id!));
-    }
+    if (mounted) _finish(project);
   }
 }

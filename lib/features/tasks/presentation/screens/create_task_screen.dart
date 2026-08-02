@@ -8,16 +8,29 @@ import '../../../../core/widgets/base_form_screen.dart';
 import '../../../../core/widgets/filter_select.dart';
 import '../../../../core/widgets/time_field.dart';
 import '../../../../core/config/theme/app_theme.dart';
+import '../../domain/entities/task.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/entities/task_reminder_mode.dart';
 import '../providers/task_provider.dart';
+import '../widgets/task_recurrence_fields.dart';
 
 class CreateTaskScreen extends ConsumerStatefulWidget {
   final int projectId;
   final int? parentTaskId;
   final int depth;
+  final bool isEmbedded;
+  final VoidCallback? onDismiss;
+  final ValueChanged<Task>? onCreated;
 
-  const CreateTaskScreen({super.key, required this.projectId, this.parentTaskId, this.depth = 0});
+  const CreateTaskScreen({
+    super.key,
+    required this.projectId,
+    this.parentTaskId,
+    this.depth = 0,
+    this.isEmbedded = false,
+    this.onDismiss,
+    this.onCreated,
+  });
 
   @override
   ConsumerState<CreateTaskScreen> createState() => _CreateTaskScreenState();
@@ -31,6 +44,8 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   DateTime? _endDate;
   TaskPriority _priority = TaskPriority.medium;
   TaskReminderMode _reminderMode = TaskReminderMode.smart;
+  bool _isHabit = false;
+  RecurrencePreset _recurrencePreset = RecurrencePreset.none;
 
   @override
   void dispose() {
@@ -40,11 +55,25 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
     super.dispose();
   }
 
+  void _finish(Task task) {
+    if (widget.onCreated != null) {
+      widget.onCreated!(task);
+      return;
+    }
+    if (widget.onDismiss != null) {
+      widget.onDismiss!();
+      return;
+    }
+    if (mounted) context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseFormScreen(
       title: widget.parentTaskId != null ? 'New Subtask' : 'New Task',
       submitButtonText: 'Create Task',
+      isEmbedded: widget.isEmbedded,
+      onDismiss: widget.onDismiss,
       onSubmit: _submit,
       fields: [
         FTextFormField(
@@ -117,6 +146,17 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
             },
             autovalidateMode: AutovalidateMode.onUnfocus,
           ),
+        TaskRecurrenceFields(
+          isHabit: _isHabit,
+          preset: _recurrencePreset,
+          onHabitChanged: (value) => setState(() => _isHabit = value),
+          onPresetChanged: (value) => setState(() {
+            _recurrencePreset = value;
+            if (value != RecurrencePreset.none && !_isHabit) {
+              _isHabit = true;
+            }
+          }),
+        ),
       ],
     );
   }
@@ -132,7 +172,9 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
       return;
     }
 
-    await ref
+    final recurrenceRule = TaskRecurrenceFields.ruleForPreset(_recurrencePreset, anchor: _startDate);
+
+    final task = await ref
         .read(taskProvider(widget.projectId.toString()).notifier)
         .createTask(
           projectId: widget.projectId.toString(),
@@ -145,8 +187,10 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           startDate: _startDate,
           endDate: _endDate,
           depth: widget.depth,
+          recurrenceRule: recurrenceRule,
+          isHabit: _isHabit || recurrenceRule != null,
         );
 
-    if (mounted) context.pop();
+    if (mounted) _finish(task);
   }
 }

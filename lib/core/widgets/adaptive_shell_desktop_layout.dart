@@ -44,7 +44,10 @@ class AdaptiveShellDesktopLayout extends StatelessWidget {
                   for (var i = 0; i < destinations.length; i++)
                     fu.FSidebarItem(
                       icon: Icon(destinations[i].icon),
-                      label: Text(destinations[i].label),
+                      label: Text(
+                        destinations[i].label,
+                        style: context.typography.md.copyWith(fontWeight: FontWeight.w600),
+                      ),
                       selected: i == currentIndex,
                       onPress: () => onTabChanged(i),
                     ),

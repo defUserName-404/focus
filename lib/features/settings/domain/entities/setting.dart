@@ -35,6 +35,12 @@ abstract final class SettingsKeys {
   /// Tasks screen view mode (`list`, `board`, or `calendar`).
   static const String tasksViewMode = 'tasks_view_mode';
 
+  /// Persisted master pane width for the Tasks master-detail layout.
+  static const String tasksMasterPaneWidth = 'tasks_master_pane_width';
+
+  /// Persisted master pane width for the Projects master-detail layout.
+  static const String projectsMasterPaneWidth = 'projects_master_pane_width';
+
   /// Reports productivity insights window (`weekly` or `monthly`).
   static const String reportsInsightsWindowMode = 'reports_insights_window_mode';
 

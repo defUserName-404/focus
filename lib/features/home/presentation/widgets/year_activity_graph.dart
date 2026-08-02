@@ -26,7 +26,7 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
   late final ScrollController _scrollController;
   OverlayEntry? _tooltip;
   Timer? _tooltipTimer;
-  TappedDateNotifier? _tappedDateNotifier;
+  bool _disposed = false;
 
   @override
   void initState() {
@@ -36,21 +36,19 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _tappedDateNotifier ??= ref.read(tappedDateProvider.notifier);
+  void dispose() {
+    _disposed = true;
+    _tooltipTimer?.cancel();
+    _tooltipTimer = null;
+    _removeOverlayOnly();
+    _scrollController.dispose();
+    super.dispose();
   }
 
-  @override
-  void dispose() {
-    _tooltipTimer?.cancel();
+  void _removeOverlayOnly() {
     _tooltip?.remove();
     _tooltip?.dispose();
     _tooltip = null;
-    // Clear selection without WidgetRef (unsafe during dispose).
-    _tappedDateNotifier?.setDate(null);
-    _scrollController.dispose();
-    super.dispose();
   }
 
   void _scrollToToday() {
@@ -106,9 +104,8 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
   void _removeTooltip() {
     _tooltipTimer?.cancel();
     _tooltipTimer = null;
-    _tooltip?.remove();
-    _tooltip?.dispose();
-    _tooltip = null;
+    if (_disposed) return;
+    _removeOverlayOnly();
     if (!mounted) return;
     if (ref.read(tappedDateProvider) != null) {
       ref.read(tappedDateProvider.notifier).setDate(null);

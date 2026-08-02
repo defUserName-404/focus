@@ -10,17 +10,23 @@ import '../../../../core/widgets/time_field.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../projects/domain/entities/project.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
+import '../../domain/entities/task.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/entities/task_reminder_mode.dart';
 import '../providers/task_provider.dart';
 import '../widgets/create_task_priority_selector.dart';
 import '../widgets/create_task_project_autocomplete.dart';
+import '../widgets/task_recurrence_fields.dart';
 
 /// Full-screen form that creates a task and optionally a new project.
 ///
 /// Used from the global "Tasks" tab where there is no implicit project.
 class CreateTaskWithProjectScreen extends ConsumerStatefulWidget {
-  const CreateTaskWithProjectScreen({super.key});
+  final bool isEmbedded;
+  final VoidCallback? onDismiss;
+  final ValueChanged<Task>? onCreated;
+
+  const CreateTaskWithProjectScreen({super.key, this.isEmbedded = false, this.onDismiss, this.onCreated});
 
   @override
   ConsumerState<CreateTaskWithProjectScreen> createState() => _CreateTaskWithProjectScreenState();
@@ -37,6 +43,8 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
   final ValueNotifier<TaskPriority> _priority = ValueNotifier(TaskPriority.medium);
   final ValueNotifier<Project?> _selectedProject = ValueNotifier(null);
   final ValueNotifier<bool> _isNewProject = ValueNotifier(false);
+  bool _isHabit = false;
+  RecurrencePreset _recurrencePreset = RecurrencePreset.none;
 
   @override
   void dispose() {
@@ -74,6 +82,8 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
     return BaseFormScreen(
       title: 'New Task',
       submitButtonText: 'Create Task',
+      isEmbedded: widget.isEmbedded,
+      onDismiss: widget.onDismiss,
       onSubmit: _submit,
       fields: [
         projectsAsync.when(
@@ -156,8 +166,31 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
             },
             autovalidateMode: AutovalidateMode.onUnfocus,
           ),
+        TaskRecurrenceFields(
+          isHabit: _isHabit,
+          preset: _recurrencePreset,
+          onHabitChanged: (value) => setState(() => _isHabit = value),
+          onPresetChanged: (value) => setState(() {
+            _recurrencePreset = value;
+            if (value != RecurrencePreset.none && !_isHabit) {
+              _isHabit = true;
+            }
+          }),
+        ),
       ],
     );
+  }
+
+  void _finish(Task task) {
+    if (widget.onCreated != null) {
+      widget.onCreated!(task);
+      return;
+    }
+    if (widget.onDismiss != null) {
+      widget.onDismiss!();
+      return;
+    }
+    if (mounted) context.pop();
   }
 
   Future<void> _submit() async {
@@ -181,7 +214,9 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
       projectId = newProject.id!;
     }
 
-    await ref
+    final recurrenceRule = TaskRecurrenceFields.ruleForPreset(_recurrencePreset, anchor: _startDate);
+
+    final task = await ref
         .read(taskProvider(projectId.toString()).notifier)
         .createTask(
           projectId: projectId.toString(),
@@ -193,8 +228,10 @@ class _CreateTaskWithProjectScreenState extends ConsumerState<CreateTaskWithProj
           startDate: _startDate,
           endDate: _endDate,
           depth: 0,
+          recurrenceRule: recurrenceRule,
+          isHabit: _isHabit || recurrenceRule != null,
         );
 
-    if (mounted) context.pop();
+    if (mounted) _finish(task);
   }
 }

@@ -32,6 +32,8 @@ class TaskNotifier extends _$TaskNotifier {
     DateTime? startDate,
     DateTime? endDate,
     required int depth,
+    RecurrenceRule? recurrenceRule,
+    bool isHabit = false,
   }) async {
     final result = await _service.createTask(
       projectId: int.parse(projectId),
@@ -44,6 +46,8 @@ class TaskNotifier extends _$TaskNotifier {
       startDate: startDate,
       endDate: endDate,
       depth: depth,
+      recurrenceRule: recurrenceRule,
+      isHabit: isHabit,
     );
     switch (result) {
       case Success(:final value):
