@@ -21,21 +21,24 @@ class DesktopToggleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return fu.FCard(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
-                SizedBox(height: AppConstants.spacing.extraSmall),
-                Text(subtitle, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
-              ],
+      child: Padding(
+        padding: context.cardPadding,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
+                  SizedBox(height: AppConstants.spacing.extraSmall),
+                  Text(subtitle, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
+                ],
+              ),
             ),
-          ),
-          fu.FSwitch(value: enabled, onChange: onChanged),
-        ],
+            fu.FSwitch(value: enabled, onChange: onChanged),
+          ],
+        ),
       ),
     );
   }

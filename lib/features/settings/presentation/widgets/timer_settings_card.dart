@@ -29,37 +29,45 @@ class TimerSettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return fu.FCard(
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
-                SizedBox(height: AppConstants.spacing.extraSmall),
-                Text(subtitle, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
-              ],
+      child: Padding(
+        padding: context.cardPadding,
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
+                  SizedBox(height: AppConstants.spacing.extraSmall),
+                  Text(subtitle, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
+                ],
+              ),
             ),
-          ),
-          // Stepper control
-          Container(
-            decoration: BoxDecoration(
-              color: context.colors.muted,
-              borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+            Container(
+              decoration: BoxDecoration(
+                color: context.colors.muted,
+                borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TimerStepButton(
+                    icon: fu.FLucideIcons.minus,
+                    onTap: value > min ? () => onChanged(value - step) : null,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
+                    child: Text('${value}m', style: context.typography.md.copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                  TimerStepButton(
+                    icon: fu.FLucideIcons.plus,
+                    onTap: value < max ? () => onChanged(value + step) : null,
+                  ),
+                ],
+              ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TimerStepButton(icon: fu.FLucideIcons.minus, onTap: value > min ? () => onChanged(value - step) : null),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
-                  child: Text('${value}m', style: context.typography.md.copyWith(fontWeight: FontWeight.w700)),
-                ),
-                TimerStepButton(icon: fu.FLucideIcons.plus, onTap: value < max ? () => onChanged(value + step) : null),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

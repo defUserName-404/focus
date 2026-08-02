@@ -21,39 +21,42 @@ class ExpandableSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return fu.FCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          GestureDetector(
-            onTap: onToggle,
-            behavior: HitTestBehavior.opaque,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
-                ),
-                AnimatedRotation(
-                  turns: isExpanded ? 0.5 : 0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Icon(
-                    fu.FLucideIcons.chevronDown,
-                    size: AppConstants.size.icon.regular,
-                    color: context.colors.mutedForeground,
+      child: Padding(
+        padding: context.cardPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            GestureDetector(
+              onTap: onToggle,
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
                   ),
-                ),
-              ],
+                  AnimatedRotation(
+                    turns: isExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      fu.FLucideIcons.chevronDown,
+                      size: AppConstants.size.icon.regular,
+                      color: context.colors.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          AnimatedCrossFade(
-            firstChild: const SizedBox.shrink(),
-            secondChild: Padding(
-              padding: EdgeInsets.only(top: AppConstants.spacing.regular),
-              child: child,
+            AnimatedCrossFade(
+              firstChild: const SizedBox.shrink(),
+              secondChild: Padding(
+                padding: EdgeInsets.only(top: AppConstants.spacing.regular),
+                child: child,
+              ),
+              crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 200),
             ),
-            crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 200),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

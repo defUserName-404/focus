@@ -67,9 +67,7 @@ class ReportsCsvExportButton extends ConsumerWidget {
       if (path == null) {
         await Clipboard.setData(ClipboardData(text: csv));
         if (!context.mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Export cancelled — CSV copied to clipboard')));
+        fu.showFToast(context: context, title: const Text('Export cancelled — CSV copied to clipboard'));
         return;
       }
       final file = File(path);
@@ -77,13 +75,11 @@ class ReportsCsvExportButton extends ConsumerWidget {
         await file.writeAsString(csv);
       }
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Report CSV saved to $path')));
+      fu.showFToast(context: context, title: Text('Report CSV saved to $path'));
     } catch (_) {
       await Clipboard.setData(ClipboardData(text: csv));
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Could not save file — CSV copied to clipboard')));
+      fu.showFToast(context: context, title: const Text('Could not save file — CSV copied to clipboard'));
     }
   }
 }
