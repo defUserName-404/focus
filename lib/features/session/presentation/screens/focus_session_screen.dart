@@ -12,6 +12,7 @@ import '../widgets/circular_timer.dart';
 import '../widgets/completion_overlay.dart';
 import '../widgets/focus_task_info.dart';
 import '../widgets/focus_controls_with_callback.dart';
+import '../widgets/focus_end_session_button.dart';
 
 class FocusSessionScreen extends ConsumerStatefulWidget {
   const FocusSessionScreen({super.key});
@@ -70,48 +71,54 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
           children: [
             FScaffold(
               header: FHeader.nested(prefixes: [FHeaderAction.back(onPress: () => context.pop())]),
-              child: Center(
-                child: Column(
-                  children: [
-                    AnimatedOpacity(
-                      duration: AppConstants.animation.medium,
-                      opacity: screenState.isControlsVisible ? 1.0 : 0.0,
-                      child: const FocusTaskInfo(),
-                    ),
-                    SizedBox(height: AppConstants.spacing.small),
-                    // Phase indicator with animated transition
-                    if (progress != null) ...[
-                      (() {
-                        final label = progress.isFocusPhase ? 'FOCUS' : 'BREAK';
-                        return AnimatedOpacity(
+              footer: FocusEndSessionButton(
+                onCompleteTask: _onCompleteTask,
+                controlsVisible: screenState.isControlsVisible,
+              ),
+              child: Column(
+                children: [
+                  AnimatedOpacity(
+                    duration: AppConstants.animation.medium,
+                    opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                    child: const FocusTaskInfo(),
+                  ),
+                  SizedBox(height: AppConstants.spacing.small),
+                  // Phase indicator with animated transition
+                  if (progress != null) ...[
+                    (() {
+                      final label = progress.isFocusPhase ? 'FOCUS' : 'BREAK';
+                      return AnimatedOpacity(
+                        duration: AppConstants.animation.medium,
+                        opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                        child: AnimatedSwitcher(
                           duration: AppConstants.animation.medium,
-                          opacity: screenState.isControlsVisible ? 1.0 : 0.0,
-                          child: AnimatedSwitcher(
-                            duration: AppConstants.animation.medium,
-                            switchInCurve: Curves.easeOut,
-                            switchOutCurve: Curves.easeIn,
-                            child: FBadge(key: ValueKey(label), variant: .secondary, child: Text(label)),
-                          ),
-                        );
-                      })(),
-                    ],
-                    SizedBox(height: AppConstants.spacing.regular),
-                    // Ambience sound marquee + mute button
-                    AnimatedOpacity(
-                      duration: AppConstants.animation.medium,
-                      opacity: screenState.isControlsVisible ? 1.0 : 0.0,
-                      child: const AmbienceMarqueeRow(),
-                    ),
-                    const Spacer(flex: 1),
-                    const CircularTimer(),
-                    SizedBox(height: AppConstants.spacing.extraLarge),
-                    FocusControlsWithCallback(
-                      onCompleteTask: _onCompleteTask,
-                      controlsVisible: screenState.isControlsVisible,
-                    ),
-                    const Spacer(flex: 2),
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeIn,
+                          child: FBadge(key: ValueKey(label), variant: .secondary, child: Text(label)),
+                        ),
+                      );
+                    })(),
                   ],
-                ),
+                  SizedBox(height: AppConstants.spacing.regular),
+                  // Ambience sound marquee + mute button
+                  AnimatedOpacity(
+                    duration: AppConstants.animation.medium,
+                    opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                    child: const AmbienceMarqueeRow(),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: .min,
+                        children: [
+                          const CircularTimer(),
+                          SizedBox(height: AppConstants.spacing.extraLarge),
+                          FocusControlsWithCallback(controlsVisible: screenState.isControlsVisible),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
