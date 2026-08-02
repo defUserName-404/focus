@@ -50,36 +50,38 @@ class ListToolbar extends StatelessWidget {
             final narrow = constraints.maxWidth < 360;
             return ListToolbarLayout(
               iconOnly: narrow,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: AppSearchBar(hint: searchHint, onChanged: onSearchChanged, focusNode: searchFocusNode),
-                  ),
-                  if (viewModeControl != null) ...[SizedBox(width: AppConstants.spacing.small), viewModeControl!],
-                  SizedBox(width: AppConstants.spacing.small),
-                  _FilterTrigger(activeFilterCount: activeFilterCount, filterPanel: filterPanel),
-                  if (onCreate != null) ...[
+              child: FocusTraversalGroup(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AppSearchBar(hint: searchHint, onChanged: onSearchChanged, focusNode: searchFocusNode),
+                    ),
+                    if (viewModeControl != null) ...[SizedBox(width: AppConstants.spacing.small), viewModeControl!],
                     SizedBox(width: AppConstants.spacing.small),
-                    if (narrow)
-                      fu.FTooltip(
-                        tipBuilder: (context, _) => Text(createLabel),
-                        child: fu.FButton.icon(
+                    _FilterTrigger(activeFilterCount: activeFilterCount, filterPanel: filterPanel, iconOnly: narrow),
+                    if (onCreate != null) ...[
+                      SizedBox(width: AppConstants.spacing.small),
+                      if (narrow)
+                        fu.FTooltip(
+                          tipBuilder: (context, _) => Text(createLabel),
+                          child: fu.FButton.icon(
+                            size: .sm,
+                            semanticsLabel: createLabel,
+                            onPress: onCreate,
+                            child: const Icon(fu.FLucideIcons.plus),
+                          ),
+                        )
+                      else
+                        fu.FButton(
                           size: .sm,
-                          semanticsLabel: createLabel,
+                          mainAxisSize: .min,
+                          prefix: const Icon(fu.FLucideIcons.plus),
                           onPress: onCreate,
-                          child: const Icon(fu.FLucideIcons.plus),
+                          child: Text(createLabel),
                         ),
-                      )
-                    else
-                      fu.FButton(
-                        size: .sm,
-                        mainAxisSize: .min,
-                        prefix: const Icon(fu.FLucideIcons.plus),
-                        onPress: onCreate,
-                        child: Text(createLabel),
-                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             );
           },
@@ -110,8 +112,9 @@ class ListToolbarLayout extends InheritedWidget {
 class _FilterTrigger extends StatefulWidget {
   final int activeFilterCount;
   final Widget filterPanel;
+  final bool iconOnly;
 
-  const _FilterTrigger({required this.activeFilterCount, required this.filterPanel});
+  const _FilterTrigger({required this.activeFilterCount, required this.filterPanel, required this.iconOnly});
 
   @override
   State<_FilterTrigger> createState() => _FilterTriggerState();
@@ -155,14 +158,30 @@ class _FilterTriggerState extends State<_FilterTrigger> with SingleTickerProvide
     final useSheet = paneWidth < 400;
     final popoverMaxWidth = math.min(360.0, paneWidth - 32);
     final label = widget.activeFilterCount > 0 ? 'Filters (${widget.activeFilterCount})' : 'Filters';
-    final button = fu.FButton(
-      size: .sm,
-      mainAxisSize: .min,
-      variant: widget.activeFilterCount > 0 ? .secondary : .outline,
-      prefix: const Icon(fu.FLucideIcons.listFilter),
-      onPress: useSheet ? _openSheet : _popoverController.toggle,
-      child: Text(label),
-    );
+    final onPress = useSheet ? _openSheet : _popoverController.toggle;
+
+    final Widget button;
+    if (widget.iconOnly) {
+      button = fu.FTooltip(
+        tipBuilder: (context, _) => Text(label),
+        child: fu.FButton.icon(
+          size: .sm,
+          variant: widget.activeFilterCount > 0 ? .secondary : .outline,
+          semanticsLabel: label,
+          onPress: onPress,
+          child: const Icon(fu.FLucideIcons.listFilter),
+        ),
+      );
+    } else {
+      button = fu.FButton(
+        size: .sm,
+        mainAxisSize: .min,
+        variant: widget.activeFilterCount > 0 ? .secondary : .outline,
+        prefix: const Icon(fu.FLucideIcons.listFilter),
+        onPress: onPress,
+        child: Text(label),
+      );
+    }
 
     if (useSheet) return button;
 

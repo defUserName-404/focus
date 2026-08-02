@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/widgets/constrained_content.dart';
 import '../../../home/presentation/widgets/global_stats_row.dart';
 import '../../../home/presentation/widgets/section_header.dart';
 import '../../../home/presentation/widgets/today_summary_card.dart';
@@ -45,29 +46,32 @@ class ReportsScreen extends ConsumerWidget {
         title: Text('Reports', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
         suffixes: const [ReportsCsvExportButton()],
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: AppConstants.spacing.regular,
-          children: [
-            TodaySummaryCard(stats: stats),
-            SizedBox(height: AppConstants.spacing.regular),
-            SectionHeader(title: 'Overall Stats'),
-            GlobalStatsRow(stats: stats),
-            SizedBox(height: AppConstants.spacing.regular),
-            const YearActivityGraph(),
-            SizedBox(height: AppConstants.spacing.regular),
-            const ProductivityInsightsSection(),
-            SizedBox(height: AppConstants.spacing.large),
-            const HabitConsistencySection(),
-            SizedBox(height: AppConstants.spacing.large),
-            const EstimateAccuracySection(),
-            SizedBox(height: AppConstants.spacing.large),
-            const TimeBreakdownSection(),
-            SizedBox(height: AppConstants.spacing.large),
-            const TaskThroughputSection(),
-            SizedBox(height: AppConstants.spacing.regular),
-          ],
+      child: ConstrainedContent(
+        maxWidth: 800,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppConstants.spacing.regular,
+            children: [
+              TodaySummaryCard(stats: stats),
+              SizedBox(height: AppConstants.spacing.regular),
+              SectionHeader(title: 'Overall Stats'),
+              GlobalStatsRow(stats: stats),
+              SizedBox(height: AppConstants.spacing.regular),
+              const YearActivityGraph(),
+              SizedBox(height: AppConstants.spacing.regular),
+              const ProductivityInsightsSection(),
+              SizedBox(height: AppConstants.spacing.large),
+              const HabitConsistencySection(),
+              SizedBox(height: AppConstants.spacing.large),
+              const EstimateAccuracySection(),
+              SizedBox(height: AppConstants.spacing.large),
+              const TimeBreakdownSection(),
+              SizedBox(height: AppConstants.spacing.large),
+              const TaskThroughputSection(),
+              SizedBox(height: AppConstants.spacing.regular),
+            ],
+          ),
         ),
       ),
     );

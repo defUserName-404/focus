@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/widgets/constrained_content.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_content.dart';
 
@@ -31,13 +32,16 @@ class SettingsScreen extends ConsumerWidget {
         ],
         title: Text('Settings', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
       ),
-      child: prefsAsync.when(
-        loading: () => const Center(child: fu.FCircularProgress()),
-        error: (err, _) => Center(child: Text('Error: $err')),
-        data: (prefs) => timerAsync.when(
+      child: ConstrainedContent(
+        maxWidth: 800,
+        child: prefsAsync.when(
           loading: () => const Center(child: fu.FCircularProgress()),
           error: (err, _) => Center(child: Text('Error: $err')),
-          data: (timerPrefs) => SettingsContent(prefs: prefs, timerPrefs: timerPrefs),
+          data: (prefs) => timerAsync.when(
+            loading: () => const Center(child: fu.FCircularProgress()),
+            error: (err, _) => Center(child: Text('Error: $err')),
+            data: (timerPrefs) => SettingsContent(prefs: prefs, timerPrefs: timerPrefs),
+          ),
         ),
       ),
     );

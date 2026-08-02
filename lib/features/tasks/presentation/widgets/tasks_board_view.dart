@@ -501,7 +501,7 @@ class _ColumnGapDropTarget extends StatelessWidget {
   }
 }
 
-class _BoardCard extends StatelessWidget {
+class _BoardCard extends StatefulWidget {
   final Task task;
   final bool isSelected;
   final VoidCallback onTap;
@@ -522,28 +522,45 @@ class _BoardCard extends StatelessWidget {
     required this.onAcceptWithDetails,
   });
 
+  @override
+  State<_BoardCard> createState() => _BoardCardState();
+}
+
+class _BoardCardState extends State<_BoardCard> {
+  bool _dragging = false;
+
   Widget _buildDraggable({required Widget child, required Widget feedback}) {
+    void started() {
+      setState(() => _dragging = true);
+      widget.onDragStarted();
+    }
+
+    void ended() {
+      if (_dragging) setState(() => _dragging = false);
+      widget.onDragEnded();
+    }
+
     if (PlatformUtils.isDesktop) {
       return Draggable<Task>(
-        data: task,
+        data: widget.task,
         feedback: feedback,
         childWhenDragging: Opacity(opacity: 0.35, child: child),
-        onDragStarted: onDragStarted,
-        onDragEnd: (_) => onDragEnded(),
-        onDraggableCanceled: (_, _) => onDragEnded(),
-        onDragUpdate: (details) => onDragUpdate(details.globalPosition),
+        onDragStarted: started,
+        onDragEnd: (_) => ended(),
+        onDraggableCanceled: (_, _) => ended(),
+        onDragUpdate: (details) => widget.onDragUpdate(details.globalPosition),
         child: child,
       );
     }
 
     return LongPressDraggable<Task>(
-      data: task,
+      data: widget.task,
       feedback: feedback,
       childWhenDragging: Opacity(opacity: 0.35, child: child),
-      onDragStarted: onDragStarted,
-      onDragEnd: (_) => onDragEnded(),
-      onDraggableCanceled: (_, _) => onDragEnded(),
-      onDragUpdate: (details) => onDragUpdate(details.globalPosition),
+      onDragStarted: started,
+      onDragEnd: (_) => ended(),
+      onDraggableCanceled: (_, _) => ended(),
+      onDragUpdate: (details) => widget.onDragUpdate(details.globalPosition),
       child: child,
     );
   }
@@ -551,13 +568,14 @@ class _BoardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final card = AppCard(
-      onTap: onTap,
-      isCompleted: task.isCompleted,
-      title: Text(task.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-      trailing: TaskPriorityBadge(priority: task.priority),
-      subtitle: (task.description != null && task.description!.isNotEmpty)
+      onTap: widget.onTap,
+      isCompleted: widget.task.isCompleted,
+      mouseCursor: _dragging ? SystemMouseCursors.grabbing : SystemMouseCursors.grab,
+      title: Text(widget.task.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+      trailing: TaskPriorityBadge(priority: widget.task.priority),
+      subtitle: (widget.task.description != null && widget.task.description!.isNotEmpty)
           ? Text(
-              task.description!,
+              widget.task.description!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
@@ -575,26 +593,37 @@ class _BoardCard extends StatelessWidget {
       duration: const Duration(milliseconds: 120),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
-        border: Border.all(color: isSelected ? context.colors.primary : Colors.transparent, width: 1.5),
+        border: Border.all(color: widget.isSelected ? context.colors.primary : Colors.transparent, width: 1.5),
       ),
       child: card,
     );
 
-    return DragTarget<Task>(
-      onWillAcceptWithDetails: (details) => details.data.id != task.id,
-      onMove: (details) {
-        final box = context.findRenderObject() as RenderBox?;
-        if (box == null) return;
-        onHoverWithDetails(details, box);
+    return Focus(
+      canRequestFocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey == LogicalKeyboardKey.space)) {
+          widget.onTap();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
       },
-      onAcceptWithDetails: (details) {
-        final box = context.findRenderObject() as RenderBox?;
-        if (box == null) return;
-        onAcceptWithDetails(details, box);
-      },
-      builder: (context, candidateData, _) {
-        return _buildDraggable(child: wrapped, feedback: feedback);
-      },
+      child: DragTarget<Task>(
+        onWillAcceptWithDetails: (details) => details.data.id != widget.task.id,
+        onMove: (details) {
+          final box = context.findRenderObject() as RenderBox?;
+          if (box == null) return;
+          widget.onHoverWithDetails(details, box);
+        },
+        onAcceptWithDetails: (details) {
+          final box = context.findRenderObject() as RenderBox?;
+          if (box == null) return;
+          widget.onAcceptWithDetails(details, box);
+        },
+        builder: (context, candidateData, _) {
+          return _buildDraggable(child: wrapped, feedback: feedback);
+        },
+      ),
     );
   }
 }

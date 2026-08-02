@@ -52,9 +52,13 @@ class AllTasksScreen extends ConsumerWidget {
         ],
         title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
         suffixes: [
-          fu.FHeaderAction(
-            icon: const Icon(fu.FLucideIcons.plus),
-            onPress: () => context.push(AppRoutes.createTaskWithProject.path),
+          fu.FTooltip(
+            tipBuilder: (context, _) => const Text('Create task'),
+            child: fu.FHeaderAction(
+              icon: const Icon(fu.FLucideIcons.plus),
+              semanticsLabel: 'Create task',
+              onPress: () => context.push(AppRoutes.createTaskWithProject.path),
+            ),
           ),
         ],
       ),

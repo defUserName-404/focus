@@ -52,13 +52,21 @@ class HomeScreen extends ConsumerWidget {
           if (stats.currentStreak > 0) StreakBadge(streak: stats.currentStreak),
           // Reports lives in the desktop sidebar; keep header entry on compact only.
           if (context.isCompact)
-            fu.FHeaderAction(
-              icon: Icon(fu.FLucideIcons.chartBar, size: AppConstants.size.icon.regular),
-              onPress: () => context.push(AppRoutes.reports.path),
+            fu.FTooltip(
+              tipBuilder: (context, _) => const Text('Reports'),
+              child: fu.FHeaderAction(
+                icon: Icon(fu.FLucideIcons.chartBar, size: AppConstants.size.icon.regular),
+                semanticsLabel: 'Reports',
+                onPress: () => context.push(AppRoutes.reports.path),
+              ),
             ),
-          fu.FHeaderAction(
-            icon: Icon(fu.FLucideIcons.settings, size: AppConstants.size.icon.regular),
-            onPress: () => context.push(AppRoutes.settings.path),
+          fu.FTooltip(
+            tipBuilder: (context, _) => const Text('Settings'),
+            child: fu.FHeaderAction(
+              icon: Icon(fu.FLucideIcons.settings, size: AppConstants.size.icon.regular),
+              semanticsLabel: 'Settings',
+              onPress: () => context.push(AppRoutes.settings.path),
+            ),
           ),
         ],
         title: Row(

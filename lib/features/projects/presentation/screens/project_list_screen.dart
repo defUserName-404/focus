@@ -150,7 +150,14 @@ class ProjectListScreen extends ConsumerWidget {
         ],
         title: Text('Projects', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
         suffixes: [
-          fu.FHeaderAction(icon: const Icon(fu.FLucideIcons.plus), onPress: () => ProjectCommands.create(context)),
+          fu.FTooltip(
+            tipBuilder: (context, _) => const Text('Create project'),
+            child: fu.FHeaderAction(
+              icon: const Icon(fu.FLucideIcons.plus),
+              semanticsLabel: 'Create project',
+              onPress: () => ProjectCommands.create(context),
+            ),
+          ),
         ],
       ),
       child: content,

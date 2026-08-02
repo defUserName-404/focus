@@ -18,9 +18,13 @@ class ReportsCsvExportButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return fu.FHeaderAction(
-      icon: Icon(fu.FLucideIcons.download, size: AppConstants.size.icon.regular),
-      onPress: () => _export(context, ref),
+    return fu.FTooltip(
+      tipBuilder: (context, _) => const Text('Export CSV'),
+      child: fu.FHeaderAction(
+        icon: Icon(fu.FLucideIcons.download, size: AppConstants.size.icon.regular),
+        semanticsLabel: 'Export CSV',
+        onPress: () => _export(context, ref),
+      ),
     );
   }
 
