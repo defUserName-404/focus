@@ -101,6 +101,7 @@ class TaskRepositoryImpl implements ITaskRepository {
     TaskSortOrder sortOrder = TaskSortOrder.none,
     TaskPriority? priorityFilter,
     TaskStatus? statusFilter,
+    TaskCompletionFilter completionFilter = TaskCompletionFilter.all,
   }) {
     return _local
         .watchFilteredTasks(
@@ -110,6 +111,7 @@ class TaskRepositoryImpl implements ITaskRepository {
           sortOrder: sortOrder,
           priorityFilter: priorityFilter,
           statusFilter: statusFilter,
+          completionFilter: completionFilter,
         )
         .map((rows) => rows.map((r) => r.toDomain()).toList());
   }

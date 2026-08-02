@@ -11,5 +11,6 @@ final filteredTasksProvider = StreamProvider.family<List<Task>, String>((ref, pr
     sortOrder: filter.sortOrder,
     priorityFilter: filter.priorityFilter,
     statusFilter: filter.statusFilter,
+    completionFilter: filter.completionFilter,
   );
 });

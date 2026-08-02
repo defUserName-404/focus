@@ -19,47 +19,57 @@ import 'subtask_count_chip.dart';
 import 'task_date_row.dart';
 import 'task_priority_badge.dart';
 
+/// Shared task tile for flat (all-tasks) and hierarchical (project detail) lists.
+///
+/// Flat mode (`showHierarchy: false`): checkbox, dates, priority, optional
+/// selection highlight. Hierarchical mode adds subtask expand/add and edit/delete.
 class TaskCard extends ConsumerWidget {
   final Task task;
   final List<Task> subtasks;
   final String projectIdString;
   final VoidCallback? onTaskTap;
   final ValueChanged<Task>? onSubtaskTap;
+  final bool showHierarchy;
+  final bool isSelected;
 
   const TaskCard({
     super.key,
     required this.task,
-    required this.subtasks,
+    this.subtasks = const [],
     required this.projectIdString,
     this.onTaskTap,
     this.onSubtaskTap,
+    this.showHierarchy = true,
+    this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taskId = task.id!.toString();
-    final isExpanded = ref.watch(expansionProvider.select((map) => map[taskId] ?? true));
+    final isExpanded = showHierarchy ? ref.watch(expansionProvider.select((map) => map[taskId] ?? true)) : false;
     final isOverdue = task.endDate?.isOverdue ?? false;
 
-    return AppCard(
-      onTap: () => context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId}),
+    final card = AppCard(
+      onTap: onTaskTap ?? () => context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId}),
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
         onChange: (_) => ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(task),
       ),
       title: Text(task.title),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TaskPriorityBadge(priority: task.priority),
-          SizedBox(width: AppConstants.spacing.extraSmall),
-          ActionMenuButton(
-            onEdit: () => TaskCommands.edit(context, task),
-            onDelete: () => TaskCommands.delete(context, ref, task, projectIdString),
-          ),
-        ],
-      ),
+      trailing: showHierarchy
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TaskPriorityBadge(priority: task.priority),
+                SizedBox(width: AppConstants.spacing.extraSmall),
+                ActionMenuButton(
+                  onEdit: () => TaskCommands.edit(context, task),
+                  onDelete: () => TaskCommands.delete(context, ref, task, projectIdString),
+                ),
+              ],
+            )
+          : TaskPriorityBadge(priority: task.priority),
       subtitle: (task.description != null && task.description!.isNotEmpty)
           ? Text(
               task.description!,
@@ -73,21 +83,27 @@ class TaskCard extends ConsumerWidget {
         deadline: task.endDate,
         isOverdue: isOverdue && !task.isCompleted,
       ),
-      footerActions: [
-        AddSubtaskChip(
-          onPressed: () =>
-              TaskCommands.create(context, projectId: task.projectId, parentTaskId: task.id, depth: task.depth + 1),
-        ),
-        SizedBox(width: AppConstants.spacing.regular),
-        if (subtasks.isNotEmpty)
-          SubtaskCountChip(
-            count: subtasks.length,
-            expanded: isExpanded,
-            onToggle: () => ref.read(expansionProvider.notifier).toggle(task.id!.toString(), defaultValue: true),
-          ),
-      ],
+      footerActions: showHierarchy
+          ? [
+              AddSubtaskChip(
+                onPressed: () => TaskCommands.create(
+                  context,
+                  projectId: task.projectId,
+                  parentTaskId: task.id,
+                  depth: task.depth + 1,
+                ),
+              ),
+              SizedBox(width: AppConstants.spacing.regular),
+              if (subtasks.isNotEmpty)
+                SubtaskCountChip(
+                  count: subtasks.length,
+                  expanded: isExpanded,
+                  onToggle: () => ref.read(expansionProvider.notifier).toggle(task.id!.toString(), defaultValue: true),
+                ),
+            ]
+          : null,
       children: [
-        if (isExpanded && subtasks.isNotEmpty)
+        if (showHierarchy && isExpanded && subtasks.isNotEmpty)
           Column(
             mainAxisSize: MainAxisSize.min,
             children: subtasks
@@ -106,6 +122,17 @@ class TaskCard extends ConsumerWidget {
                 .toList(),
           ),
       ],
+    );
+
+    if (!isSelected) return card;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+        border: Border.all(color: context.colors.primary, width: 1.5),
+      ),
+      child: card,
     );
   }
 }

@@ -25,6 +25,7 @@ class ListToolbar extends StatelessWidget {
   final VoidCallback? onCreate;
   final String createLabel;
   final Widget? viewModeControl;
+  final FocusNode? searchFocusNode;
 
   const ListToolbar({
     super.key,
@@ -36,6 +37,7 @@ class ListToolbar extends StatelessWidget {
     this.onCreate,
     this.createLabel = 'Create',
     this.viewModeControl,
+    this.searchFocusNode,
   });
 
   @override
@@ -51,7 +53,7 @@ class ListToolbar extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: AppSearchBar(hint: searchHint, onChanged: onSearchChanged),
+                    child: AppSearchBar(hint: searchHint, onChanged: onSearchChanged, focusNode: searchFocusNode),
                   ),
                   if (viewModeControl != null) ...[SizedBox(width: AppConstants.spacing.small), viewModeControl!],
                   SizedBox(width: AppConstants.spacing.small),

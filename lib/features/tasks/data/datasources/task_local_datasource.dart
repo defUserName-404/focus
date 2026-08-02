@@ -24,6 +24,7 @@ abstract class ITaskLocalDataSource {
     TaskSortOrder sortOrder,
     TaskPriority? priorityFilter,
     TaskStatus? statusFilter,
+    TaskCompletionFilter completionFilter,
   });
 
   /// Watch ALL tasks across all projects with filtering/sorting.
@@ -199,6 +200,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     TaskSortOrder sortOrder = TaskSortOrder.none,
     TaskPriority? priorityFilter,
     TaskStatus? statusFilter,
+    TaskCompletionFilter completionFilter = TaskCompletionFilter.all,
   }) {
     final query = _db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId) & t.deletedAt.isNull());
 
@@ -213,6 +215,15 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
 
     if (statusFilter != null) {
       query.where((t) => t.status.equalsValue(statusFilter));
+    }
+
+    switch (completionFilter) {
+      case TaskCompletionFilter.completed:
+        query.where((t) => t.status.equalsValue(TaskStatus.done));
+      case TaskCompletionFilter.incomplete:
+        query.where((t) => t.status.equalsValue(TaskStatus.done).not());
+      case TaskCompletionFilter.all:
+        break;
     }
 
     if (sortOrder != TaskSortOrder.none) {
