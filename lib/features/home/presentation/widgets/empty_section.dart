@@ -11,13 +11,16 @@ class EmptySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.extraLarge2, vertical: AppConstants.spacing.large),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppConstants.spacing.extraLarge2,
+        vertical: AppConstants.spacing.regular,
+      ),
       child: Center(
         child: Column(
           children: [
             Icon(
               icon,
-              size: AppConstants.size.icon.large * 4 / 3,
+              size: AppConstants.size.icon.large,
               color: context.colors.mutedForeground.withValues(alpha: 0.4),
             ),
             SizedBox(height: AppConstants.spacing.regular),

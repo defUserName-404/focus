@@ -98,9 +98,7 @@ class HomeScreen extends ConsumerWidget {
                 const HomeOnboardingCard()
               else ...[
                 const TodayAgendaSection(),
-                SizedBox(height: AppConstants.spacing.small),
                 const HabitsStripSection(),
-                SizedBox(height: AppConstants.spacing.small),
                 const UpcomingCalendarCard(),
               ],
             ],
