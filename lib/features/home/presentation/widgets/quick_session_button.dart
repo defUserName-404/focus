@@ -18,12 +18,12 @@ class QuickSessionButton extends ConsumerWidget {
         onTap: () => FocusCommands.startQuickSession(context, ref),
         borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large, vertical: AppConstants.spacing.large),
+          padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large, vertical: 12),
           child: Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: context.colors.background.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
