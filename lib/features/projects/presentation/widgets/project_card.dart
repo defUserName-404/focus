@@ -36,6 +36,7 @@ class ProjectCard extends StatelessWidget {
         ),
         child: AppCard(
           onTap: onTap,
+          dense: true,
           title: Text(project.title),
           trailing: ActionMenuButton(onEdit: onEdit, onDelete: onDelete),
           subtitle: (project.description != null && project.description!.isNotEmpty)
@@ -47,21 +48,33 @@ class ProjectCard extends StatelessWidget {
                 )
               : null,
           footerActions: [
-            fu.FBadge(
-              variant: project.deadline?.isOverdue ?? false ? .destructive : .secondary,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: Icon(fu.FLucideIcons.calendarCheck, size: AppConstants.size.icon.small),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: fu.FBadge(
+                  variant: project.deadline?.isOverdue ?? false ? .destructive : .secondary,
+                  child: Row(
+                    mainAxisSize: .min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Icon(fu.FLucideIcons.calendarCheck, size: AppConstants.size.icon.small),
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          project.deadline?.toRelativeDueString() ?? 'No deadline',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  Text(project.deadline?.toRelativeDueString() ?? 'No deadline'),
-                ],
+                ),
               ),
             ),
-            const Spacer(),
+            SizedBox(width: AppConstants.spacing.small),
             fu.FButton.icon(
               onPress: onTap,
               child: Icon(fu.FLucideIcons.arrowRight, size: AppConstants.size.icon.regular),

@@ -13,6 +13,7 @@ class AppCard extends StatefulWidget {
   final List<Widget>? children;
   final VoidCallback? onTap;
   final bool isCompleted;
+  final bool dense;
   final MouseCursor mouseCursor;
 
   const AppCard({
@@ -26,6 +27,7 @@ class AppCard extends StatefulWidget {
     this.children,
     this.onTap,
     this.isCompleted = false,
+    this.dense = false,
     this.mouseCursor = SystemMouseCursors.click,
   });
 
@@ -54,63 +56,66 @@ class _AppCardState extends State<AppCard> {
         child: GestureDetector(
           onTap: widget.onTap,
           child: fu.FCard(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if (widget.leading != null)
-                          SizedBox(
-                            width: leadingSlot,
-                            height: leadingSlot,
-                            child: Center(child: widget.leading!),
-                          ),
-                        Expanded(
-                          child: DefaultTextStyle(
-                            style: context.typography.md.copyWith(
-                              fontWeight: widget.isCompleted ? FontWeight.w400 : FontWeight.w600,
-                              color: widget.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
-                              decoration: widget.isCompleted ? TextDecoration.lineThrough : null,
-                            ),
-                            child: widget.title,
-                          ),
-                        ),
-                        if (widget.trailing != null) ...[
-                          SizedBox(width: AppConstants.spacing.regular),
-                          widget.trailing!,
-                        ],
-                      ],
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: widget.leading != null ? leadingSlot : 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+            child: Padding(
+              padding: EdgeInsets.all(widget.dense ? 12 : 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          if (widget.subtitle != null) ...[
-                            SizedBox(height: AppConstants.spacing.extraSmall),
-                            widget.subtitle!,
-                          ],
-                          if (widget.content != null) ...[
-                            SizedBox(height: AppConstants.spacing.regular),
-                            widget.content!,
-                          ],
-                          if (widget.footerActions != null && widget.footerActions!.isNotEmpty) ...[
-                            SizedBox(height: AppConstants.spacing.regular),
-                            Row(mainAxisAlignment: MainAxisAlignment.end, children: widget.footerActions!),
+                          if (widget.leading != null)
+                            SizedBox(
+                              width: leadingSlot,
+                              height: leadingSlot,
+                              child: Center(child: widget.leading!),
+                            ),
+                          Expanded(
+                            child: DefaultTextStyle(
+                              style: context.typography.md.copyWith(
+                                fontWeight: widget.isCompleted ? FontWeight.w400 : FontWeight.w600,
+                                color: widget.isCompleted ? context.colors.mutedForeground : context.colors.foreground,
+                                decoration: widget.isCompleted ? TextDecoration.lineThrough : null,
+                              ),
+                              child: widget.title,
+                            ),
+                          ),
+                          if (widget.trailing != null) ...[
+                            SizedBox(width: AppConstants.spacing.regular),
+                            widget.trailing!,
                           ],
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                ...?widget.children,
-              ],
+                      Padding(
+                        padding: EdgeInsets.only(left: widget.leading != null ? leadingSlot : 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (widget.subtitle != null) ...[
+                              SizedBox(height: AppConstants.spacing.extraSmall),
+                              widget.subtitle!,
+                            ],
+                            if (widget.content != null) ...[
+                              SizedBox(height: AppConstants.spacing.regular),
+                              widget.content!,
+                            ],
+                            if (widget.footerActions != null && widget.footerActions!.isNotEmpty) ...[
+                              SizedBox(height: AppConstants.spacing.regular),
+                              Row(mainAxisAlignment: MainAxisAlignment.end, children: widget.footerActions!),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  ...?widget.children,
+                ],
+              ),
             ),
           ),
         ),
