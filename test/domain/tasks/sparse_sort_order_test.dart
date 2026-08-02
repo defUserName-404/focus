@@ -45,6 +45,34 @@ void main() {
     test('insert in middle uses midpoint', () {
       expect(SparseSortOrder.forInsert(neighborOrders: const [1000, 3000], insertIndex: 1), 2000);
     });
+
+    test('repeated same-slot inserts eventually require rebalance', () {
+      var orders = <double>[1000, 2000];
+      var collapsed = false;
+
+      for (var i = 0; i < 40; i++) {
+        final next = SparseSortOrder.forInsert(neighborOrders: orders, insertIndex: 1);
+        if (next == null) {
+          collapsed = true;
+          final rebalanced = SparseSortOrder.rebalance(orders.length + 1);
+          expect(rebalanced.length, orders.length + 1);
+          expect(rebalanced[1], greaterThan(rebalanced[0]));
+          expect(rebalanced[2], greaterThan(rebalanced[1]));
+          // Place the new item at slot 1 after rebalance, then continue inserting there.
+          orders = [rebalanced[0], rebalanced[1], ...rebalanced.skip(2)];
+          final after = SparseSortOrder.forInsert(neighborOrders: orders, insertIndex: 1);
+          expect(after, isNotNull);
+          orders = [orders[0], after!, ...orders.skip(1)];
+          continue;
+        }
+        orders = [orders[0], next, ...orders.skip(1)];
+      }
+
+      expect(collapsed, isTrue);
+      for (var i = 1; i < orders.length; i++) {
+        expect(orders[i], greaterThan(orders[i - 1]));
+      }
+    });
   });
 
   group('SparseSortOrder.rebalance', () {
