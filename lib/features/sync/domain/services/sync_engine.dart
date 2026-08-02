@@ -1,11 +1,10 @@
 import '../../../../core/services/log_service.dart';
 import '../../../../core/utils/result.dart';
-import '../../../projects/domain/repositories/i_project_repository.dart';
-import '../../../tasks/domain/entities/task.dart';
-import '../../../tasks/domain/repositories/i_task_repository.dart';
-import '../../domain/entities/sync_data.dart';
-import '../../domain/entities/sync_state.dart';
-import '../../domain/services/i_cloud_storage_service.dart';
+import '../../data/datasources/sync_local_datasource.dart';
+import '../entities/sync_data.dart';
+import '../entities/sync_state.dart';
+import 'i_cloud_storage_service.dart';
+import 'sync_merge_engine.dart';
 import '../../../settings/domain/repositories/i_settings_repository.dart';
 
 final _log = LogService.instance;
@@ -16,74 +15,85 @@ abstract final class SyncSettingsKeys {
   static const String syncEnabled = 'sync_enabled';
 }
 
-/// The core sync engine that coordinates data synchronization between
-/// local storage and cloud storage.
+/// Coordinates local ↔ cloud synchronization.
 ///
-/// Handles:
-/// - Gathering all local projects and tasks
-/// - Comparing with remote data
-/// - Detecting conflicts (both sides changed since last sync)
-/// - Merging non-conflicting changes
-/// - Uploading the merged result
+/// Merge logic lives in [SyncMergeEngine] (pure / unit-tested). This class
+/// owns I/O: gather, download, upload, apply, and schema-version gating.
 class SyncEngine {
   final ICloudStorageService _cloudService;
-  final IProjectRepository _projectRepository;
-  final ITaskRepository _taskRepository;
+  final ISyncLocalDataSource _localDataSource;
   final ISettingsRepository _settingsRepository;
+  final SyncMergeEngine _mergeEngine;
 
-  SyncEngine(this._cloudService, this._projectRepository, this._taskRepository, this._settingsRepository);
+  SyncEngine(
+    this._cloudService,
+    this._localDataSource,
+    this._settingsRepository, {
+    SyncMergeEngine mergeEngine = const SyncMergeEngine(),
+  }) : _mergeEngine = mergeEngine;
 
-  /// Get the last sync timestamp from settings.
   Future<DateTime?> getLastSyncedAt() async {
     final value = await _settingsRepository.getValue(SyncSettingsKeys.lastSyncedAt);
     if (value == null) return null;
     return DateTime.tryParse(value);
   }
 
-  /// Save the last sync timestamp.
+  Future<bool> isSyncEnabled() async {
+    final value = await _settingsRepository.getValue(SyncSettingsKeys.syncEnabled);
+    // Default to enabled when connected so existing installs keep working.
+    if (value == null) return true;
+    return value == 'true';
+  }
+
+  Future<void> setSyncEnabled(bool enabled) async {
+    await _settingsRepository.setValue(SyncSettingsKeys.syncEnabled, enabled ? 'true' : 'false');
+  }
+
   Future<void> _saveLastSyncedAt(DateTime timestamp) async {
     await _settingsRepository.setValue(SyncSettingsKeys.lastSyncedAt, timestamp.toIso8601String());
   }
 
-  /// Gather all local data into a [SyncData] object.
-  Future<SyncData> _gatherLocalData() async {
-    final projects = await _projectRepository.getAllProjects();
-    final allTasks = <Task>[];
+  /// Export a SyncData-shaped bundle of the current local database.
+  Future<SyncData> exportLocalBackup() => _localDataSource.gatherLocalData();
 
-    for (final project in projects) {
-      if (project.id != null) {
-        final tasks = await _taskRepository.getTasksByProjectId(project.id!);
-        allTasks.addAll(tasks);
+  /// Replace local sync-covered data with [data] (after schema check).
+  Future<Result<void>> restoreFromBackup(SyncData data) async {
+    try {
+      if (data.schemaVersion > kSyncSchemaVersion) {
+        return Failure(
+          SyncFailure(
+            'Backup schema v${data.schemaVersion} is newer than this app (v$kSyncSchemaVersion). Upgrade Focus to restore.',
+          ),
+        );
       }
+      await _localDataSource.replaceAllWith(data.copyWith(schemaVersion: kSyncSchemaVersion));
+      return const Success(null);
+    } catch (e, st) {
+      _log.error('Restore failed', tag: 'SyncEngine', error: e, stackTrace: st);
+      return Failure(SyncFailure('Failed to restore backup', error: e, stackTrace: st));
     }
-
-    return SyncData(
-      syncTimestamp: DateTime.now(),
-      projects: projects.where((p) => p.id != null).map((p) => SyncProjectData.fromProject(p)).toList(),
-      tasks: allTasks.where((t) => t.id != null).map((t) => SyncTaskData.fromTask(t)).toList(),
-    );
   }
 
   /// Perform a full sync operation.
-  ///
-  /// Returns a [SyncState] with conflicts if any are detected.
-  /// The caller must resolve conflicts and call [applyResolutions] before
-  /// the sync is complete.
-  Future<Result<SyncState>> performSync() async {
+  Future<Result<SyncState>> performSync({bool force = false}) async {
     try {
+      if (!force && !await isSyncEnabled()) {
+        _log.info('Sync skipped — auto sync disabled', tag: 'SyncEngine');
+        final email = await _cloudService.getAccountEmail();
+        return Success(SyncState(status: SyncStatus.idle, lastSyncedAt: await getLastSyncedAt(), accountEmail: email));
+      }
+
       _log.info('Starting sync...', tag: 'SyncEngine');
 
-      // 1. Download remote data.
       final downloadResult = await _cloudService.downloadSyncData();
       switch (downloadResult) {
         case Failure(:final failure):
           return Failure(failure);
         case Success(:final value):
           final remoteData = value;
-          final localData = await _gatherLocalData();
+          final localData = await _localDataSource.gatherLocalData();
           final lastSyncedAt = await getLastSyncedAt();
 
-          // 2. If no remote data, just upload local.
           if (remoteData == null) {
             _log.info('No remote data found, uploading local data', tag: 'SyncEngine');
             final uploadResult = await _cloudService.uploadSyncData(localData);
@@ -103,10 +113,22 @@ class SyncEngine {
             }
           }
 
-          // 3. Detect conflicts and merge.
-          final mergeResult = _mergeData(localData, remoteData, lastSyncedAt);
+          if (remoteData.schemaVersion > kSyncSchemaVersion) {
+            return Failure(
+              SyncFailure(
+                'Remote sync schema v${remoteData.schemaVersion} is newer than this app '
+                '(v$kSyncSchemaVersion). Upgrade Focus to sync.',
+              ),
+            );
+          }
 
-          // 4. If conflicts exist, return them for resolution.
+          final SyncMergeResult mergeResult;
+          try {
+            mergeResult = _mergeEngine.merge(localData, remoteData, lastSyncedAt);
+          } on SyncSchemaTooNewException catch (e) {
+            return Failure(SyncFailure(e.toString()));
+          }
+
           if (mergeResult.conflicts.isNotEmpty) {
             _log.info('${mergeResult.conflicts.length} conflicts detected', tag: 'SyncEngine');
             return Success(
@@ -119,11 +141,9 @@ class SyncEngine {
             );
           }
 
-          // 5. Apply the merged data.
-          await _applyMergedData(mergeResult);
+          await _localDataSource.applyMergedData(mergeResult.merged);
 
-          // 6. Upload the final merged state.
-          final finalData = await _gatherLocalData();
+          final finalData = await _localDataSource.gatherLocalData();
           final uploadResult = await _cloudService.uploadSyncData(finalData);
           switch (uploadResult) {
             case Failure(:final failure):
@@ -159,47 +179,39 @@ class SyncEngine {
           if (remoteData == null) {
             return const Failure(SyncFailure('Remote data disappeared during conflict resolution'));
           }
-
-          final localData = await _gatherLocalData();
-          final lastSyncedAt = await getLastSyncedAt();
-          final mergeResult = _mergeData(localData, remoteData, lastSyncedAt);
-
-          // Apply non-conflicting changes first.
-          await _applyMergedData(mergeResult);
-
-          // Apply conflict resolutions.
-          for (final conflict in resolvedConflicts) {
-            if (conflict.resolution == null) continue;
-
-            if (conflict.resolution == ConflictResolution.keepRemote) {
-              // Apply the remote version.
-              if (conflict.entityType == 'project') {
-                final remoteProject = remoteData.projects.where((p) => p.id == conflict.entityId).firstOrNull;
-                if (remoteProject != null) {
-                  final existing = await _projectRepository.getProjectById(remoteProject.id);
-                  if (existing != null) {
-                    await _projectRepository.updateProject(remoteProject.toProject());
-                  } else {
-                    await _projectRepository.createProject(remoteProject.toProject());
-                  }
-                }
-              } else if (conflict.entityType == 'task') {
-                final remoteTask = remoteData.tasks.where((t) => t.id == conflict.entityId).firstOrNull;
-                if (remoteTask != null) {
-                  final existing = await _taskRepository.getTaskById(remoteTask.id);
-                  if (existing != null) {
-                    await _taskRepository.updateTask(remoteTask.toTask());
-                  } else {
-                    await _taskRepository.createTask(remoteTask.toTask());
-                  }
-                }
-              }
-            }
-            // keepLocal means we do nothing — local is already correct.
+          if (remoteData.schemaVersion > kSyncSchemaVersion) {
+            return Failure(
+              SyncFailure(
+                'Remote sync schema v${remoteData.schemaVersion} is newer than this app '
+                '(v$kSyncSchemaVersion). Upgrade Focus to sync.',
+              ),
+            );
           }
 
-          // Upload the final state.
-          final finalData = await _gatherLocalData();
+          final localData = await _localDataSource.gatherLocalData();
+          final lastSyncedAt = await getLastSyncedAt();
+
+          final SyncMergeResult mergeResult;
+          try {
+            mergeResult = _mergeEngine.merge(localData, remoteData, lastSyncedAt);
+          } on SyncSchemaTooNewException catch (e) {
+            return Failure(SyncFailure(e.toString()));
+          }
+
+          // Start from the non-conflicting merge, then overlay resolutions.
+          var resolved = mergeResult.merged;
+          final remoteByType = _indexRemote(remoteData);
+          final localByType = _indexLocal(localData);
+
+          for (final conflict in resolvedConflicts) {
+            if (conflict.resolution == null) continue;
+            final source = conflict.resolution == ConflictResolution.keepRemote ? remoteByType : localByType;
+            resolved = _applyConflictChoice(resolved, conflict, source);
+          }
+
+          await _localDataSource.applyMergedData(resolved);
+
+          final finalData = await _localDataSource.gatherLocalData();
           final uploadResult = await _cloudService.uploadSyncData(finalData);
           switch (uploadResult) {
             case Failure(:final failure):
@@ -223,153 +235,50 @@ class SyncEngine {
     }
   }
 
-  /// Merge local and remote data, detecting conflicts.
-  _MergeResult _mergeData(SyncData local, SyncData remote, DateTime? lastSyncedAt) {
-    final conflicts = <SyncConflict>[];
-    final projectsToCreate = <SyncProjectData>[];
-    final projectsToUpdate = <SyncProjectData>[];
-    final tasksToCreate = <SyncTaskData>[];
-    final tasksToUpdate = <SyncTaskData>[];
+  Map<String, Map<String, Object>> _indexRemote(SyncData data) => {
+    'project': {for (final e in data.projects) e.uuid: e},
+    'milestone': {for (final e in data.milestones) e.uuid: e},
+    'tag': {for (final e in data.tags) e.uuid: e},
+    'task': {for (final e in data.tasks) e.uuid: e},
+    'taskTag': {for (final e in data.taskTags) e.uuid: e},
+    'completion': {for (final e in data.completions) e.uuid: e},
+    'session': {for (final e in data.sessions) e.uuid: e},
+    'setting': {for (final e in data.settings) e.key: e},
+  };
 
-    final localProjectMap = {for (final p in local.projects) p.id: p};
-    final localTaskMap = {for (final t in local.tasks) t.id: t};
+  Map<String, Map<String, Object>> _indexLocal(SyncData data) => _indexRemote(data);
 
-    // --- Merge Projects ---
+  SyncData _applyConflictChoice(SyncData base, SyncConflict conflict, Map<String, Map<String, Object>> source) {
+    final entity = source[conflict.entityType]?[conflict.entityId];
+    if (entity == null) return base;
 
-    // Remote projects not in local → create locally.
-    for (final remoteProject in remote.projects) {
-      final localProject = localProjectMap[remoteProject.id];
-      if (localProject == null) {
-        projectsToCreate.add(remoteProject);
-        continue;
-      }
-
-      // Both exist — check for conflicts.
-      if (lastSyncedAt != null) {
-        final localChanged = localProject.updatedAt.isAfter(lastSyncedAt);
-        final remoteChanged = remoteProject.updatedAt.isAfter(lastSyncedAt);
-
-        if (localChanged && remoteChanged) {
-          // Both changed since last sync — CONFLICT.
-          conflicts.add(
-            SyncConflict(
-              entityType: 'project',
-              entityId: remoteProject.id,
-              entityTitle: remoteProject.title,
-              localUpdatedAt: localProject.updatedAt,
-              remoteUpdatedAt: remoteProject.updatedAt,
-            ),
-          );
-        } else if (remoteChanged && !localChanged) {
-          // Only remote changed — update local.
-          projectsToUpdate.add(remoteProject);
-        }
-        // Only local changed or neither changed → keep local (nothing to do).
-      } else {
-        // First sync ever — prefer whichever is newer.
-        if (remoteProject.updatedAt.isAfter(localProject.updatedAt)) {
-          projectsToUpdate.add(remoteProject);
-        }
-      }
-    }
-
-    // --- Merge Tasks ---
-
-    // Remote tasks not in local → create locally.
-    for (final remoteTask in remote.tasks) {
-      final localTask = localTaskMap[remoteTask.id];
-      if (localTask == null) {
-        tasksToCreate.add(remoteTask);
-        continue;
-      }
-
-      // Both exist — check for conflicts.
-      if (lastSyncedAt != null) {
-        final localChanged = localTask.updatedAt.isAfter(lastSyncedAt);
-        final remoteChanged = remoteTask.updatedAt.isAfter(lastSyncedAt);
-
-        if (localChanged && remoteChanged) {
-          conflicts.add(
-            SyncConflict(
-              entityType: 'task',
-              entityId: remoteTask.id,
-              entityTitle: remoteTask.title,
-              localUpdatedAt: localTask.updatedAt,
-              remoteUpdatedAt: remoteTask.updatedAt,
-            ),
-          );
-        } else if (remoteChanged && !localChanged) {
-          tasksToUpdate.add(remoteTask);
-        }
-      } else {
-        if (remoteTask.updatedAt.isAfter(localTask.updatedAt)) {
-          tasksToUpdate.add(remoteTask);
-        }
-      }
-    }
-
-    return _MergeResult(
-      conflicts: conflicts,
-      projectsToCreate: projectsToCreate,
-      projectsToUpdate: projectsToUpdate,
-      tasksToCreate: tasksToCreate,
-      tasksToUpdate: tasksToUpdate,
-    );
+    return switch (conflict.entityType) {
+      'project' => base.copyWith(projects: _replaceByUuid(base.projects, entity as SyncProjectData, (e) => e.uuid)),
+      'milestone' => base.copyWith(
+        milestones: _replaceByUuid(base.milestones, entity as SyncMilestoneData, (e) => e.uuid),
+      ),
+      'tag' => base.copyWith(tags: _replaceByUuid(base.tags, entity as SyncTagData, (e) => e.uuid)),
+      'task' => base.copyWith(tasks: _replaceByUuid(base.tasks, entity as SyncTaskData, (e) => e.uuid)),
+      'taskTag' => base.copyWith(taskTags: _replaceByUuid(base.taskTags, entity as SyncTaskTagData, (e) => e.uuid)),
+      'completion' => base.copyWith(
+        completions: _replaceByUuid(base.completions, entity as SyncTaskCompletionData, (e) => e.uuid),
+      ),
+      'session' => base.copyWith(
+        sessions: _replaceByUuid(base.sessions, entity as SyncFocusSessionData, (e) => e.uuid),
+      ),
+      'setting' => base.copyWith(settings: _replaceByKey(base.settings, entity as SyncSettingData)),
+      _ => base,
+    };
   }
 
-  /// Apply the non-conflicting merge results to the local database.
-  Future<void> _applyMergedData(_MergeResult mergeResult) async {
-    // Create new projects first (tasks depend on them).
-    for (final project in mergeResult.projectsToCreate) {
-      try {
-        await _projectRepository.createProject(project.toProject());
-      } catch (e, st) {
-        _log.warning('Failed to create synced project ${project.id}', tag: 'SyncEngine', error: e, stackTrace: st);
-      }
-    }
-
-    // Update existing projects.
-    for (final project in mergeResult.projectsToUpdate) {
-      try {
-        await _projectRepository.updateProject(project.toProject());
-      } catch (e, st) {
-        _log.warning('Failed to update synced project ${project.id}', tag: 'SyncEngine', error: e, stackTrace: st);
-      }
-    }
-
-    // Create new tasks.
-    for (final task in mergeResult.tasksToCreate) {
-      try {
-        await _taskRepository.createTask(task.toTask());
-      } catch (e, st) {
-        _log.warning('Failed to create synced task ${task.id}', tag: 'SyncEngine', error: e, stackTrace: st);
-      }
-    }
-
-    // Update existing tasks.
-    for (final task in mergeResult.tasksToUpdate) {
-      try {
-        await _taskRepository.updateTask(task.toTask());
-      } catch (e, st) {
-        _log.warning('Failed to update synced task ${task.id}', tag: 'SyncEngine', error: e, stackTrace: st);
-      }
-    }
+  List<T> _replaceByUuid<T>(List<T> list, T replacement, String Function(T) uuidOf) {
+    final uuid = uuidOf(replacement);
+    final without = list.where((e) => uuidOf(e) != uuid).toList();
+    return [...without, replacement];
   }
-}
 
-/// Internal result of the merge operation.
-class _MergeResult {
-  final List<SyncConflict> conflicts;
-  final List<SyncProjectData> projectsToCreate;
-  final List<SyncProjectData> projectsToUpdate;
-  final List<SyncTaskData> tasksToCreate;
-  final List<SyncTaskData> tasksToUpdate;
-
-  const _MergeResult({
-    required this.conflicts,
-    required this.projectsToCreate,
-    required this.projectsToUpdate,
-    required this.tasksToCreate,
-    required this.tasksToUpdate,
-  });
+  List<SyncSettingData> _replaceByKey(List<SyncSettingData> list, SyncSettingData replacement) {
+    final without = list.where((e) => e.key != replacement.key).toList();
+    return [...without, replacement];
+  }
 }

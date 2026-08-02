@@ -66,7 +66,9 @@ class SyncState extends Equatable {
 class SyncConflict extends Equatable {
   /// The unique identifier of the conflicting entity.
   final String entityType;
-  final int entityId;
+
+  /// Stable sync identity (`uuid` for rows, settings `key` for preferences).
+  final String entityId;
   final String entityTitle;
 
   /// When the local version was last updated.

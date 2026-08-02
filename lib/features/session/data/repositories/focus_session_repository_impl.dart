@@ -1,3 +1,4 @@
+import '../../../../core/services/data_change_bus.dart';
 import '../../../../core/services/log_service.dart';
 import '../../domain/entities/focus_session.dart';
 import '../../domain/entities/focus_session_extensions.dart';
@@ -9,8 +10,11 @@ final _log = LogService.instance;
 
 class FocusSessionRepositoryImpl implements IFocusSessionRepository {
   final IFocusLocalDataSource _local;
+  final DataChangeBus? _dataChangeBus;
 
-  FocusSessionRepositoryImpl(this._local);
+  FocusSessionRepositoryImpl(this._local, [this._dataChangeBus]);
+
+  void _emitChange() => _dataChangeBus?.notify();
 
   @override
   Future<FocusSession> startSession(FocusSession session) async {
@@ -19,6 +23,7 @@ class FocusSessionRepositoryImpl implements IFocusSessionRepository {
       final id = await _local.createSession(companion);
       final saved = session.copyWith(id: id);
       _log.debug('Session persisted (id=$id)', tag: 'FocusSessionRepository');
+      _emitChange();
       return saved;
     } catch (e, st) {
       _log.error('Failed to persist session', tag: 'FocusSessionRepository', error: e, stackTrace: st);
@@ -32,6 +37,7 @@ class FocusSessionRepositoryImpl implements IFocusSessionRepository {
     try {
       final companion = session.toCompanion();
       await _local.updateSession(companion);
+      _emitChange();
     } catch (e, st) {
       _log.error(
         'Failed to update session (id=${session.id})',
@@ -68,6 +74,7 @@ class FocusSessionRepositoryImpl implements IFocusSessionRepository {
   Future<void> deleteSession(int id) async {
     try {
       await _local.deleteSession(id);
+      _emitChange();
     } catch (e, st) {
       _log.error('Failed to delete session (id=$id)', tag: 'FocusSessionRepository', error: e, stackTrace: st);
       rethrow;

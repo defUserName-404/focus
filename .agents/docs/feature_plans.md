@@ -55,9 +55,19 @@ Status (Phase 6):
   are implemented on `ReportsScreen` via window-scoped SQL aggregates in
   `task_stats_local_datasource.dart` and `ReportInsightsCalculator`.
 
+### 5. Sync Rewrite (Phase 7 — High)
+
+Goal:
+- UUID-keyed multi-device sync with tombstones, extended entity coverage, auto-sync, and backup.
+
+Status (Phase 7):
+- `SyncData` schema v2 references peers by UUID; refuses newer remote schemas.
+- Pure `SyncMergeEngine` + `SyncEngine`/`SyncLocalDataSource` bulk gather/apply.
+- Auto-sync (`sync_enabled`, lifecycle, mutation debounce) and local JSON backup/restore.
+- DB schema v9 adds soft-delete fields on `task_tag_table`.
+
 ## Backlog Candidates
 
-- Import/export and backup restore workflows
 - Extended keyboard and desktop productivity shortcuts
 - Advanced session analytics and trend surfacing
 

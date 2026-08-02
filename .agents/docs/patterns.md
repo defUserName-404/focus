@@ -425,6 +425,42 @@ Gotchas:
 - Tag time double-counts sessions on multi-tagged tasks (intentional for tag breakdowns).
 - Export respects the selected insights window; heatmap uses the current calendar year.
 
+## Sync Merge + Auto Sync
+
+Phase 7 rewrote cloud sync around UUID identity and a pure merge engine:
+
+```dart
+// Pure — unit-tested in test/domain/sync/sync_merge_engine_test.dart
+final result = const SyncMergeEngine().merge(local, remote, lastSyncedAt);
+// result.merged is SyncData keyed by uuid; conflicts use String entityId
+
+// I/O orchestration
+await syncEngine.performSync(force: true); // manual Sync Now ignores sync_enabled
+await syncEngine.performSync();            // auto path respects sync_enabled
+
+// Local gather/apply is bulk (no per-project N+1)
+final bundle = await syncLocalDataSource.gatherLocalData();
+await syncLocalDataSource.applyMergedData(merged);
+```
+
+Dependency apply order: projects → milestones → tags → tasks (by depth) → task-tags →
+completions → sessions → settings.
+
+Auto-sync triggers:
+- App foreground / background (`SyncAutoSyncService` + `WidgetsBindingObserver`)
+- Debounced after mutation batches (`DataChangeBus` from repository writes)
+- Manual "Sync Now" always available
+
+Backup/restore:
+- Export/import SyncData JSON via `SyncBackupService` + `file_picker`
+- Restore requires explicit confirmation and replaces sync-covered local data
+
+Gotchas:
+- Refuse remote/backup `schemaVersion` newer than `kSyncSchemaVersion`.
+- Do not sync `device_id`, desktop prefs, or UI view-mode keys.
+- Focus sessions derive merge clocks from `deletedAt ?? endTime ?? startTime` (no DB `updatedAt`).
+- Task↔tag links soft-delete (do not hard-delete) so tombstones can propagate.
+
 ## Mandatory Follow-Up
 
 When a new pattern is introduced in production code, add it here with:

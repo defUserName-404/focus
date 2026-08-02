@@ -4038,7 +4038,7 @@ class TagTableCompanion extends UpdateCompanion<TagTableData> {
   }
 }
 
-class $TaskTagTableTable extends TaskTagTable with TableInfo<$TaskTagTableTable, TaskTagTableData> {
+class $TaskTagTableTable extends TaskTagTable with TableInfo<$TaskTagTableTable, TaskTagData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -4063,15 +4063,52 @@ class $TaskTagTableTable extends TaskTagTable with TableInfo<$TaskTagTableTable,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('REFERENCES tag_table (id) ON DELETE CASCADE'),
   );
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
   @override
-  List<GeneratedColumn> get $columns => [taskId, tagId];
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+    'uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [taskId, tagId, uuid, createdAt, updatedAt, deletedAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'task_tag_table';
   @override
-  VerificationContext validateIntegrity(Insertable<TaskTagTableData> instance, {bool isInserting = false}) {
+  VerificationContext validateIntegrity(Insertable<TaskTagData> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('task_id')) {
@@ -4084,17 +4121,39 @@ class $TaskTagTableTable extends TaskTagTable with TableInfo<$TaskTagTableTable,
     } else if (isInserting) {
       context.missing(_tagIdMeta);
     }
+    if (data.containsKey('uuid')) {
+      context.handle(_uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta, createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta, updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta, deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {taskId, tagId};
   @override
-  TaskTagTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  TaskTagData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TaskTagTableData(
+    return TaskTagData(
       taskId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}task_id'])!,
       tagId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}tag_id'])!,
+      uuid: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      createdAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
     );
   }
 
@@ -4104,86 +4163,191 @@ class $TaskTagTableTable extends TaskTagTable with TableInfo<$TaskTagTableTable,
   }
 }
 
-class TaskTagTableData extends DataClass implements Insertable<TaskTagTableData> {
+class TaskTagData extends DataClass implements Insertable<TaskTagData> {
   final int taskId;
   final int tagId;
-  const TaskTagTableData({required this.taskId, required this.tagId});
+  final String uuid;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const TaskTagData({
+    required this.taskId,
+    required this.tagId,
+    required this.uuid,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['task_id'] = Variable<int>(taskId);
     map['tag_id'] = Variable<int>(tagId);
+    map['uuid'] = Variable<String>(uuid);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
   TaskTagTableCompanion toCompanion(bool nullToAbsent) {
-    return TaskTagTableCompanion(taskId: Value(taskId), tagId: Value(tagId));
+    return TaskTagTableCompanion(
+      taskId: Value(taskId),
+      tagId: Value(tagId),
+      uuid: Value(uuid),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent ? const Value.absent() : Value(deletedAt),
+    );
   }
 
-  factory TaskTagTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+  factory TaskTagData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TaskTagTableData(
+    return TaskTagData(
       taskId: serializer.fromJson<int>(json['taskId']),
       tagId: serializer.fromJson<int>(json['tagId']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{'taskId': serializer.toJson<int>(taskId), 'tagId': serializer.toJson<int>(tagId)};
+    return <String, dynamic>{
+      'taskId': serializer.toJson<int>(taskId),
+      'tagId': serializer.toJson<int>(tagId),
+      'uuid': serializer.toJson<String>(uuid),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
   }
 
-  TaskTagTableData copyWith({int? taskId, int? tagId}) =>
-      TaskTagTableData(taskId: taskId ?? this.taskId, tagId: tagId ?? this.tagId);
-  TaskTagTableData copyWithCompanion(TaskTagTableCompanion data) {
-    return TaskTagTableData(
+  TaskTagData copyWith({
+    int? taskId,
+    int? tagId,
+    String? uuid,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => TaskTagData(
+    taskId: taskId ?? this.taskId,
+    tagId: tagId ?? this.tagId,
+    uuid: uuid ?? this.uuid,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  TaskTagData copyWithCompanion(TaskTagTableCompanion data) {
+    return TaskTagData(
       taskId: data.taskId.present ? data.taskId.value : this.taskId,
       tagId: data.tagId.present ? data.tagId.value : this.tagId,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('TaskTagTableData(')
+    return (StringBuffer('TaskTagData(')
           ..write('taskId: $taskId, ')
-          ..write('tagId: $tagId')
+          ..write('tagId: $tagId, ')
+          ..write('uuid: $uuid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(taskId, tagId);
+  int get hashCode => Object.hash(taskId, tagId, uuid, createdAt, updatedAt, deletedAt);
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is TaskTagTableData && other.taskId == this.taskId && other.tagId == this.tagId);
+      identical(this, other) ||
+      (other is TaskTagData &&
+          other.taskId == this.taskId &&
+          other.tagId == this.tagId &&
+          other.uuid == this.uuid &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
 }
 
-class TaskTagTableCompanion extends UpdateCompanion<TaskTagTableData> {
+class TaskTagTableCompanion extends UpdateCompanion<TaskTagData> {
   final Value<int> taskId;
   final Value<int> tagId;
+  final Value<String> uuid;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
   final Value<int> rowid;
   const TaskTagTableCompanion({
     this.taskId = const Value.absent(),
     this.tagId = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  TaskTagTableCompanion.insert({required int taskId, required int tagId, this.rowid = const Value.absent()})
-    : taskId = Value(taskId),
-      tagId = Value(tagId);
-  static Insertable<TaskTagTableData> custom({
+  TaskTagTableCompanion.insert({
+    required int taskId,
+    required int tagId,
+    required String uuid,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : taskId = Value(taskId),
+       tagId = Value(tagId),
+       uuid = Value(uuid),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<TaskTagData> custom({
     Expression<int>? taskId,
     Expression<int>? tagId,
+    Expression<String>? uuid,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (taskId != null) 'task_id': taskId,
       if (tagId != null) 'tag_id': tagId,
+      if (uuid != null) 'uuid': uuid,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  TaskTagTableCompanion copyWith({Value<int>? taskId, Value<int>? tagId, Value<int>? rowid}) {
-    return TaskTagTableCompanion(taskId: taskId ?? this.taskId, tagId: tagId ?? this.tagId, rowid: rowid ?? this.rowid);
+  TaskTagTableCompanion copyWith({
+    Value<int>? taskId,
+    Value<int>? tagId,
+    Value<String>? uuid,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return TaskTagTableCompanion(
+      taskId: taskId ?? this.taskId,
+      tagId: tagId ?? this.tagId,
+      uuid: uuid ?? this.uuid,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
   }
 
   @override
@@ -4194,6 +4358,18 @@ class TaskTagTableCompanion extends UpdateCompanion<TaskTagTableData> {
     }
     if (tagId.present) {
       map['tag_id'] = Variable<int>(tagId.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -4206,6 +4382,10 @@ class TaskTagTableCompanion extends UpdateCompanion<TaskTagTableData> {
     return (StringBuffer('TaskTagTableCompanion(')
           ..write('taskId: $taskId, ')
           ..write('tagId: $tagId, ')
+          ..write('uuid: $uuid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4756,6 +4936,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'CREATE INDEX tag_deleted_at_idx ON tag_table (deleted_at)',
   );
   late final Index tagNameIdx = Index('tag_name_idx', 'CREATE INDEX tag_name_idx ON tag_table (name)');
+  late final Index taskTagUuidIdx = Index(
+    'task_tag_uuid_idx',
+    'CREATE UNIQUE INDEX task_tag_uuid_idx ON task_tag_table (uuid)',
+  );
+  late final Index taskTagDeletedAtIdx = Index(
+    'task_tag_deleted_at_idx',
+    'CREATE INDEX task_tag_deleted_at_idx ON task_tag_table (deleted_at)',
+  );
   late final Index milestoneUuidIdx = Index(
     'milestone_uuid_idx',
     'CREATE UNIQUE INDEX milestone_uuid_idx ON milestone_table (uuid)',
@@ -4825,6 +5013,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     tagUuidIdx,
     tagDeletedAtIdx,
     tagNameIdx,
+    taskTagUuidIdx,
+    taskTagDeletedAtIdx,
     milestoneUuidIdx,
     milestoneProjectIdIdx,
     milestoneDeletedAtIdx,
@@ -5705,7 +5895,7 @@ final class $$TaskTableTableReferences extends BaseReferences<_$AppDatabase, $Ta
     return ProcessedTableManager(manager.$state.copyWith(prefetchedData: cache));
   }
 
-  static MultiTypedResultKey<$TaskTagTableTable, List<TaskTagTableData>> _taskTagTableRefsTable(_$AppDatabase db) =>
+  static MultiTypedResultKey<$TaskTagTableTable, List<TaskTagData>> _taskTagTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(db.taskTagTable, aliasName: 'task_table__id__task_tag_table__task_id');
 
   $$TaskTagTableTableProcessedTableManager get taskTagTableRefs {
@@ -6411,7 +6601,7 @@ class $$TaskTableTableTableManager
                           typedResults: items,
                         ),
                       if (taskTagTableRefs)
-                        await $_getPrefetchedData<TaskTableData, $TaskTableTable, TaskTagTableData>(
+                        await $_getPrefetchedData<TaskTableData, $TaskTableTable, TaskTagData>(
                           currentTable: table,
                           referencedTable: $$TaskTableTableReferences._taskTagTableRefsTable(db),
                           managerFromTypedResult: (p0) => $$TaskTableTableReferences(db, table, p0).taskTagTableRefs,
@@ -7331,7 +7521,7 @@ typedef $$TagTableTableUpdateCompanionBuilder =
 final class $$TagTableTableReferences extends BaseReferences<_$AppDatabase, $TagTableTable, TagTableData> {
   $$TagTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$TaskTagTableTable, List<TaskTagTableData>> _taskTagTableRefsTable(_$AppDatabase db) =>
+  static MultiTypedResultKey<$TaskTagTableTable, List<TaskTagData>> _taskTagTableRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(db.taskTagTable, aliasName: 'tag_table__id__task_tag_table__tag_id');
 
   $$TaskTagTableTableProcessedTableManager get taskTagTableRefs {
@@ -7528,7 +7718,7 @@ class $$TagTableTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (taskTagTableRefs)
-                    await $_getPrefetchedData<TagTableData, $TagTableTable, TaskTagTableData>(
+                    await $_getPrefetchedData<TagTableData, $TagTableTable, TaskTagData>(
                       currentTable: table,
                       referencedTable: $$TagTableTableReferences._taskTagTableRefsTable(db),
                       managerFromTypedResult: (p0) => $$TagTableTableReferences(db, table, p0).taskTagTableRefs,
@@ -7559,11 +7749,27 @@ typedef $$TagTableTableProcessedTableManager =
       PrefetchHooks Function({bool taskTagTableRefs})
     >;
 typedef $$TaskTagTableTableCreateCompanionBuilder =
-    TaskTagTableCompanion Function({required int taskId, required int tagId, Value<int> rowid});
+    TaskTagTableCompanion Function({
+      required int taskId,
+      required int tagId,
+      required String uuid,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
 typedef $$TaskTagTableTableUpdateCompanionBuilder =
-    TaskTagTableCompanion Function({Value<int> taskId, Value<int> tagId, Value<int> rowid});
+    TaskTagTableCompanion Function({
+      Value<int> taskId,
+      Value<int> tagId,
+      Value<String> uuid,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
 
-final class $$TaskTagTableTableReferences extends BaseReferences<_$AppDatabase, $TaskTagTableTable, TaskTagTableData> {
+final class $$TaskTagTableTableReferences extends BaseReferences<_$AppDatabase, $TaskTagTableTable, TaskTagData> {
   $$TaskTagTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $TaskTableTable _taskIdTable(_$AppDatabase db) =>
@@ -7599,6 +7805,17 @@ class $$TaskTagTableTableFilterComposer extends Composer<_$AppDatabase, $TaskTag
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
   $$TaskTableTableFilterComposer get taskId {
     final $$TaskTableTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -7644,6 +7861,18 @@ class $$TaskTagTableTableOrderingComposer extends Composer<_$AppDatabase, $TaskT
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
   $$TaskTableTableOrderingComposer get taskId {
     final $$TaskTableTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7689,6 +7918,14 @@ class $$TaskTagTableTableAnnotationComposer extends Composer<_$AppDatabase, $Tas
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt => $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt => $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt => $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
   $$TaskTableTableAnnotationComposer get taskId {
     final $$TaskTableTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -7731,14 +7968,14 @@ class $$TaskTagTableTableTableManager
         RootTableManager<
           _$AppDatabase,
           $TaskTagTableTable,
-          TaskTagTableData,
+          TaskTagData,
           $$TaskTagTableTableFilterComposer,
           $$TaskTagTableTableOrderingComposer,
           $$TaskTagTableTableAnnotationComposer,
           $$TaskTagTableTableCreateCompanionBuilder,
           $$TaskTagTableTableUpdateCompanionBuilder,
-          (TaskTagTableData, $$TaskTagTableTableReferences),
-          TaskTagTableData,
+          (TaskTagData, $$TaskTagTableTableReferences),
+          TaskTagData,
           PrefetchHooks Function({bool taskId, bool tagId})
         > {
   $$TaskTagTableTableTableManager(_$AppDatabase db, $TaskTagTableTable table)
@@ -7753,11 +7990,38 @@ class $$TaskTagTableTableTableManager
               ({
                 Value<int> taskId = const Value.absent(),
                 Value<int> tagId = const Value.absent(),
+                Value<String> uuid = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => TaskTagTableCompanion(taskId: taskId, tagId: tagId, rowid: rowid),
+              }) => TaskTagTableCompanion(
+                taskId: taskId,
+                tagId: tagId,
+                uuid: uuid,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
           createCompanionCallback:
-              ({required int taskId, required int tagId, Value<int> rowid = const Value.absent()}) =>
-                  TaskTagTableCompanion.insert(taskId: taskId, tagId: tagId, rowid: rowid),
+              ({
+                required int taskId,
+                required int tagId,
+                required String uuid,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TaskTagTableCompanion.insert(
+                taskId: taskId,
+                tagId: tagId,
+                uuid: uuid,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
           withReferenceMapper: (p0) =>
               p0.map((e) => (e.readTable(table), $$TaskTagTableTableReferences(db, table, e))).toList(),
           prefetchHooksCallback: ({taskId = false, tagId = false}) {
@@ -7816,14 +8080,14 @@ typedef $$TaskTagTableTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $TaskTagTableTable,
-      TaskTagTableData,
+      TaskTagData,
       $$TaskTagTableTableFilterComposer,
       $$TaskTagTableTableOrderingComposer,
       $$TaskTagTableTableAnnotationComposer,
       $$TaskTagTableTableCreateCompanionBuilder,
       $$TaskTagTableTableUpdateCompanionBuilder,
-      (TaskTagTableData, $$TaskTagTableTableReferences),
-      TaskTagTableData,
+      (TaskTagData, $$TaskTagTableTableReferences),
+      TaskTagData,
       PrefetchHooks Function({bool taskId, bool tagId})
     >;
 typedef $$TaskCompletionTableTableCreateCompanionBuilder =

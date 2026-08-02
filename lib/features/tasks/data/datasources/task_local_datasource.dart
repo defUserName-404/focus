@@ -142,7 +142,9 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
         await (_db.update(_db.taskCompletionTable)..where((t) => t.taskId.isIn(idsToDelete) & t.deletedAt.isNull()))
             .write(TaskCompletionTableCompanion(deletedAt: Value(now), updatedAt: Value(now)));
 
-        await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(idsToDelete))).go();
+        await (_db.update(_db.taskTagTable)..where((t) => t.taskId.isIn(idsToDelete) & t.deletedAt.isNull())).write(
+          TaskTagTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+        );
 
         await (_db.update(_db.taskTable)..where((t) => t.id.isIn(idsToDelete) & t.deletedAt.isNull())).write(
           TaskTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),

@@ -5,18 +5,19 @@ import 'package:focus/features/tasks/domain/entities/task_status.dart';
 import 'package:focus/features/projects/domain/entities/project_status.dart';
 import 'package:sqlite3/sqlite3.dart';
 
-/// Phase 3 migration harness.
+/// Phase 7 migration harness.
 ///
-/// Captures the current (v8) schema via [AppDatabase.forTesting] and verifies
-/// that upgrading from a hand-built v1 schema reaches v8 without nested
-/// transaction statements, without losing rows, and with PM + recurrence columns.
+/// Captures the current (v9) schema via [AppDatabase.forTesting] and verifies
+/// that upgrading from a hand-built v1 schema reaches v9 without nested
+/// transaction statements, without losing rows, and with PM + recurrence +
+/// task-tag tombstone columns.
 void main() {
-  test('onCreate produces schema version 8 with expected tables', () async {
+  test('onCreate produces schema version 9 with expected tables', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.read<int>('user_version'), 8);
+    expect(version.read<int>('user_version'), 9);
 
     final tables = await db.customSelect("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").get();
     final names = tables.map((row) => row.read<String>('name')).toSet();
@@ -73,6 +74,10 @@ void main() {
       containsAll({'uuid', 'task_id', 'occurrence_date', 'completed_at', 'created_at', 'updated_at', 'deleted_at'}),
     );
 
+    final taskTagCols = await db.customSelect('PRAGMA table_info(task_tag_table)').get();
+    final taskTagColNames = taskTagCols.map((r) => r.read<String>('name')).toSet();
+    expect(taskTagColNames, containsAll({'task_id', 'tag_id', 'uuid', 'created_at', 'updated_at', 'deleted_at'}));
+
     final indexes = await db
         .customSelect(
           "SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'task_completion_task_occurrence_live_idx'",
@@ -109,7 +114,7 @@ void main() {
     });
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.read<int>('user_version'), 8);
+    expect(version.read<int>('user_version'), 9);
 
     final tasks = await db.select(db.taskTable).get();
     expect(tasks, hasLength(1));
@@ -177,7 +182,7 @@ void main() {
     addTearDown(db.close);
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.read<int>('user_version'), 8);
+    expect(version.read<int>('user_version'), 9);
 
     final project = (await db.select(db.projectTable).get()).single;
     expect(project.uuid, isNotEmpty);
@@ -224,7 +229,7 @@ void main() {
     addTearDown(db.close);
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.read<int>('user_version'), 8);
+    expect(version.read<int>('user_version'), 9);
 
     final tasks = await db.select(db.taskTable).get();
     expect(tasks, hasLength(2));

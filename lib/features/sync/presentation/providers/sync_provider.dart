@@ -1,14 +1,21 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/utils/result.dart';
 import '../../domain/entities/sync_state.dart';
 import '../../domain/services/i_cloud_storage_service.dart';
+import '../../domain/services/sync_auto_sync_service.dart';
 import '../../domain/services/sync_engine.dart';
 
 part 'sync_provider.g.dart';
 part 'cloud_storage_service_provider.part.dart';
 part 'sync_engine_provider.part.dart';
+
+/// Watches the persisted auto-sync toggle.
+final syncEnabledProvider = FutureProvider.autoDispose<bool>((ref) async {
+  return getIt<SyncEngine>().isSyncEnabled();
+});
 
 // ---------------------------------------------------------------------------
 // Sync state notifier
@@ -24,7 +31,13 @@ class SyncNotifier extends _$SyncNotifier {
     _syncEngine = ref.watch(syncEngineProvider);
     _cloudService = ref.watch(cloudStorageServiceProvider);
 
-    // Check initial sign-in state asynchronously.
+    // Bridge auto-sync results into this notifier when available.
+    final autoSync = getIt<SyncAutoSyncService>();
+    autoSync.onStateChanged = (next) {
+      if (!ref.mounted) return;
+      state = next;
+    };
+
     _initializeState();
 
     return const SyncState();
@@ -37,6 +50,11 @@ class SyncNotifier extends _$SyncNotifier {
       final lastSyncedAt = await _syncEngine.getLastSyncedAt();
       state = state.copyWith(status: SyncStatus.idle, accountEmail: email, lastSyncedAt: lastSyncedAt);
     }
+  }
+
+  Future<void> setSyncEnabled(bool enabled) async {
+    await _syncEngine.setSyncEnabled(enabled);
+    ref.invalidate(syncEnabledProvider);
   }
 
   /// Sign in to Google Drive and update state.
@@ -62,13 +80,13 @@ class SyncNotifier extends _$SyncNotifier {
     }
   }
 
-  /// Trigger a sync operation.
+  /// Trigger a manual sync (ignores auto-sync disabled).
   Future<void> sync() async {
     if (state.status == SyncStatus.syncing) return;
 
     state = state.copyWith(status: SyncStatus.syncing);
 
-    final result = await _syncEngine.performSync();
+    final result = await _syncEngine.performSync(force: true);
     switch (result) {
       case Success(:final value):
         state = value;

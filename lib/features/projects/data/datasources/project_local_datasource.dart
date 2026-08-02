@@ -87,7 +87,9 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
           await (_db.update(_db.taskCompletionTable)..where((t) => t.taskId.isIn(taskIds) & t.deletedAt.isNull()))
               .write(TaskCompletionTableCompanion(deletedAt: Value(now), updatedAt: Value(now)));
 
-          await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(taskIds))).go();
+          await (_db.update(_db.taskTagTable)..where((t) => t.taskId.isIn(taskIds) & t.deletedAt.isNull())).write(
+            TaskTagTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+          );
 
           await (_db.update(_db.taskTable)..where((t) => t.projectId.equals(id) & t.deletedAt.isNull())).write(
             TaskTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),

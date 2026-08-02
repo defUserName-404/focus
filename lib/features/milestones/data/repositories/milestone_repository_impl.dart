@@ -1,3 +1,4 @@
+import '../../../../core/services/data_change_bus.dart';
 import '../../../../core/services/log_service.dart';
 import '../../domain/entities/milestone.dart';
 import '../../domain/entities/milestone_extensions.dart';
@@ -8,9 +9,12 @@ import '../mappers/milestone_extensions.dart';
 final _log = LogService.instance;
 
 class MilestoneRepositoryImpl implements IMilestoneRepository {
-  MilestoneRepositoryImpl(this._local);
+  MilestoneRepositoryImpl(this._local, [this._dataChangeBus]);
 
   final IMilestoneLocalDataSource _local;
+  final DataChangeBus? _dataChangeBus;
+
+  void _emitChange() => _dataChangeBus?.notify();
 
   @override
   Future<List<Milestone>> getMilestonesByProjectId(int projectId) async {
@@ -29,6 +33,7 @@ class MilestoneRepositoryImpl implements IMilestoneRepository {
     try {
       final id = await _local.createMilestone(milestone.toCompanion());
       _log.debug('Milestone created (id=$id)', tag: 'MilestoneRepository');
+      _emitChange();
       return milestone.copyWith(id: id);
     } catch (e, st) {
       _log.error('Failed to create milestone', tag: 'MilestoneRepository', error: e, stackTrace: st);
@@ -40,6 +45,7 @@ class MilestoneRepositoryImpl implements IMilestoneRepository {
   Future<void> updateMilestone(Milestone milestone) async {
     try {
       await _local.updateMilestone(milestone.toCompanion());
+      _emitChange();
     } catch (e, st) {
       _log.error(
         'Failed to update milestone (id=${milestone.id})',
@@ -55,6 +61,7 @@ class MilestoneRepositoryImpl implements IMilestoneRepository {
   Future<void> deleteMilestone(int id) async {
     try {
       await _local.deleteMilestone(id);
+      _emitChange();
     } catch (e, st) {
       _log.error('Failed to delete milestone (id=$id)', tag: 'MilestoneRepository', error: e, stackTrace: st);
       rethrow;

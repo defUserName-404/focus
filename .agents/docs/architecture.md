@@ -160,7 +160,7 @@ Rules for schema changes:
 4. Regenerate code.
 5. Verify migration behavior with existing user data.
 
-Current sync-ready schema (v8) includes on `project_table`, `task_table`, and `focus_session_table`:
+Current sync-ready schema (v9) includes on `project_table`, `task_table`, and `focus_session_table`:
 - `uuid` (TEXT, unique) — stable sync identity, generated on create and backfilled on migration
 - `deleted_at` (nullable DateTime) — soft-delete tombstone; all reads filter `deletedAt IS NULL`
 
@@ -178,10 +178,20 @@ Recurrence / habits (v8) adds:
 - Occurrences are expanded in pure domain code (`RecurrenceExpander`); habits are recurring tasks
   with `isHabit = true` and streaks via `HabitStreakCalculator`
 
+Sync rewrite (v9) adds:
+- `task_tag_table.uuid`, `created_at`, `updated_at`, `deleted_at` — junction tombstones for multi-device sync
+- Cloud/local `SyncData` envelope is schema-versioned (`kSyncSchemaVersion = 2`); peers refuse newer payloads
+- Entities in the envelope reference peers by UUID (`projectUuid`, `parentTaskUuid`, `milestoneUuid`, `taskUuid`, `tagUuid`)
+- Coverage: projects, milestones, tags, tasks, task-tag links, completions, focus sessions, whitelisted settings
+  (timer + audio). Excluded: `device_id`, desktop-local prefs, UI view-mode prefs
+- Merge is pure (`SyncMergeEngine`): UUID-keyed union of local+remote, tombstone LWW, dependency-ordered apply
+- Auto-sync via `SyncAutoSyncService` (foreground/background + debounced `DataChangeBus` mutations) gated by `sync_enabled`
+- Local JSON backup/restore reuses `SyncData` serialization (`SyncBackupService`)
+
 Deletes are soft deletes. `ON DELETE CASCADE` no longer fires for app-level deletes, so project/task
 deletion must cascade soft-deletes to dependents inside a transaction (including milestones,
-completions, and clearing `task_tag` associations). `SyncPurgeService` hard-deletes tombstones older
-than the retention window (default 30 days), including completion rows before tasks. A stable
+completions, and soft-deleted `task_tag` associations). `SyncPurgeService` hard-deletes tombstones older
+than the retention window (default 30 days), including completion and task-tag rows before tasks. A stable
 `device_id` setting UUID is generated once on first launch for sync provenance.
 
 Current task schema also includes reminder configuration fields:

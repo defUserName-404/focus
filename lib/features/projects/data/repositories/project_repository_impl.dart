@@ -1,3 +1,4 @@
+import '../../../../core/services/data_change_bus.dart';
 import '../../../../core/services/log_service.dart';
 import '../../domain/entities/project.dart';
 import '../../domain/entities/project_extensions.dart';
@@ -11,8 +12,11 @@ final _log = LogService.instance;
 
 class ProjectRepositoryImpl implements IProjectRepository {
   final IProjectLocalDataSource _localDataSource;
+  final DataChangeBus? _dataChangeBus;
 
-  ProjectRepositoryImpl(this._localDataSource);
+  ProjectRepositoryImpl(this._localDataSource, [this._dataChangeBus]);
+
+  void _emitChange() => _dataChangeBus?.notify();
 
   @override
   Future<List<Project>> getAllProjects() async {
@@ -32,6 +36,7 @@ class ProjectRepositoryImpl implements IProjectRepository {
       final companion = project.toCompanion();
       final id = await _localDataSource.createProject(companion);
       _log.debug('Project row inserted (id=$id)', tag: 'ProjectRepository');
+      _emitChange();
       return project.copyWith(id: id);
     } catch (e, st) {
       _log.error('Failed to insert project', tag: 'ProjectRepository', error: e, stackTrace: st);
@@ -44,6 +49,7 @@ class ProjectRepositoryImpl implements IProjectRepository {
     try {
       final companion = project.toCompanion();
       await _localDataSource.updateProject(companion);
+      _emitChange();
     } catch (e, st) {
       _log.error('Failed to update project (id=${project.id})', tag: 'ProjectRepository', error: e, stackTrace: st);
       rethrow;
@@ -54,6 +60,7 @@ class ProjectRepositoryImpl implements IProjectRepository {
   Future<void> deleteProject(int id) async {
     try {
       await _localDataSource.deleteProject(id);
+      _emitChange();
     } catch (e, st) {
       _log.error('Failed to delete project (id=$id)', tag: 'ProjectRepository', error: e, stackTrace: st);
       rethrow;

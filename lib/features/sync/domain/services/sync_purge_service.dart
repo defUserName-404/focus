@@ -31,6 +31,11 @@ class SyncPurgeService {
           _db.taskCompletionTable,
         )..where((t) => t.deletedAt.isNotNull() & t.deletedAt.isSmallerThanValue(cutoff))).go();
 
+        // Purge expired task↔tag link tombstones independently.
+        var taskTags = await (_db.delete(
+          _db.taskTagTable,
+        )..where((t) => t.deletedAt.isNotNull() & t.deletedAt.isSmallerThanValue(cutoff))).go();
+
         // Remove junction rows for tasks about to be purged.
         final expiredTaskIds =
             await (_db.selectOnly(_db.taskTable)
@@ -38,11 +43,10 @@ class SyncPurgeService {
                   ..where(_db.taskTable.deletedAt.isNotNull() & _db.taskTable.deletedAt.isSmallerThanValue(cutoff)))
                 .map((row) => row.read(_db.taskTable.id)!)
                 .get();
-        var taskTags = 0;
         if (expiredTaskIds.isNotEmpty) {
           // Also hard-delete any remaining completions for purged tasks.
           await (_db.delete(_db.taskCompletionTable)..where((t) => t.taskId.isIn(expiredTaskIds))).go();
-          taskTags = await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(expiredTaskIds))).go();
+          taskTags += await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(expiredTaskIds))).go();
         }
 
         final expiredTagIds =
