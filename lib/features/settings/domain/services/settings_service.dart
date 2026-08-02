@@ -1,4 +1,5 @@
 import '../../../../core/services/log_service.dart';
+import '../../../../core/utils/id_utils.dart';
 import '../../../../core/utils/result.dart';
 import '../../domain/entities/setting.dart';
 import '../../domain/repositories/i_settings_repository.dart';
@@ -23,6 +24,17 @@ class SettingsService {
   Stream<String?> watchValue(String key) => _repository.watchValue(key);
 
   Future<Result<void>> setValue(String key, String value) => _writeValue(key, value, tag: 'setValue');
+
+  /// Returns the persisted device UUID, generating and storing one on first use.
+  Future<String> ensureDeviceId() async {
+    final existing = await _repository.getValue(SettingsKeys.deviceId);
+    if (existing != null && existing.isNotEmpty) return existing;
+
+    final id = generateUuid();
+    await _repository.setValue(SettingsKeys.deviceId, id);
+    _log.info('Generated device_id for this install', tag: 'SettingsService');
+    return id;
+  }
 
   //  Audio preferences
 

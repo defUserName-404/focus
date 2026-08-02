@@ -22,6 +22,7 @@ import '../../features/settings/domain/services/settings_service.dart';
 import '../../features/sync/data/services/google_drive_service.dart';
 import '../../features/sync/domain/services/i_cloud_storage_service.dart';
 import '../../features/sync/domain/services/sync_engine.dart';
+import '../../features/sync/domain/services/sync_purge_service.dart';
 import '../../features/tasks/data/datasources/task_local_datasource.dart';
 import '../../features/tasks/data/datasources/task_stats_local_datasource.dart';
 import '../../features/tasks/data/repositories/task_repository_impl.dart';
@@ -147,6 +148,7 @@ void _initSessionDi() {
 void _initSyncDi() {
   getIt
     ..registerLazySingleton<ICloudStorageService>(() => GoogleDriveService())
+    ..registerLazySingleton<SyncPurgeService>(() => SyncPurgeService(getIt<AppDatabase>()))
     ..registerLazySingleton<SyncEngine>(
       () => SyncEngine(
         getIt<ICloudStorageService>(),

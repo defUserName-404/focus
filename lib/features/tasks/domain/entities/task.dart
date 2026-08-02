@@ -10,6 +10,7 @@ import 'task_reminder_mode.dart';
 @immutable
 class Task extends Equatable {
   final int? id;
+  final String uuid;
   final int projectId;
   final int? parentTaskId;
   final String title;
@@ -23,9 +24,11 @@ class Task extends Equatable {
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const Task({
     this.id,
+    required this.uuid,
     required this.projectId,
     this.parentTaskId,
     required this.title,
@@ -39,11 +42,13 @@ class Task extends Equatable {
     this.isCompleted = false,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
 
   @override
   List<Object?> get props => [
     id,
+    uuid,
     projectId,
     parentTaskId,
     title,
@@ -57,5 +62,6 @@ class Task extends Equatable {
     isCompleted,
     createdAt,
     updatedAt,
+    deletedAt,
   ];
 }

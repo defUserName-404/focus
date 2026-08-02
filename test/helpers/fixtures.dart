@@ -1,3 +1,4 @@
+import 'package:focus/core/utils/id_utils.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
 import 'package:focus/features/session/domain/entities/focus_session.dart';
 import 'package:focus/features/session/domain/entities/session_state.dart';
@@ -10,6 +11,7 @@ final testNow = DateTime.utc(2026, 8, 2, 12);
 
 Task buildTask({
   int? id = 1,
+  String? uuid,
   int projectId = 1,
   String title = 'Write tests',
   TaskPriority priority = TaskPriority.medium,
@@ -21,11 +23,13 @@ Task buildTask({
   bool isCompleted = false,
   DateTime? createdAt,
   DateTime? updatedAt,
+  DateTime? deletedAt,
 }) {
   final created = createdAt ?? testNow.subtract(const Duration(days: 3));
   final resolvedEndDate = identical(endDate, _sentinel) ? testNow.add(const Duration(days: 2)) : endDate as DateTime?;
   return Task(
     id: id,
+    uuid: uuid ?? 'task-uuid-${id ?? 0}',
     projectId: projectId,
     title: title,
     priority: priority,
@@ -37,6 +41,7 @@ Task buildTask({
     isCompleted: isCompleted,
     createdAt: created,
     updatedAt: updatedAt ?? created,
+    deletedAt: deletedAt,
   );
 }
 
@@ -44,17 +49,28 @@ const _sentinel = Object();
 
 Project buildProject({
   int? id = 1,
+  String? uuid,
   String title = 'Focus',
   String? description,
   DateTime? createdAt,
   DateTime? updatedAt,
+  DateTime? deletedAt,
 }) {
   final created = createdAt ?? testNow.subtract(const Duration(days: 7));
-  return Project(id: id, title: title, description: description, createdAt: created, updatedAt: updatedAt ?? created);
+  return Project(
+    id: id,
+    uuid: uuid ?? 'project-uuid-${id ?? 0}',
+    title: title,
+    description: description,
+    createdAt: created,
+    updatedAt: updatedAt ?? created,
+    deletedAt: deletedAt,
+  );
 }
 
 FocusSession buildSession({
   int? id = 1,
+  String? uuid,
   int? taskId = 1,
   int focusDurationMinutes = 25,
   int breakDurationMinutes = 5,
@@ -63,9 +79,11 @@ FocusSession buildSession({
   int? focusPhaseEndedAt,
   DateTime? startTime,
   DateTime? endTime,
+  DateTime? deletedAt,
 }) {
   return FocusSession(
     id: id,
+    uuid: uuid ?? 'session-uuid-${id ?? 0}',
     taskId: taskId,
     focusDurationMinutes: focusDurationMinutes,
     breakDurationMinutes: breakDurationMinutes,
@@ -74,5 +92,9 @@ FocusSession buildSession({
     state: state,
     elapsedSeconds: elapsedSeconds,
     focusPhaseEndedAt: focusPhaseEndedAt,
+    deletedAt: deletedAt,
   );
 }
+
+/// Convenience for tests that need a real random UUID.
+String testUuid() => generateUuid();

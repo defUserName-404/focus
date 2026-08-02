@@ -19,6 +19,16 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
   );
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+    'uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -73,8 +83,27 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta('deletedAt');
   @override
-  List<GeneratedColumn> get $columns => [id, title, description, startDate, deadline, createdAt, updatedAt];
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    uuid,
+    title,
+    description,
+    startDate,
+    deadline,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -86,6 +115,11 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(_uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
     }
     if (data.containsKey('title')) {
       context.handle(_titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
@@ -111,6 +145,9 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta, deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
     return context;
   }
 
@@ -121,12 +158,14 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ProjectTableData(
       id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       title: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       description: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}description']),
       startDate: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}start_date']),
       deadline: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}deadline']),
       createdAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
     );
   }
 
@@ -138,25 +177,30 @@ class $ProjectTableTable extends ProjectTable with TableInfo<$ProjectTableTable,
 
 class ProjectTableData extends DataClass implements Insertable<ProjectTableData> {
   final int id;
+  final String uuid;
   final String title;
   final String? description;
   final DateTime? startDate;
   final DateTime? deadline;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
   const ProjectTableData({
     required this.id,
+    required this.uuid,
     required this.title,
     this.description,
     this.startDate,
     this.deadline,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || description != null) {
       map['description'] = Variable<String>(description);
@@ -169,18 +213,23 @@ class ProjectTableData extends DataClass implements Insertable<ProjectTableData>
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
   ProjectTableCompanion toCompanion(bool nullToAbsent) {
     return ProjectTableCompanion(
       id: Value(id),
+      uuid: Value(uuid),
       title: Value(title),
       description: description == null && nullToAbsent ? const Value.absent() : Value(description),
       startDate: startDate == null && nullToAbsent ? const Value.absent() : Value(startDate),
       deadline: deadline == null && nullToAbsent ? const Value.absent() : Value(deadline),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent ? const Value.absent() : Value(deletedAt),
     );
   }
 
@@ -188,12 +237,14 @@ class ProjectTableData extends DataClass implements Insertable<ProjectTableData>
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ProjectTableData(
       id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String?>(json['description']),
       startDate: serializer.fromJson<DateTime?>(json['startDate']),
       deadline: serializer.fromJson<DateTime?>(json['deadline']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
@@ -201,41 +252,49 @@ class ProjectTableData extends DataClass implements Insertable<ProjectTableData>
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String?>(description),
       'startDate': serializer.toJson<DateTime?>(startDate),
       'deadline': serializer.toJson<DateTime?>(deadline),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
   ProjectTableData copyWith({
     int? id,
+    String? uuid,
     String? title,
     Value<String?> description = const Value.absent(),
     Value<DateTime?> startDate = const Value.absent(),
     Value<DateTime?> deadline = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
   }) => ProjectTableData(
     id: id ?? this.id,
+    uuid: uuid ?? this.uuid,
     title: title ?? this.title,
     description: description.present ? description.value : this.description,
     startDate: startDate.present ? startDate.value : this.startDate,
     deadline: deadline.present ? deadline.value : this.deadline,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
   ProjectTableData copyWithCompanion(ProjectTableCompanion data) {
     return ProjectTableData(
       id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
       title: data.title.present ? data.title.value : this.title,
       description: data.description.present ? data.description.value : this.description,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       deadline: data.deadline.present ? data.deadline.value : this.deadline,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
@@ -243,96 +302,115 @@ class ProjectTableData extends DataClass implements Insertable<ProjectTableData>
   String toString() {
     return (StringBuffer('ProjectTableData(')
           ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('startDate: $startDate, ')
           ..write('deadline: $deadline, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, description, startDate, deadline, createdAt, updatedAt);
+  int get hashCode => Object.hash(id, uuid, title, description, startDate, deadline, createdAt, updatedAt, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ProjectTableData &&
           other.id == this.id &&
+          other.uuid == this.uuid &&
           other.title == this.title &&
           other.description == this.description &&
           other.startDate == this.startDate &&
           other.deadline == this.deadline &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
 }
 
 class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
   final Value<int> id;
+  final Value<String> uuid;
   final Value<String> title;
   final Value<String?> description;
   final Value<DateTime?> startDate;
   final Value<DateTime?> deadline;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
   const ProjectTableCompanion({
     this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
     this.startDate = const Value.absent(),
     this.deadline = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   });
   ProjectTableCompanion.insert({
     this.id = const Value.absent(),
+    required String uuid,
     required String title,
     this.description = const Value.absent(),
     this.startDate = const Value.absent(),
     this.deadline = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
-  }) : title = Value(title),
+    this.deletedAt = const Value.absent(),
+  }) : uuid = Value(uuid),
+       title = Value(title),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<ProjectTableData> custom({
     Expression<int>? id,
+    Expression<String>? uuid,
     Expression<String>? title,
     Expression<String>? description,
     Expression<DateTime>? startDate,
     Expression<DateTime>? deadline,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
       if (title != null) 'title': title,
       if (description != null) 'description': description,
       if (startDate != null) 'start_date': startDate,
       if (deadline != null) 'deadline': deadline,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
     });
   }
 
   ProjectTableCompanion copyWith({
     Value<int>? id,
+    Value<String>? uuid,
     Value<String>? title,
     Value<String?>? description,
     Value<DateTime?>? startDate,
     Value<DateTime?>? deadline,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
   }) {
     return ProjectTableCompanion(
       id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
       title: title ?? this.title,
       description: description ?? this.description,
       startDate: startDate ?? this.startDate,
       deadline: deadline ?? this.deadline,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -341,6 +419,9 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -360,6 +441,9 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
     return map;
   }
 
@@ -367,12 +451,14 @@ class ProjectTableCompanion extends UpdateCompanion<ProjectTableData> {
   String toString() {
     return (StringBuffer('ProjectTableCompanion(')
           ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('startDate: $startDate, ')
           ..write('deadline: $deadline, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -393,6 +479,16 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+  );
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+    'uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _projectIdMeta = const VerificationMeta('projectId');
   @override
@@ -516,9 +612,19 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    uuid,
     projectId,
     parentTaskId,
     title,
@@ -532,6 +638,7 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     isCompleted,
     createdAt,
     updatedAt,
+    deletedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -544,6 +651,11 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(_uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
     }
     if (data.containsKey('project_id')) {
       context.handle(_projectIdMeta, projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
@@ -594,6 +706,9 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta, deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
     return context;
   }
 
@@ -604,6 +719,7 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TaskTableData(
       id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       projectId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}project_id'])!,
       parentTaskId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}parent_task_id']),
       title: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}title'])!,
@@ -624,6 +740,7 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
       isCompleted: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}is_completed'])!,
       createdAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
     );
   }
 
@@ -641,6 +758,7 @@ class $TaskTableTable extends TaskTable with TableInfo<$TaskTableTable, TaskTabl
 
 class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   final int id;
+  final String uuid;
   final int projectId;
   final int? parentTaskId;
   final String title;
@@ -654,8 +772,10 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
   const TaskTableData({
     required this.id,
+    required this.uuid,
     required this.projectId,
     this.parentTaskId,
     required this.title,
@@ -669,11 +789,13 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     required this.isCompleted,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
     map['project_id'] = Variable<int>(projectId);
     if (!nullToAbsent || parentTaskId != null) {
       map['parent_task_id'] = Variable<int>(parentTaskId);
@@ -701,12 +823,16 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     map['is_completed'] = Variable<bool>(isCompleted);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
   TaskTableCompanion toCompanion(bool nullToAbsent) {
     return TaskTableCompanion(
       id: Value(id),
+      uuid: Value(uuid),
       projectId: Value(projectId),
       parentTaskId: parentTaskId == null && nullToAbsent ? const Value.absent() : Value(parentTaskId),
       title: Value(title),
@@ -722,6 +848,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       isCompleted: Value(isCompleted),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent ? const Value.absent() : Value(deletedAt),
     );
   }
 
@@ -729,6 +856,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TaskTableData(
       id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
       projectId: serializer.fromJson<int>(json['projectId']),
       parentTaskId: serializer.fromJson<int?>(json['parentTaskId']),
       title: serializer.fromJson<String>(json['title']),
@@ -742,6 +870,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
@@ -749,6 +878,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
       'projectId': serializer.toJson<int>(projectId),
       'parentTaskId': serializer.toJson<int?>(parentTaskId),
       'title': serializer.toJson<String>(title),
@@ -762,11 +892,13 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       'isCompleted': serializer.toJson<bool>(isCompleted),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
   TaskTableData copyWith({
     int? id,
+    String? uuid,
     int? projectId,
     Value<int?> parentTaskId = const Value.absent(),
     String? title,
@@ -780,8 +912,10 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     bool? isCompleted,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
   }) => TaskTableData(
     id: id ?? this.id,
+    uuid: uuid ?? this.uuid,
     projectId: projectId ?? this.projectId,
     parentTaskId: parentTaskId.present ? parentTaskId.value : this.parentTaskId,
     title: title ?? this.title,
@@ -797,10 +931,12 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     isCompleted: isCompleted ?? this.isCompleted,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
   TaskTableData copyWithCompanion(TaskTableCompanion data) {
     return TaskTableData(
       id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
       projectId: data.projectId.present ? data.projectId.value : this.projectId,
       parentTaskId: data.parentTaskId.present ? data.parentTaskId.value : this.parentTaskId,
       title: data.title.present ? data.title.value : this.title,
@@ -816,6 +952,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       isCompleted: data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
@@ -823,6 +960,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   String toString() {
     return (StringBuffer('TaskTableData(')
           ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
           ..write('projectId: $projectId, ')
           ..write('parentTaskId: $parentTaskId, ')
           ..write('title: $title, ')
@@ -835,7 +973,8 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           ..write('depth: $depth, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -843,6 +982,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   @override
   int get hashCode => Object.hash(
     id,
+    uuid,
     projectId,
     parentTaskId,
     title,
@@ -856,12 +996,14 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     isCompleted,
     createdAt,
     updatedAt,
+    deletedAt,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TaskTableData &&
           other.id == this.id &&
+          other.uuid == this.uuid &&
           other.projectId == this.projectId &&
           other.parentTaskId == this.parentTaskId &&
           other.title == this.title &&
@@ -874,11 +1016,13 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           other.depth == this.depth &&
           other.isCompleted == this.isCompleted &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
 }
 
 class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   final Value<int> id;
+  final Value<String> uuid;
   final Value<int> projectId;
   final Value<int?> parentTaskId;
   final Value<String> title;
@@ -892,8 +1036,10 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   final Value<bool> isCompleted;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
   const TaskTableCompanion({
     this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
     this.projectId = const Value.absent(),
     this.parentTaskId = const Value.absent(),
     this.title = const Value.absent(),
@@ -907,9 +1053,11 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     this.isCompleted = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   });
   TaskTableCompanion.insert({
     this.id = const Value.absent(),
+    required String uuid,
     required int projectId,
     this.parentTaskId = const Value.absent(),
     required String title,
@@ -923,7 +1071,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     this.isCompleted = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
-  }) : projectId = Value(projectId),
+    this.deletedAt = const Value.absent(),
+  }) : uuid = Value(uuid),
+       projectId = Value(projectId),
        title = Value(title),
        priority = Value(priority),
        depth = Value(depth),
@@ -931,6 +1081,7 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
        updatedAt = Value(updatedAt);
   static Insertable<TaskTableData> custom({
     Expression<int>? id,
+    Expression<String>? uuid,
     Expression<int>? projectId,
     Expression<int>? parentTaskId,
     Expression<String>? title,
@@ -944,9 +1095,11 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     Expression<bool>? isCompleted,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
       if (projectId != null) 'project_id': projectId,
       if (parentTaskId != null) 'parent_task_id': parentTaskId,
       if (title != null) 'title': title,
@@ -960,11 +1113,13 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       if (isCompleted != null) 'is_completed': isCompleted,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
     });
   }
 
   TaskTableCompanion copyWith({
     Value<int>? id,
+    Value<String>? uuid,
     Value<int>? projectId,
     Value<int?>? parentTaskId,
     Value<String>? title,
@@ -978,9 +1133,11 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     Value<bool>? isCompleted,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
   }) {
     return TaskTableCompanion(
       id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
       projectId: projectId ?? this.projectId,
       parentTaskId: parentTaskId ?? this.parentTaskId,
       title: title ?? this.title,
@@ -994,6 +1151,7 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -1002,6 +1160,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
     }
     if (projectId.present) {
       map['project_id'] = Variable<int>(projectId.value);
@@ -1042,6 +1203,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
     return map;
   }
 
@@ -1049,6 +1213,7 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   String toString() {
     return (StringBuffer('TaskTableCompanion(')
           ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
           ..write('projectId: $projectId, ')
           ..write('parentTaskId: $parentTaskId, ')
           ..write('title: $title, ')
@@ -1061,7 +1226,8 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
           ..write('depth: $depth, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -1082,6 +1248,16 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+  );
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+    'uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
   @override
@@ -1156,9 +1332,19 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    uuid,
     taskId,
     focusDurationMinutes,
     breakDurationMinutes,
@@ -1167,6 +1353,7 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     state,
     elapsedSeconds,
     focusPhaseEndedAt,
+    deletedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1179,6 +1366,11 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(_uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
     }
     if (data.containsKey('task_id')) {
       context.handle(_taskIdMeta, taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta));
@@ -1219,6 +1411,9 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
         focusPhaseEndedAt.isAcceptableOrUnknown(data['focus_phase_ended_at']!, _focusPhaseEndedAtMeta),
       );
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta, deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
     return context;
   }
 
@@ -1229,6 +1424,7 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return FocusSessionData(
       id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       taskId: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}task_id']),
       focusDurationMinutes: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -1248,6 +1444,7 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
         DriftSqlType.int,
         data['${effectivePrefix}focus_phase_ended_at'],
       ),
+      deletedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
     );
   }
 
@@ -1263,6 +1460,7 @@ class $FocusSessionTableTable extends FocusSessionTable with TableInfo<$FocusSes
 
 class FocusSessionData extends DataClass implements Insertable<FocusSessionData> {
   final int id;
+  final String uuid;
   final int? taskId;
   final int focusDurationMinutes;
   final int breakDurationMinutes;
@@ -1275,8 +1473,10 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
   /// Stored to preserve accurate focus time across app restarts.
   /// Null while focus is still running; set when transitioning to break.
   final int? focusPhaseEndedAt;
+  final DateTime? deletedAt;
   const FocusSessionData({
     required this.id,
+    required this.uuid,
     this.taskId,
     required this.focusDurationMinutes,
     required this.breakDurationMinutes,
@@ -1285,11 +1485,13 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     required this.state,
     required this.elapsedSeconds,
     this.focusPhaseEndedAt,
+    this.deletedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
     if (!nullToAbsent || taskId != null) {
       map['task_id'] = Variable<int>(taskId);
     }
@@ -1306,12 +1508,16 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     if (!nullToAbsent || focusPhaseEndedAt != null) {
       map['focus_phase_ended_at'] = Variable<int>(focusPhaseEndedAt);
     }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
   FocusSessionTableCompanion toCompanion(bool nullToAbsent) {
     return FocusSessionTableCompanion(
       id: Value(id),
+      uuid: Value(uuid),
       taskId: taskId == null && nullToAbsent ? const Value.absent() : Value(taskId),
       focusDurationMinutes: Value(focusDurationMinutes),
       breakDurationMinutes: Value(breakDurationMinutes),
@@ -1320,6 +1526,7 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
       state: Value(state),
       elapsedSeconds: Value(elapsedSeconds),
       focusPhaseEndedAt: focusPhaseEndedAt == null && nullToAbsent ? const Value.absent() : Value(focusPhaseEndedAt),
+      deletedAt: deletedAt == null && nullToAbsent ? const Value.absent() : Value(deletedAt),
     );
   }
 
@@ -1327,6 +1534,7 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FocusSessionData(
       id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
       taskId: serializer.fromJson<int?>(json['taskId']),
       focusDurationMinutes: serializer.fromJson<int>(json['focusDurationMinutes']),
       breakDurationMinutes: serializer.fromJson<int>(json['breakDurationMinutes']),
@@ -1335,6 +1543,7 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
       state: $FocusSessionTableTable.$converterstate.fromJson(serializer.fromJson<int>(json['state'])),
       elapsedSeconds: serializer.fromJson<int>(json['elapsedSeconds']),
       focusPhaseEndedAt: serializer.fromJson<int?>(json['focusPhaseEndedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
@@ -1342,6 +1551,7 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
       'taskId': serializer.toJson<int?>(taskId),
       'focusDurationMinutes': serializer.toJson<int>(focusDurationMinutes),
       'breakDurationMinutes': serializer.toJson<int>(breakDurationMinutes),
@@ -1350,11 +1560,13 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
       'state': serializer.toJson<int>($FocusSessionTableTable.$converterstate.toJson(state)),
       'elapsedSeconds': serializer.toJson<int>(elapsedSeconds),
       'focusPhaseEndedAt': serializer.toJson<int?>(focusPhaseEndedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
   FocusSessionData copyWith({
     int? id,
+    String? uuid,
     Value<int?> taskId = const Value.absent(),
     int? focusDurationMinutes,
     int? breakDurationMinutes,
@@ -1363,8 +1575,10 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     SessionState? state,
     int? elapsedSeconds,
     Value<int?> focusPhaseEndedAt = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
   }) => FocusSessionData(
     id: id ?? this.id,
+    uuid: uuid ?? this.uuid,
     taskId: taskId.present ? taskId.value : this.taskId,
     focusDurationMinutes: focusDurationMinutes ?? this.focusDurationMinutes,
     breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,
@@ -1373,10 +1587,12 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     state: state ?? this.state,
     elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
     focusPhaseEndedAt: focusPhaseEndedAt.present ? focusPhaseEndedAt.value : this.focusPhaseEndedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
   FocusSessionData copyWithCompanion(FocusSessionTableCompanion data) {
     return FocusSessionData(
       id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
       taskId: data.taskId.present ? data.taskId.value : this.taskId,
       focusDurationMinutes: data.focusDurationMinutes.present
           ? data.focusDurationMinutes.value
@@ -1389,6 +1605,7 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
       state: data.state.present ? data.state.value : this.state,
       elapsedSeconds: data.elapsedSeconds.present ? data.elapsedSeconds.value : this.elapsedSeconds,
       focusPhaseEndedAt: data.focusPhaseEndedAt.present ? data.focusPhaseEndedAt.value : this.focusPhaseEndedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
@@ -1396,6 +1613,7 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
   String toString() {
     return (StringBuffer('FocusSessionData(')
           ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
           ..write('taskId: $taskId, ')
           ..write('focusDurationMinutes: $focusDurationMinutes, ')
           ..write('breakDurationMinutes: $breakDurationMinutes, ')
@@ -1403,7 +1621,8 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
           ..write('endTime: $endTime, ')
           ..write('state: $state, ')
           ..write('elapsedSeconds: $elapsedSeconds, ')
-          ..write('focusPhaseEndedAt: $focusPhaseEndedAt')
+          ..write('focusPhaseEndedAt: $focusPhaseEndedAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -1411,6 +1630,7 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
   @override
   int get hashCode => Object.hash(
     id,
+    uuid,
     taskId,
     focusDurationMinutes,
     breakDurationMinutes,
@@ -1419,12 +1639,14 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
     state,
     elapsedSeconds,
     focusPhaseEndedAt,
+    deletedAt,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is FocusSessionData &&
           other.id == this.id &&
+          other.uuid == this.uuid &&
           other.taskId == this.taskId &&
           other.focusDurationMinutes == this.focusDurationMinutes &&
           other.breakDurationMinutes == this.breakDurationMinutes &&
@@ -1432,11 +1654,13 @@ class FocusSessionData extends DataClass implements Insertable<FocusSessionData>
           other.endTime == this.endTime &&
           other.state == this.state &&
           other.elapsedSeconds == this.elapsedSeconds &&
-          other.focusPhaseEndedAt == this.focusPhaseEndedAt);
+          other.focusPhaseEndedAt == this.focusPhaseEndedAt &&
+          other.deletedAt == this.deletedAt);
 }
 
 class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
   final Value<int> id;
+  final Value<String> uuid;
   final Value<int?> taskId;
   final Value<int> focusDurationMinutes;
   final Value<int> breakDurationMinutes;
@@ -1445,8 +1669,10 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
   final Value<SessionState> state;
   final Value<int> elapsedSeconds;
   final Value<int?> focusPhaseEndedAt;
+  final Value<DateTime?> deletedAt;
   const FocusSessionTableCompanion({
     this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
     this.taskId = const Value.absent(),
     this.focusDurationMinutes = const Value.absent(),
     this.breakDurationMinutes = const Value.absent(),
@@ -1455,9 +1681,11 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     this.state = const Value.absent(),
     this.elapsedSeconds = const Value.absent(),
     this.focusPhaseEndedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   });
   FocusSessionTableCompanion.insert({
     this.id = const Value.absent(),
+    required String uuid,
     this.taskId = const Value.absent(),
     required int focusDurationMinutes,
     required int breakDurationMinutes,
@@ -1466,12 +1694,15 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     required SessionState state,
     this.elapsedSeconds = const Value.absent(),
     this.focusPhaseEndedAt = const Value.absent(),
-  }) : focusDurationMinutes = Value(focusDurationMinutes),
+    this.deletedAt = const Value.absent(),
+  }) : uuid = Value(uuid),
+       focusDurationMinutes = Value(focusDurationMinutes),
        breakDurationMinutes = Value(breakDurationMinutes),
        startTime = Value(startTime),
        state = Value(state);
   static Insertable<FocusSessionData> custom({
     Expression<int>? id,
+    Expression<String>? uuid,
     Expression<int>? taskId,
     Expression<int>? focusDurationMinutes,
     Expression<int>? breakDurationMinutes,
@@ -1480,9 +1711,11 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     Expression<int>? state,
     Expression<int>? elapsedSeconds,
     Expression<int>? focusPhaseEndedAt,
+    Expression<DateTime>? deletedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
       if (taskId != null) 'task_id': taskId,
       if (focusDurationMinutes != null) 'focus_duration_minutes': focusDurationMinutes,
       if (breakDurationMinutes != null) 'break_duration_minutes': breakDurationMinutes,
@@ -1491,11 +1724,13 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
       if (state != null) 'state': state,
       if (elapsedSeconds != null) 'elapsed_seconds': elapsedSeconds,
       if (focusPhaseEndedAt != null) 'focus_phase_ended_at': focusPhaseEndedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
     });
   }
 
   FocusSessionTableCompanion copyWith({
     Value<int>? id,
+    Value<String>? uuid,
     Value<int?>? taskId,
     Value<int>? focusDurationMinutes,
     Value<int>? breakDurationMinutes,
@@ -1504,9 +1739,11 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     Value<SessionState>? state,
     Value<int>? elapsedSeconds,
     Value<int?>? focusPhaseEndedAt,
+    Value<DateTime?>? deletedAt,
   }) {
     return FocusSessionTableCompanion(
       id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
       taskId: taskId ?? this.taskId,
       focusDurationMinutes: focusDurationMinutes ?? this.focusDurationMinutes,
       breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,
@@ -1515,6 +1752,7 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
       state: state ?? this.state,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       focusPhaseEndedAt: focusPhaseEndedAt ?? this.focusPhaseEndedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -1523,6 +1761,9 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
     }
     if (taskId.present) {
       map['task_id'] = Variable<int>(taskId.value);
@@ -1548,6 +1789,9 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
     if (focusPhaseEndedAt.present) {
       map['focus_phase_ended_at'] = Variable<int>(focusPhaseEndedAt.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
     return map;
   }
 
@@ -1555,6 +1799,7 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
   String toString() {
     return (StringBuffer('FocusSessionTableCompanion(')
           ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
           ..write('taskId: $taskId, ')
           ..write('focusDurationMinutes: $focusDurationMinutes, ')
           ..write('breakDurationMinutes: $breakDurationMinutes, ')
@@ -1562,7 +1807,8 @@ class FocusSessionTableCompanion extends UpdateCompanion<FocusSessionData> {
           ..write('endTime: $endTime, ')
           ..write('state: $state, ')
           ..write('elapsedSeconds: $elapsedSeconds, ')
-          ..write('focusPhaseEndedAt: $focusPhaseEndedAt')
+          ..write('focusPhaseEndedAt: $focusPhaseEndedAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -2630,6 +2876,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'project_updated_at_idx',
     'CREATE INDEX project_updated_at_idx ON project_table (updated_at)',
   );
+  late final Index projectUuidIdx = Index(
+    'project_uuid_idx',
+    'CREATE UNIQUE INDEX project_uuid_idx ON project_table (uuid)',
+  );
+  late final Index projectDeletedAtIdx = Index(
+    'project_deleted_at_idx',
+    'CREATE INDEX project_deleted_at_idx ON project_table (deleted_at)',
+  );
   late final Index taskProjectIdIdx = Index(
     'task_project_id_idx',
     'CREATE INDEX task_project_id_idx ON task_table (project_id)',
@@ -2654,6 +2908,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'task_updated_at_idx',
     'CREATE INDEX task_updated_at_idx ON task_table (updated_at)',
   );
+  late final Index taskUuidIdx = Index('task_uuid_idx', 'CREATE UNIQUE INDEX task_uuid_idx ON task_table (uuid)');
+  late final Index taskDeletedAtIdx = Index(
+    'task_deleted_at_idx',
+    'CREATE INDEX task_deleted_at_idx ON task_table (deleted_at)',
+  );
   late final Index focusSessionTaskIdIdx = Index(
     'focus_session_task_id_idx',
     'CREATE INDEX focus_session_task_id_idx ON focus_session_table (task_id)',
@@ -2661,6 +2920,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final Index focusSessionStartTimeIdx = Index(
     'focus_session_start_time_idx',
     'CREATE INDEX focus_session_start_time_idx ON focus_session_table (start_time)',
+  );
+  late final Index focusSessionUuidIdx = Index(
+    'focus_session_uuid_idx',
+    'CREATE UNIQUE INDEX focus_session_uuid_idx ON focus_session_table (uuid)',
+  );
+  late final Index focusSessionDeletedAtIdx = Index(
+    'focus_session_deleted_at_idx',
+    'CREATE INDEX focus_session_deleted_at_idx ON focus_session_table (deleted_at)',
   );
   late final Index dailyStatsDateIdx = Index(
     'daily_stats_date_idx',
@@ -2690,14 +2957,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     notificationInboxTable,
     projectCreatedAtIdx,
     projectUpdatedAtIdx,
+    projectUuidIdx,
+    projectDeletedAtIdx,
     taskProjectIdIdx,
     taskParentIdIdx,
     taskPriorityIdx,
     taskDeadlineIdx,
     taskCompletedIdx,
     taskUpdatedAtIdx,
+    taskUuidIdx,
+    taskDeletedAtIdx,
     focusSessionTaskIdIdx,
     focusSessionStartTimeIdx,
+    focusSessionUuidIdx,
+    focusSessionDeletedAtIdx,
     dailyStatsDateIdx,
     notificationInboxNotificationIdIdx,
     notificationInboxUpdatedAtIdx,
@@ -2723,22 +2996,26 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$ProjectTableTableCreateCompanionBuilder =
     ProjectTableCompanion Function({
       Value<int> id,
+      required String uuid,
       required String title,
       Value<String?> description,
       Value<DateTime?> startDate,
       Value<DateTime?> deadline,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
     });
 typedef $$ProjectTableTableUpdateCompanionBuilder =
     ProjectTableCompanion Function({
       Value<int> id,
+      Value<String> uuid,
       Value<String> title,
       Value<String?> description,
       Value<DateTime?> startDate,
       Value<DateTime?> deadline,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
     });
 
 final class $$ProjectTableTableReferences extends BaseReferences<_$AppDatabase, $ProjectTableTable, ProjectTableData> {
@@ -2768,6 +3045,8 @@ class $$ProjectTableTableFilterComposer extends Composer<_$AppDatabase, $Project
   });
   ColumnFilters<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
 
@@ -2785,6 +3064,9 @@ class $$ProjectTableTableFilterComposer extends Composer<_$AppDatabase, $Project
 
   ColumnFilters<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => ColumnFilters(column));
 
   Expression<bool> taskTableRefs(Expression<bool> Function($$TaskTableTableFilterComposer f) f) {
     final $$TaskTableTableFilterComposer composer = $composerBuilder(
@@ -2815,6 +3097,9 @@ class $$ProjectTableTableOrderingComposer extends Composer<_$AppDatabase, $Proje
   });
   ColumnOrderings<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
 
@@ -2832,6 +3117,9 @@ class $$ProjectTableTableOrderingComposer extends Composer<_$AppDatabase, $Proje
 
   ColumnOrderings<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
 }
 
 class $$ProjectTableTableAnnotationComposer extends Composer<_$AppDatabase, $ProjectTableTable> {
@@ -2843,6 +3131,8 @@ class $$ProjectTableTableAnnotationComposer extends Composer<_$AppDatabase, $Pro
     super.$removeJoinBuilderFromRootComposer,
   });
   GeneratedColumn<int> get id => $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => column);
 
   GeneratedColumn<String> get title => $composableBuilder(column: $table.title, builder: (column) => column);
 
@@ -2856,6 +3146,8 @@ class $$ProjectTableTableAnnotationComposer extends Composer<_$AppDatabase, $Pro
   GeneratedColumn<DateTime> get createdAt => $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   GeneratedColumn<DateTime> get updatedAt => $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt => $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
   Expression<T> taskTableRefs<T extends Object>(Expression<T> Function($$TaskTableTableAnnotationComposer a) f) {
     final $$TaskTableTableAnnotationComposer composer = $composerBuilder(
@@ -2902,38 +3194,46 @@ class $$ProjectTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> uuid = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<DateTime?> startDate = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => ProjectTableCompanion(
                 id: id,
+                uuid: uuid,
                 title: title,
                 description: description,
                 startDate: startDate,
                 deadline: deadline,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                deletedAt: deletedAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required String uuid,
                 required String title,
                 Value<String?> description = const Value.absent(),
                 Value<DateTime?> startDate = const Value.absent(),
                 Value<DateTime?> deadline = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => ProjectTableCompanion.insert(
                 id: id,
+                uuid: uuid,
                 title: title,
                 description: description,
                 startDate: startDate,
                 deadline: deadline,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                deletedAt: deletedAt,
               ),
           withReferenceMapper: (p0) =>
               p0.map((e) => (e.readTable(table), $$ProjectTableTableReferences(db, table, e))).toList(),
@@ -2978,6 +3278,7 @@ typedef $$ProjectTableTableProcessedTableManager =
 typedef $$TaskTableTableCreateCompanionBuilder =
     TaskTableCompanion Function({
       Value<int> id,
+      required String uuid,
       required int projectId,
       Value<int?> parentTaskId,
       required String title,
@@ -2991,10 +3292,12 @@ typedef $$TaskTableTableCreateCompanionBuilder =
       Value<bool> isCompleted,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
     });
 typedef $$TaskTableTableUpdateCompanionBuilder =
     TaskTableCompanion Function({
       Value<int> id,
+      Value<String> uuid,
       Value<int> projectId,
       Value<int?> parentTaskId,
       Value<String> title,
@@ -3008,6 +3311,7 @@ typedef $$TaskTableTableUpdateCompanionBuilder =
       Value<bool> isCompleted,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
     });
 
 final class $$TaskTableTableReferences extends BaseReferences<_$AppDatabase, $TaskTableTable, TaskTableData> {
@@ -3062,6 +3366,8 @@ class $$TaskTableTableFilterComposer extends Composer<_$AppDatabase, $TaskTableT
   });
   ColumnFilters<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => ColumnFilters(column));
 
@@ -3093,6 +3399,9 @@ class $$TaskTableTableFilterComposer extends Composer<_$AppDatabase, $TaskTableT
 
   ColumnFilters<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => ColumnFilters(column));
 
   $$ProjectTableTableFilterComposer get projectId {
     final $$ProjectTableTableFilterComposer composer = $composerBuilder(
@@ -3159,6 +3468,9 @@ class $$TaskTableTableOrderingComposer extends Composer<_$AppDatabase, $TaskTabl
   });
   ColumnOrderings<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => ColumnOrderings(column));
 
@@ -3191,6 +3503,9 @@ class $$TaskTableTableOrderingComposer extends Composer<_$AppDatabase, $TaskTabl
 
   ColumnOrderings<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
 
   $$ProjectTableTableOrderingComposer get projectId {
     final $$ProjectTableTableOrderingComposer composer = $composerBuilder(
@@ -3239,6 +3554,8 @@ class $$TaskTableTableAnnotationComposer extends Composer<_$AppDatabase, $TaskTa
   });
   GeneratedColumn<int> get id => $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => column);
+
   GeneratedColumn<String> get title => $composableBuilder(column: $table.title, builder: (column) => column);
 
   GeneratedColumn<String> get description =>
@@ -3264,6 +3581,8 @@ class $$TaskTableTableAnnotationComposer extends Composer<_$AppDatabase, $TaskTa
   GeneratedColumn<DateTime> get createdAt => $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   GeneratedColumn<DateTime> get updatedAt => $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt => $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
   $$ProjectTableTableAnnotationComposer get projectId {
     final $$ProjectTableTableAnnotationComposer composer = $composerBuilder(
@@ -3348,6 +3667,7 @@ class $$TaskTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> uuid = const Value.absent(),
                 Value<int> projectId = const Value.absent(),
                 Value<int?> parentTaskId = const Value.absent(),
                 Value<String> title = const Value.absent(),
@@ -3361,8 +3681,10 @@ class $$TaskTableTableTableManager
                 Value<bool> isCompleted = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => TaskTableCompanion(
                 id: id,
+                uuid: uuid,
                 projectId: projectId,
                 parentTaskId: parentTaskId,
                 title: title,
@@ -3376,10 +3698,12 @@ class $$TaskTableTableTableManager
                 isCompleted: isCompleted,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                deletedAt: deletedAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required String uuid,
                 required int projectId,
                 Value<int?> parentTaskId = const Value.absent(),
                 required String title,
@@ -3393,8 +3717,10 @@ class $$TaskTableTableTableManager
                 Value<bool> isCompleted = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => TaskTableCompanion.insert(
                 id: id,
+                uuid: uuid,
                 projectId: projectId,
                 parentTaskId: parentTaskId,
                 title: title,
@@ -3408,6 +3734,7 @@ class $$TaskTableTableTableManager
                 isCompleted: isCompleted,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                deletedAt: deletedAt,
               ),
           withReferenceMapper: (p0) =>
               p0.map((e) => (e.readTable(table), $$TaskTableTableReferences(db, table, e))).toList(),
@@ -3490,6 +3817,7 @@ typedef $$TaskTableTableProcessedTableManager =
 typedef $$FocusSessionTableTableCreateCompanionBuilder =
     FocusSessionTableCompanion Function({
       Value<int> id,
+      required String uuid,
       Value<int?> taskId,
       required int focusDurationMinutes,
       required int breakDurationMinutes,
@@ -3498,10 +3826,12 @@ typedef $$FocusSessionTableTableCreateCompanionBuilder =
       required SessionState state,
       Value<int> elapsedSeconds,
       Value<int?> focusPhaseEndedAt,
+      Value<DateTime?> deletedAt,
     });
 typedef $$FocusSessionTableTableUpdateCompanionBuilder =
     FocusSessionTableCompanion Function({
       Value<int> id,
+      Value<String> uuid,
       Value<int?> taskId,
       Value<int> focusDurationMinutes,
       Value<int> breakDurationMinutes,
@@ -3510,6 +3840,7 @@ typedef $$FocusSessionTableTableUpdateCompanionBuilder =
       Value<SessionState> state,
       Value<int> elapsedSeconds,
       Value<int?> focusPhaseEndedAt,
+      Value<DateTime?> deletedAt,
     });
 
 final class $$FocusSessionTableTableReferences
@@ -3539,6 +3870,8 @@ class $$FocusSessionTableTableFilterComposer extends Composer<_$AppDatabase, $Fo
   });
   ColumnFilters<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<int> get focusDurationMinutes =>
       $composableBuilder(column: $table.focusDurationMinutes, builder: (column) => ColumnFilters(column));
 
@@ -3559,6 +3892,9 @@ class $$FocusSessionTableTableFilterComposer extends Composer<_$AppDatabase, $Fo
 
   ColumnFilters<int> get focusPhaseEndedAt =>
       $composableBuilder(column: $table.focusPhaseEndedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => ColumnFilters(column));
 
   $$TaskTableTableFilterComposer get taskId {
     final $$TaskTableTableFilterComposer composer = $composerBuilder(
@@ -3589,6 +3925,9 @@ class $$FocusSessionTableTableOrderingComposer extends Composer<_$AppDatabase, $
   });
   ColumnOrderings<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get focusDurationMinutes =>
       $composableBuilder(column: $table.focusDurationMinutes, builder: (column) => ColumnOrderings(column));
 
@@ -3609,6 +3948,9 @@ class $$FocusSessionTableTableOrderingComposer extends Composer<_$AppDatabase, $
 
   ColumnOrderings<int> get focusPhaseEndedAt =>
       $composableBuilder(column: $table.focusPhaseEndedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
 
   $$TaskTableTableOrderingComposer get taskId {
     final $$TaskTableTableOrderingComposer composer = $composerBuilder(
@@ -3639,6 +3981,8 @@ class $$FocusSessionTableTableAnnotationComposer extends Composer<_$AppDatabase,
   });
   GeneratedColumn<int> get id => $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => column);
+
   GeneratedColumn<int> get focusDurationMinutes =>
       $composableBuilder(column: $table.focusDurationMinutes, builder: (column) => column);
 
@@ -3657,6 +4001,8 @@ class $$FocusSessionTableTableAnnotationComposer extends Composer<_$AppDatabase,
 
   GeneratedColumn<int> get focusPhaseEndedAt =>
       $composableBuilder(column: $table.focusPhaseEndedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt => $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
   $$TaskTableTableAnnotationComposer get taskId {
     final $$TaskTableTableAnnotationComposer composer = $composerBuilder(
@@ -3703,6 +4049,7 @@ class $$FocusSessionTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> uuid = const Value.absent(),
                 Value<int?> taskId = const Value.absent(),
                 Value<int> focusDurationMinutes = const Value.absent(),
                 Value<int> breakDurationMinutes = const Value.absent(),
@@ -3711,8 +4058,10 @@ class $$FocusSessionTableTableTableManager
                 Value<SessionState> state = const Value.absent(),
                 Value<int> elapsedSeconds = const Value.absent(),
                 Value<int?> focusPhaseEndedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => FocusSessionTableCompanion(
                 id: id,
+                uuid: uuid,
                 taskId: taskId,
                 focusDurationMinutes: focusDurationMinutes,
                 breakDurationMinutes: breakDurationMinutes,
@@ -3721,10 +4070,12 @@ class $$FocusSessionTableTableTableManager
                 state: state,
                 elapsedSeconds: elapsedSeconds,
                 focusPhaseEndedAt: focusPhaseEndedAt,
+                deletedAt: deletedAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required String uuid,
                 Value<int?> taskId = const Value.absent(),
                 required int focusDurationMinutes,
                 required int breakDurationMinutes,
@@ -3733,8 +4084,10 @@ class $$FocusSessionTableTableTableManager
                 required SessionState state,
                 Value<int> elapsedSeconds = const Value.absent(),
                 Value<int?> focusPhaseEndedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => FocusSessionTableCompanion.insert(
                 id: id,
+                uuid: uuid,
                 taskId: taskId,
                 focusDurationMinutes: focusDurationMinutes,
                 breakDurationMinutes: breakDurationMinutes,
@@ -3743,6 +4096,7 @@ class $$FocusSessionTableTableTableManager
                 state: state,
                 elapsedSeconds: elapsedSeconds,
                 focusPhaseEndedAt: focusPhaseEndedAt,
+                deletedAt: deletedAt,
               ),
           withReferenceMapper: (p0) =>
               p0.map((e) => (e.readTable(table), $$FocusSessionTableTableReferences(db, table, e))).toList(),

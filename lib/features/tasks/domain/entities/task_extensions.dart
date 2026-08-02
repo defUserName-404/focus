@@ -16,6 +16,7 @@ class _TaskCopyWithUnset {
 extension TaskCopyWith on Task {
   Task copyWith({
     int? id,
+    String? uuid,
     int? projectId,
     Object? parentTaskId = _taskCopyWithUnset,
     String? title,
@@ -29,8 +30,10 @@ extension TaskCopyWith on Task {
     bool? isCompleted,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Object? deletedAt = _taskCopyWithUnset,
   }) => Task(
     id: id ?? this.id,
+    uuid: uuid ?? this.uuid,
     projectId: projectId ?? this.projectId,
     parentTaskId: parentTaskId == _taskCopyWithUnset ? this.parentTaskId : parentTaskId as int?,
     title: title ?? this.title,
@@ -46,5 +49,6 @@ extension TaskCopyWith on Task {
     isCompleted: isCompleted ?? this.isCompleted,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt == _taskCopyWithUnset ? this.deletedAt : deletedAt as DateTime?,
   );
 }

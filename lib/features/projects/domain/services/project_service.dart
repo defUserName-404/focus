@@ -1,4 +1,5 @@
 import '../../../../core/services/log_service.dart';
+import '../../../../core/utils/id_utils.dart';
 import '../../../../core/utils/result.dart';
 import '../entities/project.dart';
 import '../entities/project_extensions.dart';
@@ -48,6 +49,7 @@ class ProjectService {
     try {
       final now = DateTime.now();
       final project = Project(
+        uuid: generateUuid(),
         title: title,
         description: description,
         startDate: startDate,
@@ -75,10 +77,12 @@ class ProjectService {
     }
   }
 
+  /// Soft-deletes the project and transactionally cascades to its tasks and
+  /// focus sessions (hard FK cascade no longer applies with soft deletes).
   Future<Result<void>> deleteProject(int id) async {
     try {
       await _repository.deleteProject(id);
-      _log.info('Project $id deleted', tag: 'ProjectService');
+      _log.info('Project $id soft-deleted (cascaded to tasks/sessions)', tag: 'ProjectService');
       return const Success(null);
     } catch (e, st) {
       _log.error('Failed to delete project $id', tag: 'ProjectService', error: e, stackTrace: st);

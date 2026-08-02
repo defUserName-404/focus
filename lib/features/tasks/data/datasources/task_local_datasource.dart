@@ -43,7 +43,9 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   @override
   Future<List<TaskTableData>> getTasksByProjectId(int projectId) async {
     try {
-      return await (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).get();
+      return await (_db.select(
+        _db.taskTable,
+      )..where((t) => t.projectId.equals(projectId) & t.deletedAt.isNull())).get();
     } catch (e, st) {
       _log.error('getTasksByProjectId failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
       rethrow;
@@ -53,7 +55,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   @override
   Future<TaskTableData?> getTaskById(int id) async {
     try {
-      return await (_db.select(_db.taskTable)..where((t) => t.id.equals(id))).getSingleOrNull();
+      return await (_db.select(_db.taskTable)..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
     } catch (e, st) {
       _log.error('getTaskById failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
       rethrow;
@@ -63,7 +65,9 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   @override
   Future<List<TaskTableData>> getSubtasks(int parentTaskId) async {
     try {
-      return await (_db.select(_db.taskTable)..where((t) => t.parentTaskId.equals(parentTaskId))).get();
+      return await (_db.select(
+        _db.taskTable,
+      )..where((t) => t.parentTaskId.equals(parentTaskId) & t.deletedAt.isNull())).get();
     } catch (e, st) {
       _log.error('getSubtasks failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
       rethrow;
@@ -73,7 +77,9 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   @override
   Future<List<TaskTableData>> getTasksWithDeadlines() async {
     try {
-      return await (_db.select(_db.taskTable)..where((t) => t.endDate.isNotNull() & t.isCompleted.equals(false))).get();
+      return await (_db.select(
+        _db.taskTable,
+      )..where((t) => t.endDate.isNotNull() & t.isCompleted.equals(false) & t.deletedAt.isNull())).get();
     } catch (e, st) {
       _log.error('getTasksWithDeadlines failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
       rethrow;
@@ -102,26 +108,52 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
 
   @override
   Future<void> deleteTask(int id) async {
-    // ON DELETE CASCADE on parentTaskId propagates the delete to all
-    // descendant tasks automatically (and further to their sessions via
-    // FocusSessionTable.taskId cascade). A single statement suffices.
+    // Soft-delete the task, all descendants, and their focus sessions.
     try {
-      await (_db.delete(_db.taskTable)..where((t) => t.id.equals(id))).go();
+      await _db.transaction(() async {
+        final now = DateTime.now();
+        final idsToDelete = await _collectDescendantIds(id);
+        idsToDelete.add(id);
+
+        await (_db.update(_db.focusSessionTable)..where((t) => t.taskId.isIn(idsToDelete) & t.deletedAt.isNull()))
+            .write(FocusSessionTableCompanion(deletedAt: Value(now)));
+
+        await (_db.update(_db.taskTable)..where((t) => t.id.isIn(idsToDelete) & t.deletedAt.isNull())).write(
+          TaskTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+        );
+      });
     } catch (e, st) {
       _log.error('deleteTask failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
       rethrow;
     }
   }
 
+  /// BFS collect of all descendant task ids under [rootId].
+  Future<List<int>> _collectDescendantIds(int rootId) async {
+    final result = <int>[];
+    var frontier = [rootId];
+    while (frontier.isNotEmpty) {
+      final children =
+          await (_db.selectOnly(_db.taskTable)
+                ..addColumns([_db.taskTable.id])
+                ..where(_db.taskTable.parentTaskId.isIn(frontier) & _db.taskTable.deletedAt.isNull()))
+              .map((row) => row.read(_db.taskTable.id)!)
+              .get();
+      result.addAll(children);
+      frontier = children;
+    }
+    return result;
+  }
+
   @override
   Stream<List<TaskTableData>> watchTasksByProjectId(int projectId) {
-    return (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId))).watch();
+    return (_db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId) & t.deletedAt.isNull())).watch();
   }
 
   @override
   Stream<List<TaskTableData>> watchTasksWithDeadlines() {
     return (_db.select(_db.taskTable)
-          ..where((t) => t.endDate.isNotNull() & t.isCompleted.equals(false))
+          ..where((t) => t.endDate.isNotNull() & t.isCompleted.equals(false) & t.deletedAt.isNull())
           ..orderBy([(t) => OrderingTerm.asc(t.endDate)]))
         .watch();
   }
@@ -134,7 +166,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     TaskSortOrder sortOrder = TaskSortOrder.none,
     TaskPriority? priorityFilter,
   }) {
-    final query = _db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId));
+    final query = _db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId) & t.deletedAt.isNull());
 
     final q = searchQuery.trim().toLowerCase();
     if (q.isNotEmpty) {
@@ -179,7 +211,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     TaskPriority? priorityFilter,
     TaskCompletionFilter completionFilter = TaskCompletionFilter.all,
   }) {
-    final query = _db.select(_db.taskTable)..where((t) => t.depth.equals(0)); // root tasks only
+    final query = _db.select(_db.taskTable)..where((t) => t.depth.equals(0) & t.deletedAt.isNull());
 
     final q = searchQuery.trim().toLowerCase();
     if (q.isNotEmpty) {

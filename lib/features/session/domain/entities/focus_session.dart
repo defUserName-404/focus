@@ -12,6 +12,7 @@ import 'session_state.dart';
 @immutable
 class FocusSession extends Equatable {
   final int? id;
+  final String uuid;
   final int? taskId;
   final int focusDurationMinutes;
   final int breakDurationMinutes;
@@ -31,6 +32,8 @@ class FocusSession extends Equatable {
   /// Persisted to the database to preserve accurate stats across app restarts.
   final int? focusPhaseEndedAt;
 
+  final DateTime? deletedAt;
+
   /// Elapsed seconds at which the focus phase ended.
   /// Falls back to [focusDurationMinutes] * 60 when not explicitly set
   /// (e.g. session loaded from DB after an app restart).
@@ -41,6 +44,7 @@ class FocusSession extends Equatable {
 
   const FocusSession({
     this.id,
+    required this.uuid,
     this.taskId,
     required this.focusDurationMinutes,
     required this.breakDurationMinutes,
@@ -49,11 +53,13 @@ class FocusSession extends Equatable {
     required this.state,
     this.elapsedSeconds = 0,
     this.focusPhaseEndedAt,
+    this.deletedAt,
   });
 
   @override
   List<Object?> get props => [
     id,
+    uuid,
     taskId,
     focusDurationMinutes,
     breakDurationMinutes,
@@ -62,5 +68,6 @@ class FocusSession extends Equatable {
     state,
     elapsedSeconds,
     focusPhaseEndedAt,
+    deletedAt,
   ];
 }

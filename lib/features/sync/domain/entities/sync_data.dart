@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../../core/utils/id_utils.dart';
 import '../../../tasks/domain/entities/task.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
 import '../../../tasks/domain/entities/task_reminder_mode.dart';
@@ -44,71 +45,84 @@ class SyncData {
 /// Serializable project data for sync.
 class SyncProjectData {
   final int id;
+  final String uuid;
   final String title;
   final String? description;
   final DateTime? startDate;
   final DateTime? deadline;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const SyncProjectData({
     required this.id,
+    required this.uuid,
     required this.title,
     this.description,
     this.startDate,
     this.deadline,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
 
   factory SyncProjectData.fromJson(Map<String, dynamic> json) {
     return SyncProjectData(
       id: json['id'] as int,
+      uuid: (json['uuid'] as String?) ?? generateUuid(),
       title: json['title'] as String,
       description: json['description'] as String?,
       startDate: json['startDate'] != null ? DateTime.parse(json['startDate'] as String) : null,
       deadline: json['deadline'] != null ? DateTime.parse(json['deadline'] as String) : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      deletedAt: json['deletedAt'] != null ? DateTime.parse(json['deletedAt'] as String) : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'uuid': uuid,
     'title': title,
     'description': description,
     'startDate': startDate?.toIso8601String(),
     'deadline': deadline?.toIso8601String(),
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
+    'deletedAt': deletedAt?.toIso8601String(),
   };
 
   factory SyncProjectData.fromProject(Project project) {
     return SyncProjectData(
       id: project.id!,
+      uuid: project.uuid,
       title: project.title,
       description: project.description,
       startDate: project.startDate,
       deadline: project.deadline,
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
+      deletedAt: project.deletedAt,
     );
   }
 
   Project toProject() => Project(
     id: id,
+    uuid: uuid,
     title: title,
     description: description,
     startDate: startDate,
     deadline: deadline,
     createdAt: createdAt,
     updatedAt: updatedAt,
+    deletedAt: deletedAt,
   );
 }
 
 /// Serializable task data for sync.
 class SyncTaskData {
   final int id;
+  final String uuid;
   final int projectId;
   final int? parentTaskId;
   final String title;
@@ -122,9 +136,11 @@ class SyncTaskData {
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   const SyncTaskData({
     required this.id,
+    required this.uuid,
     required this.projectId,
     this.parentTaskId,
     required this.title,
@@ -138,11 +154,13 @@ class SyncTaskData {
     required this.isCompleted,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
 
   factory SyncTaskData.fromJson(Map<String, dynamic> json) {
     return SyncTaskData(
       id: json['id'] as int,
+      uuid: (json['uuid'] as String?) ?? generateUuid(),
       projectId: json['projectId'] as int,
       parentTaskId: json['parentTaskId'] as int?,
       title: json['title'] as String,
@@ -156,11 +174,13 @@ class SyncTaskData {
       isCompleted: json['isCompleted'] as bool,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      deletedAt: json['deletedAt'] != null ? DateTime.parse(json['deletedAt'] as String) : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'uuid': uuid,
     'projectId': projectId,
     'parentTaskId': parentTaskId,
     'title': title,
@@ -174,11 +194,13 @@ class SyncTaskData {
     'isCompleted': isCompleted,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
+    'deletedAt': deletedAt?.toIso8601String(),
   };
 
   factory SyncTaskData.fromTask(Task task) {
     return SyncTaskData(
       id: task.id!,
+      uuid: task.uuid,
       projectId: task.projectId,
       parentTaskId: task.parentTaskId,
       title: task.title,
@@ -192,11 +214,13 @@ class SyncTaskData {
       isCompleted: task.isCompleted,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
+      deletedAt: task.deletedAt,
     );
   }
 
   Task toTask() => Task(
     id: id,
+    uuid: uuid,
     projectId: projectId,
     parentTaskId: parentTaskId,
     title: title,
@@ -212,5 +236,6 @@ class SyncTaskData {
     isCompleted: isCompleted,
     createdAt: createdAt,
     updatedAt: updatedAt,
+    deletedAt: deletedAt,
   );
 }
