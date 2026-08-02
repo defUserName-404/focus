@@ -12,9 +12,9 @@ class AddSubtaskChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return fu.FButton(
-      style: fu.FButtonStyle.outline(),
+      variant: .outline,
       onPress: onPressed,
-      prefix: Icon(fu.FIcons.plus, size: AppConstants.size.icon.small),
+      prefix: Icon(fu.FLucideIcons.plus, size: AppConstants.size.icon.small),
       child: Text('subtask', style: context.typography.xs),
     );
   }

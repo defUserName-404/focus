@@ -105,7 +105,7 @@ class MiniPlayerOverlay extends ConsumerWidget {
 
               // Play/Pause button
               MiniControlButton(
-                icon: progress.isIdle || progress.isPaused ? FIcons.play : FIcons.pause,
+                icon: progress.isIdle || progress.isPaused ? FLucideIcons.play : FLucideIcons.pause,
                 onTap: () => notifier.togglePlayPause(),
                 color: context.colors.primary,
               ),

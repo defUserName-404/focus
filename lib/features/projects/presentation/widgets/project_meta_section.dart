@@ -35,7 +35,7 @@ class ProjectMetaSection extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Icon(
-                  isExpanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight,
+                  isExpanded ? fu.FLucideIcons.chevronDown : fu.FLucideIcons.chevronRight,
                   size: AppConstants.size.icon.small,
                   color: context.colors.mutedForeground,
                 ),
@@ -47,7 +47,7 @@ class ProjectMetaSection extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 2),
                   child: Icon(
-                    fu.FIcons.triangleAlert,
+                    fu.FLucideIcons.triangleAlert,
                     color: context.colors.destructive,
                     size: AppConstants.size.icon.small,
                   ),
@@ -69,7 +69,7 @@ class ProjectMetaSection extends ConsumerWidget {
             children: [
               if (project.startDate != null)
                 fu.FBadge(
-                  style: fu.FBadgeStyle.outline(),
+                  variant: .outline,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -77,7 +77,7 @@ class ProjectMetaSection extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 2),
                         child: Icon(
-                          fu.FIcons.calendarClock,
+                          fu.FLucideIcons.calendarClock,
                           size: AppConstants.size.icon.small,
                           color: context.colors.mutedForeground,
                         ),
@@ -89,7 +89,7 @@ class ProjectMetaSection extends ConsumerWidget {
                 ),
               if (project.deadline != null)
                 fu.FBadge(
-                  style: isOverdue ? fu.FBadgeStyle.destructive() : fu.FBadgeStyle.secondary(),
+                  variant: isOverdue ? .destructive : .secondary,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -97,7 +97,7 @@ class ProjectMetaSection extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 2),
                         child: Icon(
-                          isOverdue ? fu.FIcons.triangleAlert : fu.FIcons.calendarCheck,
+                          isOverdue ? fu.FLucideIcons.triangleAlert : fu.FLucideIcons.calendarCheck,
                           size: AppConstants.size.icon.small,
                         ),
                       ),

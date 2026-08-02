@@ -47,7 +47,7 @@ class AppCard extends StatelessWidget {
                     if (leading != null) SizedBox(width: leadingWidth, child: leading!),
                     Expanded(
                       child: DefaultTextStyle(
-                        style: context.typography.base.copyWith(
+                        style: context.typography.md.copyWith(
                           fontWeight: isCompleted ? FontWeight.w400 : FontWeight.w600,
                           color: isCompleted ? context.colors.mutedForeground : context.colors.foreground,
                           decoration: isCompleted ? TextDecoration.lineThrough : null,
@@ -76,7 +76,7 @@ class AppCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (children != null) ...children!,
+            ...?children,
           ],
         ),
       ),

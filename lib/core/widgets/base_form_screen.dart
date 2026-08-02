@@ -22,7 +22,7 @@ class BaseFormScreen extends StatelessWidget {
     required this.fields,
     required this.onSubmit,
     required this.submitButtonText,
-    this.submitIcon = FIcons.check,
+    this.submitIcon = FLucideIcons.check,
   });
 
   @override

@@ -22,7 +22,7 @@ class CreateTaskNewProjectHint extends StatelessWidget {
           padding: EdgeInsets.only(top: AppConstants.spacing.small),
           child: Row(
             children: [
-              Icon(FIcons.info, size: 12, color: context.colors.mutedForeground),
+              Icon(FLucideIcons.info, size: 12, color: context.colors.mutedForeground),
               SizedBox(width: AppConstants.spacing.small),
               Expanded(
                 child: Padding(

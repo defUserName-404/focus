@@ -12,8 +12,7 @@ part of 'project_provider.dart';
 @ProviderFor(ProjectListFilter)
 final projectListFilterProvider = ProjectListFilterProvider._();
 
-final class ProjectListFilterProvider
-    extends $NotifierProvider<ProjectListFilter, ProjectListFilterState> {
+final class ProjectListFilterProvider extends $NotifierProvider<ProjectListFilter, ProjectListFilterState> {
   ProjectListFilterProvider._()
     : super(
         from: null,
@@ -34,10 +33,7 @@ final class ProjectListFilterProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(ProjectListFilterState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ProjectListFilterState>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<ProjectListFilterState>(value));
   }
 }
 
@@ -47,9 +43,8 @@ abstract class _$ProjectListFilter extends $Notifier<ProjectListFilterState> {
   ProjectListFilterState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final ref =
-        this.ref as $Ref<ProjectListFilterState, ProjectListFilterState>;
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<ProjectListFilterState, ProjectListFilterState>;
     final element =
         ref.element
             as $ClassProviderElement<
@@ -58,15 +53,14 @@ abstract class _$ProjectListFilter extends $Notifier<ProjectListFilterState> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(ProjectNotifier)
 final projectProvider = ProjectNotifierProvider._();
 
-final class ProjectNotifierProvider
-    extends $NotifierProvider<ProjectNotifier, AsyncValue<List<Project>>> {
+final class ProjectNotifierProvider extends $NotifierProvider<ProjectNotifier, AsyncValue<List<Project>>> {
   ProjectNotifierProvider._()
     : super(
         from: null,
@@ -87,10 +81,7 @@ final class ProjectNotifierProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AsyncValue<List<Project>> value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AsyncValue<List<Project>>>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<AsyncValue<List<Project>>>(value));
   }
 }
 
@@ -100,9 +91,8 @@ abstract class _$ProjectNotifier extends $Notifier<AsyncValue<List<Project>>> {
   AsyncValue<List<Project>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<List<Project>>, AsyncValue<List<Project>>>;
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Project>>, AsyncValue<List<Project>>>;
     final element =
         ref.element
             as $ClassProviderElement<
@@ -111,7 +101,7 @@ abstract class _$ProjectNotifier extends $Notifier<AsyncValue<List<Project>>> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }
 
@@ -119,12 +109,7 @@ abstract class _$ProjectNotifier extends $Notifier<AsyncValue<List<Project>>> {
 final projectRepositoryProvider = ProjectRepositoryProvider._();
 
 final class ProjectRepositoryProvider
-    extends
-        $FunctionalProvider<
-          IProjectRepository,
-          IProjectRepository,
-          IProjectRepository
-        >
+    extends $FunctionalProvider<IProjectRepository, IProjectRepository, IProjectRepository>
     with $Provider<IProjectRepository> {
   ProjectRepositoryProvider._()
     : super(
@@ -142,9 +127,7 @@ final class ProjectRepositoryProvider
 
   @$internal
   @override
-  $ProviderElement<IProjectRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<IProjectRepository> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   IProjectRepository create(Ref ref) {
@@ -153,10 +136,7 @@ final class ProjectRepositoryProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(IProjectRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<IProjectRepository>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<IProjectRepository>(value));
   }
 }
 
@@ -165,20 +145,16 @@ String _$projectRepositoryHash() => r'2ea2b8d143bc9e84730588e39440be11f1650fdd';
 @ProviderFor(projectById)
 final projectByIdProvider = ProjectByIdFamily._();
 
-final class ProjectByIdProvider
-    extends
-        $FunctionalProvider<AsyncValue<Project?>, Project?, Stream<Project?>>
+final class ProjectByIdProvider extends $FunctionalProvider<AsyncValue<Project?>, Project?, Stream<Project?>>
     with $FutureModifier<Project?>, $StreamProvider<Project?> {
-  ProjectByIdProvider._({
-    required ProjectByIdFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'projectByIdProvider',
-         isAutoDispose: false,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  ProjectByIdProvider._({required ProjectByIdFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'projectByIdProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$projectByIdHash();
@@ -192,8 +168,7 @@ final class ProjectByIdProvider
 
   @$internal
   @override
-  $StreamProviderElement<Project?> $createElement($ProviderPointer pointer) =>
-      $StreamProviderElement(pointer);
+  $StreamProviderElement<Project?> $createElement($ProviderPointer pointer) => $StreamProviderElement(pointer);
 
   @override
   Stream<Project?> create(Ref ref) {
@@ -214,8 +189,7 @@ final class ProjectByIdProvider
 
 String _$projectByIdHash() => r'819927086a444512158549483b538200bf514339';
 
-final class ProjectByIdFamily extends $Family
-    with $FunctionalFamilyOverride<Stream<Project?>, String> {
+final class ProjectByIdFamily extends $Family with $FunctionalFamilyOverride<Stream<Project?>, String> {
   ProjectByIdFamily._()
     : super(
         retry: null,
@@ -225,8 +199,7 @@ final class ProjectByIdFamily extends $Family
         isAutoDispose: false,
       );
 
-  ProjectByIdProvider call(String id) =>
-      ProjectByIdProvider._(argument: id, from: this);
+  ProjectByIdProvider call(String id) => ProjectByIdProvider._(argument: id, from: this);
 
   @override
   String toString() => r'projectByIdProvider';
@@ -236,12 +209,7 @@ final class ProjectByIdFamily extends $Family
 final projectListProvider = ProjectListProvider._();
 
 final class ProjectListProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<Project>>,
-          List<Project>,
-          Stream<List<Project>>
-        >
+    extends $FunctionalProvider<AsyncValue<List<Project>>, List<Project>, Stream<List<Project>>>
     with $FutureModifier<List<Project>>, $StreamProvider<List<Project>> {
   ProjectListProvider._()
     : super(
@@ -259,9 +227,7 @@ final class ProjectListProvider
 
   @$internal
   @override
-  $StreamProviderElement<List<Project>> $createElement(
-    $ProviderPointer pointer,
-  ) => $StreamProviderElement(pointer);
+  $StreamProviderElement<List<Project>> $createElement($ProviderPointer pointer) => $StreamProviderElement(pointer);
 
   @override
   Stream<List<Project>> create(Ref ref) {
@@ -275,23 +241,16 @@ String _$projectListHash() => r'c6c5a795744f5e0937c863f15e03b133d11bd437';
 final projectProgressProvider = ProjectProgressFamily._();
 
 final class ProjectProgressProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<ProjectProgress>,
-          ProjectProgress,
-          FutureOr<ProjectProgress>
-        >
+    extends $FunctionalProvider<AsyncValue<ProjectProgress>, ProjectProgress, FutureOr<ProjectProgress>>
     with $FutureModifier<ProjectProgress>, $FutureProvider<ProjectProgress> {
-  ProjectProgressProvider._({
-    required ProjectProgressFamily super.from,
-    required String super.argument,
-  }) : super(
-         retry: null,
-         name: r'projectProgressProvider',
-         isAutoDispose: false,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  ProjectProgressProvider._({required ProjectProgressFamily super.from, required String super.argument})
+    : super(
+        retry: null,
+        name: r'projectProgressProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$projectProgressHash();
@@ -305,9 +264,7 @@ final class ProjectProgressProvider
 
   @$internal
   @override
-  $FutureProviderElement<ProjectProgress> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<ProjectProgress> $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
 
   @override
   FutureOr<ProjectProgress> create(Ref ref) {
@@ -328,8 +285,7 @@ final class ProjectProgressProvider
 
 String _$projectProgressHash() => r'd2f2f77e7c5e213a13221903a6ba8ed2a8b59158';
 
-final class ProjectProgressFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<ProjectProgress>, String> {
+final class ProjectProgressFamily extends $Family with $FunctionalFamilyOverride<FutureOr<ProjectProgress>, String> {
   ProjectProgressFamily._()
     : super(
         retry: null,
@@ -339,8 +295,7 @@ final class ProjectProgressFamily extends $Family
         isAutoDispose: false,
       );
 
-  ProjectProgressProvider call(String projectId) =>
-      ProjectProgressProvider._(argument: projectId, from: this);
+  ProjectProgressProvider call(String projectId) => ProjectProgressProvider._(argument: projectId, from: this);
 
   @override
   String toString() => r'projectProgressProvider';

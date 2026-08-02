@@ -62,7 +62,7 @@ class AllTasksScreen extends ConsumerWidget {
       footer: Padding(
         padding: EdgeInsets.all(isCompact ? AppConstants.spacing.regular : AppConstants.spacing.large),
         child: fu.FButton(
-          prefix: Icon(fu.FIcons.plus),
+          prefix: Icon(fu.FLucideIcons.plus),
           child: const Text('Create New Task'),
           onPress: () => context.push(AppRoutes.createTaskWithProject.path),
         ),

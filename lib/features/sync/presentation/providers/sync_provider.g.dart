@@ -12,8 +12,7 @@ part of 'sync_provider.dart';
 @ProviderFor(SyncNotifier)
 final syncProvider = SyncNotifierProvider._();
 
-final class SyncNotifierProvider
-    extends $NotifierProvider<SyncNotifier, SyncState> {
+final class SyncNotifierProvider extends $NotifierProvider<SyncNotifier, SyncState> {
   SyncNotifierProvider._()
     : super(
         from: null,
@@ -34,10 +33,7 @@ final class SyncNotifierProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(SyncState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<SyncState>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<SyncState>(value));
   }
 }
 
@@ -47,17 +43,11 @@ abstract class _$SyncNotifier extends $Notifier<SyncState> {
   SyncState build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<SyncState, SyncState>;
     final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<SyncState, SyncState>,
-              SyncState,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
+        ref.element as $ClassProviderElement<AnyNotifier<SyncState, SyncState>, SyncState, Object?, Object?>;
+    return element.handleCreate(ref, build);
   }
 }
 
@@ -65,12 +55,7 @@ abstract class _$SyncNotifier extends $Notifier<SyncState> {
 final cloudStorageServiceProvider = CloudStorageServiceProvider._();
 
 final class CloudStorageServiceProvider
-    extends
-        $FunctionalProvider<
-          ICloudStorageService,
-          ICloudStorageService,
-          ICloudStorageService
-        >
+    extends $FunctionalProvider<ICloudStorageService, ICloudStorageService, ICloudStorageService>
     with $Provider<ICloudStorageService> {
   CloudStorageServiceProvider._()
     : super(
@@ -88,9 +73,7 @@ final class CloudStorageServiceProvider
 
   @$internal
   @override
-  $ProviderElement<ICloudStorageService> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
+  $ProviderElement<ICloudStorageService> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   ICloudStorageService create(Ref ref) {
@@ -99,21 +82,16 @@ final class CloudStorageServiceProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(ICloudStorageService value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ICloudStorageService>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<ICloudStorageService>(value));
   }
 }
 
-String _$cloudStorageServiceHash() =>
-    r'68d03cebba27c2bd6e5dfcd89e84c34b5d2a6119';
+String _$cloudStorageServiceHash() => r'68d03cebba27c2bd6e5dfcd89e84c34b5d2a6119';
 
 @ProviderFor(syncEngine)
 final syncEngineProvider = SyncEngineProvider._();
 
-final class SyncEngineProvider
-    extends $FunctionalProvider<SyncEngine, SyncEngine, SyncEngine>
+final class SyncEngineProvider extends $FunctionalProvider<SyncEngine, SyncEngine, SyncEngine>
     with $Provider<SyncEngine> {
   SyncEngineProvider._()
     : super(
@@ -131,8 +109,7 @@ final class SyncEngineProvider
 
   @$internal
   @override
-  $ProviderElement<SyncEngine> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<SyncEngine> $createElement($ProviderPointer pointer) => $ProviderElement(pointer);
 
   @override
   SyncEngine create(Ref ref) {
@@ -141,10 +118,7 @@ final class SyncEngineProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(SyncEngine value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<SyncEngine>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<SyncEngine>(value));
   }
 }
 

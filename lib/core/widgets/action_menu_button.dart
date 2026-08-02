@@ -19,7 +19,7 @@ class ActionMenuButton extends StatelessWidget {
     this.onDelete,
     this.editLabel = 'Edit',
     this.deleteLabel = 'Delete',
-    this.icon = fu.FIcons.ellipsisVertical,
+    this.icon = fu.FLucideIcons.ellipsisVertical,
     this.iconSize = 16,
     this.iconColor,
     this.position,
@@ -38,10 +38,14 @@ class ActionMenuButton extends StatelessWidget {
       menu: [
         fu.FItemGroup(
           children: [
-            fu.FItem(prefix: const Icon(fu.FIcons.pencil), title: const Text('Edit'), onPress: () => onEdit?.call()),
             fu.FItem(
-              prefix: Icon(fu.FIcons.trash, color: context.colors.destructive),
-              title: Text('Delete', style: context.typography.base.copyWith(color: context.colors.destructive)),
+              prefix: const Icon(fu.FLucideIcons.pencil),
+              title: const Text('Edit'),
+              onPress: () => onEdit?.call(),
+            ),
+            fu.FItem(
+              prefix: Icon(fu.FLucideIcons.trash, color: context.colors.destructive),
+              title: Text('Delete', style: context.typography.md.copyWith(color: context.colors.destructive)),
               onPress: () => onDelete?.call(),
             ),
           ],
@@ -49,8 +53,8 @@ class ActionMenuButton extends StatelessWidget {
       ],
       builder: (_, controller, _) => fu.FButton(
         onPress: controller.toggle,
-        style: fu.FButtonStyle.ghost(),
-        child: const Icon(fu.FIcons.ellipsis, size: 20),
+        variant: .ghost,
+        child: const Icon(fu.FLucideIcons.ellipsis, size: 20),
       ),
     );
   }

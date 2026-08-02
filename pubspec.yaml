@@ -10,53 +10,53 @@ dependencies:
     sdk: flutter
 
   # State Management
-  flutter_riverpod: ^3.1.0
-  riverpod_annotation: ^4.0.0
+  # riverpod_annotation is held at 4.0.3 because riverpod_generator 4.0.4 pins it
+  # exactly, and 4.0.3 in turn pins riverpod 3.3.2, which caps flutter_riverpod.
+  # See the codegen note in dev_dependencies for why the generator is capped.
+  flutter_riverpod: ^3.3.2
+  riverpod_annotation: 4.0.3
 
   # Dependency Injection
-  get_it: ^9.2.0
+  get_it: ^9.2.1
 
   # Database - drift_flutter includes everything
-  drift_flutter: ^0.2.8
-  drift: ^2.31.0
-
-  # Required native sqlite binaries for Drift on some platforms
-  sqlite3_flutter_libs: ^0.5.41
+  drift_flutter: ^0.3.1
+  drift: ^2.34.0
 
   # UI
-  forui: ^0.17.0
+  forui: ^0.24.3
 
   # Audio
-  audioplayers: ^6.5.1
-  audio_service: ^0.18.17
-  audio_session: ^0.2.2
+  audioplayers: ^6.8.1
+  audio_service: ^0.18.19
+  audio_session: ^0.2.4
 
   # Notifications
-  flutter_local_notifications: ^20.0.0
-  timezone: ^0.10.1
+  flutter_local_notifications: ^22.2.0
+  timezone: ^0.11.1
 
   # Routing
-  go_router: ^14.0.0
+  go_router: ^17.3.0
 
   # Desktop lifecycle
-  window_manager: ^0.5.0
-  tray_manager: ^0.5.1
+  window_manager: ^0.5.2
+  tray_manager: ^0.5.3
   launch_at_startup: ^0.5.1
 
   # Utils
-  forui_assets: ^0.17.1
-  lottie: ^3.3.2
-  equatable: ^2.0.7
+  forui_assets: ^0.24.0
+  lottie: ^3.5.1
+  equatable: ^2.1.0
   meta: ^1.17.0
 
   # Mapping / code-gen for data-layer models
-  dart_mappable: ^4.4.0
+  dart_mappable: ^4.8.0
 
   # Cloud sync (Google Drive)
-  google_sign_in: ^6.2.2
-  googleapis: ^13.2.0
-  extension_google_sign_in_as_googleapis_auth: ^2.0.12
-  http: ^1.3.0
+  google_sign_in: ^7.2.0
+  googleapis: ^16.0.0
+  extension_google_sign_in_as_googleapis_auth: ^3.0.0
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -64,12 +64,17 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   # Code generation
-  build_runner: ^2.11.0
-  drift_dev: ^2.31.0
-  riverpod_generator: ^4.0.0+1
-  dart_mappable_builder: ^4.4.0
+  # Capped to the analyzer 12 line. flutter_test pins test_api 0.7.11 exactly, the
+  # only `test` release on that test_api is 1.31.0, and it requires analyzer <13.
+  # Since riverpod declares `test` as a runtime dependency, analyzer 13 cannot enter
+  # the solve at all on this Flutter version. Lift once flutter_test moves to a newer
+  # test_api, or once riverpod drops `test` from its runtime dependencies.
+  build_runner: '>=2.15.0 <2.15.2'
+  drift_dev: '>=2.34.0 <2.34.1'
+  riverpod_generator: '>=4.0.4 <4.0.6'
+  dart_mappable_builder: '>=4.8.0 <4.9.0'
   flutter_launcher_icons: ^0.14.4
-  rename_app: ^1.6.5
+  rename_app: ^1.6.6
 
 flutter:
   uses-material-design: true

@@ -39,6 +39,18 @@ Watch mode during active provider/schema work:
 dart run build_runner watch --delete-conflicting-outputs
 ```
 
+### Analyzer / codegen version pins
+
+On Flutter 3.44.x, `flutter_test` pins `test_api 0.7.11`. The only `test` release on that `test_api` requires `analyzer < 13`, and `riverpod` declares `test` as a runtime dependency, so analyzer 13 cannot enter the solve. Keep these caps in `pubspec.yaml` until upstream relaxes that:
+
+- `riverpod_annotation: 4.0.3`
+- `riverpod_generator: '>=4.0.4 <4.0.6'`
+- `drift_dev: '>=2.34.0 <2.34.1'`
+- `dart_mappable_builder: '>=4.8.0 <4.9.0'`
+- `build_runner: '>=2.15.0 <2.15.2'`
+
+Prefer `fvm flutter` / `fvm dart` so the local FVM pin (see `.fvmrc`) is used.
+
 ## Validation Workflow (Recommended)
 
 ```bash

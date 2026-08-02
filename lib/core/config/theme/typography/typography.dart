@@ -15,6 +15,9 @@ final class _AppTypography {
   /// - Font size and line height
   /// - Appropriate font weight variation
   /// - Theme foreground color
+  ///
+  /// The same typeface backs both the `display` and `body` slots so that the
+  /// app's single scale applies everywhere.
   FTypography _buildTypography({required FColors colors, String fontFamily = 'Manrope'}) {
     final scale = _AppTypographyScale();
     final weight = _AppTypographyWeight();
@@ -27,15 +30,17 @@ final class _AppTypography {
       fontVariations: [FontVariation('wght', weight.normal)],
     );
 
-    return FTypography(
+    final typeface = FTypeface(
+      fontFamily: fontFamily,
+
       // Extra small - 12px
       xs: base.copyWith(fontSize: scale.xs, height: scale.lineHeightTight),
 
       // Small - 14px
       sm: base.copyWith(fontSize: scale.sm, height: scale.lineHeightNormal),
 
-      // Base - 16px (default)
-      base: base.copyWith(fontSize: scale.base, height: scale.lineHeightRelaxed),
+      // Medium - 16px (default)
+      md: base.copyWith(fontSize: scale.base, height: scale.lineHeightRelaxed),
 
       // Large - 18px
       lg: base.copyWith(fontSize: scale.lg, height: scale.lineHeightLoose),
@@ -82,5 +87,7 @@ final class _AppTypography {
         fontVariations: [FontVariation('wght', weight.bold)],
       ),
     );
+
+    return FTypography(display: typeface, body: typeface);
   }
 }

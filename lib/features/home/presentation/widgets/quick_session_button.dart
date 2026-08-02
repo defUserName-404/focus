@@ -11,17 +11,17 @@ class QuickSessionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cardStyle = context.theme.cardStyle;
-    return fu.FCard(
-      style: (style) => fu.FCardStyle(
-        decoration: cardStyle.decoration.copyWith(color: context.colors.primary),
-        contentStyle: cardStyle.contentStyle,
-      ),
-      child: GestureDetector(
+    return Material(
+      color: context.colors.primary,
+      borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+      child: InkWell(
         onTap: () => FocusCommands.startQuickSession(context, ref),
-        behavior: HitTestBehavior.opaque,
+        borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppConstants.spacing.regular,
+            vertical: AppConstants.spacing.regular,
+          ),
           child: Row(
             children: [
               Container(
@@ -31,12 +31,12 @@ class QuickSessionButton extends ConsumerWidget {
                   color: context.colors.background.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
                 ),
-                child: Icon(fu.FIcons.play, color: context.colors.background, size: AppConstants.size.icon.large),
+                child: Icon(fu.FLucideIcons.play, color: context.colors.background, size: AppConstants.size.icon.large),
               ),
               SizedBox(width: AppConstants.spacing.regular),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   children: [
                     Text(
                       'Start Focus Session',
@@ -54,7 +54,7 @@ class QuickSessionButton extends ConsumerWidget {
                 ),
               ),
               Icon(
-                fu.FIcons.chevronRight,
+                fu.FLucideIcons.chevronRight,
                 size: AppConstants.size.icon.regular,
                 color: context.colors.background.withValues(alpha: 0.7),
               ),

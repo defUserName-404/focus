@@ -22,9 +22,7 @@ class DailySessionStats extends Equatable {
 
   int get focusMinutes => focusSeconds ~/ 60;
 
-  static const empty = DailySessionStats(
-    date: '', completedSessions: 0, totalSessions: 0, focusSeconds: 0,
-  );
+  static const empty = DailySessionStats(date: '', completedSessions: 0, totalSessions: 0, focusSeconds: 0);
 
   @override
   List<Object?> get props => [date, completedSessions, totalSessions, focusSeconds];

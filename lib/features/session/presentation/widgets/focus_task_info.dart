@@ -46,7 +46,7 @@ class FocusTaskInfo extends ConsumerWidget {
                 padding: EdgeInsets.only(top: AppConstants.spacing.regular),
                 child: Text(
                   project?.title ?? '',
-                  style: context.typography.base.copyWith(color: context.colors.mutedForeground),
+                  style: context.typography.md.copyWith(color: context.colors.mutedForeground),
                 ),
               ),
               loading: () => const SizedBox.shrink(),

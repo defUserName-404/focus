@@ -30,7 +30,7 @@ class FocusCommands {
       body: 'Ending the current session will mark it as incomplete. Start a new one?',
       confirmLabel: 'End & start new',
       cancelLabel: 'Keep current',
-      confirmStyle: null,
+      confirmVariant: null,
       // uses default destructive style
       onConfirm: () {
         ref.read(focusTimerProvider.notifier).cancelSession();

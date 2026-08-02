@@ -69,7 +69,7 @@ class CircularTimer extends ConsumerWidget {
                           switchOutCurve: Curves.easeIn,
                           transitionBuilder: (child, animation) => FadeTransition(
                             opacity: animation,
-                            child: SizeTransition(sizeFactor: animation, axisAlignment: -1.0, child: child),
+                            child: SizeTransition(sizeFactor: animation, alignment: Alignment.topCenter, child: child),
                           ),
                           child: progress.isIdle
                               ? Padding(
@@ -80,7 +80,7 @@ class CircularTimer extends ConsumerWidget {
                                     spacing: AppConstants.spacing.small,
                                     children: [
                                       Icon(
-                                        FIcons.play,
+                                        FLucideIcons.play,
                                         size: AppConstants.size.icon.large,
                                         color: context.colors.mutedForeground,
                                       ),

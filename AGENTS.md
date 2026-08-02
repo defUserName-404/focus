@@ -39,7 +39,7 @@ Key principles:
 | DI | GetIt |
 | Local DB | Drift (SQLite) |
 | Routing | go_router |
-| UI | ForUI (`forui`) |
+| UI | ForUI (`forui` ^0.24) |
 | Notifications | flutter_local_notifications |
 | Audio | audioplayers, audio_service, audio_session |
 

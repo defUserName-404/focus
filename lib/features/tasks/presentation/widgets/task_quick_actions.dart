@@ -33,26 +33,26 @@ class TaskQuickActions extends ConsumerWidget {
             if (!task.isCompleted)
               fu.FButton(
                 onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
-                prefix: const Icon(fu.FIcons.play, size: 14),
+                prefix: const Icon(fu.FLucideIcons.play, size: 14),
                 child: const Text('Start Focus'),
               ),
             fu.FButton(
-              style: fu.FButtonStyle.outline(),
+              variant: .outline,
               onPress: () =>
                   TaskCommands.create(context, projectId: projectId, parentTaskId: task.id, depth: task.depth + 1),
-              prefix: const Icon(fu.FIcons.plus, size: 14),
+              prefix: const Icon(fu.FLucideIcons.plus, size: 14),
               child: const Text('Add Subtask'),
             ),
             fu.FButton(
-              style: fu.FButtonStyle.outline(),
+              variant: .outline,
               onPress: () => ref.read(taskProvider(projectId.toString()).notifier).toggleTaskCompletion(task),
-              prefix: Icon(task.isCompleted ? fu.FIcons.rotateCcw : fu.FIcons.check, size: 14),
+              prefix: Icon(task.isCompleted ? fu.FLucideIcons.rotateCcw : fu.FLucideIcons.check, size: 14),
               child: Text(task.isCompleted ? 'Reopen' : 'Complete'),
             ),
             fu.FButton(
-              style: fu.FButtonStyle.outline(),
+              variant: .outline,
               onPress: () => TaskCommands.edit(context, task),
-              prefix: const Icon(fu.FIcons.pencil, size: 14),
+              prefix: const Icon(fu.FLucideIcons.pencil, size: 14),
               child: const Text('Edit'),
             ),
           ],

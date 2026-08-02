@@ -63,7 +63,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
       focusNode: widget.focusNode,
       hint: widget.hint,
       prefixBuilder: (_, _, _) =>
-          const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0), child: Icon(FIcons.search)),
+          const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0), child: Icon(FLucideIcons.search)),
       clearable: (value) => value.text.isNotEmpty,
     );
   }

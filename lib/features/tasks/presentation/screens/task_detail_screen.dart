@@ -105,7 +105,7 @@ class TaskDetailScreen extends ConsumerWidget {
                     ),
                     fu.FButton.icon(
                       onPress: () => TaskCommands.create(context, projectId: projectId),
-                      child: Icon(fu.FIcons.plus),
+                      child: Icon(fu.FLucideIcons.plus),
                     ),
                     SizedBox(width: AppConstants.spacing.small),
                     ActionMenuButton(
@@ -120,7 +120,10 @@ class TaskDetailScreen extends ConsumerWidget {
                   padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large),
                   child: fu.FButton(
                     onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
-                    prefix: Icon(hasActiveSession ? fu.FIcons.eye : fu.FIcons.play, size: AppConstants.size.icon.small),
+                    prefix: Icon(
+                      hasActiveSession ? fu.FLucideIcons.eye : fu.FLucideIcons.play,
+                      size: AppConstants.size.icon.small,
+                    ),
                     child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
                   ),
                 ),
@@ -148,7 +151,10 @@ class TaskDetailScreen extends ConsumerWidget {
                   padding: EdgeInsets.all(AppConstants.spacing.large),
                   child: fu.FButton(
                     onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
-                    prefix: Icon(hasActiveSession ? fu.FIcons.eye : fu.FIcons.play, size: AppConstants.size.icon.small),
+                    prefix: Icon(
+                      hasActiveSession ? fu.FLucideIcons.eye : fu.FLucideIcons.play,
+                      size: AppConstants.size.icon.small,
+                    ),
                     child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
                   ),
                 ),

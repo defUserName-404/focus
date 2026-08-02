@@ -10,11 +10,11 @@ class TaskPriorityBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return fu.FBadge(
-      style: switch (priority) {
-        TaskPriority.critical => fu.FBadgeStyle.destructive(),
-        TaskPriority.high => fu.FBadgeStyle.primary(),
-        TaskPriority.medium => fu.FBadgeStyle.secondary(),
-        TaskPriority.low => fu.FBadgeStyle.outline(),
+      variant: switch (priority) {
+        TaskPriority.critical => .destructive,
+        TaskPriority.high => .primary,
+        TaskPriority.medium => .secondary,
+        TaskPriority.low => .outline,
       },
       child: Text(priority.label),
     );

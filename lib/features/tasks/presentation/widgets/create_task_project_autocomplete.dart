@@ -53,7 +53,7 @@ class _CreateTaskProjectAutocompleteState extends State<CreateTaskProjectAutocom
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FAutocomplete.builder(
+        FAutocomplete.textBuilder(
           control: FAutocompleteControl.managed(controller: widget.controller),
           hint: 'Search or type a project name',
           label: const Text('Project'),

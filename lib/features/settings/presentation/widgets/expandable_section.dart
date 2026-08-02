@@ -36,7 +36,7 @@ class ExpandableSection extends StatelessWidget {
                   turns: isExpanded ? 0.5 : 0,
                   duration: const Duration(milliseconds: 200),
                   child: Icon(
-                    fu.FIcons.chevronDown,
+                    fu.FLucideIcons.chevronDown,
                     size: AppConstants.size.icon.regular,
                     color: context.colors.mutedForeground,
                   ),

@@ -31,7 +31,7 @@ class AllTasksList extends ConsumerWidget {
               spacing: AppConstants.spacing.regular,
               children: [
                 Icon(
-                  fu.FIcons.squareCheck,
+                  fu.FLucideIcons.squareCheck,
                   size: AppConstants.size.icon.extraExtraLarge,
                   color: Theme.of(context).disabledColor,
                 ),
