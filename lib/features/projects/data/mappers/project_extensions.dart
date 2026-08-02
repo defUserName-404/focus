@@ -6,12 +6,14 @@ import '../../domain/entities/project.dart';
 extension DbProjectToDomain on ProjectTableData {
   Project toDomain() => Project(
     id: id,
+    uuid: uuid,
     title: title,
     description: description,
     startDate: startDate,
     deadline: deadline,
     createdAt: createdAt,
     updatedAt: updatedAt,
+    deletedAt: deletedAt,
   );
 }
 
@@ -20,21 +22,25 @@ extension DomainProjectToCompanion on Project {
     if (id != null) {
       return ProjectTableCompanion(
         id: Value(id!),
+        uuid: Value(uuid),
         title: Value(title),
         description: Value(description),
         startDate: Value(startDate),
         deadline: Value(deadline),
         createdAt: Value(createdAt),
         updatedAt: Value(updatedAt),
+        deletedAt: Value(deletedAt),
       );
     }
     return ProjectTableCompanion.insert(
+      uuid: uuid,
       title: title,
       description: Value<String?>(description),
       startDate: Value<DateTime?>(startDate),
       deadline: Value<DateTime?>(deadline),
       createdAt: createdAt,
       updatedAt: updatedAt,
+      deletedAt: Value<DateTime?>(deletedAt),
     );
   }
 }

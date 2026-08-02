@@ -18,6 +18,7 @@ class _FocusSessionCopyWithUnset {
 extension FocusSessionCopyWith on FocusSession {
   FocusSession copyWith({
     int? id,
+    String? uuid,
     Object? taskId = _unset,
     int? focusDurationMinutes,
     int? breakDurationMinutes,
@@ -26,8 +27,10 @@ extension FocusSessionCopyWith on FocusSession {
     SessionState? state,
     int? elapsedSeconds,
     Object? focusPhaseEndedAt = _unset,
+    Object? deletedAt = _unset,
   }) => FocusSession(
     id: id ?? this.id,
+    uuid: uuid ?? this.uuid,
     taskId: taskId == _unset ? this.taskId : taskId as int?,
     focusDurationMinutes: focusDurationMinutes ?? this.focusDurationMinutes,
     breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,
@@ -36,5 +39,6 @@ extension FocusSessionCopyWith on FocusSession {
     state: state ?? this.state,
     elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
     focusPhaseEndedAt: focusPhaseEndedAt == _unset ? this.focusPhaseEndedAt : focusPhaseEndedAt as int?,
+    deletedAt: deletedAt == _unset ? this.deletedAt : deletedAt as DateTime?,
   );
 }

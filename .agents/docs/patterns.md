@@ -281,6 +281,27 @@ Guidelines:
 - `custom` stores minutes-before as an integer.
 - Keep reminder computation in a pure planner utility so UI and services share logic.
 
+## Soft Delete + UUID Sync Identity
+
+Projects, tasks, and focus sessions carry a `uuid` and optional `deletedAt`.
+
+```dart
+// Soft delete in datasource (never hard DELETE for user-facing removes)
+await (_db.update(_db.projectTable)..where((t) => t.id.equals(id))).write(
+  ProjectTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+);
+
+// Every read/watch filters tombstones
+..where((t) => t.deletedAt.isNull())
+```
+
+Gotchas:
+- Soft-deleting a project must transactionally soft-delete its tasks and their sessions.
+- Soft-deleting a task must soft-delete descendants and their sessions.
+- Generate `uuid` on create via `generateUuid()`; migration backfills existing rows.
+- `SyncPurgeService` permanently removes tombstones past the retention window.
+- Persist `SettingsKeys.deviceId` once via `SettingsService.ensureDeviceId()`.
+
 ## Mandatory Follow-Up
 
 When a new pattern is introduced in production code, add it here with:

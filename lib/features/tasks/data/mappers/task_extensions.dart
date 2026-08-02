@@ -6,6 +6,7 @@ import '../../domain/entities/task.dart';
 extension DbTaskToDomain on TaskTableData {
   Task toDomain() => Task(
     id: id,
+    uuid: uuid,
     projectId: projectId,
     parentTaskId: parentTaskId,
     title: title,
@@ -19,6 +20,7 @@ extension DbTaskToDomain on TaskTableData {
     isCompleted: isCompleted,
     createdAt: createdAt,
     updatedAt: updatedAt,
+    deletedAt: deletedAt,
   );
 }
 
@@ -29,6 +31,7 @@ extension DomainTaskToCompanion on Task {
     if (id != null) {
       return TaskTableCompanion(
         id: Value(id!),
+        uuid: Value(uuid),
         projectId: Value(projectId),
         parentTaskId: Value(parentTaskId),
         title: Value(title),
@@ -42,9 +45,11 @@ extension DomainTaskToCompanion on Task {
         isCompleted: Value(isCompleted),
         createdAt: Value(createdAt),
         updatedAt: Value(updatedAt),
+        deletedAt: Value(deletedAt),
       );
     }
     return TaskTableCompanion.insert(
+      uuid: uuid,
       projectId: projectId,
       parentTaskId: Value(parentTaskId),
       title: title,
@@ -58,6 +63,7 @@ extension DomainTaskToCompanion on Task {
       isCompleted: Value(isCompleted),
       createdAt: createdAt,
       updatedAt: updatedAt,
+      deletedAt: Value(deletedAt),
     );
   }
 }

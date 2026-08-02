@@ -47,7 +47,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
           'COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) AS total_seconds, '
           'COUNT(*) AS total_sessions, '
           'COALESCE(SUM(CASE WHEN state = $_completedState THEN 1 ELSE 0 END), 0) AS completed_sessions '
-          'FROM focus_session_table WHERE task_id = ?',
+          'FROM focus_session_table WHERE task_id = ? AND deleted_at IS NULL',
           variables: [Variable<int>(taskId)],
           readsFrom: {_db.focusSessionTable},
         )
@@ -62,7 +62,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
               .customSelect(
                 "SELECT date(start_time, 'unixepoch', 'localtime') AS d, COUNT(*) AS cnt "
                 'FROM focus_session_table '
-                'WHERE task_id = ? AND state = $_completedState '
+                'WHERE task_id = ? AND state = $_completedState AND deleted_at IS NULL '
                 'GROUP BY d',
                 variables: [Variable<int>(taskId)],
               )
@@ -95,7 +95,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
   @override
   Stream<List<FocusSessionData>> watchRecentSessions(int taskId, {int limit = 10}) {
     return (_db.select(_db.focusSessionTable)
-          ..where((t) => t.taskId.equals(taskId))
+          ..where((t) => t.taskId.equals(taskId) & t.deletedAt.isNull())
           ..orderBy([(t) => OrderingTerm.desc(t.startTime)])
           ..limit(limit))
         .watch();
@@ -139,15 +139,15 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
           'FROM '
           '(SELECT COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) AS total_seconds, COUNT(*) AS total_sessions, '
           'SUM(CASE WHEN state = $_completedState THEN 1 ELSE 0 END) AS completed_sessions '
-          'FROM focus_session_table) s, '
+          'FROM focus_session_table WHERE deleted_at IS NULL) s, '
           '(SELECT COUNT(*) AS total_tasks, '
           'SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) AS completed_tasks '
-          'FROM task_table WHERE depth = 0) t, '
+          'FROM task_table WHERE depth = 0 AND deleted_at IS NULL) t, '
           '(SELECT '
           'COALESCE(SUM(CASE WHEN state = $_completedState THEN 1 ELSE 0 END), 0) AS today_sessions, '
           'COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) AS today_seconds '
           'FROM focus_session_table '
-          "WHERE date(start_time, 'unixepoch', 'localtime') = ?) td",
+          "WHERE deleted_at IS NULL AND date(start_time, 'unixepoch', 'localtime') = ?) td",
           variables: [Variable<String>(todayKey)],
           readsFrom: {_db.focusSessionTable, _db.taskTable, _db.dailySessionStatsTable},
         )
@@ -192,7 +192,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
   @override
   Stream<List<TaskTableData>> watchRecentTasks({int limit = 5}) {
     return (_db.select(_db.taskTable)
-          ..where((t) => t.depth.equals(0))
+          ..where((t) => t.depth.equals(0) & t.deletedAt.isNull())
           ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)])
           ..limit(limit))
         .watch();

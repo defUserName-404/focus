@@ -158,7 +158,16 @@ Rules for schema changes:
 4. Regenerate code.
 5. Verify migration behavior with existing user data.
 
-Current task schema includes reminder configuration fields:
+Current sync-ready schema (v6) includes on `project_table`, `task_table`, and `focus_session_table`:
+- `uuid` (TEXT, unique) — stable sync identity, generated on create and backfilled on migration
+- `deleted_at` (nullable DateTime) — soft-delete tombstone; all reads filter `deletedAt IS NULL`
+
+Deletes are soft deletes. `ON DELETE CASCADE` no longer fires for app-level deletes, so project/task
+deletion must cascade soft-deletes to dependents inside a transaction. `SyncPurgeService` hard-deletes
+tombstones older than the retention window (default 30 days). A stable `device_id` setting UUID is
+generated once on first launch for sync provenance.
+
+Current task schema also includes reminder configuration fields:
 - `reminder_mode` (enum-backed)
 - `custom_reminder_minutes_before` (nullable int)
 

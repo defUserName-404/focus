@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+
 import '../../../../core/services/db_service.dart';
 import '../../../../core/services/log_service.dart';
 import '../../domain/entities/session_state.dart';
@@ -28,13 +30,15 @@ class FocusLocalDataSourceImpl implements IFocusLocalDataSource {
 
   @override
   Future<List<FocusSessionData>> getAllSessions() async {
-    return await _db.select(_db.focusSessionTable).get();
+    return await (_db.select(_db.focusSessionTable)..where((t) => t.deletedAt.isNull())).get();
   }
 
   @override
   Future<FocusSessionData?> getSessionById(int id) async {
     try {
-      return await (_db.select(_db.focusSessionTable)..where((t) => t.id.equals(id))).getSingleOrNull();
+      return await (_db.select(
+        _db.focusSessionTable,
+      )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
     } catch (e, st) {
       _log.error('getSessionById failed', tag: 'FocusLocalDS', error: e, stackTrace: st);
       rethrow;
@@ -44,7 +48,11 @@ class FocusLocalDataSourceImpl implements IFocusLocalDataSource {
   @override
   Future<FocusSessionData?> getActiveSession() async {
     final query = _db.select(_db.focusSessionTable)
-      ..where((t) => t.state.isIn([SessionState.running.index, SessionState.paused.index, SessionState.onBreak.index]))
+      ..where(
+        (t) =>
+            t.deletedAt.isNull() &
+            t.state.isIn([SessionState.running.index, SessionState.paused.index, SessionState.onBreak.index]),
+      )
       ..limit(1);
     try {
       return await query.getSingleOrNull();
@@ -86,10 +94,12 @@ class FocusLocalDataSourceImpl implements IFocusLocalDataSource {
 
   @override
   Future<void> deleteSession(int id) async {
-    // Fetch the session first so we know which date to recalculate.
     try {
       final session = await getSessionById(id);
-      await (_db.delete(_db.focusSessionTable)..where((t) => t.id.equals(id))).go();
+      final now = DateTime.now();
+      await (_db.update(
+        _db.focusSessionTable,
+      )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).write(FocusSessionTableCompanion(deletedAt: Value(now)));
       if (session != null) {
         await _db.recalculateDailyStatsForDate(session.startTime);
       }
@@ -101,12 +111,12 @@ class FocusLocalDataSourceImpl implements IFocusLocalDataSource {
 
   @override
   Stream<List<FocusSessionData>> watchSessionsByTask(int taskId) {
-    return (_db.select(_db.focusSessionTable)..where((t) => t.taskId.equals(taskId))).watch();
+    return (_db.select(_db.focusSessionTable)..where((t) => t.taskId.equals(taskId) & t.deletedAt.isNull())).watch();
   }
 
   @override
   Stream<List<FocusSessionData>> watchAllSessions() {
-    return _db.select(_db.focusSessionTable).watch();
+    return (_db.select(_db.focusSessionTable)..where((t) => t.deletedAt.isNull())).watch();
   }
 
   /// Derives the session's start time from the companion and recalculates

@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/constants/notification_constants.dart';
 import '../../../../core/services/log_service.dart';
+import '../../../../core/utils/id_utils.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../domain/entities/focus_session.dart';
 import '../../domain/entities/focus_session_extensions.dart';
@@ -101,6 +102,7 @@ class FocusTimer extends _$FocusTimer {
     _stopTicking();
 
     final session = FocusSession(
+      uuid: generateUuid(),
       taskId: taskId,
       focusDurationMinutes: focusMinutes,
       breakDurationMinutes: breakMinutes,
@@ -331,6 +333,7 @@ class FocusTimer extends _$FocusTimer {
 
   Future<void> _startNextCycle(int? taskId, int focusMinutes, int breakMinutes) async {
     final session = FocusSession(
+      uuid: generateUuid(),
       taskId: taskId,
       focusDurationMinutes: focusMinutes,
       breakDurationMinutes: breakMinutes,

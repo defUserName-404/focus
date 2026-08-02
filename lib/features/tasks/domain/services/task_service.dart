@@ -1,4 +1,5 @@
 import '../../../../core/services/log_service.dart';
+import '../../../../core/utils/id_utils.dart';
 import '../../../../core/utils/result.dart';
 import '../entities/task.dart';
 import '../entities/task_extensions.dart';
@@ -45,6 +46,7 @@ class TaskService {
     try {
       final now = DateTime.now();
       final task = Task(
+        uuid: generateUuid(),
         projectId: projectId,
         parentTaskId: parentTaskId,
         title: title,
@@ -88,7 +90,7 @@ class TaskService {
     try {
       await _taskNotificationService.cancelTaskReminder(id);
       await _repository.deleteTask(id);
-      _log.info('Task $id deleted', tag: 'TaskService');
+      _log.info('Task $id soft-deleted', tag: 'TaskService');
       return const Success(null);
     } catch (e, st) {
       _log.error('Failed to delete task $id', tag: 'TaskService', error: e, stackTrace: st);

@@ -34,12 +34,12 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
 
   @override
   Future<List<ProjectTableData>> getAllProjects() async {
-    return await _db.select(_db.projectTable).get();
+    return await (_db.select(_db.projectTable)..where((t) => t.deletedAt.isNull())).get();
   }
 
   @override
   Future<ProjectTableData?> getProjectById(int id) async {
-    final query = _db.select(_db.projectTable)..where((t) => t.id.equals(id));
+    final query = _db.select(_db.projectTable)..where((t) => t.id.equals(id) & t.deletedAt.isNull());
     return await query.getSingleOrNull();
   }
 
@@ -65,10 +65,32 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
 
   @override
   Future<void> deleteProject(int id) async {
-    // ON DELETE CASCADE on TaskTable.projectId propagates the delete to all
-    // tasks (and transitively to their focus sessions). A single statement suffices.
+    // Soft-delete: ON DELETE CASCADE no longer applies, so tombstone the project,
+    // all of its tasks, and their focus sessions in one transaction.
     try {
-      await (_db.delete(_db.projectTable)..where((t) => t.id.equals(id))).go();
+      await _db.transaction(() async {
+        final now = DateTime.now();
+        final taskIds =
+            await (_db.selectOnly(_db.taskTable)
+                  ..addColumns([_db.taskTable.id])
+                  ..where(_db.taskTable.projectId.equals(id) & _db.taskTable.deletedAt.isNull()))
+                .map((row) => row.read(_db.taskTable.id)!)
+                .get();
+
+        if (taskIds.isNotEmpty) {
+          await (_db.update(_db.focusSessionTable)..where((t) => t.taskId.isIn(taskIds) & t.deletedAt.isNull())).write(
+            FocusSessionTableCompanion(deletedAt: Value(now)),
+          );
+
+          await (_db.update(_db.taskTable)..where((t) => t.projectId.equals(id) & t.deletedAt.isNull())).write(
+            TaskTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+          );
+        }
+
+        await (_db.update(_db.projectTable)..where((t) => t.id.equals(id) & t.deletedAt.isNull())).write(
+          ProjectTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+        );
+      });
     } catch (e, st) {
       _log.error('deleteProject failed', tag: 'ProjectLocalDS', error: e, stackTrace: st);
       rethrow;
@@ -77,12 +99,12 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
 
   @override
   Stream<ProjectTableData?> watchProjectById(int id) {
-    return (_db.select(_db.projectTable)..where((t) => t.id.equals(id))).watchSingleOrNull();
+    return (_db.select(_db.projectTable)..where((t) => t.id.equals(id) & t.deletedAt.isNull())).watchSingleOrNull();
   }
 
   @override
   Stream<List<ProjectTableData>> watchAllProjects() {
-    return _db.select(_db.projectTable).watch();
+    return (_db.select(_db.projectTable)..where((t) => t.deletedAt.isNull())).watch();
   }
 
   @override
@@ -91,7 +113,7 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
     ProjectSortCriteria sortCriteria = ProjectSortCriteria.recentlyModified,
     ProjectSortOrder sortOrder = ProjectSortOrder.none,
   }) {
-    final query = _db.select(_db.projectTable);
+    final query = _db.select(_db.projectTable)..where((t) => t.deletedAt.isNull());
 
     final q = searchQuery.trim().toLowerCase();
     if (q.isNotEmpty) {

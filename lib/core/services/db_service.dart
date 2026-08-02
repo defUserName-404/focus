@@ -12,6 +12,7 @@ import '../../features/notifications/domain/entities/notification_inbox_item.dar
 import '../../features/tasks/domain/entities/task_priority.dart';
 import '../../features/tasks/domain/entities/task_reminder_mode.dart';
 import '../utils/datetime_formatter.dart';
+import '../utils/id_utils.dart';
 
 part 'db_service.g.dart';
 
@@ -25,7 +26,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -41,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
       "COUNT(*), "
       "COALESCE(SUM(MIN(elapsed_seconds, focus_duration_minutes * 60)), 0) "
       "FROM focus_session_table "
-      "WHERE date(start_time, 'unixepoch', 'localtime') = ?",
+      "WHERE deleted_at IS NULL AND date(start_time, 'unixepoch', 'localtime') = ?",
       [dateKey, dateKey],
     );
     // customStatement does not notify Drift stream watchers.
@@ -163,6 +164,29 @@ class AppDatabase extends _$AppDatabase {
       if (from < 5) {
         await m.createTable(notificationInboxTable);
       }
+
+      // v5 → v6: Sync-ready identity (uuid) + soft-delete tombstones.
+      if (from < 6) {
+        await customStatement('ALTER TABLE project_table ADD COLUMN uuid TEXT');
+        await customStatement('ALTER TABLE project_table ADD COLUMN deleted_at INTEGER');
+        await customStatement('ALTER TABLE task_table ADD COLUMN uuid TEXT');
+        await customStatement('ALTER TABLE task_table ADD COLUMN deleted_at INTEGER');
+        await customStatement('ALTER TABLE focus_session_table ADD COLUMN uuid TEXT');
+        await customStatement('ALTER TABLE focus_session_table ADD COLUMN deleted_at INTEGER');
+
+        await _backfillUuids('project_table');
+        await _backfillUuids('task_table');
+        await _backfillUuids('focus_session_table');
+
+        await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS project_uuid_idx ON project_table(uuid)');
+        await customStatement('CREATE INDEX IF NOT EXISTS project_deleted_at_idx ON project_table(deleted_at)');
+        await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS task_uuid_idx ON task_table(uuid)');
+        await customStatement('CREATE INDEX IF NOT EXISTS task_deleted_at_idx ON task_table(deleted_at)');
+        await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS focus_session_uuid_idx ON focus_session_table(uuid)');
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS focus_session_deleted_at_idx ON focus_session_table(deleted_at)',
+        );
+      }
     },
     beforeOpen: (details) async {
       // SQLite requires this pragma to be enabled per connection.
@@ -170,4 +194,13 @@ class AppDatabase extends _$AppDatabase {
       await customStatement('PRAGMA foreign_keys = ON');
     },
   );
+
+  /// Assigns a UUID to every row in [tableName] that still has a null uuid.
+  Future<void> _backfillUuids(String tableName) async {
+    final rows = await customSelect('SELECT id FROM $tableName WHERE uuid IS NULL').get();
+    for (final row in rows) {
+      final id = row.read<int>('id');
+      await customStatement('UPDATE $tableName SET uuid = ? WHERE id = ?', [generateUuid(), id]);
+    }
+  }
 }

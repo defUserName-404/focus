@@ -10,8 +10,12 @@ import '../../domain/entities/task_reminder_mode.dart';
 @TableIndex(name: 'task_deadline_idx', columns: {#endDate})
 @TableIndex(name: 'task_completed_idx', columns: {#isCompleted})
 @TableIndex(name: 'task_updated_at_idx', columns: {#updatedAt})
+@TableIndex(name: 'task_uuid_idx', columns: {#uuid}, unique: true)
+@TableIndex(name: 'task_deleted_at_idx', columns: {#deletedAt})
 class TaskTable extends Table {
   IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get uuid => text().unique()();
 
   IntColumn get projectId => integer().references(ProjectTable, #id, onDelete: KeyAction.cascade)();
 
@@ -38,4 +42,6 @@ class TaskTable extends Table {
   DateTimeColumn get createdAt => dateTime()();
 
   DateTimeColumn get updatedAt => dateTime()();
+
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 }

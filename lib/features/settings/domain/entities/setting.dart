@@ -34,6 +34,9 @@ abstract final class SettingsKeys {
 
   /// Reports productivity insights window (`weekly` or `monthly`).
   static const String reportsInsightsWindowMode = 'reports_insights_window_mode';
+
+  /// Stable per-install device UUID used for sync provenance.
+  static const String deviceId = 'device_id';
 }
 
 /// Domain entity representing a user preference.

@@ -6,6 +6,7 @@ import '../../domain/entities/focus_session.dart';
 extension DbFocusSessionToDomain on FocusSessionData {
   FocusSession toDomain() => FocusSession(
     id: id,
+    uuid: uuid,
     taskId: taskId,
     focusDurationMinutes: focusDurationMinutes,
     breakDurationMinutes: breakDurationMinutes,
@@ -14,6 +15,7 @@ extension DbFocusSessionToDomain on FocusSessionData {
     state: state,
     elapsedSeconds: elapsedSeconds,
     focusPhaseEndedAt: focusPhaseEndedAt,
+    deletedAt: deletedAt,
   );
 }
 
@@ -22,6 +24,7 @@ extension DomainFocusSessionToCompanion on FocusSession {
     if (id != null) {
       return FocusSessionTableCompanion(
         id: Value(id!),
+        uuid: Value(uuid),
         taskId: Value(taskId),
         focusDurationMinutes: Value(focusDurationMinutes),
         breakDurationMinutes: Value(breakDurationMinutes),
@@ -30,9 +33,11 @@ extension DomainFocusSessionToCompanion on FocusSession {
         state: Value(state),
         elapsedSeconds: Value(elapsedSeconds),
         focusPhaseEndedAt: Value(focusPhaseEndedAt),
+        deletedAt: Value(deletedAt),
       );
     }
     return FocusSessionTableCompanion.insert(
+      uuid: uuid,
       taskId: Value(taskId),
       focusDurationMinutes: focusDurationMinutes,
       breakDurationMinutes: breakDurationMinutes,
@@ -41,6 +46,7 @@ extension DomainFocusSessionToCompanion on FocusSession {
       state: state,
       elapsedSeconds: Value(elapsedSeconds),
       focusPhaseEndedAt: Value(focusPhaseEndedAt),
+      deletedAt: Value(deletedAt),
     );
   }
 }
