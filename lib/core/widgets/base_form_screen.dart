@@ -12,7 +12,7 @@ import 'constrained_content.dart';
 /// - Compact: full-screen [FScaffold] with nested header.
 /// - Expanded (routed): centered 560px card-style form.
 /// - Embedded (side pane): pane header + scrollable fields, no centered card.
-class BaseFormScreen extends StatelessWidget {
+class BaseFormScreen extends StatefulWidget {
   final String title;
   final List<Widget> fields;
   final VoidCallback onSubmit;
@@ -32,9 +32,16 @@ class BaseFormScreen extends StatelessWidget {
     this.onDismiss,
   });
 
+  @override
+  State<BaseFormScreen> createState() => _BaseFormScreenState();
+}
+
+class _BaseFormScreenState extends State<BaseFormScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   void _dismiss(BuildContext context) {
-    if (onDismiss != null) {
-      onDismiss!();
+    if (widget.onDismiss != null) {
+      widget.onDismiss!();
       return;
     }
     if (context.canPop()) {
@@ -42,19 +49,28 @@ class BaseFormScreen extends StatelessWidget {
     }
   }
 
+  void _validateAndSubmit() {
+    if (_formKey.currentState!.validate()) {
+      widget.onSubmit();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final formBody = Column(
-      crossAxisAlignment: .stretch,
-      spacing: AppConstants.spacing.small,
-      children: [
-        ...fields,
-        SizedBox(height: AppConstants.spacing.large),
-        FButton(prefix: Icon(submitIcon), onPress: onSubmit, child: Text(submitButtonText)),
-      ],
+    final formBody = Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: .stretch,
+        spacing: AppConstants.spacing.small,
+        children: [
+          ...widget.fields,
+          SizedBox(height: AppConstants.spacing.large),
+          FButton(prefix: Icon(widget.submitIcon), onPress: _validateAndSubmit, child: Text(widget.submitButtonText)),
+        ],
+      ),
     );
 
-    if (isEmbedded) {
+    if (widget.isEmbedded) {
       return Column(
         crossAxisAlignment: .stretch,
         children: [
@@ -74,7 +90,7 @@ class BaseFormScreen extends StatelessWidget {
                 ),
                 SizedBox(width: AppConstants.spacing.small),
                 Expanded(
-                  child: Text(title, style: context.typography.xl.copyWith(fontWeight: FontWeight.w700)),
+                  child: Text(widget.title, style: context.typography.xl.copyWith(fontWeight: FontWeight.w700)),
                 ),
                 FButton(
                   variant: .ghost,
@@ -104,7 +120,7 @@ class BaseFormScreen extends StatelessWidget {
     if (context.isCompact) {
       return FScaffold(
         header: FHeader.nested(
-          title: Text(title),
+          title: Text(widget.title),
           prefixes: [FHeaderAction.back(onPress: () => _dismiss(context))],
         ),
         child: SingleChildScrollView(child: formBody),
@@ -135,7 +151,7 @@ class BaseFormScreen extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(title, style: context.typography.xl.copyWith(fontWeight: FontWeight.w700)),
+                          child: Text(widget.title, style: context.typography.xl.copyWith(fontWeight: FontWeight.w700)),
                         ),
                         FButton(
                           variant: .ghost,

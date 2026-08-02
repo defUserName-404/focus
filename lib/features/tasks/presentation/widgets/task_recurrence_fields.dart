@@ -17,7 +17,7 @@ extension RecurrencePresetLabel on RecurrencePreset {
 }
 
 /// Habit toggle + simple recurrence presets for create/edit task forms.
-class TaskRecurrenceFields extends StatelessWidget {
+class TaskRecurrenceFields extends StatefulWidget {
   final bool isHabit;
   final RecurrencePreset preset;
   final ValueChanged<bool> onHabitChanged;
@@ -62,6 +62,21 @@ class TaskRecurrenceFields extends StatelessWidget {
   }
 
   @override
+  State<TaskRecurrenceFields> createState() => _TaskRecurrenceFieldsState();
+}
+
+class _TaskRecurrenceFieldsState extends State<TaskRecurrenceFields> {
+  @override
+  void didUpdateWidget(covariant TaskRecurrenceFields oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isHabit && widget.isHabit && widget.preset == RecurrencePreset.none) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => widget.onPresetChanged(RecurrencePreset.daily));
+    } else if (oldWidget.isHabit && !widget.isHabit && widget.preset != RecurrencePreset.none) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => widget.onPresetChanged(RecurrencePreset.none));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: .stretch,
@@ -72,7 +87,7 @@ class TaskRecurrenceFields extends StatelessWidget {
             Expanded(
               child: Text('Habit', style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
             ),
-            FSwitch(value: isHabit, onChange: onHabitChanged),
+            FSwitch(value: widget.isHabit, onChange: widget.onHabitChanged),
           ],
         ),
         Align(
@@ -84,13 +99,14 @@ class TaskRecurrenceFields extends StatelessWidget {
           runSpacing: AppConstants.spacing.small,
           children: [
             for (final option in RecurrencePreset.values)
-              FButton(
-                size: .sm,
-                mainAxisSize: .min,
-                variant: preset == option ? .secondary : .outline,
-                onPress: () => onPresetChanged(option),
-                child: Text(option.label),
-              ),
+              if (!widget.isHabit || option != RecurrencePreset.none)
+                FButton(
+                  size: .sm,
+                  mainAxisSize: .min,
+                  variant: widget.preset == option ? .secondary : .outline,
+                  onPress: () => widget.onPresetChanged(option),
+                  child: Text(option.label),
+                ),
           ],
         ),
       ],

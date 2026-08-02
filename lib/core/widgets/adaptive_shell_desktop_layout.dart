@@ -1,12 +1,11 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../features/session/presentation/widgets/mini_player_overlay.dart';
-import '../../../features/settings/presentation/providers/settings_provider.dart';
 import '../config/theme/app_theme.dart';
 import '../constants/app_constants.dart';
-import '../utils/greeting.dart';
+import '../routing/routes.dart';
 import 'keyboard_shortcuts.dart';
 
 class DesktopNavDestination {
@@ -16,7 +15,7 @@ class DesktopNavDestination {
   const DesktopNavDestination({required this.icon, required this.label});
 }
 
-class AdaptiveShellDesktopLayout extends ConsumerWidget {
+class AdaptiveShellDesktopLayout extends StatelessWidget {
   final int currentIndex;
   final List<DesktopNavDestination> destinations;
   final ValueChanged<int> onTabChanged;
@@ -31,7 +30,7 @@ class AdaptiveShellDesktopLayout extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return fu.FScaffold(
       child: AppKeyboardShortcuts(
         child: Row(
@@ -39,7 +38,10 @@ class AdaptiveShellDesktopLayout extends ConsumerWidget {
             SizedBox(
               width: 220,
               child: fu.FSidebar(
-                header: Padding(padding: EdgeInsets.all(AppConstants.spacing.regular), child: const _SidebarGreeting()),
+                header: Padding(
+                  padding: EdgeInsets.all(AppConstants.spacing.regular),
+                  child: Text('Focus', style: context.typography.xl.copyWith(fontWeight: FontWeight.w700)),
+                ),
                 children: [
                   for (var i = 0; i < destinations.length; i++)
                     fu.FSidebarItem(
@@ -51,6 +53,13 @@ class AdaptiveShellDesktopLayout extends ConsumerWidget {
                       selected: i == currentIndex,
                       onPress: () => onTabChanged(i),
                     ),
+                  const Spacer(),
+                  fu.FSidebarItem(
+                    icon: Icon(fu.FLucideIcons.settings),
+                    label: Text('Settings', style: context.typography.md.copyWith(fontWeight: FontWeight.w600)),
+                    selected: false,
+                    onPress: () => context.push(AppRoutes.settings.path),
+                  ),
                 ],
               ),
             ),
@@ -65,21 +74,6 @@ class AdaptiveShellDesktopLayout extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _SidebarGreeting extends ConsumerWidget {
-  const _SidebarGreeting();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final name = ref.watch(userPreferencesProvider).value?.displayName;
-    return Text(
-      greetingFor(name: name),
-      style: context.typography.xl.copyWith(fontWeight: FontWeight.w700),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
     );
   }
 }

@@ -101,14 +101,6 @@ class HomeScreen extends ConsumerWidget {
                 onPress: () => context.push(AppRoutes.reports.path),
               ),
             ),
-          fu.FTooltip(
-            tipBuilder: (context, _) => const Text('Settings'),
-            child: fu.FHeaderAction(
-              icon: Icon(fu.FLucideIcons.settings, size: AppConstants.size.icon.regular),
-              semanticsLabel: 'Settings',
-              onPress: () => context.push(AppRoutes.settings.path),
-            ),
-          ),
         ],
         title: _DashboardTitle(),
       ),
