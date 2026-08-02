@@ -94,13 +94,13 @@ EOF
 
 if [[ "${GH_PR_DRY_RUN:-0}" == "1" ]]; then
   echo "DRY RUN"
-  echo "gh pr create --assignee @me --label \"$VALID_LABELS\" --title \"$TITLE\" --body-file \"$BODY_FILE\""
+  echo "gh pr create --base \"$BASE_BRANCH\" --assignee @me --label \"$VALID_LABELS\" --title \"$TITLE\" --body-file \"$BODY_FILE\""
   echo
   cat "$BODY_FILE"
   exit 0
 fi
 
-gh pr create --assignee @me --label "$VALID_LABELS" --title "$TITLE" --body-file "$BODY_FILE"
+gh pr create --base "$BASE_BRANCH" --assignee @me --label "$VALID_LABELS" --title "$TITLE" --body-file "$BODY_FILE"
 
 echo "PR created with title: $TITLE"
 echo "Description file: $BODY_FILE"

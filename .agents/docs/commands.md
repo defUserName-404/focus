@@ -136,13 +136,31 @@ git push -u origin feature
 bash .agents/commands/pr_description_generator.command main "<labels>" "<title>"
 ```
 
+For stacked phase work, pass the previous phase branch as the first argument (PR base), not `main`:
+
+```bash
+bash .agents/commands/pr_description_generator.command feat/phase-4-board-calendar "enhancement" "feat(home): Phase 5 dashboard refinement"
+```
+
 The PR command uses:
+- `--base` (first script argument; defaults to `main`)
 - `--assignee @me`
 - `--label`
 - `--title`
 - `--body-file` (description)
 
 Use multiple labels as comma-separated values, for example: `"docs,agent-workflow"`.
+
+## Stacked Phase PRs
+
+When a feature is split into ordered phase branches (each cut from the previous tip):
+
+1. Open each PR with `--base` set to the previous phase branch so the review diff is phase-only.
+2. Merge strictly bottom-up into `main` (earliest phase first). After each merge, retarget the next open PR to `main` (`gh pr edit <n> --base main`) before merging it.
+3. Prefer merge commits (`gh pr merge <n> --merge`) while the stack is open so later branches keep shared ancestry. Avoid landing a later phase before its predecessor.
+4. Do not open later phases from stale `main`; branch from the current phase tip.
+
+Example merge order: Phase -1 → 0 → U → 1 → 2 → 3 → 4 → … → main.
 
 ## Troubleshooting
 
