@@ -7,6 +7,7 @@ import 'package:forui/forui.dart' as fu;
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/date_time_utils.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../milestones/domain/entities/milestone.dart';
 import '../../../tasks/domain/entities/task.dart';
 import '../providers/project_milestones_provider.dart';
@@ -31,11 +32,10 @@ class ProjectTimelineView extends ConsumerWidget {
         .toList();
 
     if (datedTasks.isEmpty && deadlineOnly.isEmpty && milestones.isEmpty) {
-      return Center(
-        child: Text(
-          'No dated tasks or milestones',
-          style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
-        ),
+      return const AppEmptyState(
+        icon: fu.FLucideIcons.chartBar,
+        message: 'No dated tasks or milestones',
+        detail: 'Add start/end dates or milestones to see the timeline.',
       );
     }
 

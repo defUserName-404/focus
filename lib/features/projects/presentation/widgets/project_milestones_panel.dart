@@ -6,6 +6,7 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../milestones/domain/entities/milestone.dart';
 import '../providers/project_milestones_provider.dart';
 
@@ -66,11 +67,10 @@ class ProjectMilestonesPanel extends ConsumerWidget {
             error: (err, _) => Center(child: Text('Error: $err')),
             data: (milestones) {
               if (milestones.isEmpty) {
-                return Center(
-                  child: Text(
-                    'No milestones yet',
-                    style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
-                  ),
+                return const AppEmptyState(
+                  icon: fu.FLucideIcons.flag,
+                  message: 'No milestones yet',
+                  detail: 'Add a milestone to group tasks toward a target date.',
                 );
               }
 

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../routing/routes.dart';
+import '../utils/platform_utils.dart';
 
 class AppKeyboardShortcuts extends StatelessWidget {
   final Widget child;
@@ -11,12 +12,13 @@ class AppKeyboardShortcuts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final meta = PlatformUtils.isDesktop;
     return CallbackShortcuts(
       bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyN, control: true): () {
+        SingleActivator(LogicalKeyboardKey.keyN, control: !meta, meta: meta): () {
           context.push(AppRoutes.createTaskWithProject.path);
         },
-        const SingleActivator(LogicalKeyboardKey.keyP, control: true): () {
+        SingleActivator(LogicalKeyboardKey.keyP, control: !meta, meta: meta): () {
           context.push(AppRoutes.createProject.path);
         },
         const SingleActivator(LogicalKeyboardKey.space): () {

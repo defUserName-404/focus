@@ -461,6 +461,46 @@ Gotchas:
 - Focus sessions derive merge clocks from `deletedAt ?? endTime ?? startTime` (no DB `updatedAt`).
 - Task↔tag links soft-delete (do not hard-delete) so tombstones can propagate.
 
+## Project Templates
+
+Templates live under `lib/features/projects/` (not a separate feature root).
+
+```dart
+final payload = ProjectTemplatePayload.capture(
+  project: project,
+  tasks: tasks,
+  milestones: milestones,
+  tagsByTaskId: tagsByTaskId,
+);
+
+final result = await templateService.applyTemplate(
+  template: template,
+  title: title,
+  startDate: startDate,
+);
+```
+
+Payload rules:
+- Stable string keys (`m0`, `t0`, `g0`) link milestones/tasks/tags inside the JSON.
+- Dates are relative offsets from project start (or earliest dated item / today).
+- Apply creates project → milestones → tags (reuse by name) → tasks (depth/parent order) → task tags.
+- Built-ins use fixed UUIDs (`BuiltInTemplateIds`) and are seeded idempotently in migration v10 / `onCreate`.
+- Templates are local-only; do not add them to the sync envelope without an explicit schema bump.
+
+UI hooks:
+- `ActionMenuButton.onSaveAsTemplate` on project detail.
+- `ProjectTemplatePicker` on `CreateProjectScreen`.
+
+## Desktop Keyboard Shortcuts + Empty States
+
+```dart
+// Global (desktop shell): ⌘/Ctrl+N task, ⌘/Ctrl+P project, Space session, Esc pop
+// Board: ←/→ column, 1–4 status; Calendar: ←/→ period, T today, 1–3 scope
+```
+
+Use `AppEmptyState` for board/calendar agenda/timeline/milestones empty surfaces.
+Home may keep `EmptySection` or migrate to `AppEmptyState` — prefer the core widget for new views.
+
 ## Mandatory Follow-Up
 
 When a new pattern is introduced in production code, add it here with:

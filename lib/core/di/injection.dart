@@ -1,9 +1,13 @@
 import 'package:get_it/get_it.dart';
 
 import '../../features/projects/data/datasources/project_local_datasource.dart';
+import '../../features/projects/data/datasources/project_template_local_datasource.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
+import '../../features/projects/data/repositories/project_template_repository_impl.dart';
 import '../../features/projects/domain/repositories/i_project_repository.dart';
+import '../../features/projects/domain/repositories/i_project_template_repository.dart';
 import '../../features/projects/domain/services/project_service.dart';
+import '../../features/projects/domain/services/project_template_service.dart';
 import '../../features/milestones/data/datasources/milestone_local_datasource.dart';
 import '../../features/milestones/data/repositories/milestone_repository_impl.dart';
 import '../../features/milestones/domain/repositories/i_milestone_repository.dart';
@@ -105,7 +109,23 @@ void _initProjectsDi() {
     ..registerLazySingleton<IProjectRepository>(
       () => ProjectRepositoryImpl(getIt<IProjectLocalDataSource>(), getIt<DataChangeBus>()),
     )
-    ..registerLazySingleton<ProjectService>(() => ProjectService(getIt<IProjectRepository>()));
+    ..registerLazySingleton<ProjectService>(() => ProjectService(getIt<IProjectRepository>()))
+    ..registerLazySingleton<IProjectTemplateLocalDataSource>(
+      () => ProjectTemplateLocalDataSourceImpl(getIt<AppDatabase>()),
+    )
+    ..registerLazySingleton<IProjectTemplateRepository>(
+      () => ProjectTemplateRepositoryImpl(getIt<IProjectTemplateLocalDataSource>(), getIt<DataChangeBus>()),
+    )
+    ..registerLazySingleton<ProjectTemplateService>(
+      () => ProjectTemplateService(
+        getIt<IProjectTemplateRepository>(),
+        getIt<IProjectRepository>(),
+        getIt<ProjectService>(),
+        getIt<TaskService>(),
+        getIt<MilestoneService>(),
+        getIt<TagService>(),
+      ),
+    );
 }
 
 void _initMilestonesDi() {

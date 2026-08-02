@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/utils/platform_utils.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/task_extensions.dart';
 import '../../domain/entities/task_status.dart';
@@ -105,82 +107,113 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
     context.push(AppRoutes.taskDetailPath(task.id!), extra: {'projectId': task.projectId});
   }
 
+  void _goToColumn(int index) {
+    final clamped = index.clamp(0, TaskStatus.values.length - 1);
+    if (clamped == _compactPage) return;
+    setState(() => _compactPage = clamped);
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(clamped, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final columns = _columns();
-
-    if (context.isCompact) {
-      return Column(
-        children: [
-          Row(
-            children: [
-              IconButton(
-                onPressed: _compactPage > 0
-                    ? () => _pageController.previousPage(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOut,
-                      )
-                    : null,
-                icon: const Icon(fu.FLucideIcons.chevronLeft),
-              ),
-              Expanded(
-                child: Text(
-                  TaskStatus.values[_compactPage].label,
-                  textAlign: TextAlign.center,
-                  style: context.typography.sm.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
-              IconButton(
-                onPressed: _compactPage < TaskStatus.values.length - 1
-                    ? () => _pageController.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeOut)
-                    : null,
-                icon: const Icon(fu.FLucideIcons.chevronRight),
-              ),
-            ],
-          ),
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: TaskStatus.values.length,
-              onPageChanged: (index) => setState(() => _compactPage = index),
-              itemBuilder: (context, index) {
-                final status = TaskStatus.values[index];
-                return _BoardColumn(
-                  status: status,
-                  tasks: columns[status]!,
-                  selectedTaskId: widget.selectedTaskId,
-                  onOpenTask: _openTask,
-                  onDrop: (task, insertIndex) => _moveTask(
-                    task: task,
-                    targetStatus: status,
-                    insertIndex: insertIndex,
-                    targetColumn: columns[status]!,
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+    if (widget.tasks.isEmpty) {
+      return const AppEmptyState(
+        icon: fu.FLucideIcons.kanban,
+        message: 'No tasks on this board yet',
+        detail: 'Create a task to start organizing by status.',
       );
     }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final status in TaskStatus.values) ...[
-          if (status != TaskStatus.values.first) SizedBox(width: AppConstants.spacing.small),
-          Expanded(
-            child: _BoardColumn(
-              status: status,
-              tasks: columns[status]!,
-              selectedTaskId: widget.selectedTaskId,
-              onOpenTask: _openTask,
-              onDrop: (task, insertIndex) =>
-                  _moveTask(task: task, targetStatus: status, insertIndex: insertIndex, targetColumn: columns[status]!),
-            ),
-          ),
-        ],
-      ],
+    final board = context.isCompact
+        ? Column(
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: _compactPage > 0
+                        ? () => _pageController.previousPage(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOut,
+                          )
+                        : null,
+                    icon: const Icon(fu.FLucideIcons.chevronLeft),
+                  ),
+                  Expanded(
+                    child: Text(
+                      TaskStatus.values[_compactPage].label,
+                      textAlign: TextAlign.center,
+                      style: context.typography.sm.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _compactPage < TaskStatus.values.length - 1
+                        ? () => _pageController.nextPage(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOut,
+                          )
+                        : null,
+                    icon: const Icon(fu.FLucideIcons.chevronRight),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: TaskStatus.values.length,
+                  onPageChanged: (index) => setState(() => _compactPage = index),
+                  itemBuilder: (context, index) {
+                    final status = TaskStatus.values[index];
+                    return _BoardColumn(
+                      status: status,
+                      tasks: columns[status]!,
+                      selectedTaskId: widget.selectedTaskId,
+                      onOpenTask: _openTask,
+                      onDrop: (task, insertIndex) => _moveTask(
+                        task: task,
+                        targetStatus: status,
+                        insertIndex: insertIndex,
+                        targetColumn: columns[status]!,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          )
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final status in TaskStatus.values) ...[
+                if (status != TaskStatus.values.first) SizedBox(width: AppConstants.spacing.small),
+                Expanded(
+                  child: _BoardColumn(
+                    status: status,
+                    tasks: columns[status]!,
+                    selectedTaskId: widget.selectedTaskId,
+                    onOpenTask: _openTask,
+                    onDrop: (task, insertIndex) => _moveTask(
+                      task: task,
+                      targetStatus: status,
+                      insertIndex: insertIndex,
+                      targetColumn: columns[status]!,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          );
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _goToColumn(_compactPage - 1),
+        const SingleActivator(LogicalKeyboardKey.arrowRight): () => _goToColumn(_compactPage + 1),
+        const SingleActivator(LogicalKeyboardKey.digit1): () => _goToColumn(0),
+        const SingleActivator(LogicalKeyboardKey.digit2): () => _goToColumn(1),
+        const SingleActivator(LogicalKeyboardKey.digit3): () => _goToColumn(2),
+        const SingleActivator(LogicalKeyboardKey.digit4): () => _goToColumn(3),
+      },
+      child: Focus(autofocus: PlatformUtils.isDesktop, child: board),
     );
   }
 }

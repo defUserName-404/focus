@@ -7,6 +7,7 @@ import 'core/di/injection.dart';
 import 'core/services/desktop_lifecycle_service.dart';
 import 'core/utils/platform_utils.dart';
 import 'features/notifications/domain/services/notification_inbox_sync_service.dart';
+import 'features/projects/domain/services/project_template_service.dart';
 import 'features/settings/domain/services/settings_service.dart';
 import 'features/sync/domain/services/sync_auto_sync_service.dart';
 import 'features/sync/domain/services/sync_purge_service.dart';
@@ -40,6 +41,7 @@ void main(List<String> args) async {
 
   await getIt<SettingsService>().ensureDeviceId();
   await getIt<SyncPurgeService>().purgeExpiredTombstones();
+  await getIt<ProjectTemplateService>().ensureBuiltIns();
   await getIt<TaskNotificationService>().rescheduleAllReminders();
   await getIt<NotificationInboxSyncService>().init();
   getIt<SyncAutoSyncService>().init();
