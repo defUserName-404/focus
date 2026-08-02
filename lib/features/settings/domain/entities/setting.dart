@@ -40,6 +40,21 @@ abstract final class SettingsKeys {
 
   /// Stable per-install device UUID used for sync provenance.
   static const String deviceId = 'device_id';
+
+  /// Timer + audio preference keys that participate in cloud sync / backup.
+  ///
+  /// Excludes [deviceId], desktop-local prefs, and UI view-mode prefs.
+  static const Set<String> syncableKeys = {
+    alarmSoundId,
+    ambienceSoundId,
+    ambienceVolume,
+    ambienceEnabled,
+    focusDurationMinutes,
+    breakDurationMinutes,
+  };
+
+  /// Side-car timestamp key for a syncable preference (LWW merge clock).
+  static String updatedAtKey(String key) => '${key}__updated_at';
 }
 
 /// Domain entity representing a user preference.

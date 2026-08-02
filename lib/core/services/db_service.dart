@@ -43,7 +43,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -277,6 +277,46 @@ class AppDatabase extends _$AppDatabase {
           'CREATE UNIQUE INDEX IF NOT EXISTS task_completion_task_occurrence_live_idx '
           'ON task_completion_table(task_id, occurrence_date) WHERE deleted_at IS NULL',
         );
+      }
+
+      // v8 → v9: Task↔tag link tombstones for multi-device sync.
+      // Idempotent: v7 `createTable` on current code already emits these columns.
+      if (from < 9) {
+        final info = await customSelect("PRAGMA table_info('task_tag_table')").get();
+        final columns = {for (final row in info) row.read<String>('name')};
+        if (!columns.contains('uuid')) {
+          await customStatement('ALTER TABLE task_tag_table ADD COLUMN uuid TEXT');
+          await customStatement('ALTER TABLE task_tag_table ADD COLUMN created_at INTEGER');
+          await customStatement('ALTER TABLE task_tag_table ADD COLUMN updated_at INTEGER');
+          await customStatement('ALTER TABLE task_tag_table ADD COLUMN deleted_at INTEGER');
+
+          final nowMs = DateTime.now().millisecondsSinceEpoch;
+          final rows = await customSelect('SELECT task_id, tag_id FROM task_tag_table WHERE uuid IS NULL').get();
+          for (final row in rows) {
+            await customStatement(
+              'UPDATE task_tag_table SET uuid = ?, created_at = ?, updated_at = ? '
+              'WHERE task_id = ? AND tag_id = ?',
+              [generateUuid(), nowMs, nowMs, row.read<int>('task_id'), row.read<int>('tag_id')],
+            );
+          }
+        } else {
+          // Columns exist but legacy rows may still lack uuid values.
+          final nowMs = DateTime.now().millisecondsSinceEpoch;
+          final rows = await customSelect(
+            'SELECT task_id, tag_id FROM task_tag_table WHERE uuid IS NULL OR uuid = \'\'',
+          ).get();
+          for (final row in rows) {
+            await customStatement(
+              'UPDATE task_tag_table SET uuid = ?, '
+              'created_at = COALESCE(created_at, ?), updated_at = COALESCE(updated_at, ?) '
+              'WHERE task_id = ? AND tag_id = ?',
+              [generateUuid(), nowMs, nowMs, row.read<int>('task_id'), row.read<int>('tag_id')],
+            );
+          }
+        }
+
+        await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS task_tag_uuid_idx ON task_tag_table(uuid)');
+        await customStatement('CREATE INDEX IF NOT EXISTS task_tag_deleted_at_idx ON task_tag_table(deleted_at)');
       }
     },
     beforeOpen: (details) async {

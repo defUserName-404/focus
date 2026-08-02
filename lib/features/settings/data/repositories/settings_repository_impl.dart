@@ -1,3 +1,4 @@
+import '../../../../core/services/data_change_bus.dart';
 import '../../../../core/services/log_service.dart';
 import '../../domain/entities/setting.dart';
 import '../../domain/repositories/i_settings_repository.dart';
@@ -7,8 +8,11 @@ final _log = LogService.instance;
 
 class SettingsRepositoryImpl implements ISettingsRepository {
   final ISettingsLocalDataSource _local;
+  final DataChangeBus? _dataChangeBus;
 
-  SettingsRepositoryImpl(this._local);
+  SettingsRepositoryImpl(this._local, [this._dataChangeBus]);
+
+  void _emitChange() => _dataChangeBus?.notify();
 
   @override
   Future<String?> getValue(String key) => _local.getValue(key);
@@ -17,6 +21,10 @@ class SettingsRepositoryImpl implements ISettingsRepository {
   Future<void> setValue(String key, String value) async {
     try {
       await _local.setValue(key, value);
+      if (SettingsKeys.syncableKeys.contains(key)) {
+        await _local.setValue(SettingsKeys.updatedAtKey(key), DateTime.now().toIso8601String());
+        _emitChange();
+      }
     } catch (e, st) {
       _log.error('Failed to write setting "$key"', tag: 'SettingsRepository', error: e, stackTrace: st);
       rethrow;

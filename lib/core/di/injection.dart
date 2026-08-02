@@ -23,8 +23,11 @@ import '../../features/settings/data/datasources/settings_local_datasource.dart'
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/i_settings_repository.dart';
 import '../../features/settings/domain/services/settings_service.dart';
+import '../../features/sync/data/datasources/sync_local_datasource.dart';
 import '../../features/sync/data/services/google_drive_service.dart';
 import '../../features/sync/domain/services/i_cloud_storage_service.dart';
+import '../../features/sync/domain/services/sync_auto_sync_service.dart';
+import '../../features/sync/domain/services/sync_backup_service.dart';
 import '../../features/sync/domain/services/sync_engine.dart';
 import '../../features/sync/domain/services/sync_purge_service.dart';
 import '../../features/tags/data/datasources/tag_local_datasource.dart';
@@ -41,6 +44,7 @@ import '../../features/tasks/domain/services/task_notification_service.dart';
 import '../../features/tasks/domain/services/task_service.dart';
 import '../services/audio_service.dart';
 import '../services/audio_session_manager.dart';
+import '../services/data_change_bus.dart';
 import '../services/db_service.dart';
 import '../services/desktop_lifecycle_service.dart';
 import '../services/focus_audio_handler.dart';
@@ -55,6 +59,7 @@ Future<void> setupDependencyInjection() async {
   // Core Infrastructure Services
   getIt
     ..registerSingleton<AppDatabase>(AppDatabase())
+    ..registerSingleton<DataChangeBus>(DataChangeBus())
     ..registerLazySingleton<AudioService>(() => AudioService());
 
   // Platform-specific services
@@ -97,21 +102,27 @@ Future<void> setupDependencyInjection() async {
 void _initProjectsDi() {
   getIt
     ..registerLazySingleton<IProjectLocalDataSource>(() => ProjectLocalDataSourceImpl(getIt<AppDatabase>()))
-    ..registerLazySingleton<IProjectRepository>(() => ProjectRepositoryImpl(getIt<IProjectLocalDataSource>()))
+    ..registerLazySingleton<IProjectRepository>(
+      () => ProjectRepositoryImpl(getIt<IProjectLocalDataSource>(), getIt<DataChangeBus>()),
+    )
     ..registerLazySingleton<ProjectService>(() => ProjectService(getIt<IProjectRepository>()));
 }
 
 void _initMilestonesDi() {
   getIt
     ..registerLazySingleton<IMilestoneLocalDataSource>(() => MilestoneLocalDataSourceImpl(getIt<AppDatabase>()))
-    ..registerLazySingleton<IMilestoneRepository>(() => MilestoneRepositoryImpl(getIt<IMilestoneLocalDataSource>()))
+    ..registerLazySingleton<IMilestoneRepository>(
+      () => MilestoneRepositoryImpl(getIt<IMilestoneLocalDataSource>(), getIt<DataChangeBus>()),
+    )
     ..registerLazySingleton<MilestoneService>(() => MilestoneService(getIt<IMilestoneRepository>()));
 }
 
 void _initTagsDi() {
   getIt
     ..registerLazySingleton<ITagLocalDataSource>(() => TagLocalDataSourceImpl(getIt<AppDatabase>()))
-    ..registerLazySingleton<ITagRepository>(() => TagRepositoryImpl(getIt<ITagLocalDataSource>()))
+    ..registerLazySingleton<ITagRepository>(
+      () => TagRepositoryImpl(getIt<ITagLocalDataSource>(), getIt<DataChangeBus>()),
+    )
     ..registerLazySingleton<TagService>(() => TagService(getIt<ITagRepository>()));
 }
 
@@ -132,7 +143,9 @@ void _initTasksDi() {
   getIt
     ..registerLazySingleton<ITaskLocalDataSource>(() => TaskLocalDataSourceImpl(getIt<AppDatabase>()))
     ..registerLazySingleton<ITaskStatsLocalDataSource>(() => TaskStatsLocalDataSourceImpl(getIt<AppDatabase>()))
-    ..registerLazySingleton<ITaskRepository>(() => TaskRepositoryImpl(getIt<ITaskLocalDataSource>()))
+    ..registerLazySingleton<ITaskRepository>(
+      () => TaskRepositoryImpl(getIt<ITaskLocalDataSource>(), getIt<DataChangeBus>()),
+    )
     ..registerLazySingleton<ITaskStatsRepository>(() => TaskStatsRepositoryImpl(getIt<ITaskStatsLocalDataSource>()))
     ..registerLazySingleton<TaskNotificationService>(
       () => TaskNotificationService(getIt<INotificationService>(), getIt<ITaskRepository>()),
@@ -143,14 +156,18 @@ void _initTasksDi() {
 void _initSettingsDi() {
   getIt
     ..registerLazySingleton<ISettingsLocalDataSource>(() => SettingsLocalDataSourceImpl(getIt<AppDatabase>()))
-    ..registerLazySingleton<ISettingsRepository>(() => SettingsRepositoryImpl(getIt<ISettingsLocalDataSource>()))
+    ..registerLazySingleton<ISettingsRepository>(
+      () => SettingsRepositoryImpl(getIt<ISettingsLocalDataSource>(), getIt<DataChangeBus>()),
+    )
     ..registerLazySingleton<SettingsService>(() => SettingsService(getIt<ISettingsRepository>()));
 }
 
 void _initSessionDi() {
   getIt
     ..registerLazySingleton<IFocusLocalDataSource>(() => FocusLocalDataSourceImpl(getIt<AppDatabase>()))
-    ..registerLazySingleton<IFocusSessionRepository>(() => FocusSessionRepositoryImpl(getIt<IFocusLocalDataSource>()))
+    ..registerLazySingleton<IFocusSessionRepository>(
+      () => FocusSessionRepositoryImpl(getIt<IFocusLocalDataSource>(), getIt<DataChangeBus>()),
+    )
     ..registerLazySingleton<FocusSessionService>(
       () => FocusSessionService(getIt<IFocusSessionRepository>(), getIt<ITaskRepository>()),
     )
@@ -172,13 +189,17 @@ void _initSessionDi() {
 void _initSyncDi() {
   getIt
     ..registerLazySingleton<ICloudStorageService>(() => GoogleDriveService())
+    ..registerLazySingleton<ISyncLocalDataSource>(() => SyncLocalDataSourceImpl(getIt<AppDatabase>()))
     ..registerLazySingleton<SyncPurgeService>(() => SyncPurgeService(getIt<AppDatabase>()))
     ..registerLazySingleton<SyncEngine>(
-      () => SyncEngine(
-        getIt<ICloudStorageService>(),
-        getIt<IProjectRepository>(),
-        getIt<ITaskRepository>(),
-        getIt<ISettingsRepository>(),
+      () => SyncEngine(getIt<ICloudStorageService>(), getIt<ISyncLocalDataSource>(), getIt<ISettingsRepository>()),
+    )
+    ..registerLazySingleton<SyncBackupService>(() => SyncBackupService(getIt<SyncEngine>()))
+    ..registerLazySingleton<SyncAutoSyncService>(
+      () => SyncAutoSyncService(
+        syncEngine: getIt<SyncEngine>(),
+        cloudService: getIt<ICloudStorageService>(),
+        dataChangeBus: getIt<DataChangeBus>(),
       ),
     );
 }

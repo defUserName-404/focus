@@ -113,7 +113,7 @@ class _ConflictCard extends StatelessWidget {
           Row(
             children: [
               Icon(
-                conflict.entityType == 'project' ? fu.FLucideIcons.folderOpen : fu.FLucideIcons.squareCheck,
+                _entityTypeIcon(conflict.entityType),
                 size: AppConstants.size.icon.regular,
                 color: context.colors.primary,
               ),
@@ -130,7 +130,7 @@ class _ConflictCard extends StatelessWidget {
                     ),
                     SizedBox(height: AppConstants.spacing.extraSmall),
                     Text(
-                      conflict.entityType == 'project' ? 'Project' : 'Task',
+                      _entityTypeLabel(conflict.entityType),
                       style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
                     ),
                   ],
@@ -184,5 +184,31 @@ class _ConflictCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  IconData _entityTypeIcon(String type) {
+    return switch (type) {
+      'project' => fu.FLucideIcons.folderOpen,
+      'milestone' => fu.FLucideIcons.flag,
+      'tag' => fu.FLucideIcons.tag,
+      'taskTag' => fu.FLucideIcons.tags,
+      'completion' => fu.FLucideIcons.circleCheck,
+      'session' => fu.FLucideIcons.timer,
+      'setting' => fu.FLucideIcons.settings,
+      _ => fu.FLucideIcons.squareCheck,
+    };
+  }
+
+  String _entityTypeLabel(String type) {
+    return switch (type) {
+      'project' => 'Project',
+      'milestone' => 'Milestone',
+      'tag' => 'Tag',
+      'taskTag' => 'Task tag',
+      'completion' => 'Completion',
+      'session' => 'Focus session',
+      'setting' => 'Setting',
+      _ => 'Task',
+    };
   }
 }

@@ -367,7 +367,7 @@ class TaskStatsLocalDataSourceImpl implements ITaskStatsLocalDataSource {
           'COALESCE(SUM(MIN(s.elapsed_seconds, s.focus_duration_minutes * 60)), 0) AS focus_seconds, '
           'tag.color AS color '
           'FROM tag_table tag '
-          'INNER JOIN task_tag_table tt ON tt.tag_id = tag.id '
+          'INNER JOIN task_tag_table tt ON tt.tag_id = tag.id AND tt.deleted_at IS NULL '
           'INNER JOIN focus_session_table s ON s.task_id = tt.task_id AND s.deleted_at IS NULL '
           "AND date(s.start_time, 'unixepoch', 'localtime') >= ? "
           "AND date(s.start_time, 'unixepoch', 'localtime') <= ? "

@@ -9,14 +9,18 @@ import '../../domain/repositories/i_task_repository.dart';
 import '../datasources/task_local_datasource.dart';
 import '../mappers/task_completion_extensions.dart';
 import '../mappers/task_extensions.dart';
+import '../../../../core/services/data_change_bus.dart';
 import '../../../../core/services/log_service.dart';
 
 final _log = LogService.instance;
 
 class TaskRepositoryImpl implements ITaskRepository {
   final ITaskLocalDataSource _local;
+  final DataChangeBus? _dataChangeBus;
 
-  TaskRepositoryImpl(this._local);
+  TaskRepositoryImpl(this._local, [this._dataChangeBus]);
+
+  void _emitChange() => _dataChangeBus?.notify();
 
   @override
   Future<List<Task>> getTasksByProjectId(int projectId) async {
@@ -48,6 +52,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       final companion = task.toCompanion();
       final id = await _local.createTask(companion);
       _log.debug('Task created (id=$id)', tag: 'TaskRepository');
+      _emitChange();
       return task.copyWith(id: id);
     } catch (e, st) {
       _log.error('Failed to create task', tag: 'TaskRepository', error: e, stackTrace: st);
@@ -60,6 +65,7 @@ class TaskRepositoryImpl implements ITaskRepository {
     try {
       final companion = task.toCompanion();
       await _local.updateTask(companion);
+      _emitChange();
     } catch (e, st) {
       _log.error('Failed to update task (id=${task.id})', tag: 'TaskRepository', error: e, stackTrace: st);
       rethrow;
@@ -70,6 +76,7 @@ class TaskRepositoryImpl implements ITaskRepository {
   Future<void> deleteTask(int id) async {
     try {
       await _local.deleteTask(id);
+      _emitChange();
     } catch (e, st) {
       _log.error('Failed to delete task (id=$id)', tag: 'TaskRepository', error: e, stackTrace: st);
       rethrow;
@@ -143,12 +150,14 @@ class TaskRepositoryImpl implements ITaskRepository {
   @override
   Future<TaskCompletion> upsertCompletion(TaskCompletion completion) async {
     final row = await _local.upsertCompletion(completion.toCompanion());
+    _emitChange();
     return row.toDomain();
   }
 
   @override
   Future<void> softDeleteCompletion(int id) async {
     await _local.softDeleteCompletion(id);
+    _emitChange();
   }
 
   @override

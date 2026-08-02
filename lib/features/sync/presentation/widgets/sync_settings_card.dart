@@ -5,9 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/utils/datetime_formatter.dart';
+import '../../../../core/utils/result.dart';
 import '../../domain/entities/sync_state.dart';
+import '../../domain/services/sync_backup_service.dart';
 import '../providers/sync_provider.dart';
 
 /// Card widget shown in Settings that displays sync status and controls.
@@ -17,6 +20,7 @@ class SyncSettingsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final syncState = ref.watch(syncProvider);
+    final syncEnabledAsync = ref.watch(syncEnabledProvider);
 
     return fu.FCard(
       child: Column(
@@ -61,6 +65,18 @@ class SyncSettingsCard extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ],
+          if (syncState.isConnected) ...[
+            SizedBox(height: AppConstants.spacing.regular),
+            Row(
+              children: [
+                Expanded(child: Text('Auto sync', style: context.typography.sm)),
+                fu.FSwitch(
+                  value: syncEnabledAsync.value ?? true,
+                  onChange: (enabled) => ref.read(syncProvider.notifier).setSyncEnabled(enabled),
+                ),
+              ],
+            ),
+          ],
           SizedBox(height: AppConstants.spacing.regular),
           if (!syncState.isConnected)
             SizedBox(
@@ -79,7 +95,6 @@ class SyncSettingsCard extends ConsumerWidget {
                         ? null
                         : () async {
                             await ref.read(syncProvider.notifier).sync();
-                            // If conflicts were detected, navigate to conflict screen.
                             final updatedState = ref.read(syncProvider);
                             if (updatedState.status == SyncStatus.conflictsDetected && context.mounted) {
                               context.push(AppRoutes.syncConflicts.path, extra: updatedState.conflicts);
@@ -98,9 +113,78 @@ class SyncSettingsCard extends ConsumerWidget {
                 ),
               ],
             ),
+          SizedBox(height: AppConstants.spacing.regular),
+          Text('Local backup', style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
+          SizedBox(height: AppConstants.spacing.small),
+          Text(
+            'Export or replace all projects, tasks, sessions, and syncable settings as JSON.',
+            style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
+          ),
+          SizedBox(height: AppConstants.spacing.regular),
+          Row(
+            children: [
+              Expanded(
+                child: fu.FButton(
+                  variant: .outline,
+                  onPress: () => _exportBackup(context),
+                  child: const Text('Export backup'),
+                ),
+              ),
+              SizedBox(width: AppConstants.spacing.regular),
+              Expanded(
+                child: fu.FButton(
+                  variant: .outline,
+                  onPress: () => _importBackup(context, ref),
+                  child: const Text('Restore backup'),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _exportBackup(BuildContext context) async {
+    final result = await getIt<SyncBackupService>().exportToFile();
+    if (!context.mounted) return;
+    switch (result) {
+      case Success(:final value):
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Backup saved: $value')));
+      case Failure(:final failure):
+        if (failure.message == 'Export cancelled') return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failure.message)));
+    }
+  }
+
+  Future<void> _importBackup(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Replace local data?'),
+        content: const Text(
+          'Restoring a backup replaces projects, tasks, milestones, tags, '
+          'sessions, completions, and syncable settings on this device. '
+          'This cannot be undone.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Replace')),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final result = await getIt<SyncBackupService>().importFromFile();
+    if (!context.mounted) return;
+    switch (result) {
+      case Success():
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Backup restored')));
+        ref.invalidate(syncProvider);
+      case Failure(:final failure):
+        if (failure.message == 'Import cancelled') return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failure.message)));
+    }
   }
 
   String _statusText(SyncState state) {
