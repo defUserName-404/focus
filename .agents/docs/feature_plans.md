@@ -8,6 +8,17 @@ This document tracks implementation priorities and planning guidance for coding 
 - Keep architecture boundaries intact while adding capability.
 - Persist user-facing preference state when users expect continuity across restarts.
 
+## Completed — PM & Sync Overhaul (Phases 1–8)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 1–3 Schema / soft-delete / UUID / PM model | Done | Soft-delete, tags, milestones, status, estimates |
+| 4 Board / calendar / timeline | Done | Sparse sort, shared calendar widgets, project tabs |
+| 5 Home today agenda + habits | Done | `TodayAgendaBuilder`, habits strip |
+| 6 Reports insights + CSV | Done | Window-scoped SQL aggregates + export |
+| 7 Sync rewrite | Done | UUID envelope v2, merge engine, auto-sync, backup |
+| 8 Templates + polish | Done | `project_template_table` v10, shortcuts, empty states, docs |
+
 ## Near-Term Priorities
 
 ### 1. Testing Foundation (High)
@@ -19,6 +30,7 @@ Suggested scope:
 - Domain services for tasks/projects/session
 - Provider behavior for key mutation paths
 - Notification scheduling fallback behavior
+- Template apply integration (beyond pure payload serialization)
 
 ### 2. Session Reliability Improvements (High)
 
@@ -40,36 +52,11 @@ Suggested scope:
 - Improve reminder controls and statuses
 - Add stronger validation and user feedback for invalid task inputs
 
-### 4. Reporting and Insights (Medium)
-
-Goal:
-- Expand reporting value while keeping UI responsive and readable.
-
-Suggested scope:
-- Additional insight visualizations with persisted window modes
-- Better empty states and no-data messaging
-- Evaluate caching/aggregation improvements for heavier stats views
-
-Status (Phase 6):
-- Habit consistency, estimate accuracy, time-by-project/tag, throughput, and CSV export
-  are implemented on `ReportsScreen` via window-scoped SQL aggregates in
-  `task_stats_local_datasource.dart` and `ReportInsightsCalculator`.
-
-### 5. Sync Rewrite (Phase 7 — High)
-
-Goal:
-- UUID-keyed multi-device sync with tombstones, extended entity coverage, auto-sync, and backup.
-
-Status (Phase 7):
-- `SyncData` schema v2 references peers by UUID; refuses newer remote schemas.
-- Pure `SyncMergeEngine` + `SyncEngine`/`SyncLocalDataSource` bulk gather/apply.
-- Auto-sync (`sync_enabled`, lifecycle, mutation debounce) and local JSON backup/restore.
-- DB schema v9 adds soft-delete fields on `task_tag_table`.
-
 ## Backlog Candidates
 
-- Extended keyboard and desktop productivity shortcuts
+- Sync project templates across devices (needs SyncData schema bump)
 - Advanced session analytics and trend surfacing
+- Additional desktop productivity shortcuts (global command palette)
 
 ## Implementation Template
 

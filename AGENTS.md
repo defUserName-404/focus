@@ -167,11 +167,14 @@ Commit titles should default to Conventional Commit types (`feat`, `fix`, `refac
 | File | Purpose |
 |------|---------|
 | `lib/core/di/injection.dart` | DI registration |
-| `lib/core/services/db_service.dart` | Drift database and migrations |
+| `lib/core/services/db_service.dart` | Drift database and migrations (current schema v10) |
 | `lib/core/services/log_service.dart` | Centralized logging |
 | `lib/core/utils/result.dart` | `Result<T>` and failure types |
 | `lib/core/routing/app_router.dart` | go_router config |
 | `lib/core/routing/routes.dart` | Route constants/helpers |
+| `lib/core/widgets/app_empty_state.dart` | Shared empty-state UI |
+| `lib/core/widgets/keyboard_shortcuts.dart` | Global desktop shortcuts |
+| `lib/features/projects/domain/services/project_template_service.dart` | Save/apply project templates |
 | `lib/features/notifications/presentation/screens/notifications_screen.dart` | Notifications inbox UI |
 | `lib/features/tasks/domain/services/task_reminder_planner.dart` | Task reminder scheduling logic |
 | `lib/core/constants/app_constants.dart` | Shared spacing/sizing constants |

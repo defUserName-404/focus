@@ -160,7 +160,7 @@ Rules for schema changes:
 4. Regenerate code.
 5. Verify migration behavior with existing user data.
 
-Current sync-ready schema (v9) includes on `project_table`, `task_table`, and `focus_session_table`:
+Current sync-ready schema (v10) includes on `project_table`, `task_table`, and `focus_session_table`:
 - `uuid` (TEXT, unique) — stable sync identity, generated on create and backfilled on migration
 - `deleted_at` (nullable DateTime) — soft-delete tombstone; all reads filter `deletedAt IS NULL`
 
@@ -188,6 +188,14 @@ Sync rewrite (v9) adds:
 - Auto-sync via `SyncAutoSyncService` (foreground/background + debounced `DataChangeBus` mutations) gated by `sync_enabled`
 - Local JSON backup/restore reuses `SyncData` serialization (`SyncBackupService`)
 
+Project templates (v10) adds:
+- `project_template_table` — `uuid`, `name`, `description`, `is_builtin`, `payload_json`, timestamps
+- Payload JSON (`ProjectTemplatePayload`) captures tasks, milestones, tags, and recurrence with relative
+  date offsets; apply remaps stable template keys to new entity IDs
+- Three built-in templates seeded idempotently on `onCreate` / v10 upgrade (`BuiltInTemplates`)
+- Save-as-template from project action menu; template picker on create-project flow
+- Templates are local-only (not included in cloud sync envelope)
+
 Deletes are soft deletes. `ON DELETE CASCADE` no longer fires for app-level deletes, so project/task
 deletion must cascade soft-deletes to dependents inside a transaction (including milestones,
 completions, and soft-deleted `task_tag` associations). `SyncPurgeService` hard-deletes tombstones older
@@ -209,6 +217,9 @@ Current task schema also includes reminder configuration fields:
   (`SettingsKeys.tasksViewMode`).
 - Board columns map 1:1 to `TaskStatus`; ordering uses sparse `sortOrder` (`SparseSortOrder`).
 - Project detail uses a local segmented tab: Overview / Tasks / Board / Milestones / Timeline.
+- Desktop keyboard shortcuts: global (`AppKeyboardShortcuts` — ⌘/Ctrl+N/P, Space, Esc); board
+  (←/→ columns, 1–4 status); calendar (←/→ period, T=today, 1–3 scope).
+- Empty surfaces use shared `AppEmptyState` (board, agenda, timeline, milestones).
 
 ## Notifications Architecture
 

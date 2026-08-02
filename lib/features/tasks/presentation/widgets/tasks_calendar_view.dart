@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,8 @@ import '../../../../core/constants/date_time_constants.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/utils/datetime_formatter.dart';
+import '../../../../core/utils/platform_utils.dart';
+import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/calendar/calendar_agenda_view.dart';
 import '../../../../core/widgets/calendar/calendar_day_info.dart';
 import '../../../../core/widgets/calendar/calendar_month_grid.dart';
@@ -136,6 +139,14 @@ class _TasksCalendarViewState extends ConsumerState<TasksCalendarView> {
     };
   }
 
+  void _goToday() {
+    final today = DateTimeUtils.dateOnly(DateTimeUtils.now());
+    setState(() {
+      _selectedDay = today;
+      _anchor = DateTime(today.year, today.month);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final now = DateTimeUtils.dateOnly(DateTimeUtils.now());
@@ -152,7 +163,7 @@ class _TasksCalendarViewState extends ConsumerState<TasksCalendarView> {
     final selectedTasks = tasksByDate[_selectedDay] ?? const <Task>[];
     final selectedInfo = dayInfo[_selectedDay] ?? const CalendarDayInfo();
 
-    return Column(
+    final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
@@ -241,6 +252,11 @@ class _TasksCalendarViewState extends ConsumerState<TasksCalendarView> {
                 selectedDay: _selectedDay,
                 dayInfo: selectedInfo,
                 onAcceptDrop: (task) => _reschedule(task, _selectedDay),
+                emptyTasks: const AppEmptyState(
+                  icon: fu.FLucideIcons.calendar,
+                  message: 'Nothing scheduled this day',
+                  detail: 'Drop a task here or open day view after picking a date.',
+                ),
                 taskTiles: [
                   for (final task in selectedTasks)
                     Padding(
@@ -279,6 +295,18 @@ class _TasksCalendarViewState extends ConsumerState<TasksCalendarView> {
           ),
         ),
       ],
+    );
+
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): _previous,
+        const SingleActivator(LogicalKeyboardKey.arrowRight): _next,
+        const SingleActivator(LogicalKeyboardKey.keyT): _goToday,
+        const SingleActivator(LogicalKeyboardKey.digit1): () => setState(() => _scope = _TasksCalendarScope.month),
+        const SingleActivator(LogicalKeyboardKey.digit2): () => setState(() => _scope = _TasksCalendarScope.week),
+        const SingleActivator(LogicalKeyboardKey.digit3): () => setState(() => _scope = _TasksCalendarScope.day),
+      },
+      child: Focus(autofocus: PlatformUtils.isDesktop, child: content),
     );
   }
 }

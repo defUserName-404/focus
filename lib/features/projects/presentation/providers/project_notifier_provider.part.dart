@@ -62,4 +62,6 @@ class ProjectNotifier extends _$ProjectNotifier {
         state = AsyncValue.error(failure, StackTrace.current);
     }
   }
+
+  Future<void> reload() => _loadProjects();
 }

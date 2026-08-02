@@ -240,6 +240,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                     if (project == null) return const SizedBox.shrink();
                     return ActionMenuButton(
                       onEdit: () => ProjectCommands.edit(context, project),
+                      onSaveAsTemplate: () => ProjectCommands.saveAsTemplate(context, ref, project),
                       onDelete: () => ProjectCommands.delete(context, ref, project),
                     );
                   },
@@ -276,6 +277,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               if (project == null) return const SizedBox.shrink();
               return ActionMenuButton(
                 onEdit: () => ProjectCommands.edit(context, project),
+                onSaveAsTemplate: () => ProjectCommands.saveAsTemplate(context, ref, project),
                 onDelete: () => ProjectCommands.delete(context, ref, project, onDeleted: () => context.pop()),
               );
             },

@@ -3,11 +3,14 @@ import 'package:forui/forui.dart' as fu;
 
 import '../config/theme/app_theme.dart';
 
+/// Overflow menu with optional Edit / Save as template / Delete actions.
 class ActionMenuButton extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onSaveAsTemplate;
   final String editLabel;
   final String deleteLabel;
+  final String saveAsTemplateLabel;
   final IconData icon;
   final double iconSize;
   final Color? iconColor;
@@ -17,8 +20,10 @@ class ActionMenuButton extends StatelessWidget {
     super.key,
     this.onEdit,
     this.onDelete,
+    this.onSaveAsTemplate,
     this.editLabel = 'Edit',
     this.deleteLabel = 'Delete',
+    this.saveAsTemplateLabel = 'Save as template',
     this.icon = fu.FLucideIcons.ellipsisVertical,
     this.iconSize = 16,
     this.iconColor,
@@ -27,10 +32,9 @@ class ActionMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (onEdit == null && onDelete == null) {
+    if (onEdit == null && onDelete == null && onSaveAsTemplate == null) {
       return const SizedBox.shrink();
     }
-
     return fu.FPopoverMenu(
       autofocus: true,
       menuAnchor: Alignment.topRight,
@@ -38,16 +42,24 @@ class ActionMenuButton extends StatelessWidget {
       menu: [
         fu.FItemGroup(
           children: [
-            fu.FItem(
-              prefix: const Icon(fu.FLucideIcons.pencil),
-              title: const Text('Edit'),
-              onPress: () => onEdit?.call(),
-            ),
-            fu.FItem(
-              prefix: Icon(fu.FLucideIcons.trash, color: context.colors.destructive),
-              title: Text('Delete', style: context.typography.md.copyWith(color: context.colors.destructive)),
-              onPress: () => onDelete?.call(),
-            ),
+            if (onEdit != null)
+              fu.FItem(
+                prefix: const Icon(fu.FLucideIcons.pencil),
+                title: Text(editLabel),
+                onPress: () => onEdit?.call(),
+              ),
+            if (onSaveAsTemplate != null)
+              fu.FItem(
+                prefix: const Icon(fu.FLucideIcons.layoutTemplate),
+                title: Text(saveAsTemplateLabel),
+                onPress: () => onSaveAsTemplate?.call(),
+              ),
+            if (onDelete != null)
+              fu.FItem(
+                prefix: Icon(fu.FLucideIcons.trash, color: context.colors.destructive),
+                title: Text(deleteLabel, style: context.typography.md.copyWith(color: context.colors.destructive)),
+                onPress: () => onDelete?.call(),
+              ),
           ],
         ),
       ],

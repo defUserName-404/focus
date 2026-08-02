@@ -10,6 +10,8 @@ import 'package:focus/features/tags/data/models/task_tag_model.dart';
 import 'package:focus/features/milestones/data/models/milestone_model.dart';
 
 import '../../features/projects/data/models/project_model.dart';
+import '../../features/projects/data/models/project_template_model.dart';
+import '../../features/projects/domain/entities/built_in_templates.dart';
 import '../../features/session/data/models/focus_session_model.dart';
 import '../../features/session/domain/entities/session_state.dart';
 import '../../features/notifications/domain/entities/notification_inbox_item.dart';
@@ -34,6 +36,7 @@ part 'db_service.g.dart';
     TaskTagTable,
     MilestoneTable,
     TaskCompletionTable,
+    ProjectTemplateTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -43,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -83,6 +86,7 @@ class AppDatabase extends _$AppDatabase {
         'CREATE UNIQUE INDEX IF NOT EXISTS task_completion_task_occurrence_live_idx '
         'ON task_completion_table(task_id, occurrence_date) WHERE deleted_at IS NULL',
       );
+      await _seedBuiltInTemplates();
     },
     onUpgrade: (m, from, to) async {
       if (from < 2) {
@@ -318,6 +322,18 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS task_tag_uuid_idx ON task_tag_table(uuid)');
         await customStatement('CREATE INDEX IF NOT EXISTS task_tag_deleted_at_idx ON task_tag_table(deleted_at)');
       }
+
+      // v9 → v10: Project templates with JSON payload + built-in seeds.
+      if (from < 10) {
+        await m.createTable(projectTemplateTable);
+        await customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS project_template_uuid_idx ON project_template_table(uuid)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS project_template_builtin_idx ON project_template_table(is_builtin)',
+        );
+        await _seedBuiltInTemplates();
+      }
     },
     beforeOpen: (details) async {
       // SQLite requires this pragma to be enabled per connection.
@@ -332,6 +348,27 @@ class AppDatabase extends _$AppDatabase {
     for (final row in rows) {
       final id = row.read<int>('id');
       await customStatement('UPDATE $tableName SET uuid = ? WHERE id = ?', [generateUuid(), id]);
+    }
+  }
+
+  /// Inserts shipped built-in templates when missing (idempotent by uuid).
+  Future<void> _seedBuiltInTemplates() async {
+    for (final template in BuiltInTemplates.all()) {
+      final existing = await (select(
+        projectTemplateTable,
+      )..where((t) => t.uuid.equals(template.uuid))).getSingleOrNull();
+      if (existing != null) continue;
+      await into(projectTemplateTable).insert(
+        ProjectTemplateTableCompanion.insert(
+          uuid: template.uuid,
+          name: template.name,
+          description: Value(template.description),
+          isBuiltin: const Value(true),
+          payloadJson: template.payload.toJsonString(),
+          createdAt: template.createdAt,
+          updatedAt: template.updatedAt,
+        ),
+      );
     }
   }
 }

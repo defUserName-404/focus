@@ -4827,6 +4827,424 @@ class TaskCompletionTableCompanion extends UpdateCompanion<TaskCompletionTableDa
   }
 }
 
+class $ProjectTemplateTableTable extends ProjectTemplateTable
+    with TableInfo<$ProjectTemplateTableTable, ProjectTemplateTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProjectTemplateTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'),
+  );
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+    'uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isBuiltinMeta = const VerificationMeta('isBuiltin');
+  @override
+  late final GeneratedColumn<bool> isBuiltin = GeneratedColumn<bool>(
+    'is_builtin',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("is_builtin" IN (0, 1))'),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _payloadJsonMeta = const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+    'payload_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, uuid, name, description, isBuiltin, payloadJson, createdAt, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'project_template_table';
+  @override
+  VerificationContext validateIntegrity(Insertable<ProjectTemplateTableData> instance, {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(_uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(_nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(_descriptionMeta, description.isAcceptableOrUnknown(data['description']!, _descriptionMeta));
+    }
+    if (data.containsKey('is_builtin')) {
+      context.handle(_isBuiltinMeta, isBuiltin.isAcceptableOrUnknown(data['is_builtin']!, _isBuiltinMeta));
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(_payloadJsonMeta, payloadJson.isAcceptableOrUnknown(data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta, createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta, updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ProjectTemplateTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProjectTemplateTableData(
+      id: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      uuid: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      name: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      description: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}description']),
+      isBuiltin: attachedDatabase.typeMapping.read(DriftSqlType.bool, data['${effectivePrefix}is_builtin'])!,
+      payloadJson: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+      createdAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping.read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $ProjectTemplateTableTable createAlias(String alias) {
+    return $ProjectTemplateTableTable(attachedDatabase, alias);
+  }
+}
+
+class ProjectTemplateTableData extends DataClass implements Insertable<ProjectTemplateTableData> {
+  final int id;
+  final String uuid;
+  final String name;
+  final String? description;
+  final bool isBuiltin;
+
+  /// JSON [ProjectTemplatePayload] blob.
+  final String payloadJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ProjectTemplateTableData({
+    required this.id,
+    required this.uuid,
+    required this.name,
+    this.description,
+    required this.isBuiltin,
+    required this.payloadJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['is_builtin'] = Variable<bool>(isBuiltin);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ProjectTemplateTableCompanion toCompanion(bool nullToAbsent) {
+    return ProjectTemplateTableCompanion(
+      id: Value(id),
+      uuid: Value(uuid),
+      name: Value(name),
+      description: description == null && nullToAbsent ? const Value.absent() : Value(description),
+      isBuiltin: Value(isBuiltin),
+      payloadJson: Value(payloadJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ProjectTemplateTableData.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProjectTemplateTableData(
+      id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String?>(json['description']),
+      isBuiltin: serializer.fromJson<bool>(json['isBuiltin']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String?>(description),
+      'isBuiltin': serializer.toJson<bool>(isBuiltin),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ProjectTemplateTableData copyWith({
+    int? id,
+    String? uuid,
+    String? name,
+    Value<String?> description = const Value.absent(),
+    bool? isBuiltin,
+    String? payloadJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ProjectTemplateTableData(
+    id: id ?? this.id,
+    uuid: uuid ?? this.uuid,
+    name: name ?? this.name,
+    description: description.present ? description.value : this.description,
+    isBuiltin: isBuiltin ?? this.isBuiltin,
+    payloadJson: payloadJson ?? this.payloadJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ProjectTemplateTableData copyWithCompanion(ProjectTemplateTableCompanion data) {
+    return ProjectTemplateTableData(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present ? data.description.value : this.description,
+      isBuiltin: data.isBuiltin.present ? data.isBuiltin.value : this.isBuiltin,
+      payloadJson: data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProjectTemplateTableData(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('isBuiltin: $isBuiltin, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, uuid, name, description, isBuiltin, payloadJson, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProjectTemplateTableData &&
+          other.id == this.id &&
+          other.uuid == this.uuid &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.isBuiltin == this.isBuiltin &&
+          other.payloadJson == this.payloadJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ProjectTemplateTableCompanion extends UpdateCompanion<ProjectTemplateTableData> {
+  final Value<int> id;
+  final Value<String> uuid;
+  final Value<String> name;
+  final Value<String?> description;
+  final Value<bool> isBuiltin;
+  final Value<String> payloadJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const ProjectTemplateTableCompanion({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.isBuiltin = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  ProjectTemplateTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String uuid,
+    required String name,
+    this.description = const Value.absent(),
+    this.isBuiltin = const Value.absent(),
+    required String payloadJson,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : uuid = Value(uuid),
+       name = Value(name),
+       payloadJson = Value(payloadJson),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ProjectTemplateTableData> custom({
+    Expression<int>? id,
+    Expression<String>? uuid,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<bool>? isBuiltin,
+    Expression<String>? payloadJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (isBuiltin != null) 'is_builtin': isBuiltin,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  ProjectTemplateTableCompanion copyWith({
+    Value<int>? id,
+    Value<String>? uuid,
+    Value<String>? name,
+    Value<String?>? description,
+    Value<bool>? isBuiltin,
+    Value<String>? payloadJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return ProjectTemplateTableCompanion(
+      id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      isBuiltin: isBuiltin ?? this.isBuiltin,
+      payloadJson: payloadJson ?? this.payloadJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (isBuiltin.present) {
+      map['is_builtin'] = Variable<bool>(isBuiltin.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProjectTemplateTableCompanion(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('isBuiltin: $isBuiltin, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4840,6 +5258,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TagTableTable tagTable = $TagTableTable(this);
   late final $TaskTagTableTable taskTagTable = $TaskTagTableTable(this);
   late final $TaskCompletionTableTable taskCompletionTable = $TaskCompletionTableTable(this);
+  late final $ProjectTemplateTableTable projectTemplateTable = $ProjectTemplateTableTable(this);
   late final Index projectCreatedAtIdx = Index(
     'project_created_at_idx',
     'CREATE INDEX project_created_at_idx ON project_table (created_at)',
@@ -4972,6 +5391,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'task_completion_deleted_at_idx',
     'CREATE INDEX task_completion_deleted_at_idx ON task_completion_table (deleted_at)',
   );
+  late final Index projectTemplateUuidIdx = Index(
+    'project_template_uuid_idx',
+    'CREATE UNIQUE INDEX project_template_uuid_idx ON project_template_table (uuid)',
+  );
+  late final Index projectTemplateBuiltinIdx = Index(
+    'project_template_builtin_idx',
+    'CREATE INDEX project_template_builtin_idx ON project_template_table (is_builtin)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables => allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
@@ -4986,6 +5413,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     tagTable,
     taskTagTable,
     taskCompletionTable,
+    projectTemplateTable,
     projectCreatedAtIdx,
     projectUpdatedAtIdx,
     projectUuidIdx,
@@ -5022,6 +5450,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     taskCompletionTaskIdIdx,
     taskCompletionOccurrenceDateIdx,
     taskCompletionDeletedAtIdx,
+    projectTemplateUuidIdx,
+    projectTemplateBuiltinIdx,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -8387,6 +8817,204 @@ typedef $$TaskCompletionTableTableProcessedTableManager =
       TaskCompletionTableData,
       PrefetchHooks Function({bool taskId})
     >;
+typedef $$ProjectTemplateTableTableCreateCompanionBuilder =
+    ProjectTemplateTableCompanion Function({
+      Value<int> id,
+      required String uuid,
+      required String name,
+      Value<String?> description,
+      Value<bool> isBuiltin,
+      required String payloadJson,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+    });
+typedef $$ProjectTemplateTableTableUpdateCompanionBuilder =
+    ProjectTemplateTableCompanion Function({
+      Value<int> id,
+      Value<String> uuid,
+      Value<String> name,
+      Value<String?> description,
+      Value<bool> isBuiltin,
+      Value<String> payloadJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+class $$ProjectTemplateTableTableFilterComposer extends Composer<_$AppDatabase, $ProjectTemplateTableTable> {
+  $$ProjectTemplateTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description =>
+      $composableBuilder(column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isBuiltin =>
+      $composableBuilder(column: $table.isBuiltin, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson =>
+      $composableBuilder(column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$ProjectTemplateTableTableOrderingComposer extends Composer<_$AppDatabase, $ProjectTemplateTableTable> {
+  $$ProjectTemplateTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description =>
+      $composableBuilder(column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isBuiltin =>
+      $composableBuilder(column: $table.isBuiltin, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson =>
+      $composableBuilder(column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ProjectTemplateTableTableAnnotationComposer extends Composer<_$AppDatabase, $ProjectTemplateTableTable> {
+  $$ProjectTemplateTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id => $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid => $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<String> get name => $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description =>
+      $composableBuilder(column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<bool> get isBuiltin => $composableBuilder(column: $table.isBuiltin, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson =>
+      $composableBuilder(column: $table.payloadJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt => $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt => $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ProjectTemplateTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ProjectTemplateTableTable,
+          ProjectTemplateTableData,
+          $$ProjectTemplateTableTableFilterComposer,
+          $$ProjectTemplateTableTableOrderingComposer,
+          $$ProjectTemplateTableTableAnnotationComposer,
+          $$ProjectTemplateTableTableCreateCompanionBuilder,
+          $$ProjectTemplateTableTableUpdateCompanionBuilder,
+          (
+            ProjectTemplateTableData,
+            BaseReferences<_$AppDatabase, $ProjectTemplateTableTable, ProjectTemplateTableData>,
+          ),
+          ProjectTemplateTableData,
+          PrefetchHooks Function()
+        > {
+  $$ProjectTemplateTableTableTableManager(_$AppDatabase db, $ProjectTemplateTableTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () => $$ProjectTemplateTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$ProjectTemplateTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$ProjectTemplateTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> uuid = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<bool> isBuiltin = const Value.absent(),
+                Value<String> payloadJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => ProjectTemplateTableCompanion(
+                id: id,
+                uuid: uuid,
+                name: name,
+                description: description,
+                isBuiltin: isBuiltin,
+                payloadJson: payloadJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String uuid,
+                required String name,
+                Value<String?> description = const Value.absent(),
+                Value<bool> isBuiltin = const Value.absent(),
+                required String payloadJson,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+              }) => ProjectTemplateTableCompanion.insert(
+                id: id,
+                uuid: uuid,
+                name: name,
+                description: description,
+                isBuiltin: isBuiltin,
+                payloadJson: payloadJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ProjectTemplateTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ProjectTemplateTableTable,
+      ProjectTemplateTableData,
+      $$ProjectTemplateTableTableFilterComposer,
+      $$ProjectTemplateTableTableOrderingComposer,
+      $$ProjectTemplateTableTableAnnotationComposer,
+      $$ProjectTemplateTableTableCreateCompanionBuilder,
+      $$ProjectTemplateTableTableUpdateCompanionBuilder,
+      (ProjectTemplateTableData, BaseReferences<_$AppDatabase, $ProjectTemplateTableTable, ProjectTemplateTableData>),
+      ProjectTemplateTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8405,4 +9033,6 @@ class $AppDatabaseManager {
   $$TaskTagTableTableTableManager get taskTagTable => $$TaskTagTableTableTableManager(_db, _db.taskTagTable);
   $$TaskCompletionTableTableTableManager get taskCompletionTable =>
       $$TaskCompletionTableTableTableManager(_db, _db.taskCompletionTable);
+  $$ProjectTemplateTableTableTableManager get projectTemplateTable =>
+      $$ProjectTemplateTableTableTableManager(_db, _db.projectTemplateTable);
 }
