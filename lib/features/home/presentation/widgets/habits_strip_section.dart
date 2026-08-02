@@ -30,13 +30,16 @@ class HabitsStripSection extends ConsumerWidget {
             if (items.isEmpty) {
               return const EmptySection(icon: fu.FLucideIcons.flame, message: 'No habits yet');
             }
-            return SizedBox(
-              height: 96,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: items.length,
-                separatorBuilder: (_, _) => SizedBox(width: AppConstants.spacing.regular),
-                itemBuilder: (context, index) => HabitRing(item: items[index]),
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var i = 0; i < items.length; i++) ...[
+                    if (i > 0) SizedBox(width: AppConstants.spacing.regular),
+                    HabitRing(item: items[i]),
+                  ],
+                ],
               ),
             );
           },
