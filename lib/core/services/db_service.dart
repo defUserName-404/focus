@@ -21,6 +21,9 @@ part 'db_service.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'focus.sqlite'));
 
+  /// In-memory / injected executor for tests and migration harnesses.
+  AppDatabase.forTesting(super.e);
+
   @override
   int get schemaVersion => 5;
 
@@ -71,9 +74,8 @@ class AppDatabase extends _$AppDatabase {
         // 5) Recreate indexes
         // This preserves existing rows while updating the schema.
 
-        await customStatement('BEGIN TRANSACTION');
-
-        // Rename current tables to temporary names
+        // Drift already wraps onUpgrade in a transaction. Do not issue
+        // nested BEGIN/COMMIT here — that can fail on some sqlite builds.
         await customStatement('ALTER TABLE task_table RENAME TO task_table_old');
         await customStatement('ALTER TABLE focus_session_table RENAME TO focus_session_table_old');
 
@@ -142,8 +144,6 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'CREATE INDEX IF NOT EXISTS focus_session_start_time_idx ON focus_session_table(start_time)',
         );
-
-        await customStatement('COMMIT');
       }
 
       // v2 → v3: Add focus_phase_ended_at column to focus_session_table

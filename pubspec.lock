@@ -837,6 +837,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.6.4"
+  mocktail:
+    dependency: "direct dev"
+    description:
+      name: mocktail
+      sha256: "5e1bf53cc7baa8062a33b84424deb61513858ea05c601b8509e683815b5914aa"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.5"
   native_toolchain_c:
     dependency: transitive
     description:
@@ -1211,7 +1219,7 @@ packages:
     source: hosted
     version: "0.7.0+eol"
   sqlite3:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: sqlite3
       sha256: c73fd75df1332d76a6257f4823ae4df9c791f522b97e4a60cbcad214de1becf4
