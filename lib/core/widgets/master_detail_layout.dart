@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:forui/forui.dart' as fu;
 
 import '../constants/layout_breakpoints.dart';
 
+/// Master-detail layout with a resizable master pane on wide screens.
 class MasterDetailLayout extends StatelessWidget {
   final Widget master;
   final Widget? detail;
@@ -24,11 +26,21 @@ class MasterDetailLayout extends StatelessWidget {
       return detail ?? master;
     }
 
-    return Row(
+    return fu.FResizable(
+      axis: .horizontal,
       children: [
-        SizedBox(width: masterWidth, child: master),
-        const VerticalDivider(width: 1),
-        Expanded(child: detail ?? emptyDetail),
+        fu.FResizableRegion.fixed(
+          extent: masterWidth,
+          minExtent: 280,
+          builder: (context, _, child) => child!,
+          child: master,
+        ),
+        fu.FResizableRegion.flex(
+          flex: 1,
+          minFlex: 1,
+          builder: (context, _, child) => child!,
+          child: detail ?? emptyDetail,
+        ),
       ],
     );
   }

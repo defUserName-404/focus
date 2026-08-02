@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 import 'package:go_router/go_router.dart';
@@ -42,9 +42,7 @@ class AdaptiveShell extends ConsumerWidget {
     final isExpanded = context.isExpanded;
     final tabs = isExpanded ? _desktopTabs : _mobileTabs;
     final currentIndex = _getIndexFromLocation(location, tabs);
-    final desktopDestinations = [
-      for (final tab in tabs) NavigationRailDestination(icon: Icon(tab.icon), label: Text(tab.label)),
-    ];
+    final desktopDestinations = [for (final tab in tabs) DesktopNavDestination(icon: tab.icon, label: tab.label)];
     final mobileItems = [
       for (final tab in tabs) fu.FBottomNavigationBarItem(icon: Icon(tab.icon), label: Text(tab.label)),
     ];

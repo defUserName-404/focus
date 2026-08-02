@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
-import '../../../../core/utils/platform_utils.dart';
 import '../../../../core/widgets/constrained_content.dart';
 import '../models/task_selection.dart';
 import '../widgets/all_tasks_content.dart';
@@ -25,19 +24,13 @@ class AllTasksScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isCompact = context.isCompact;
-
     final content = ConstrainedContent(
-      maxWidth: 980,
-      padding: _isEmbedded
-          ? EdgeInsets.symmetric(horizontal: AppConstants.spacing.extraLarge, vertical: AppConstants.spacing.large)
-          : EdgeInsets.zero,
-      child: AllTasksContent(
-        isCompact: isCompact,
-        isEmbedded: _isEmbedded,
-        selectedTaskId: selectedTaskId,
-        onTaskSelected: onTaskSelected,
+      maxWidth: _isEmbedded ? double.infinity : 980,
+      padding: EdgeInsets.symmetric(
+        horizontal: _isEmbedded ? AppConstants.spacing.regular : AppConstants.spacing.large,
+        vertical: AppConstants.spacing.regular,
       ),
+      child: AllTasksContent(isEmbedded: _isEmbedded, selectedTaskId: selectedTaskId, onTaskSelected: onTaskSelected),
     );
 
     if (_isEmbedded) {
@@ -58,14 +51,12 @@ class AllTasksScreen extends ConsumerWidget {
           ),
         ],
         title: Text('Tasks', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-      ),
-      footer: Padding(
-        padding: EdgeInsets.all(isCompact ? AppConstants.spacing.regular : AppConstants.spacing.large),
-        child: fu.FButton(
-          prefix: Icon(fu.FLucideIcons.plus),
-          child: const Text('Create New Task'),
-          onPress: () => context.push(AppRoutes.createTaskWithProject.path),
-        ),
+        suffixes: [
+          fu.FHeaderAction(
+            icon: const Icon(fu.FLucideIcons.plus),
+            onPress: () => context.push(AppRoutes.createTaskWithProject.path),
+          ),
+        ],
       ),
       child: content,
     );
