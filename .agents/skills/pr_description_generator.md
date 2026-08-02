@@ -8,7 +8,7 @@ Create review-ready PR summaries that explain changes, rationale, and validation
 
 ## Inputs
 
-- Branch diff vs base (`main` by default)
+- Branch diff vs base (`main` by default; use the previous phase branch for stacked PRs)
 - Commit list in branch
 - Validation performed (analyze/tests/manual checks)
 
@@ -30,17 +30,20 @@ Create review-ready PR summaries that explain changes, rationale, and validation
 Create PRs with explicit metadata:
 
 ```bash
-gh pr create --assignee @me --label <labels> --title "<title>" --body-file <file>
+gh pr create --base <base> --assignee @me --label <labels> --title "<title>" --body-file <file>
 ```
 
 Notes:
 - Use `--body` or `--body-file` for description content.
 - Prefer `--body-file` for multi-section PR templates.
+- For stacked phases, set `--base` to the previous phase branch, then merge bottom-up into `main`.
 
 ## Suggested Helper
 
 ```bash
 bash .agents/commands/pr_description_generator.command main "docs,agent-workflow" "docs(agents): add core git workflow skills"
+# Stacked phase example:
+bash .agents/commands/pr_description_generator.command feat/phase-4-board-calendar "enhancement" "feat(home): Phase 5 dashboard"
 ```
 
 ## Output

@@ -149,13 +149,16 @@ After each user task is completed, agents must run this sequence for the change 
 2. Write a Conventional Commit message and commit staged files:
    `bash .agents/commands/git_commit_writer.command <type> <scope> "<summary>" "<why>"`
 3. Generate PR description and create PR using GitHub CLI:
-   `bash .agents/commands/pr_description_generator.command main "<labels>" "<title>"`
+   `bash .agents/commands/pr_description_generator.command <base> "<labels>" "<title>"`
 
 PR creation must include:
+- `--base` (first script argument; use `main`, or the previous phase branch for stacked work)
 - `--assignee @me`
 - `--label`
 - `--title`
 - Description via `--body` or `--body-file`
+
+For multi-phase stacks: branch from the previous phase tip, open the PR against that tip, and merge bottom-up into `main` (see [.agents/docs/commands.md](.agents/docs/commands.md) "Stacked Phase PRs").
 
 Commit titles should default to Conventional Commit types (`feat`, `fix`, `refactor`, `docs`, `test`, `chore`) to support semantic versioning.
 
