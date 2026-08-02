@@ -166,36 +166,70 @@ class _TasksCalendarViewState extends ConsumerState<TasksCalendarView> {
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            for (final scope in _TasksCalendarScope.values) ...[
-              if (scope != _TasksCalendarScope.values.first) SizedBox(width: AppConstants.spacing.extraSmall),
-              fu.FButton(
-                size: .sm,
-                mainAxisSize: .min,
-                variant: _scope == scope ? .secondary : .outline,
-                onPress: () => setState(() => _scope = scope),
-                child: Text(switch (scope) {
-                  _TasksCalendarScope.month => 'Month',
-                  _TasksCalendarScope.week => 'Week',
-                  _TasksCalendarScope.day => 'Day',
-                }, style: context.typography.xs),
-              ),
-            ],
-            const Spacer(),
-            GestureDetector(
-              onTap: _previous,
-              child: Icon(fu.FLucideIcons.chevronLeft, size: AppConstants.size.icon.regular),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.small),
-              child: Text(_periodLabel, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
-            ),
-            GestureDetector(
-              onTap: _next,
-              child: Icon(fu.FLucideIcons.chevronRight, size: AppConstants.size.icon.regular),
-            ),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final iconOnly = constraints.maxWidth < 520;
+            return Row(
+              children: [
+                for (final scope in _TasksCalendarScope.values) ...[
+                  if (scope != _TasksCalendarScope.values.first) SizedBox(width: AppConstants.spacing.extraSmall),
+                  if (iconOnly)
+                    fu.FTooltip(
+                      tipBuilder: (context, _) => Text(switch (scope) {
+                        _TasksCalendarScope.month => 'Month',
+                        _TasksCalendarScope.week => 'Week',
+                        _TasksCalendarScope.day => 'Day',
+                      }),
+                      child: fu.FButton.icon(
+                        size: .sm,
+                        variant: _scope == scope ? .secondary : .outline,
+                        semanticsLabel: switch (scope) {
+                          _TasksCalendarScope.month => 'Month',
+                          _TasksCalendarScope.week => 'Week',
+                          _TasksCalendarScope.day => 'Day',
+                        },
+                        onPress: () => setState(() => _scope = scope),
+                        child: Icon(switch (scope) {
+                          _TasksCalendarScope.month => fu.FLucideIcons.calendarRange,
+                          _TasksCalendarScope.week => fu.FLucideIcons.calendarDays,
+                          _TasksCalendarScope.day => fu.FLucideIcons.calendar,
+                        }, size: AppConstants.size.icon.small),
+                      ),
+                    )
+                  else
+                    fu.FButton(
+                      size: .sm,
+                      mainAxisSize: .min,
+                      variant: _scope == scope ? .secondary : .outline,
+                      onPress: () => setState(() => _scope = scope),
+                      child: Text(switch (scope) {
+                        _TasksCalendarScope.month => 'Month',
+                        _TasksCalendarScope.week => 'Week',
+                        _TasksCalendarScope.day => 'Day',
+                      }, style: context.typography.xs),
+                    ),
+                ],
+                const Spacer(),
+                GestureDetector(
+                  onTap: _previous,
+                  child: Icon(fu.FLucideIcons.chevronLeft, size: AppConstants.size.icon.regular),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.small),
+                  child: Text(
+                    _periodLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.typography.sm.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _next,
+                  child: Icon(fu.FLucideIcons.chevronRight, size: AppConstants.size.icon.regular),
+                ),
+              ],
+            );
+          },
         ),
         SizedBox(height: AppConstants.spacing.regular),
         if (_scope == _TasksCalendarScope.month) ...[
