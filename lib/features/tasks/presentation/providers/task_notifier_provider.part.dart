@@ -84,4 +84,15 @@ class TaskNotifier extends _$TaskNotifier {
         state = AsyncValue.error(failure, StackTrace.current);
     }
   }
+
+  Future<void> completeOccurrence(Task task, DateTime occurrenceDate) async {
+    if (task.id == null) return;
+    final result = await _service.completeOccurrence(task.id!, occurrenceDate);
+    switch (result) {
+      case Success():
+        await _loadTasks(task.projectId.toString());
+      case Failure(:final failure):
+        state = AsyncValue.error(failure, StackTrace.current);
+    }
+  }
 }

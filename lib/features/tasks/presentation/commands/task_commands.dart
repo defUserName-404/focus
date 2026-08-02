@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:focus/core/widgets/confirmation_dialog.dart';
+import 'package:focus/core/di/injection.dart';
 import 'package:focus/core/routing/routes.dart';
+import 'package:focus/core/utils/result.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
+import 'package:focus/features/tasks/domain/entities/today_agenda_item.dart';
+import 'package:focus/features/tasks/domain/services/task_service.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 
 class TaskCommands {
@@ -43,5 +47,40 @@ class TaskCommands {
         onDeleted?.call();
       },
     );
+  }
+
+  /// Completes a one-shot task or logs a habit/recurring occurrence.
+  ///
+  /// Uses [TaskService] directly so home (and other global surfaces) do not
+  /// depend on a project-scoped [TaskNotifier] being mounted.
+  static Future<Result<void>> completeAgendaItem(TodayAgendaItem item) async {
+    final service = getIt<TaskService>();
+    final task = item.task;
+    if (task.id == null) {
+      return const Failure(NotFoundFailure('Task has no id'));
+    }
+
+    if (item.kind == TodayAgendaKind.habitOccurrence || task.isRecurring) {
+      final result = await service.completeOccurrence(task.id!, item.occurrenceDate);
+      return switch (result) {
+        Success() => const Success(null),
+        Failure(:final failure) => Failure(failure),
+      };
+    }
+
+    if (item.isCompleted) return const Success(null);
+    return service.toggleTaskCompletion(task);
+  }
+
+  /// Logs today's completion for a habit from the habits strip.
+  static Future<Result<void>> completeHabitOccurrence(Task task, DateTime occurrenceDate) async {
+    if (task.id == null) {
+      return const Failure(NotFoundFailure('Task has no id'));
+    }
+    final result = await getIt<TaskService>().completeOccurrence(task.id!, occurrenceDate);
+    return switch (result) {
+      Success() => const Success(null),
+      Failure(:final failure) => Failure(failure),
+    };
   }
 }

@@ -346,16 +346,27 @@ final streak = HabitStreakCalculator.calculate(
   from: windowStart,
   to: windowEnd,
 );
+
+// Home dashboard agenda + habits strip (pure)
+final agenda = TodayAgendaBuilder.buildAgenda(
+  tasks: deadlineTasks,
+  completionsByTaskId: completionsByTaskId,
+  today: DateTimeUtils.now(),
+);
 ```
 
 Reminder scheduling uses a rolling window (`TaskReminderPlanner.computeReminderTimes`) so
 `flutter_local_notifications` only holds the next few occurrence reminders.
+
+Home `todayAgendaProvider` / `habitsStripProvider` combine `watchTasksWithDeadlines()` with
+`watchAllCompletions()` via `asyncExpand` so habit checkboxes refresh without touching the task row.
 
 Gotchas:
 - Store `RecurrenceRule` as JSON text via `dart_mappable`; parse with `RecurrenceRule.tryParseJson`.
 - Unique `(task_id, occurrence_date)` is a **partial** index (`WHERE deleted_at IS NULL`).
 - Habits are recurring tasks with `isHabit = true` — no separate habit table.
 - Reschedule reminders after `completeOccurrence` so the window advances.
+- Home shows week strip only; month grid lives on Tasks / Calendar.
 
 ## Tasks View Modes + Sparse Board Ordering
 
