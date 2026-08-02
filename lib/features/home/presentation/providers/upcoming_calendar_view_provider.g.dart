@@ -10,10 +10,15 @@ part of 'upcoming_calendar_view_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(UpcomingCalendarViewModeNotifier)
-final upcomingCalendarViewModeProvider = UpcomingCalendarViewModeNotifierProvider._();
+final upcomingCalendarViewModeProvider =
+    UpcomingCalendarViewModeNotifierProvider._();
 
 final class UpcomingCalendarViewModeNotifierProvider
-    extends $AsyncNotifierProvider<UpcomingCalendarViewModeNotifier, CalendarViewMode> {
+    extends
+        $AsyncNotifierProvider<
+          UpcomingCalendarViewModeNotifier,
+          CalendarViewMode
+        > {
   UpcomingCalendarViewModeNotifierProvider._()
     : super(
         from: null,
@@ -30,17 +35,21 @@ final class UpcomingCalendarViewModeNotifierProvider
 
   @$internal
   @override
-  UpcomingCalendarViewModeNotifier create() => UpcomingCalendarViewModeNotifier();
+  UpcomingCalendarViewModeNotifier create() =>
+      UpcomingCalendarViewModeNotifier();
 }
 
-String _$upcomingCalendarViewModeNotifierHash() => r'c696f0a24b487e24540135651f3e0874a58c56fd';
+String _$upcomingCalendarViewModeNotifierHash() =>
+    r'c696f0a24b487e24540135651f3e0874a58c56fd';
 
-abstract class _$UpcomingCalendarViewModeNotifier extends $AsyncNotifier<CalendarViewMode> {
+abstract class _$UpcomingCalendarViewModeNotifier
+    extends $AsyncNotifier<CalendarViewMode> {
   FutureOr<CalendarViewMode> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<CalendarViewMode>, CalendarViewMode>;
+    final ref =
+        this.ref as $Ref<AsyncValue<CalendarViewMode>, CalendarViewMode>;
     final element =
         ref.element
             as $ClassProviderElement<

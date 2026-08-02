@@ -3,6 +3,7 @@ import 'package:focus/core/services/db_service.dart';
 import 'package:focus/core/services/log_service.dart';
 import 'package:focus/features/tasks/domain/entities/task_filter_state.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
+import 'package:focus/features/tasks/domain/entities/task_status.dart';
 
 import '../../domain/entities/all_tasks_filter_state.dart';
 
@@ -22,6 +23,7 @@ abstract class ITaskLocalDataSource {
     TaskSortCriteria sortCriteria,
     TaskSortOrder sortOrder,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
   });
 
   /// Watch ALL tasks across all projects with filtering/sorting.
@@ -30,6 +32,7 @@ abstract class ITaskLocalDataSource {
     AllTasksSortCriteria sortCriteria,
     AllTasksSortOrder sortOrder,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
     TaskCompletionFilter completionFilter,
   });
 }
@@ -79,7 +82,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     try {
       return await (_db.select(
         _db.taskTable,
-      )..where((t) => t.endDate.isNotNull() & t.isCompleted.equals(false) & t.deletedAt.isNull())).get();
+      )..where((t) => t.endDate.isNotNull() & t.status.equalsValue(TaskStatus.done).not() & t.deletedAt.isNull())).get();
     } catch (e, st) {
       _log.error('getTasksWithDeadlines failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
       rethrow;
@@ -118,6 +121,8 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
         await (_db.update(_db.focusSessionTable)..where((t) => t.taskId.isIn(idsToDelete) & t.deletedAt.isNull()))
             .write(FocusSessionTableCompanion(deletedAt: Value(now)));
 
+        await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(idsToDelete))).go();
+
         await (_db.update(_db.taskTable)..where((t) => t.id.isIn(idsToDelete) & t.deletedAt.isNull())).write(
           TaskTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
         );
@@ -153,7 +158,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   @override
   Stream<List<TaskTableData>> watchTasksWithDeadlines() {
     return (_db.select(_db.taskTable)
-          ..where((t) => t.endDate.isNotNull() & t.isCompleted.equals(false) & t.deletedAt.isNull())
+          ..where((t) => t.endDate.isNotNull() & t.status.equalsValue(TaskStatus.done).not() & t.deletedAt.isNull())
           ..orderBy([(t) => OrderingTerm.asc(t.endDate)]))
         .watch();
   }
@@ -165,6 +170,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     TaskSortCriteria sortCriteria = TaskSortCriteria.recentlyModified,
     TaskSortOrder sortOrder = TaskSortOrder.none,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
   }) {
     final query = _db.select(_db.taskTable)..where((t) => t.projectId.equals(projectId) & t.deletedAt.isNull());
 
@@ -175,6 +181,10 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
 
     if (priorityFilter != null) {
       query.where((t) => t.priority.equalsValue(priorityFilter));
+    }
+
+    if (statusFilter != null) {
+      query.where((t) => t.status.equalsValue(statusFilter));
     }
 
     if (sortOrder != TaskSortOrder.none) {
@@ -209,6 +219,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
     AllTasksSortCriteria sortCriteria = AllTasksSortCriteria.recentlyModified,
     AllTasksSortOrder sortOrder = AllTasksSortOrder.none,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
     TaskCompletionFilter completionFilter = TaskCompletionFilter.all,
   }) {
     final query = _db.select(_db.taskTable)..where((t) => t.depth.equals(0) & t.deletedAt.isNull());
@@ -222,11 +233,15 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
       query.where((t) => t.priority.equalsValue(priorityFilter));
     }
 
+    if (statusFilter != null) {
+      query.where((t) => t.status.equalsValue(statusFilter));
+    }
+
     switch (completionFilter) {
       case TaskCompletionFilter.completed:
-        query.where((t) => t.isCompleted.equals(true));
+        query.where((t) => t.status.equalsValue(TaskStatus.done));
       case TaskCompletionFilter.incomplete:
-        query.where((t) => t.isCompleted.equals(false));
+        query.where((t) => t.status.equalsValue(TaskStatus.done).not());
       case TaskCompletionFilter.all:
         break;
     }

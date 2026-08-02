@@ -296,11 +296,34 @@ await (_db.update(_db.projectTable)..where((t) => t.id.equals(id))).write(
 ```
 
 Gotchas:
-- Soft-deleting a project must transactionally soft-delete its tasks and their sessions.
-- Soft-deleting a task must soft-delete descendants and their sessions.
+- Soft-deleting a project must transactionally soft-delete its tasks, milestones, and their sessions.
+- Soft-deleting a task must soft-delete descendants and their sessions, and remove `task_tag` rows.
+- Soft-deleting a tag removes its `task_tag` associations then tombstones the tag.
+- Soft-deleting a milestone clears `task.milestoneId` then tombstones the milestone.
 - Generate `uuid` on create via `generateUuid()`; migration backfills existing rows.
-- `SyncPurgeService` permanently removes tombstones past the retention window.
+- `SyncPurgeService` permanently removes tombstones past the retention window (including tags/milestones).
 - Persist `SettingsKeys.deviceId` once via `SettingsService.ensureDeviceId()`.
+
+## Task / Project Status + Tags / Milestones
+
+`TaskStatus` and `ProjectStatus` are Drift `intEnum` values — declaration order is a schema contract.
+
+```dart
+enum TaskStatus { todo, inProgress, blocked, done; }
+
+// Domain completion is derived — do not store a separate bool on the entity
+bool get isCompleted => status == TaskStatus.done;
+
+// Writes still sync legacy is_completed column during v7
+isCompleted: Value(status == TaskStatus.done),
+```
+
+Tags and milestones follow the same feature-first stack (entity → repository → service → GetIt).
+Optional `statusFilter` mirrors the existing nullable `priorityFilter` on list filter states.
+
+Gotchas:
+- Keep writing both `status` and `is_completed` until a later migration drops the bool column.
+- Filter completion chips (`TaskCompletionFilter`) should query `status`, not the legacy bool.
 
 ## Mandatory Follow-Up
 

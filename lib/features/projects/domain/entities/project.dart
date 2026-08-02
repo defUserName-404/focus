@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
+import 'project_status.dart';
+
 /// Immutable representation of a user project.
 @immutable
 class Project extends Equatable {
@@ -8,6 +10,8 @@ class Project extends Equatable {
   final String uuid;
   final String title;
   final String? description;
+  final ProjectStatus status;
+  final int? color;
   final DateTime? startDate;
   final DateTime? deadline;
   final DateTime createdAt;
@@ -19,6 +23,8 @@ class Project extends Equatable {
     required this.uuid,
     required this.title,
     this.description,
+    this.status = ProjectStatus.active,
+    this.color,
     this.startDate,
     this.deadline,
     required this.createdAt,
@@ -27,5 +33,17 @@ class Project extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, uuid, title, description, startDate, deadline, createdAt, updatedAt, deletedAt];
+  List<Object?> get props => [
+    id,
+    uuid,
+    title,
+    description,
+    status,
+    color,
+    startDate,
+    deadline,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
 }

@@ -9,6 +9,7 @@ final filteredAllTasksProvider = StreamProvider<List<Task>>((ref) {
     sortCriteria: filter.sortCriteria,
     sortOrder: filter.sortOrder,
     priorityFilter: filter.priorityFilter,
+    statusFilter: filter.statusFilter,
     completionFilter: filter.completionFilter,
   );
 });

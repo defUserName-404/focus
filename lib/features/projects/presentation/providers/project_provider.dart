@@ -10,6 +10,7 @@ import '../../../tasks/presentation/providers/task_provider.dart';
 import '../../domain/entities/project.dart';
 import '../../domain/entities/project_list_filter_state.dart';
 import '../../domain/entities/project_progress.dart';
+import '../../domain/entities/project_status.dart';
 import '../../domain/repositories/i_project_repository.dart';
 import '../../domain/services/project_service.dart';
 

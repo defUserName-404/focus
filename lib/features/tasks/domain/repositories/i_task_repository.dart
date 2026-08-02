@@ -2,6 +2,7 @@ import '../entities/all_tasks_filter_state.dart';
 import '../entities/task.dart';
 import '../entities/task_filter_state.dart';
 import '../entities/task_priority.dart';
+import '../entities/task_status.dart';
 
 abstract class ITaskRepository {
   Future<List<Task>> getTasksByProjectId(int projectId);
@@ -28,6 +29,7 @@ abstract class ITaskRepository {
     TaskSortOrder sortOrder,
     TaskSortCriteria sortCriteria,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
   });
 
   /// Watch ALL tasks across all projects with filtering/sorting.
@@ -36,6 +38,7 @@ abstract class ITaskRepository {
     AllTasksSortCriteria sortCriteria,
     AllTasksSortOrder sortOrder,
     TaskPriority? priorityFilter,
+    TaskStatus? statusFilter,
     TaskCompletionFilter completionFilter,
   });
 }

@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import '../../../../core/services/db_service.dart';
 import '../../../../core/services/log_service.dart';
 import '../../domain/entities/project_list_filter_state.dart';
+import '../../domain/entities/project_status.dart';
 
 abstract interface class IProjectLocalDataSource {
   Future<List<ProjectTableData>> getAllProjects();
@@ -23,6 +24,7 @@ abstract interface class IProjectLocalDataSource {
     String searchQuery,
     ProjectSortCriteria sortCriteria,
     ProjectSortOrder sortOrder,
+    ProjectStatus? statusFilter,
   });
 }
 
@@ -82,10 +84,16 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
             FocusSessionTableCompanion(deletedAt: Value(now)),
           );
 
+          await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(taskIds))).go();
+
           await (_db.update(_db.taskTable)..where((t) => t.projectId.equals(id) & t.deletedAt.isNull())).write(
             TaskTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
           );
         }
+
+        await (_db.update(_db.milestoneTable)..where((t) => t.projectId.equals(id) & t.deletedAt.isNull())).write(
+          MilestoneTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+        );
 
         await (_db.update(_db.projectTable)..where((t) => t.id.equals(id) & t.deletedAt.isNull())).write(
           ProjectTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
@@ -112,12 +120,17 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
     String searchQuery = '',
     ProjectSortCriteria sortCriteria = ProjectSortCriteria.recentlyModified,
     ProjectSortOrder sortOrder = ProjectSortOrder.none,
+    ProjectStatus? statusFilter,
   }) {
     final query = _db.select(_db.projectTable)..where((t) => t.deletedAt.isNull());
 
     final q = searchQuery.trim().toLowerCase();
     if (q.isNotEmpty) {
       query.where((t) => t.title.lower().like('%$q%') | t.description.lower().like('%$q%'));
+    }
+
+    if (statusFilter != null) {
+      query.where((t) => t.status.equalsValue(statusFilter));
     }
 
     if (sortOrder != ProjectSortOrder.none) {

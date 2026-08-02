@@ -4,7 +4,9 @@ import '../../../../core/utils/id_utils.dart';
 import '../../../tasks/domain/entities/task.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
 import '../../../tasks/domain/entities/task_reminder_mode.dart';
+import '../../../tasks/domain/entities/task_status.dart';
 import '../../../projects/domain/entities/project.dart';
+import '../../../projects/domain/entities/project_status.dart';
 
 /// Serializable data envelope for cloud sync.
 ///
@@ -48,6 +50,8 @@ class SyncProjectData {
   final String uuid;
   final String title;
   final String? description;
+  final int statusIndex;
+  final int? color;
   final DateTime? startDate;
   final DateTime? deadline;
   final DateTime createdAt;
@@ -59,6 +63,8 @@ class SyncProjectData {
     required this.uuid,
     required this.title,
     this.description,
+    this.statusIndex = 0,
+    this.color,
     this.startDate,
     this.deadline,
     required this.createdAt,
@@ -72,6 +78,8 @@ class SyncProjectData {
       uuid: (json['uuid'] as String?) ?? generateUuid(),
       title: json['title'] as String,
       description: json['description'] as String?,
+      statusIndex: (json['statusIndex'] as int?) ?? ProjectStatus.active.index,
+      color: json['color'] as int?,
       startDate: json['startDate'] != null ? DateTime.parse(json['startDate'] as String) : null,
       deadline: json['deadline'] != null ? DateTime.parse(json['deadline'] as String) : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -85,6 +93,8 @@ class SyncProjectData {
     'uuid': uuid,
     'title': title,
     'description': description,
+    'statusIndex': statusIndex,
+    'color': color,
     'startDate': startDate?.toIso8601String(),
     'deadline': deadline?.toIso8601String(),
     'createdAt': createdAt.toIso8601String(),
@@ -98,6 +108,8 @@ class SyncProjectData {
       uuid: project.uuid,
       title: project.title,
       description: project.description,
+      statusIndex: project.status.index,
+      color: project.color,
       startDate: project.startDate,
       deadline: project.deadline,
       createdAt: project.createdAt,
@@ -111,6 +123,10 @@ class SyncProjectData {
     uuid: uuid,
     title: title,
     description: description,
+    status: statusIndex >= 0 && statusIndex < ProjectStatus.values.length
+        ? ProjectStatus.values[statusIndex]
+        : ProjectStatus.active,
+    color: color,
     startDate: startDate,
     deadline: deadline,
     createdAt: createdAt,
@@ -128,11 +144,15 @@ class SyncTaskData {
   final String title;
   final String? description;
   final int priorityIndex;
+  final int statusIndex;
   final int reminderModeIndex;
   final int? customReminderMinutesBefore;
   final DateTime? startDate;
   final DateTime? endDate;
   final int depth;
+  final int? estimatedMinutes;
+  final double sortOrder;
+  final int? milestoneId;
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -146,11 +166,15 @@ class SyncTaskData {
     required this.title,
     this.description,
     required this.priorityIndex,
+    this.statusIndex = 0,
     this.reminderModeIndex = 0,
     this.customReminderMinutesBefore,
     this.startDate,
     this.endDate,
     required this.depth,
+    this.estimatedMinutes,
+    this.sortOrder = 0,
+    this.milestoneId,
     required this.isCompleted,
     required this.createdAt,
     required this.updatedAt,
@@ -158,6 +182,8 @@ class SyncTaskData {
   });
 
   factory SyncTaskData.fromJson(Map<String, dynamic> json) {
+    final statusIndex = json['statusIndex'] as int?;
+    final isCompleted = json['isCompleted'] as bool? ?? false;
     return SyncTaskData(
       id: json['id'] as int,
       uuid: (json['uuid'] as String?) ?? generateUuid(),
@@ -166,12 +192,16 @@ class SyncTaskData {
       title: json['title'] as String,
       description: json['description'] as String?,
       priorityIndex: json['priorityIndex'] as int,
+      statusIndex: statusIndex ?? (isCompleted ? TaskStatus.done.index : TaskStatus.todo.index),
       reminderModeIndex: (json['reminderModeIndex'] as int?) ?? TaskReminderMode.smart.index,
       customReminderMinutesBefore: json['customReminderMinutesBefore'] as int?,
       startDate: json['startDate'] != null ? DateTime.parse(json['startDate'] as String) : null,
       endDate: json['endDate'] != null ? DateTime.parse(json['endDate'] as String) : null,
       depth: json['depth'] as int,
-      isCompleted: json['isCompleted'] as bool,
+      estimatedMinutes: json['estimatedMinutes'] as int?,
+      sortOrder: (json['sortOrder'] as num?)?.toDouble() ?? 0,
+      milestoneId: json['milestoneId'] as int?,
+      isCompleted: isCompleted,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       deletedAt: json['deletedAt'] != null ? DateTime.parse(json['deletedAt'] as String) : null,
@@ -186,11 +216,15 @@ class SyncTaskData {
     'title': title,
     'description': description,
     'priorityIndex': priorityIndex,
+    'statusIndex': statusIndex,
     'reminderModeIndex': reminderModeIndex,
     'customReminderMinutesBefore': customReminderMinutesBefore,
     'startDate': startDate?.toIso8601String(),
     'endDate': endDate?.toIso8601String(),
     'depth': depth,
+    'estimatedMinutes': estimatedMinutes,
+    'sortOrder': sortOrder,
+    'milestoneId': milestoneId,
     'isCompleted': isCompleted,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
@@ -206,11 +240,15 @@ class SyncTaskData {
       title: task.title,
       description: task.description,
       priorityIndex: task.priority.index,
+      statusIndex: task.status.index,
       reminderModeIndex: task.reminderMode.index,
       customReminderMinutesBefore: task.customReminderMinutesBefore,
       startDate: task.startDate,
       endDate: task.endDate,
       depth: task.depth,
+      estimatedMinutes: task.estimatedMinutes,
+      sortOrder: task.sortOrder,
+      milestoneId: task.milestoneId,
       isCompleted: task.isCompleted,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
@@ -218,24 +256,32 @@ class SyncTaskData {
     );
   }
 
-  Task toTask() => Task(
-    id: id,
-    uuid: uuid,
-    projectId: projectId,
-    parentTaskId: parentTaskId,
-    title: title,
-    description: description,
-    priority: TaskPriority.values[priorityIndex],
-    reminderMode: reminderModeIndex >= 0 && reminderModeIndex < TaskReminderMode.values.length
-        ? TaskReminderMode.values[reminderModeIndex]
-        : TaskReminderMode.smart,
-    customReminderMinutesBefore: customReminderMinutesBefore,
-    startDate: startDate,
-    endDate: endDate,
-    depth: depth,
-    isCompleted: isCompleted,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-    deletedAt: deletedAt,
-  );
+  Task toTask() {
+    final resolvedStatus = statusIndex >= 0 && statusIndex < TaskStatus.values.length
+        ? TaskStatus.values[statusIndex]
+        : (isCompleted ? TaskStatus.done : TaskStatus.todo);
+    return Task(
+      id: id,
+      uuid: uuid,
+      projectId: projectId,
+      parentTaskId: parentTaskId,
+      title: title,
+      description: description,
+      priority: TaskPriority.values[priorityIndex],
+      status: resolvedStatus,
+      reminderMode: reminderModeIndex >= 0 && reminderModeIndex < TaskReminderMode.values.length
+          ? TaskReminderMode.values[reminderModeIndex]
+          : TaskReminderMode.smart,
+      customReminderMinutesBefore: customReminderMinutesBefore,
+      startDate: startDate,
+      endDate: endDate,
+      depth: depth,
+      estimatedMinutes: estimatedMinutes,
+      sortOrder: sortOrder,
+      milestoneId: milestoneId,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      deletedAt: deletedAt,
+    );
+  }
 }

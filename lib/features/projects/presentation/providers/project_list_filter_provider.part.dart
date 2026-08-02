@@ -7,7 +7,21 @@ class ProjectListFilter extends _$ProjectListFilter {
     return const ProjectListFilterState();
   }
 
-  void updateFilter({String? searchQuery, ProjectSortCriteria? sortCriteria, ProjectSortOrder? sortOrder}) {
-    state = state.copyWith(searchQuery: searchQuery, sortCriteria: sortCriteria, sortOrder: sortOrder);
+  void updateFilter({
+    String? searchQuery,
+    ProjectSortCriteria? sortCriteria,
+    ProjectSortOrder? sortOrder,
+    ProjectStatus? statusFilter,
+  }) {
+    state = state.copyWith(
+      searchQuery: searchQuery,
+      sortCriteria: sortCriteria,
+      sortOrder: sortOrder,
+      statusFilter: statusFilter,
+    );
+  }
+
+  void clearStatusFilter() {
+    state = state.copyWith(statusFilter: null);
   }
 }

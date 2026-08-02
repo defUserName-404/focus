@@ -1,5 +1,6 @@
 import '../entities/project_list_filter_state.dart';
 import '../entities/project.dart';
+import '../entities/project_status.dart';
 
 abstract interface class IProjectRepository {
   Future<List<Project>> getAllProjects();
@@ -20,5 +21,6 @@ abstract interface class IProjectRepository {
     String searchQuery,
     ProjectSortCriteria sortCriteria,
     ProjectSortOrder sortOrder,
+    ProjectStatus? statusFilter,
   });
 }

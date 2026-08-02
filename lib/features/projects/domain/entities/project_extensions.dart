@@ -1,4 +1,5 @@
 import 'project.dart';
+import 'project_status.dart';
 
 /// Sentinel object used in [ProjectCopyWith.copyWith] to distinguish
 /// "parameter not provided" from "explicitly set to null".
@@ -16,6 +17,8 @@ extension ProjectCopyWith on Project {
     String? uuid,
     String? title,
     Object? description = _projectCopyWithUnset,
+    ProjectStatus? status,
+    Object? color = _projectCopyWithUnset,
     Object? startDate = _projectCopyWithUnset,
     Object? deadline = _projectCopyWithUnset,
     DateTime? createdAt,
@@ -27,6 +30,8 @@ extension ProjectCopyWith on Project {
       uuid: uuid ?? this.uuid,
       title: title ?? this.title,
       description: description == _projectCopyWithUnset ? this.description : description as String?,
+      status: status ?? this.status,
+      color: color == _projectCopyWithUnset ? this.color : color as int?,
       startDate: startDate == _projectCopyWithUnset ? this.startDate : startDate as DateTime?,
       deadline: deadline == _projectCopyWithUnset ? this.deadline : deadline as DateTime?,
       createdAt: createdAt ?? this.createdAt,

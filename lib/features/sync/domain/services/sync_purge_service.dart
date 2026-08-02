@@ -19,25 +19,56 @@ class SyncPurgeService {
   /// How long soft-deleted rows are kept before permanent purge.
   final Duration retention;
 
-  /// Hard-deletes projects, tasks, and focus sessions whose [deletedAt]
-  /// is older than [retention].
+  /// Hard-deletes soft-deleted rows whose [deletedAt] is older than [retention].
+  ///
+  /// Order respects FK dependents: task_tag → sessions → tasks → milestones →
+  /// tags → projects.
   Future<Result<int>> purgeExpiredTombstones({DateTime? now}) async {
     try {
       final cutoff = (now ?? DateTime.now()).subtract(retention);
       return await _db.transaction(() async {
-        // Sessions first (FK dependents), then tasks, then projects.
+        // Remove junction rows for tasks about to be purged.
+        final expiredTaskIds =
+            await (_db.selectOnly(_db.taskTable)
+                  ..addColumns([_db.taskTable.id])
+                  ..where(_db.taskTable.deletedAt.isNotNull() & _db.taskTable.deletedAt.isSmallerThanValue(cutoff)))
+                .map((row) => row.read(_db.taskTable.id)!)
+                .get();
+        var taskTags = 0;
+        if (expiredTaskIds.isNotEmpty) {
+          taskTags = await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(expiredTaskIds))).go();
+        }
+
+        final expiredTagIds =
+            await (_db.selectOnly(_db.tagTable)
+                  ..addColumns([_db.tagTable.id])
+                  ..where(_db.tagTable.deletedAt.isNotNull() & _db.tagTable.deletedAt.isSmallerThanValue(cutoff)))
+                .map((row) => row.read(_db.tagTable.id)!)
+                .get();
+        if (expiredTagIds.isNotEmpty) {
+          taskTags += await (_db.delete(_db.taskTagTable)..where((t) => t.tagId.isIn(expiredTagIds))).go();
+        }
+
         final sessions = await (_db.delete(
           _db.focusSessionTable,
         )..where((t) => t.deletedAt.isNotNull() & t.deletedAt.isSmallerThanValue(cutoff))).go();
         final tasks = await (_db.delete(
           _db.taskTable,
         )..where((t) => t.deletedAt.isNotNull() & t.deletedAt.isSmallerThanValue(cutoff))).go();
+        final milestones = await (_db.delete(
+          _db.milestoneTable,
+        )..where((t) => t.deletedAt.isNotNull() & t.deletedAt.isSmallerThanValue(cutoff))).go();
+        final tags = await (_db.delete(
+          _db.tagTable,
+        )..where((t) => t.deletedAt.isNotNull() & t.deletedAt.isSmallerThanValue(cutoff))).go();
         final projects = await (_db.delete(
           _db.projectTable,
         )..where((t) => t.deletedAt.isNotNull() & t.deletedAt.isSmallerThanValue(cutoff))).go();
-        final total = sessions + tasks + projects;
+        final total = taskTags + sessions + tasks + milestones + tags + projects;
         _log.info(
-          'Purged $total expired tombstones (sessions=$sessions, tasks=$tasks, projects=$projects)',
+          'Purged $total expired tombstones '
+          '(taskTags=$taskTags, sessions=$sessions, tasks=$tasks, '
+          'milestones=$milestones, tags=$tags, projects=$projects)',
           tag: 'SyncPurgeService',
         );
         return Success(total);

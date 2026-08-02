@@ -13,7 +13,11 @@ part of 'reports_insights_window_provider.dart';
 final reportsInsightsWindowProvider = ReportsInsightsWindowNotifierProvider._();
 
 final class ReportsInsightsWindowNotifierProvider
-    extends $AsyncNotifierProvider<ReportsInsightsWindowNotifier, InsightsWindowMode> {
+    extends
+        $AsyncNotifierProvider<
+          ReportsInsightsWindowNotifier,
+          InsightsWindowMode
+        > {
   ReportsInsightsWindowNotifierProvider._()
     : super(
         from: null,
@@ -33,14 +37,17 @@ final class ReportsInsightsWindowNotifierProvider
   ReportsInsightsWindowNotifier create() => ReportsInsightsWindowNotifier();
 }
 
-String _$reportsInsightsWindowNotifierHash() => r'fa46e326dd259ae4cd5a016f9e5d41c4694bc9df';
+String _$reportsInsightsWindowNotifierHash() =>
+    r'fa46e326dd259ae4cd5a016f9e5d41c4694bc9df';
 
-abstract class _$ReportsInsightsWindowNotifier extends $AsyncNotifier<InsightsWindowMode> {
+abstract class _$ReportsInsightsWindowNotifier
+    extends $AsyncNotifier<InsightsWindowMode> {
   FutureOr<InsightsWindowMode> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<InsightsWindowMode>, InsightsWindowMode>;
+    final ref =
+        this.ref as $Ref<AsyncValue<InsightsWindowMode>, InsightsWindowMode>;
     final element =
         ref.element
             as $ClassProviderElement<
