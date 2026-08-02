@@ -63,6 +63,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   mocktail: ^1.0.4
+  sqlite3: ^2.9.4
 
   # Code generation
   # Capped to the analyzer 12 line. flutter_test pins test_api 0.7.11 exactly, the
