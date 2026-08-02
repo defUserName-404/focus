@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,6 +35,11 @@ class TasksBoardView extends ConsumerStatefulWidget {
 class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
   late final PageController _pageController;
   int _compactPage = 0;
+  Offset? _dragGlobalPosition;
+  Timer? _pageEdgeTimer;
+  bool _isDragging = false;
+
+  static const _edgePx = 48.0;
 
   @override
   void initState() {
@@ -42,6 +49,7 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
 
   @override
   void dispose() {
+    _pageEdgeTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -116,6 +124,39 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
     }
   }
 
+  void _onDragStarted() {
+    _isDragging = true;
+    _pageEdgeTimer?.cancel();
+    if (!context.isCompact) return;
+    _pageEdgeTimer = Timer.periodic(const Duration(milliseconds: 180), (_) => _maybeScrollPages());
+  }
+
+  void _onDragEnded() {
+    _isDragging = false;
+    _dragGlobalPosition = null;
+    _pageEdgeTimer?.cancel();
+    _pageEdgeTimer = null;
+  }
+
+  void _onDragUpdate(Offset globalPosition) {
+    _dragGlobalPosition = globalPosition;
+    if (_isDragging && context.isCompact) {
+      _maybeScrollPages();
+    }
+  }
+
+  void _maybeScrollPages() {
+    if (!_isDragging || !context.isCompact || !mounted) return;
+    final pos = _dragGlobalPosition;
+    if (pos == null) return;
+    final width = MediaQuery.sizeOf(context).width;
+    if (pos.dx < _edgePx) {
+      _goToColumn(_compactPage - 1);
+    } else if (pos.dx > width - _edgePx) {
+      _goToColumn(_compactPage + 1);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final columns = _columns();
@@ -170,6 +211,9 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
                       tasks: columns[status]!,
                       selectedTaskId: widget.selectedTaskId,
                       onOpenTask: _openTask,
+                      onDragStarted: _onDragStarted,
+                      onDragEnded: _onDragEnded,
+                      onDragUpdate: _onDragUpdate,
                       onDrop: (task, insertIndex) => _moveTask(
                         task: task,
                         targetStatus: status,
@@ -193,6 +237,9 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
                     tasks: columns[status]!,
                     selectedTaskId: widget.selectedTaskId,
                     onOpenTask: _openTask,
+                    onDragStarted: _onDragStarted,
+                    onDragEnded: _onDragEnded,
+                    onDragUpdate: _onDragUpdate,
                     onDrop: (task, insertIndex) => _moveTask(
                       task: task,
                       targetStatus: status,
@@ -218,11 +265,14 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
   }
 }
 
-class _BoardColumn extends StatelessWidget {
+class _BoardColumn extends StatefulWidget {
   final TaskStatus status;
   final List<Task> tasks;
   final int? selectedTaskId;
   final ValueChanged<Task> onOpenTask;
+  final VoidCallback onDragStarted;
+  final VoidCallback onDragEnded;
+  final ValueChanged<Offset> onDragUpdate;
   final Future<void> Function(Task task, int insertIndex) onDrop;
 
   const _BoardColumn({
@@ -230,14 +280,84 @@ class _BoardColumn extends StatelessWidget {
     required this.tasks,
     required this.selectedTaskId,
     required this.onOpenTask,
+    required this.onDragStarted,
+    required this.onDragEnded,
+    required this.onDragUpdate,
     required this.onDrop,
   });
+
+  @override
+  State<_BoardColumn> createState() => _BoardColumnState();
+}
+
+class _BoardColumnState extends State<_BoardColumn> {
+  final ScrollController _scrollController = ScrollController();
+  Timer? _autoScrollTimer;
+  int? _hoverInsertIndex;
+  static const _edgePx = 56.0;
+  static const _scrollStep = 28.0;
+
+  @override
+  void dispose() {
+    _autoScrollTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _startEdgeScroll(double direction) {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+      if (!_scrollController.hasClients) return;
+      final next = (_scrollController.offset + direction * _scrollStep).clamp(
+        0.0,
+        _scrollController.position.maxScrollExtent,
+      );
+      if (next == _scrollController.offset) return;
+      _scrollController.jumpTo(next);
+    });
+  }
+
+  void _stopEdgeScroll() {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = null;
+  }
+
+  void _handleDragPosition(Offset globalPosition) {
+    widget.onDragUpdate(globalPosition);
+    if (!_scrollController.hasClients) return;
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return;
+    final local = box.globalToLocal(globalPosition);
+    if (local.dy < _edgePx) {
+      _startEdgeScroll(-1);
+    } else if (local.dy > box.size.height - _edgePx) {
+      _startEdgeScroll(1);
+    } else {
+      _stopEdgeScroll();
+    }
+  }
+
+  int _insertIndexForCard(int cardIndex, Offset globalPosition, RenderBox cardBox) {
+    final local = cardBox.globalToLocal(globalPosition);
+    final before = local.dy < cardBox.size.height / 2;
+    return before ? cardIndex : cardIndex + 1;
+  }
 
   @override
   Widget build(BuildContext context) {
     return DragTarget<Task>(
       onWillAcceptWithDetails: (_) => true,
-      onAcceptWithDetails: (details) => onDrop(details.data, tasks.length),
+      onMove: (details) => _handleDragPosition(details.offset),
+      onLeave: (_) {
+        _stopEdgeScroll();
+        if (_hoverInsertIndex != null) setState(() => _hoverInsertIndex = null);
+      },
+      onAcceptWithDetails: (details) {
+        _stopEdgeScroll();
+        final insertIndex = _hoverInsertIndex ?? widget.tasks.length;
+        setState(() => _hoverInsertIndex = null);
+        widget.onDrop(details.data, insertIndex);
+      },
       builder: (context, candidateData, _) {
         final hovering = candidateData.isNotEmpty;
         return DecoratedBox(
@@ -254,10 +374,13 @@ class _BoardColumn extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(status.label, style: context.typography.sm.copyWith(fontWeight: FontWeight.w700)),
+                      child: Text(
+                        widget.status.label,
+                        style: context.typography.sm.copyWith(fontWeight: FontWeight.w700),
+                      ),
                     ),
                     Text(
-                      '${tasks.length}',
+                      '${widget.tasks.length}',
                       style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
                     ),
                   ],
@@ -265,26 +388,64 @@ class _BoardColumn extends StatelessWidget {
               ),
               Expanded(
                 child: ListView.builder(
+                  controller: _scrollController,
                   padding: EdgeInsets.fromLTRB(
                     AppConstants.spacing.small,
                     0,
                     AppConstants.spacing.small,
                     AppConstants.spacing.small,
                   ),
-                  itemCount: tasks.length + 1,
+                  itemCount: widget.tasks.length + 1,
                   itemBuilder: (context, index) {
-                    if (index == tasks.length) {
-                      return _ColumnGapDropTarget(height: 28, onAccept: (task) => onDrop(task, tasks.length));
+                    if (index == widget.tasks.length) {
+                      return _ColumnGapDropTarget(
+                        height: 28,
+                        showLine: _hoverInsertIndex == widget.tasks.length,
+                        onHover: () {
+                          if (_hoverInsertIndex != widget.tasks.length) {
+                            setState(() => _hoverInsertIndex = widget.tasks.length);
+                          }
+                        },
+                        onAccept: (task) => widget.onDrop(task, widget.tasks.length),
+                      );
                     }
 
-                    final task = tasks[index];
+                    final task = widget.tasks[index];
                     return Column(
                       children: [
-                        _ColumnGapDropTarget(height: 12, onAccept: (dropped) => onDrop(dropped, index)),
+                        _ColumnGapDropTarget(
+                          height: 12,
+                          showLine: _hoverInsertIndex == index,
+                          onHover: () {
+                            if (_hoverInsertIndex != index) {
+                              setState(() => _hoverInsertIndex = index);
+                            }
+                          },
+                          onAccept: (dropped) => widget.onDrop(dropped, index),
+                        ),
                         _BoardCard(
                           task: task,
-                          isSelected: selectedTaskId != null && selectedTaskId == task.id,
-                          onTap: () => onOpenTask(task),
+                          isSelected: widget.selectedTaskId != null && widget.selectedTaskId == task.id,
+                          onTap: () => widget.onOpenTask(task),
+                          onDragStarted: widget.onDragStarted,
+                          onDragEnded: () {
+                            widget.onDragEnded();
+                            _stopEdgeScroll();
+                          },
+                          onDragUpdate: _handleDragPosition,
+                          onHoverWithDetails: (details, cardBox) {
+                            _handleDragPosition(details.offset);
+                            final insertIndex = _insertIndexForCard(index, details.offset, cardBox);
+                            if (_hoverInsertIndex != insertIndex) {
+                              setState(() => _hoverInsertIndex = insertIndex);
+                            }
+                          },
+                          onAcceptWithDetails: (details, cardBox) {
+                            _stopEdgeScroll();
+                            final insertIndex = _insertIndexForCard(index, details.offset, cardBox);
+                            setState(() => _hoverInsertIndex = null);
+                            widget.onDrop(details.data, insertIndex);
+                          },
                         ),
                       ],
                     );
@@ -301,24 +462,38 @@ class _BoardColumn extends StatelessWidget {
 
 class _ColumnGapDropTarget extends StatelessWidget {
   final double height;
+  final bool showLine;
+  final VoidCallback onHover;
   final ValueChanged<Task> onAccept;
 
-  const _ColumnGapDropTarget({required this.height, required this.onAccept});
+  const _ColumnGapDropTarget({
+    required this.height,
+    required this.showLine,
+    required this.onHover,
+    required this.onAccept,
+  });
 
   @override
   Widget build(BuildContext context) {
     return DragTarget<Task>(
       onWillAcceptWithDetails: (_) => true,
+      onMove: (_) => onHover(),
       onAcceptWithDetails: (details) => onAccept(details.data),
       builder: (context, candidateData, _) {
-        final hovering = candidateData.isNotEmpty;
+        final hovering = candidateData.isNotEmpty || showLine;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           height: hovering ? height + 8 : height,
           margin: EdgeInsets.symmetric(vertical: hovering ? 2 : 0),
-          decoration: BoxDecoration(
-            color: hovering ? context.colors.primary.withValues(alpha: 0.2) : Colors.transparent,
-            borderRadius: BorderRadius.circular(4),
+          alignment: .center,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            height: hovering ? 3 : 0,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: hovering ? context.colors.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
         );
       },
@@ -330,8 +505,48 @@ class _BoardCard extends StatelessWidget {
   final Task task;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback onDragStarted;
+  final VoidCallback onDragEnded;
+  final ValueChanged<Offset> onDragUpdate;
+  final void Function(DragTargetDetails<Task> details, RenderBox cardBox) onHoverWithDetails;
+  final void Function(DragTargetDetails<Task> details, RenderBox cardBox) onAcceptWithDetails;
 
-  const _BoardCard({required this.task, required this.isSelected, required this.onTap});
+  const _BoardCard({
+    required this.task,
+    required this.isSelected,
+    required this.onTap,
+    required this.onDragStarted,
+    required this.onDragEnded,
+    required this.onDragUpdate,
+    required this.onHoverWithDetails,
+    required this.onAcceptWithDetails,
+  });
+
+  Widget _buildDraggable({required Widget child, required Widget feedback}) {
+    if (PlatformUtils.isDesktop) {
+      return Draggable<Task>(
+        data: task,
+        feedback: feedback,
+        childWhenDragging: Opacity(opacity: 0.35, child: child),
+        onDragStarted: onDragStarted,
+        onDragEnd: (_) => onDragEnded(),
+        onDraggableCanceled: (_, _) => onDragEnded(),
+        onDragUpdate: (details) => onDragUpdate(details.globalPosition),
+        child: child,
+      );
+    }
+
+    return LongPressDraggable<Task>(
+      data: task,
+      feedback: feedback,
+      childWhenDragging: Opacity(opacity: 0.35, child: child),
+      onDragStarted: onDragStarted,
+      onDragEnd: (_) => onDragEnded(),
+      onDraggableCanceled: (_, _) => onDragEnded(),
+      onDragUpdate: (details) => onDragUpdate(details.globalPosition),
+      child: child,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -350,22 +565,36 @@ class _BoardCard extends StatelessWidget {
           : null,
     );
 
-    return LongPressDraggable<Task>(
-      data: task,
-      feedback: Material(
-        elevation: 6,
+    final feedback = Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
+      child: SizedBox(width: 220, child: Opacity(opacity: 0.9, child: card)),
+    );
+
+    final wrapped = AnimatedContainer(
+      duration: const Duration(milliseconds: 120),
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
-        child: SizedBox(width: 220, child: Opacity(opacity: 0.9, child: card)),
+        border: Border.all(color: isSelected ? context.colors.primary : Colors.transparent, width: 1.5),
       ),
-      childWhenDragging: Opacity(opacity: 0.35, child: card),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
-          border: Border.all(color: isSelected ? context.colors.primary : Colors.transparent, width: 1.5),
-        ),
-        child: card,
-      ),
+      child: card,
+    );
+
+    return DragTarget<Task>(
+      onWillAcceptWithDetails: (details) => details.data.id != task.id,
+      onMove: (details) {
+        final box = context.findRenderObject() as RenderBox?;
+        if (box == null) return;
+        onHoverWithDetails(details, box);
+      },
+      onAcceptWithDetails: (details) {
+        final box = context.findRenderObject() as RenderBox?;
+        if (box == null) return;
+        onAcceptWithDetails(details, box);
+      },
+      builder: (context, candidateData, _) {
+        return _buildDraggable(child: wrapped, feedback: feedback);
+      },
     );
   }
 }
