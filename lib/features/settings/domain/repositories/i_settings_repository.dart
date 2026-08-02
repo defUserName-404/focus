@@ -33,4 +33,10 @@ abstract class ISettingsRepository {
 
   /// Convenience: watch decoded desktop preferences reactively.
   Stream<DesktopPreferences> watchDesktopPreferences();
+
+  /// Convenience: get decoded user identity / first-run state.
+  Future<UserPreferences> getUserPreferences();
+
+  /// Convenience: watch decoded user identity / first-run state reactively.
+  Stream<UserPreferences> watchUserPreferences();
 }

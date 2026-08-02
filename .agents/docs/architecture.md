@@ -240,6 +240,16 @@ Inbox behavior:
 - Task reminder payloads include both task id and project id.
 - In-app inbox reads a notification event stream plus upcoming task reminder projections.
 
+## Onboarding
+
+- **Path:** `lib/features/onboarding/`
+- **Trigger:** `redirect:` callback in `appRouter` (lib/core/routing/app_router.dart) routes new installs to `/onboarding` until `onboarding_completed = 'true'`.
+- **Persistence:** reuses the existing key-value `settings_table`; no schema change. Keys: `display_name`, `onboarding_completed`.
+- **Container wiring:** router reads `userPreferencesProvider` via a global `ProviderContainer` (`appRouterContainer`) so the redirect is decoupled from any widget tree.
+- **Greeting:** `greetingFor({String? name, DateTime? now})` in `lib/core/utils/greeting.dart` is a pure function; the dashboard reads it via `userPreferencesProvider`. Both the home header and the desktop sidebar share the same provider.
+- **DI:** `OnboardingService` registered in `_initOnboardingDi()` in `lib/core/di/injection.dart`, depends on `SettingsService`.
+- **Flow:** 5-step `PageView` — Welcome, Deep work sessions, Projects & tasks, Insights that matter, Name capture. All steps skippable via `FHeaderAction.x` in the header suffix. Progress via `FDeterminateProgress`.
+
 ## Required Code Generation
 
 Run code generation after changing:

@@ -18,6 +18,7 @@ part 'desktop_settings_provider.part.dart';
 part 'previewing_id_provider.part.dart';
 part 'settings_repository_provider.part.dart';
 part 'timer_settings_provider.part.dart';
+part 'user_preferences_provider.part.dart';
 
 // ---------------------------------------------------------------------------
 // Settings notifier

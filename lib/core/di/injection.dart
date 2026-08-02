@@ -27,6 +27,7 @@ import '../../features/settings/data/datasources/settings_local_datasource.dart'
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/i_settings_repository.dart';
 import '../../features/settings/domain/services/settings_service.dart';
+import '../../features/onboarding/domain/services/onboarding_service.dart';
 import '../../features/sync/data/datasources/sync_local_datasource.dart';
 import '../../features/sync/data/services/google_drive_service.dart';
 import '../../features/sync/domain/services/i_cloud_storage_service.dart';
@@ -94,6 +95,7 @@ Future<void> setupDependencyInjection() async {
   _initNotificationsDi();
   _initTasksDi();
   _initSettingsDi();
+  _initOnboardingDi();
 
   if (PlatformUtils.isDesktop) {
     getIt.registerLazySingleton<DesktopLifecycleService>(() => DesktopLifecycleService(getIt<ISettingsRepository>()));
@@ -180,6 +182,10 @@ void _initSettingsDi() {
       () => SettingsRepositoryImpl(getIt<ISettingsLocalDataSource>(), getIt<DataChangeBus>()),
     )
     ..registerLazySingleton<SettingsService>(() => SettingsService(getIt<ISettingsRepository>()));
+}
+
+void _initOnboardingDi() {
+  getIt.registerLazySingleton<OnboardingService>(() => OnboardingService(getIt<SettingsService>()));
 }
 
 void _initSessionDi() {

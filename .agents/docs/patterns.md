@@ -562,6 +562,65 @@ Gotchas:
 - Touch: long-press avoids fighting vertical scroll / page swipe.
 - Pair with edge auto-scroll while dragging in compact PageView boards.
 
+## First-Run Gating (Onboarding)
+
+Use a `redirect:` callback on the `GoRouter`, not widget-level guards. The callback reads a settings-backed `StreamProvider` via a top-level `ProviderContainer` and short-circuits to `/onboarding` while the value is false. The user can never deep-link past onboarding because the router rewrites every matched location.
+
+```dart
+// lib/core/routing/app_router.dart
+final ProviderContainer appRouterContainer = ProviderContainer();
+
+final GoRouter appRouter = GoRouter(
+  redirect: (context, state) {
+    if (state.matchedLocation == AppRoutes.onboarding.path) return null;
+    final prefs = appRouterContainer.read(userPreferencesProvider).value;
+    if (prefs == null) return null;
+    if (!prefs.onboardingCompleted) return AppRoutes.onboarding.path;
+    return null;
+  },
+  // ...
+);
+```
+
+```dart
+// lib/main.dart — wire the container into the widget tree
+runApp(UncontrolledProviderScope(
+  container: appRouterContainer,
+  child: const FocusApp(),
+));
+```
+
+Gotchas:
+- `appRouterContainer` must be created before `appRouter` and before `runApp`.
+- The redirect fires on every navigation event; the `value` read must not block.
+- `onboarding_completed` defaults to `false` (missing row = new install).
+
+## Personalised Dashboard Greeting
+
+Compute greeting in a pure utility (`greetingFor`) — never inline the time-of-day logic in widgets. Watch the display name via a `StreamProvider<UserPreferences>` derived from the settings repository's `watchUserPreferences()` stream. Both the home header and the desktop sidebar share the same provider, so renaming in Settings updates both instantly.
+
+```dart
+// lib/core/utils/greeting.dart
+String greetingFor({String? name, DateTime? now}) {
+  final t = (now ?? DateTime.now()).hour;
+  final base = t < 5 ? 'Working late' : t < 12 ? 'Good morning' : t < 17 ? 'Good afternoon' : t < 21 ? 'Good evening' : 'Working late';
+  final trimmed = name?.trim();
+  if (trimmed == null || trimmed.isEmpty) return base;
+  return '$base, $trimmed';
+}
+```
+
+```dart
+// In a ConsumerWidget
+final name = ref.watch(userPreferencesProvider).value?.displayName;
+Text(greetingFor(name: name));
+```
+
+Gotchas:
+- Empty / whitespace-only name is treated as "no name set".
+- The greeting is locale-agnostic (English hard-coded) until i18n is introduced.
+- The provider emits on every settings table change; the greeting widget re-computes only when `displayName` changes.
+
 ## Mandatory Follow-Up
 
 When a new pattern is introduced in production code, add it here with:

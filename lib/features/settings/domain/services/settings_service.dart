@@ -81,6 +81,33 @@ class SettingsService {
     tag: 'setDesktopLaunchAtStartupEnabled',
   );
 
+  //  User preferences (display name, onboarding completion)
+
+  Future<UserPreferences> getUserPreferences() => _repository.getUserPreferences();
+
+  Stream<UserPreferences> watchUserPreferences() => _repository.watchUserPreferences();
+
+  Future<String?> getDisplayName() => _repository.getValue(SettingsKeys.displayName);
+
+  Future<bool> getOnboardingCompleted() async {
+    final raw = await _repository.getValue(SettingsKeys.onboardingCompleted);
+    return raw == 'true';
+  }
+
+  Future<Result<void>> setDisplayName(String? name) {
+    final trimmed = name?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return _writeValue(SettingsKeys.displayName, '', tag: 'setDisplayName');
+    }
+    return _writeValue(SettingsKeys.displayName, trimmed, tag: 'setDisplayName');
+  }
+
+  Future<Result<void>> completeOnboarding({String? name}) async {
+    final nameResult = await setDisplayName(name);
+    if (nameResult is Failure) return nameResult;
+    return _writeValue(SettingsKeys.onboardingCompleted, 'true', tag: 'completeOnboarding');
+  }
+
   // ---------------------------------------------------------------------------
   // Internal helpers
   // ---------------------------------------------------------------------------

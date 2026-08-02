@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:focus/core/config/theme/app_theme.dart';
 import 'package:focus/core/utils/date_time_utils.dart';
 import 'package:focus/core/utils/datetime_formatter.dart';
+import 'package:focus/core/utils/greeting.dart';
 import 'package:focus/features/home/presentation/widgets/streak_badge.dart';
+import 'package:focus/features/settings/presentation/providers/settings_provider.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
@@ -39,7 +41,11 @@ class HomeScreen extends ConsumerWidget {
     final agenda = agendaAsync.value ?? const [];
     final habits = habitsAsync.value ?? const [];
 
+    final userPrefsAsync = ref.watch(userPreferencesProvider);
+    final onboardingCompleted = userPrefsAsync.value?.onboardingCompleted ?? true;
+
     final showOnboarding =
+        onboardingCompleted &&
         projectsAsync.hasValue &&
         agendaAsync.hasValue &&
         habitsAsync.hasValue &&
@@ -104,23 +110,34 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
         ],
-        title: Row(
+        title: _DashboardTitle(),
+      ),
+      child: ConstrainedContent(child: SingleChildScrollView(child: body)),
+    );
+  }
+}
+
+class _DashboardTitle extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final name = ref.watch(userPreferencesProvider).value?.displayName;
+    return Row(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: AppConstants.spacing.extraSmall,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: AppConstants.spacing.extraSmall,
-              children: [
-                Text('Focus', style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700)),
-                Text(
-                  DateTimeUtils.now().toDateString(),
-                  style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
-                ),
-              ],
+            Text(
+              greetingFor(name: name),
+              style: context.typography.xl2.copyWith(fontWeight: FontWeight.w700),
+            ),
+            Text(
+              DateTimeUtils.now().toDateString(),
+              style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
             ),
           ],
         ),
-      ),
-      child: ConstrainedContent(child: SingleChildScrollView(child: body)),
+      ],
     );
   }
 }

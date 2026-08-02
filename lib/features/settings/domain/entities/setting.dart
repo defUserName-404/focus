@@ -47,6 +47,14 @@ abstract final class SettingsKeys {
   /// Stable per-install device UUID used for sync provenance.
   static const String deviceId = 'device_id';
 
+  /// The display name captured during onboarding (or set later in Settings).
+  /// Null when the user skipped the name step.
+  static const String displayName = 'display_name';
+
+  /// Whether the first-run onboarding flow has been completed.
+  /// Stored as the string 'true' / 'false'.
+  static const String onboardingCompleted = 'onboarding_completed';
+
   /// Timer + audio preference keys that participate in cloud sync / backup.
   ///
   /// Excludes [deviceId], desktop-local prefs, and UI view-mode prefs.
@@ -144,4 +152,23 @@ class DesktopPreferences extends Equatable {
 
   @override
   List<Object?> get props => [trayEnabled, launchAtStartupEnabled];
+}
+
+/// Convenience wrapper for user identity / first-run state.
+@immutable
+class UserPreferences extends Equatable {
+  final String? displayName;
+  final bool onboardingCompleted;
+
+  const UserPreferences({this.displayName, this.onboardingCompleted = false});
+
+  UserPreferences copyWith({String? displayName, bool? onboardingCompleted}) {
+    return UserPreferences(
+      displayName: displayName ?? this.displayName,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+    );
+  }
+
+  @override
+  List<Object?> get props => [displayName, onboardingCompleted];
 }

@@ -31,6 +31,7 @@ class QuickSessionButton extends ConsumerWidget {
           spacing: AppConstants.spacing.extraSmall,
           children: [
             button,
+            SizedBox(height: AppConstants.spacing.regular),
             Text(
               'Begin a quick session without picking a task',
               style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
