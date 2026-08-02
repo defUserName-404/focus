@@ -37,7 +37,7 @@ final class AllTasksFilterProvider extends $NotifierProvider<AllTasksFilter, All
   }
 }
 
-String _$allTasksFilterHash() => r'2131da495617e008bdce4b52d4e9a5259106856d';
+String _$allTasksFilterHash() => r'7db6a5912648cca33e102316879cd8d7c152b6dc';
 
 abstract class _$AllTasksFilter extends $Notifier<AllTasksFilterState> {
   AllTasksFilterState build();

@@ -52,7 +52,7 @@ final class TaskListFilterProvider extends $NotifierProvider<TaskListFilter, Tas
   }
 }
 
-String _$taskListFilterHash() => r'9f69f2f8a9bf678421a4eebe1d07b9568b9a66dd';
+String _$taskListFilterHash() => r'99b58694e9dc7ca9609c43b08b151b3cc1ad27b2';
 
 final class TaskListFilterFamily extends $Family
     with $ClassFamilyOverride<TaskListFilter, TaskListFilterState, TaskListFilterState, TaskListFilterState, String> {

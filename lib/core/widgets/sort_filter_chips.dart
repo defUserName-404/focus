@@ -44,10 +44,13 @@ class SortFilterChips<T extends SortCriteria> extends StatelessWidget {
           spacing: AppConstants.spacing.small,
           children: [
             for (final criteria in criteriaOptions)
-              FButton(
-                variant: selectedCriteria == criteria ? .secondary : .outline,
-                onPress: () => onChanged(criteria),
-                child: Text(criteria.label, style: context.typography.xs),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: FButton(
+                  variant: selectedCriteria == criteria ? .secondary : .outline,
+                  onPress: () => onChanged(criteria),
+                  child: Text(criteria.label, style: context.typography.xs),
+                ),
               ),
           ],
         ),

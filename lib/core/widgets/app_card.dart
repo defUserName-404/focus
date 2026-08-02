@@ -38,7 +38,7 @@ class _AppCardState extends State<AppCard> {
 
   @override
   Widget build(BuildContext context) {
-    const double leadingWidth = 32.0;
+    const double leadingSlot = 44.0;
     final tappable = widget.onTap != null;
 
     return MouseRegion(
@@ -64,7 +64,12 @@ class _AppCardState extends State<AppCard> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        if (widget.leading != null) SizedBox(width: leadingWidth, child: widget.leading!),
+                        if (widget.leading != null)
+                          SizedBox(
+                            width: leadingSlot,
+                            height: leadingSlot,
+                            child: Center(child: widget.leading!),
+                          ),
                         Expanded(
                           child: DefaultTextStyle(
                             style: context.typography.md.copyWith(
@@ -82,7 +87,7 @@ class _AppCardState extends State<AppCard> {
                       ],
                     ),
                     Padding(
-                      padding: EdgeInsets.only(left: widget.leading != null ? leadingWidth : 0),
+                      padding: EdgeInsets.only(left: widget.leading != null ? leadingSlot : 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,

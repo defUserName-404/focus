@@ -49,12 +49,15 @@ class ProjectTasksFilterPanel extends ConsumerWidget {
           runSpacing: AppConstants.spacing.small,
           children: [
             for (final f in TaskCompletionFilter.values)
-              fu.FButton(
-                size: .sm,
-                mainAxisSize: .min,
-                variant: filter.completionFilter == f ? .secondary : .outline,
-                onPress: () => notifier.updateFilter(completionFilter: f),
-                child: Text(f.label, style: context.typography.xs),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: fu.FButton(
+                  size: .sm,
+                  mainAxisSize: .min,
+                  variant: filter.completionFilter == f ? .secondary : .outline,
+                  onPress: () => notifier.updateFilter(completionFilter: f),
+                  child: Text(f.label, style: context.typography.xs),
+                ),
               ),
           ],
         ),
