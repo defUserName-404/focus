@@ -49,25 +49,33 @@ class AllTasksContent extends ConsumerWidget {
           ),
           filterPanel: const AllTasksFilterPanel(),
           activeFilterCount: activeCount,
+          onReset: () => ref.read(allTasksFilterProvider.notifier).reset(),
           activeFilters: [
             if (filter.priorityFilter != null)
-              fu.FButton(
-                size: .xs,
-                mainAxisSize: .min,
-                variant: .secondary,
-                suffix: const Icon(fu.FLucideIcons.x),
-                onPress: () => ref.read(allTasksFilterProvider.notifier).updateFilter(priorityFilter: null),
-                child: Text(filter.priorityFilter!.label),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: fu.FButton(
+                  size: .xs,
+                  mainAxisSize: .min,
+                  variant: .secondary,
+                  suffix: const Icon(fu.FLucideIcons.x),
+                  onPress: () => ref.read(allTasksFilterProvider.notifier).updateFilter(priorityFilter: null),
+                  child: Text(filter.priorityFilter!.label),
+                ),
               ),
             if (filter.completionFilter != TaskCompletionFilter.all)
-              fu.FButton(
-                size: .xs,
-                mainAxisSize: .min,
-                variant: .secondary,
-                suffix: const Icon(fu.FLucideIcons.x),
-                onPress: () =>
-                    ref.read(allTasksFilterProvider.notifier).updateFilter(completionFilter: TaskCompletionFilter.all),
-                child: Text(filter.completionFilter.label),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: fu.FButton(
+                  size: .xs,
+                  mainAxisSize: .min,
+                  variant: .secondary,
+                  suffix: const Icon(fu.FLucideIcons.x),
+                  onPress: () => ref
+                      .read(allTasksFilterProvider.notifier)
+                      .updateFilter(completionFilter: TaskCompletionFilter.all),
+                  child: Text(filter.completionFilter.label),
+                ),
               ),
           ],
           onCreate: isEmbedded ? () => context.push(AppRoutes.createTaskWithProject.path) : null,

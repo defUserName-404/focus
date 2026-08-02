@@ -65,42 +65,55 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       onSearchChanged: (query) => notifier.updateFilter(searchQuery: query),
       filterPanel: ProjectTasksFilterPanel(projectIdString: _projectIdString),
       activeFilterCount: _activeFilterCount(filter),
+      onReset: () => notifier.reset(),
       activeFilters: [
         if (filter.priorityFilter != null)
-          fu.FButton(
-            size: .xs,
-            mainAxisSize: .min,
-            variant: .secondary,
-            suffix: const Icon(fu.FLucideIcons.x),
-            onPress: () => notifier.updateFilter(priorityFilter: null),
-            child: Text(filter.priorityFilter!.label),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44),
+            child: fu.FButton(
+              size: .xs,
+              mainAxisSize: .min,
+              variant: .secondary,
+              suffix: const Icon(fu.FLucideIcons.x),
+              onPress: () => notifier.updateFilter(priorityFilter: null),
+              child: Text(filter.priorityFilter!.label),
+            ),
           ),
         if (filter.completionFilter != TaskCompletionFilter.all)
-          fu.FButton(
-            size: .xs,
-            mainAxisSize: .min,
-            variant: .secondary,
-            suffix: const Icon(fu.FLucideIcons.x),
-            onPress: () => notifier.updateFilter(completionFilter: TaskCompletionFilter.all),
-            child: Text(filter.completionFilter.label),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44),
+            child: fu.FButton(
+              size: .xs,
+              mainAxisSize: .min,
+              variant: .secondary,
+              suffix: const Icon(fu.FLucideIcons.x),
+              onPress: () => notifier.updateFilter(completionFilter: TaskCompletionFilter.all),
+              child: Text(filter.completionFilter.label),
+            ),
           ),
         if (filter.sortCriteria != TaskSortCriteria.recentlyModified)
-          fu.FButton(
-            size: .xs,
-            mainAxisSize: .min,
-            variant: .secondary,
-            suffix: const Icon(fu.FLucideIcons.x),
-            onPress: () => notifier.updateFilter(sortCriteria: TaskSortCriteria.recentlyModified),
-            child: Text(filter.sortCriteria.label),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44),
+            child: fu.FButton(
+              size: .xs,
+              mainAxisSize: .min,
+              variant: .secondary,
+              suffix: const Icon(fu.FLucideIcons.x),
+              onPress: () => notifier.updateFilter(sortCriteria: TaskSortCriteria.recentlyModified),
+              child: Text(filter.sortCriteria.label),
+            ),
           ),
         if (filter.sortOrder != TaskSortOrder.none)
-          fu.FButton(
-            size: .xs,
-            mainAxisSize: .min,
-            variant: .secondary,
-            suffix: const Icon(fu.FLucideIcons.x),
-            onPress: () => notifier.updateFilter(sortOrder: TaskSortOrder.none),
-            child: Text(filter.sortOrder.label),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44),
+            child: fu.FButton(
+              size: .xs,
+              mainAxisSize: .min,
+              variant: .secondary,
+              suffix: const Icon(fu.FLucideIcons.x),
+              onPress: () => notifier.updateFilter(sortOrder: TaskSortOrder.none),
+              child: Text(filter.sortOrder.label),
+            ),
           ),
       ],
     );

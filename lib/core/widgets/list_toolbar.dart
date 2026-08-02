@@ -26,6 +26,7 @@ class ListToolbar extends StatelessWidget {
   final String createLabel;
   final Widget? viewModeControl;
   final FocusNode? searchFocusNode;
+  final VoidCallback? onReset;
 
   const ListToolbar({
     super.key,
@@ -38,6 +39,7 @@ class ListToolbar extends StatelessWidget {
     this.createLabel = 'Create',
     this.viewModeControl,
     this.searchFocusNode,
+    this.onReset,
   });
 
   @override
@@ -58,7 +60,12 @@ class ListToolbar extends StatelessWidget {
                     ),
                     if (viewModeControl != null) ...[SizedBox(width: AppConstants.spacing.small), viewModeControl!],
                     SizedBox(width: AppConstants.spacing.small),
-                    _FilterTrigger(activeFilterCount: activeFilterCount, filterPanel: filterPanel, iconOnly: narrow),
+                    _FilterTrigger(
+                      activeFilterCount: activeFilterCount,
+                      filterPanel: filterPanel,
+                      iconOnly: narrow,
+                      onReset: onReset,
+                    ),
                     if (onCreate != null) ...[
                       SizedBox(width: AppConstants.spacing.small),
                       if (narrow)
@@ -113,8 +120,14 @@ class _FilterTrigger extends StatefulWidget {
   final int activeFilterCount;
   final Widget filterPanel;
   final bool iconOnly;
+  final VoidCallback? onReset;
 
-  const _FilterTrigger({required this.activeFilterCount, required this.filterPanel, required this.iconOnly});
+  const _FilterTrigger({
+    required this.activeFilterCount,
+    required this.filterPanel,
+    required this.iconOnly,
+    this.onReset,
+  });
 
   @override
   State<_FilterTrigger> createState() => _FilterTriggerState();
@@ -135,16 +148,51 @@ class _FilterTriggerState extends State<_FilterTrigger> with SingleTickerProvide
       context: context,
       side: .btt,
       mainAxisMaxRatio: 0.7,
-      builder: (context) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppConstants.spacing.regular),
+          padding: EdgeInsets.fromLTRB(
+            AppConstants.spacing.regular,
+            AppConstants.spacing.small,
+            AppConstants.spacing.regular,
+            AppConstants.spacing.regular,
+          ),
           child: Column(
             mainAxisSize: .min,
             crossAxisAlignment: .stretch,
             children: [
-              Text('Filters', style: context.typography.lg.copyWith(fontWeight: FontWeight.w700)),
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: sheetContext.colors.mutedForeground.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              SizedBox(height: AppConstants.spacing.regular),
+              Text('Filters', style: sheetContext.typography.lg.copyWith(fontWeight: FontWeight.w700)),
               SizedBox(height: AppConstants.spacing.regular),
               FilterSelectGroup(groupId: _groupId, child: widget.filterPanel),
+              SizedBox(height: AppConstants.spacing.regular),
+              Row(
+                children: [
+                  if (widget.onReset != null)
+                    Expanded(
+                      child: fu.FButton(
+                        variant: .outline,
+                        onPress: () {
+                          widget.onReset!();
+                        },
+                        child: const Text('Reset'),
+                      ),
+                    ),
+                  if (widget.onReset != null) SizedBox(width: AppConstants.spacing.small),
+                  Expanded(
+                    child: fu.FButton(onPress: () => Navigator.of(sheetContext).pop(), child: const Text('Done')),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

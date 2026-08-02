@@ -44,4 +44,8 @@ class AllTasksFilter extends _$AllTasksFilter {
   void clearStatusFilter() {
     state = state.copyWith(statusFilter: null);
   }
+
+  void reset() {
+    state = const AllTasksFilterState();
+  }
 }

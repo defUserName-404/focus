@@ -501,6 +501,56 @@ UI hooks:
 Use `AppEmptyState` for board/calendar agenda/timeline/milestones empty surfaces.
 Home may keep `EmptySection` or migrate to `AppEmptyState` — prefer the core widget for new views.
 
+## ListToolbar Overflow Pattern
+
+`ListToolbar` keeps search + optional view switcher + filter (+ create) on one row.
+
+```dart
+ListToolbar(
+  searchHint: 'Search tasks...',
+  onSearchChanged: (q) => notifier.updateFilter(searchQuery: q),
+  filterPanel: const AllTasksFilterPanel(),
+  activeFilterCount: count,
+  activeFilters: chips,
+  onReset: () => notifier.reset(), // sheet Reset button
+  viewModeControl: TasksViewModeToggle(...), // optional
+);
+```
+
+Overflow rules:
+- Pane width `< 360`: icon-only create/filter (with `FTooltip`) via `ListToolbarLayout.iconOnly`.
+- Window width `< 400`: filters open in a bottom `FSheet` (drag handle + Reset/Done).
+- Wider panes: filters open in an `FPopover` anchored to the filter button.
+- Active-filter chips always render under the toolbar row when non-empty.
+
+## Adaptive Drag Pattern
+
+Board (and similar) cards use immediate drag on desktop and long-press drag on touch:
+
+```dart
+Widget _buildDraggable({required Widget child, required Widget feedback}) {
+  if (PlatformUtils.isDesktop) {
+    return Draggable<Task>(
+      data: task,
+      feedback: feedback,
+      childWhenDragging: Opacity(opacity: 0.35, child: child),
+      child: child,
+    );
+  }
+  return LongPressDraggable<Task>(
+    data: task,
+    feedback: feedback,
+    childWhenDragging: Opacity(opacity: 0.35, child: child),
+    child: child,
+  );
+}
+```
+
+Gotchas:
+- Desktop: `SystemMouseCursors.grab` / `grabbing` on board cards.
+- Touch: long-press avoids fighting vertical scroll / page swipe.
+- Pair with edge auto-scroll while dragging in compact PageView boards.
+
 ## Mandatory Follow-Up
 
 When a new pattern is introduced in production code, add it here with:

@@ -66,11 +66,17 @@ class _AgendaTaskTileState extends ConsumerState<AgendaTaskTile> {
               padding: EdgeInsets.all(AppConstants.spacing.large),
               child: Row(
                 children: [
-                  fu.FCheckbox(
-                    value: widget.item.isCompleted,
-                    onChange: widget.item.isCompleted ? null : (_) => _onToggle(),
+                  SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Center(
+                      child: fu.FCheckbox(
+                        value: widget.item.isCompleted,
+                        onChange: widget.item.isCompleted ? null : (_) => _onToggle(),
+                      ),
+                    ),
                   ),
-                  SizedBox(width: AppConstants.spacing.regular),
+                  SizedBox(width: AppConstants.spacing.small),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

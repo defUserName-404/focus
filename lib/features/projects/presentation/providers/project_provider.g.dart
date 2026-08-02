@@ -37,7 +37,7 @@ final class ProjectListFilterProvider extends $NotifierProvider<ProjectListFilte
   }
 }
 
-String _$projectListFilterHash() => r'1bde76ced7bafe610c8d65a86b6c344528bdf76a';
+String _$projectListFilterHash() => r'f163a35a4b18c82b242119466b56527657f7c179';
 
 abstract class _$ProjectListFilter extends $Notifier<ProjectListFilterState> {
   ProjectListFilterState build();

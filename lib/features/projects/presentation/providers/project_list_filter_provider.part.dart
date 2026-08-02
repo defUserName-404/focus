@@ -24,4 +24,8 @@ class ProjectListFilter extends _$ProjectListFilter {
   void clearStatusFilter() {
     state = state.copyWith(statusFilter: null);
   }
+
+  void reset() {
+    state = const ProjectListFilterState();
+  }
 }
