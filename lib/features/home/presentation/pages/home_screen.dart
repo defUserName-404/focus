@@ -22,6 +22,7 @@ import '../widgets/home_onboarding_card.dart';
 import '../widgets/quick_session_button.dart';
 import '../widgets/today_agenda_section.dart';
 import '../widgets/upcoming_calendar_card.dart';
+import '../widgets/year_activity_graph.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -63,6 +64,7 @@ class HomeScreen extends ConsumerWidget {
             spacing: AppConstants.spacing.regular,
             children: [
               const QuickSessionButton(),
+              const YearActivityGraph(),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -118,7 +120,7 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
       ),
-      child: ConstrainedContent(maxWidth: 840, child: SingleChildScrollView(child: body)),
+      child: ConstrainedContent(child: SingleChildScrollView(child: body)),
     );
   }
 }

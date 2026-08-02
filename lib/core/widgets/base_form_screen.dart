@@ -67,7 +67,11 @@ class BaseFormScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                FHeaderAction.back(onPress: () => _dismiss(context)),
+                FButton.icon(
+                  variant: .ghost,
+                  onPress: () => _dismiss(context),
+                  child: const Icon(FLucideIcons.arrowLeft),
+                ),
                 SizedBox(width: AppConstants.spacing.small),
                 Expanded(
                   child: Text(title, style: context.typography.xl.copyWith(fontWeight: FontWeight.w700)),

@@ -169,7 +169,7 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
     }
     return LayoutBuilder(
       builder: (context, constraints) {
-        final usePaged = context.isCompact || constraints.maxWidth < 720;
+        final usePaged = context.isCompact;
         final board = usePaged
             ? Column(
                 children: [
@@ -229,30 +229,33 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
                   ),
                 ],
               )
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final status in TaskStatus.values) ...[
-                    if (status != TaskStatus.values.first) SizedBox(width: AppConstants.spacing.small),
-                    Expanded(
-                      child: _BoardColumn(
-                        status: status,
-                        tasks: columns[status]!,
-                        selectedTaskId: widget.selectedTaskId,
-                        onOpenTask: _openTask,
-                        onDragStarted: _onDragStarted,
-                        onDragEnded: _onDragEnded,
-                        onDragUpdate: _onDragUpdate,
-                        onDrop: (task, insertIndex) => _moveTask(
-                          task: task,
-                          targetStatus: status,
-                          insertIndex: insertIndex,
-                          targetColumn: columns[status]!,
-                        ),
+            : ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.only(right: AppConstants.spacing.small),
+                itemCount: TaskStatus.values.length,
+                separatorBuilder: (_, _) => SizedBox(width: AppConstants.spacing.small),
+                itemBuilder: (context, index) {
+                  final status = TaskStatus.values[index];
+                  final columnWidth = (constraints.maxWidth / TaskStatus.values.length).clamp(200.0, 280.0).toDouble();
+                  return SizedBox(
+                    width: columnWidth,
+                    child: _BoardColumn(
+                      status: status,
+                      tasks: columns[status]!,
+                      selectedTaskId: widget.selectedTaskId,
+                      onOpenTask: _openTask,
+                      onDragStarted: _onDragStarted,
+                      onDragEnded: _onDragEnded,
+                      onDragUpdate: _onDragUpdate,
+                      onDrop: (task, insertIndex) => _moveTask(
+                        task: task,
+                        targetStatus: status,
+                        insertIndex: insertIndex,
+                        targetColumn: columns[status]!,
                       ),
                     ),
-                  ],
-                ],
+                  );
+                },
               );
         return CallbackShortcuts(
           bindings: {
@@ -575,17 +578,25 @@ class _BoardCardState extends State<_BoardCard> {
     final card = AppCard(
       onTap: widget.onTap,
       isCompleted: widget.task.isCompleted,
+      dense: true,
       mouseCursor: _dragging ? SystemMouseCursors.grabbing : SystemMouseCursors.grab,
       title: Text(widget.task.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-      trailing: TaskPriorityBadge(priority: widget.task.priority),
-      subtitle: (widget.task.description != null && widget.task.description!.isNotEmpty)
-          ? Text(
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TaskPriorityBadge(priority: widget.task.priority),
+          if (widget.task.description != null && widget.task.description!.isNotEmpty) ...[
+            SizedBox(height: AppConstants.spacing.extraSmall),
+            Text(
               widget.task.description!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
-            )
-          : null,
+            ),
+          ],
+        ],
+      ),
     );
 
     final feedback = Material(

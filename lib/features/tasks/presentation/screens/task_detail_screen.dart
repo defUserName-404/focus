@@ -13,6 +13,7 @@ import '../../../session/domain/entities/session_state.dart';
 import '../../../session/presentation/commands/focus_commands.dart';
 import '../../../session/presentation/providers/focus_session_provider.dart';
 import '../../domain/entities/task_stats.dart';
+import '../../domain/entities/task_extensions.dart';
 import '../commands/task_commands.dart';
 import '../providers/task_provider.dart';
 import '../providers/task_stats_provider.dart';
@@ -96,7 +97,16 @@ class TaskDetailScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: AppConstants.spacing.regular,
             children: [
-              TaskSummarySection(task: task, projectName: project?.title, projectId: project?.id),
+              TaskSummarySection(
+                task: task,
+                projectName: project?.title,
+                projectId: project?.id,
+                onStatusChanged: (status) {
+                  ref
+                      .read(taskProvider(_projectIdString).notifier)
+                      .updateTask(task.copyWith(status: status, updatedAt: DateTime.now()));
+                },
+              ),
               SectionHeader(title: 'Stats'),
               TaskStatsRow(stats: stats),
               SizedBox(height: AppConstants.spacing.regular),
@@ -122,7 +132,11 @@ class TaskDetailScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    fu.FHeaderAction.back(onPress: () => _handleClose(context)),
+                    fu.FButton.icon(
+                      variant: .ghost,
+                      onPress: () => _handleClose(context),
+                      child: const Icon(fu.FLucideIcons.arrowLeft),
+                    ),
                     SizedBox(width: AppConstants.spacing.small),
                     Expanded(
                       child: Text(

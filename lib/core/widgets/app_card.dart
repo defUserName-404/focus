@@ -86,7 +86,7 @@ class _AppCardState extends State<AppCard> {
                           ),
                           if (widget.trailing != null) ...[
                             SizedBox(width: AppConstants.spacing.regular),
-                            Flexible(fit: FlexFit.loose, child: widget.trailing!),
+                            widget.trailing!,
                           ],
                         ],
                       ),

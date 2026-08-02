@@ -248,12 +248,14 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             ),
             child: Row(
               children: [
-                fu.FHeaderAction.back(
+                fu.FButton.icon(
+                  variant: .ghost,
                   onPress: () {
                     if (widget.onClose != null) {
                       widget.onClose!();
                     }
                   },
+                  child: const Icon(fu.FLucideIcons.arrowLeft),
                 ),
                 SizedBox(width: AppConstants.spacing.small),
                 Expanded(

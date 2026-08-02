@@ -3,19 +3,22 @@ import 'package:forui/forui.dart' as fu;
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/datetime_formatter.dart';
+import '../../../../core/widgets/filter_select.dart';
 import '../../../../core/widgets/meta_chip.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
 import '../../domain/entities/task.dart';
+import '../../domain/entities/task_status.dart';
 import 'task_priority_badge.dart';
 
 class TaskSummarySection extends StatelessWidget {
   final Task task;
   final String? projectName;
   final int? projectId;
+  final ValueChanged<TaskStatus>? onStatusChanged;
 
-  const TaskSummarySection({super.key, required this.task, this.projectName, this.projectId});
+  const TaskSummarySection({super.key, required this.task, this.projectName, this.projectId, this.onStatusChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -32,35 +35,47 @@ class TaskSummarySection extends StatelessWidget {
           spacing: AppConstants.spacing.regular,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              task.title,
-              style: context.typography.lg.copyWith(fontWeight: FontWeight.bold),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (projectName != null) ...[
-              SizedBox(width: AppConstants.spacing.regular),
-              Padding(
-                padding: EdgeInsets.only(top: AppConstants.spacing.small),
-                child: fu.FButton(
-                  onPress: () {
-                    if (projectId != null) {
-                      context.push(AppRoutes.projectDetailPath(projectId!));
-                    }
-                  },
-                  variant: .ghost,
-                  child: MetaChip(icon: fu.FLucideIcons.folder, label: projectName!),
-                ),
+            Expanded(
+              child: Text(
+                task.title,
+                style: context.typography.lg.copyWith(fontWeight: FontWeight.bold),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
+            ),
+            if (projectName != null)
+              fu.FButton(
+                onPress: () {
+                  if (projectId != null) {
+                    context.push(AppRoutes.projectDetailPath(projectId!));
+                  }
+                },
+                variant: .ghost,
+                mainAxisSize: .min,
+                child: MetaChip(icon: fu.FLucideIcons.folder, label: projectName!),
+              ),
           ],
         ),
 
-        Row(
+        Wrap(
           spacing: AppConstants.spacing.regular,
+          runSpacing: AppConstants.spacing.small,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             TaskPriorityBadge(priority: task.priority),
-            if (task.isCompleted) fu.FBadge(variant: .primary, child: Text('Completed')),
+            if (onStatusChanged != null)
+              SizedBox(
+                width: 160,
+                child: FilterSelect<TaskStatus>(
+                  selected: task.status,
+                  onChanged: onStatusChanged!,
+                  options: TaskStatus.values,
+                  hint: 'Status',
+                  labelBuilder: (status) => status.label,
+                ),
+              )
+            else if (task.isCompleted)
+              fu.FBadge(variant: .primary, child: const Text('Completed')),
           ],
         ),
 
