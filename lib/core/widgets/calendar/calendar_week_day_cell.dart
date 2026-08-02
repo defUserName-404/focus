@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/config/theme/app_theme.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/date_time_constants.dart';
+import '../../config/theme/app_theme.dart';
+import '../../constants/app_constants.dart';
+import '../../constants/date_time_constants.dart';
 
 class CalendarWeekDayCell extends StatelessWidget {
   final DateTime date;
   final int taskCount;
+  final int sessionCount;
   final bool isToday;
   final bool isSelected;
 
@@ -14,6 +15,7 @@ class CalendarWeekDayCell extends StatelessWidget {
     super.key,
     required this.date,
     required this.taskCount,
+    this.sessionCount = 0,
     required this.isToday,
     required this.isSelected,
   });
@@ -21,7 +23,7 @@ class CalendarWeekDayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dayLabel = DateTimeConstants.shortWeekdayNames[date.weekday - 1];
-    final indicatorCount = taskCount.clamp(0, 3);
+    final indicatorCount = (taskCount + (sessionCount > 0 ? 1 : 0)).clamp(0, 3);
 
     return Container(
       height: 64,
@@ -64,6 +66,8 @@ class CalendarWeekDayCell extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? context.colors.primaryForeground.withValues(alpha: 0.85)
+                          : (i == 0 && sessionCount > 0 && taskCount == 0)
+                          ? context.colors.secondary
                           : context.colors.primary,
                       shape: BoxShape.circle,
                     ),

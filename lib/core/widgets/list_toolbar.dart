@@ -6,11 +6,14 @@ import '../constants/app_constants.dart';
 import '../utils/platform_utils.dart';
 import 'app_search_bar.dart';
 
-/// One-line list chrome: search + filter trigger (+ optional create).
+/// One-line list chrome: search + optional view switcher + filter (+ create).
 ///
 /// Compact shows filters in a bottom [fu.showFSheet]. Expanded shows them in
 /// an [fu.FPopover] anchored to the filter button. Active-filter chips render
 /// under the toolbar when [activeFilters] is non-empty.
+///
+/// Pass [viewModeControl] to slot a segmented List/Board/Calendar (or similar)
+/// control into the same toolbar row instead of stacking another filter row.
 class ListToolbar extends StatelessWidget {
   final String searchHint;
   final ValueChanged<String> onSearchChanged;
@@ -19,6 +22,7 @@ class ListToolbar extends StatelessWidget {
   final List<Widget> activeFilters;
   final VoidCallback? onCreate;
   final String createLabel;
+  final Widget? viewModeControl;
 
   const ListToolbar({
     super.key,
@@ -29,6 +33,7 @@ class ListToolbar extends StatelessWidget {
     this.activeFilters = const [],
     this.onCreate,
     this.createLabel = 'Create',
+    this.viewModeControl,
   });
 
   @override
@@ -41,6 +46,7 @@ class ListToolbar extends StatelessWidget {
             Expanded(
               child: AppSearchBar(hint: searchHint, onChanged: onSearchChanged),
             ),
+            if (viewModeControl != null) ...[SizedBox(width: AppConstants.spacing.small), viewModeControl!],
             SizedBox(width: AppConstants.spacing.small),
             _FilterTrigger(activeFilterCount: activeFilterCount, filterPanel: filterPanel),
             if (onCreate != null) ...[

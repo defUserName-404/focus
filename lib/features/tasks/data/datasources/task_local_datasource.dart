@@ -136,12 +136,8 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
         await (_db.update(_db.focusSessionTable)..where((t) => t.taskId.isIn(idsToDelete) & t.deletedAt.isNull()))
             .write(FocusSessionTableCompanion(deletedAt: Value(now)));
 
-        await (_db
-                .update(_db.taskCompletionTable)
-              ..where((t) => t.taskId.isIn(idsToDelete) & t.deletedAt.isNull()))
-            .write(
-              TaskCompletionTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
-            );
+        await (_db.update(_db.taskCompletionTable)..where((t) => t.taskId.isIn(idsToDelete) & t.deletedAt.isNull()))
+            .write(TaskCompletionTableCompanion(deletedAt: Value(now), updatedAt: Value(now)));
 
         await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(idsToDelete))).go();
 
@@ -314,10 +310,8 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
   @override
   Future<TaskCompletionTableData?> getCompletion(int taskId, String occurrenceDateKey) async {
     try {
-      return await (_db.select(_db.taskCompletionTable)..where(
-            (t) =>
-                t.taskId.equals(taskId) & t.occurrenceDate.equals(occurrenceDateKey) & t.deletedAt.isNull(),
-          ))
+      return await (_db.select(_db.taskCompletionTable)
+            ..where((t) => t.taskId.equals(taskId) & t.occurrenceDate.equals(occurrenceDateKey) & t.deletedAt.isNull()))
           .getSingleOrNull();
     } catch (e, st) {
       _log.error('getCompletion failed', tag: 'TaskLocalDS', error: e, stackTrace: st);
@@ -333,17 +327,17 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
         final dateKey = companion.occurrenceDate.value;
 
         // Prefer an existing live row (idempotent complete).
-        final live = await (_db.select(_db.taskCompletionTable)..where(
-              (t) => t.taskId.equals(taskId) & t.occurrenceDate.equals(dateKey) & t.deletedAt.isNull(),
-            ))
-            .getSingleOrNull();
+        final live =
+            await (_db.select(_db.taskCompletionTable)
+                  ..where((t) => t.taskId.equals(taskId) & t.occurrenceDate.equals(dateKey) & t.deletedAt.isNull()))
+                .getSingleOrNull();
         if (live != null) return live;
 
         // Revive a soft-deleted row for the same occurrence if present.
-        final tombstoned = await (_db.select(_db.taskCompletionTable)..where(
-              (t) => t.taskId.equals(taskId) & t.occurrenceDate.equals(dateKey) & t.deletedAt.isNotNull(),
-            ))
-            .getSingleOrNull();
+        final tombstoned =
+            await (_db.select(_db.taskCompletionTable)
+                  ..where((t) => t.taskId.equals(taskId) & t.occurrenceDate.equals(dateKey) & t.deletedAt.isNotNull()))
+                .getSingleOrNull();
         if (tombstoned != null) {
           final now = DateTime.now();
           await (_db.update(_db.taskCompletionTable)..where((t) => t.id.equals(tombstoned.id))).write(
@@ -353,9 +347,7 @@ class TaskLocalDataSourceImpl implements ITaskLocalDataSource {
               deletedAt: const Value(null),
             ),
           );
-          return (await (_db.select(
-            _db.taskCompletionTable,
-          )..where((t) => t.id.equals(tombstoned.id))).getSingle());
+          return (await (_db.select(_db.taskCompletionTable)..where((t) => t.id.equals(tombstoned.id))).getSingle());
         }
 
         final id = await _db.into(_db.taskCompletionTable).insert(companion);

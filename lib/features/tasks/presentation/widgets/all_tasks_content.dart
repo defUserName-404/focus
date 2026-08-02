@@ -9,8 +9,12 @@ import '../../../../core/widgets/list_toolbar.dart';
 import '../../domain/entities/all_tasks_filter_state.dart';
 import '../models/task_selection.dart';
 import '../providers/all_tasks_provider.dart';
+import '../providers/tasks_view_mode_provider.dart';
 import 'all_tasks_filter_panel.dart';
 import 'all_tasks_list.dart';
+import 'tasks_board_view.dart';
+import 'tasks_calendar_view.dart';
+import 'tasks_view_mode_toggle.dart';
 
 class AllTasksContent extends ConsumerWidget {
   final bool isEmbedded;
@@ -28,6 +32,9 @@ class AllTasksContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(allTasksFilterProvider);
     final activeCount = _activeFilterCount(filter);
+    final viewModeAsync = ref.watch(tasksViewModeProvider);
+    final viewMode = viewModeAsync.value ?? TasksViewMode.list;
+    final filteredAsync = ref.watch(filteredAllTasksProvider);
 
     return Column(
       children: [
@@ -36,6 +43,10 @@ class AllTasksContent extends ConsumerWidget {
           onSearchChanged: (query) {
             ref.read(allTasksFilterProvider.notifier).updateFilter(searchQuery: query);
           },
+          viewModeControl: TasksViewModeToggle(
+            mode: viewMode,
+            onChanged: (mode) => ref.read(tasksViewModeProvider.notifier).setMode(mode),
+          ),
           filterPanel: const AllTasksFilterPanel(),
           activeFilterCount: activeCount,
           activeFilters: [
@@ -64,7 +75,21 @@ class AllTasksContent extends ConsumerWidget {
         ),
         SizedBox(height: AppConstants.spacing.small),
         Expanded(
-          child: AllTasksList(selectedTaskId: selectedTaskId, onTaskSelected: onTaskSelected),
+          child: switch (viewMode) {
+            TasksViewMode.list => AllTasksList(selectedTaskId: selectedTaskId, onTaskSelected: onTaskSelected),
+            TasksViewMode.board => filteredAsync.when(
+              loading: () => const Center(child: fu.FCircularProgress()),
+              error: (err, _) => Center(child: Text('Error: $err')),
+              data: (tasks) =>
+                  TasksBoardView(tasks: tasks, selectedTaskId: selectedTaskId, onTaskSelected: onTaskSelected),
+            ),
+            TasksViewMode.calendar => filteredAsync.when(
+              loading: () => const Center(child: fu.FCircularProgress()),
+              error: (err, _) => Center(child: Text('Error: $err')),
+              data: (tasks) =>
+                  TasksCalendarView(tasks: tasks, selectedTaskId: selectedTaskId, onTaskSelected: onTaskSelected),
+            ),
+          },
         ),
       ],
     );

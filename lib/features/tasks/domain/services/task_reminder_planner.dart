@@ -23,11 +23,7 @@ class TaskReminderPlanner {
   /// Non-recurring tasks yield 0–1 entries based on [Task.endDate].
   /// Recurring tasks expand the next [windowSize] occurrences and apply the
   /// same lead logic relative to each occurrence datetime.
-  static List<DateTime> computeReminderTimes(
-    Task task, {
-    DateTime? now,
-    int windowSize = rollingWindowSize,
-  }) {
+  static List<DateTime> computeReminderTimes(Task task, {DateTime? now, int windowSize = rollingWindowSize}) {
     if (task.id == null || task.reminderMode == TaskReminderMode.none) {
       return const [];
     }
@@ -51,10 +47,11 @@ class TaskReminderPlanner {
 
     final from = DateTime(now.year, now.month, now.day);
     final to = from.add(rollingHorizon);
-    final occurrences = RecurrenceExpander.expand(task, from, to)
-        .where((o) => !o.isBefore(now))
-        .take(windowSize)
-        .toList();
+    final occurrences = RecurrenceExpander.expand(
+      task,
+      from,
+      to,
+    ).where((o) => !o.isBefore(now)).take(windowSize).toList();
 
     final reminders = <DateTime>[];
     for (final occurrence in occurrences) {

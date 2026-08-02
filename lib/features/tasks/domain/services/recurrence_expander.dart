@@ -27,9 +27,7 @@ class RecurrenceExpander {
     final second = timeSource?.second ?? 0;
 
     final dates = expandRule(rule: rule, anchor: anchor, from: windowStart, to: windowEnd);
-    return [
-      for (final d in dates) DateTime(d.year, d.month, d.day, hour, minute, second),
-    ];
+    return [for (final d in dates) DateTime(d.year, d.month, d.day, hour, minute, second)];
   }
 
   /// Expands a bare [rule] + [anchor] into date-only occurrence datetimes.

@@ -32,6 +32,9 @@ abstract final class SettingsKeys {
   /// Home calendar default view mode (`month` or `week`).
   static const String homeCalendarViewMode = 'home_calendar_view_mode';
 
+  /// Tasks screen view mode (`list`, `board`, or `calendar`).
+  static const String tasksViewMode = 'tasks_view_mode';
+
   /// Reports productivity insights window (`weekly` or `monthly`).
   static const String reportsInsightsWindowMode = 'reports_insights_window_mode';
 

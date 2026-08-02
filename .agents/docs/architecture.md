@@ -186,6 +186,18 @@ Current task schema also includes reminder configuration fields:
 - `reminder_mode` (enum-backed)
 - `custom_reminder_minutes_before` (nullable int)
 
+## Tasks Board / Calendar Architecture
+
+- Shared calendar primitives live in `lib/core/widgets/calendar/` (month grid, week strip, day cells,
+  agenda). They take `CalendarDayInfo` markers and optional typed `DragTarget` handlers — no feature
+  domain imports in core.
+- Home and Tasks calendars both consume those widgets. Grouping (deadlines + recurrence expansion +
+  session counts) is pure domain via `CalendarEventGrouping`.
+- Tasks view mode (`list` / `board` / `calendar`) is a settings-backed Riverpod preference
+  (`SettingsKeys.tasksViewMode`).
+- Board columns map 1:1 to `TaskStatus`; ordering uses sparse `sortOrder` (`SparseSortOrder`).
+- Project detail uses a local segmented tab: Overview / Tasks / Board / Milestones / Timeline.
+
 ## Notifications Architecture
 
 Primary file: `lib/core/services/notification_service.dart`

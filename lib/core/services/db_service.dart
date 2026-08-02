@@ -222,8 +222,10 @@ class AppDatabase extends _$AppDatabase {
         );
         await customStatement('ALTER TABLE task_table ADD COLUMN estimated_minutes INTEGER');
         await customStatement('ALTER TABLE task_table ADD COLUMN sort_order REAL NOT NULL DEFAULT 0.0');
-        await customStatement('ALTER TABLE task_table ADD COLUMN milestone_id INTEGER '
-            'REFERENCES milestone_table(id) ON DELETE SET NULL');
+        await customStatement(
+          'ALTER TABLE task_table ADD COLUMN milestone_id INTEGER '
+          'REFERENCES milestone_table(id) ON DELETE SET NULL',
+        );
 
         await customStatement(
           'ALTER TABLE project_table ADD COLUMN status INTEGER NOT NULL DEFAULT ${ProjectStatus.active.index}',
@@ -253,9 +255,7 @@ class AppDatabase extends _$AppDatabase {
       if (from < 8) {
         await customStatement('ALTER TABLE task_table ADD COLUMN recurrence_rule TEXT');
         await customStatement('ALTER TABLE task_table ADD COLUMN recurrence_anchor_date INTEGER');
-        await customStatement(
-          'ALTER TABLE task_table ADD COLUMN is_habit INTEGER NOT NULL DEFAULT 0',
-        );
+        await customStatement('ALTER TABLE task_table ADD COLUMN is_habit INTEGER NOT NULL DEFAULT 0');
 
         await m.createTable(taskCompletionTable);
 

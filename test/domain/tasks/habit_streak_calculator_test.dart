@@ -26,11 +26,7 @@ void main() {
       final result = HabitStreakCalculator.calculate(
         rule: daily,
         anchor: anchor,
-        completionDates: [
-          DateTime(2026, 8, 1),
-          DateTime(2026, 8, 2),
-          DateTime(2026, 8, 4),
-        ],
+        completionDates: [DateTime(2026, 8, 1), DateTime(2026, 8, 2), DateTime(2026, 8, 4)],
         from: DateTime(2026, 8, 1),
         to: DateTime(2026, 8, 4),
         now: DateTime(2026, 8, 4),
@@ -64,11 +60,7 @@ void main() {
       final result = HabitStreakCalculator.calculate(
         rule: daily,
         anchor: anchor,
-        completionDates: [
-          DateTime(2026, 8, 1),
-          DateTime(2026, 8, 2),
-          DateTime(2026, 8, 3),
-        ],
+        completionDates: [DateTime(2026, 8, 1), DateTime(2026, 8, 2), DateTime(2026, 8, 3)],
         from: DateTime(2026, 8, 1),
         to: DateTime(2026, 8, 4),
         now: DateTime(2026, 8, 4),
@@ -85,12 +77,7 @@ void main() {
       final result = HabitStreakCalculator.calculate(
         rule: weekly,
         anchor: DateTime(2026, 8, 3),
-        completionDates: [
-          DateTime(2026, 8, 3),
-          DateTime(2026, 8, 5),
-          DateTime(2026, 8, 7),
-          DateTime(2026, 8, 10),
-        ],
+        completionDates: [DateTime(2026, 8, 3), DateTime(2026, 8, 5), DateTime(2026, 8, 7), DateTime(2026, 8, 10)],
         from: DateTime(2026, 8, 1),
         to: DateTime(2026, 8, 14),
         now: DateTime(2026, 8, 11),
@@ -105,12 +92,7 @@ void main() {
       final result = HabitStreakCalculator.calculate(
         rule: daily,
         anchor: anchor,
-        completionDates: [
-          DateTime(2026, 8, 1),
-          DateTime(2026, 8, 2),
-          DateTime(2026, 8, 3),
-          DateTime(2026, 8, 5),
-        ],
+        completionDates: [DateTime(2026, 8, 1), DateTime(2026, 8, 2), DateTime(2026, 8, 3), DateTime(2026, 8, 5)],
         from: DateTime(2026, 8, 1),
         to: DateTime(2026, 8, 5),
         now: DateTime(2026, 8, 5),

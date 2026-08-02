@@ -59,9 +59,7 @@ class TaskNotificationService {
   Future<Result<void>> cancelTaskReminder(int taskId) async {
     try {
       for (var slot = 0; slot < NotificationConstants.taskReminderSlotStride; slot++) {
-        await _notificationService.cancelNotification(
-          NotificationConstants.taskReminderNotificationId(taskId, slot),
-        );
+        await _notificationService.cancelNotification(NotificationConstants.taskReminderNotificationId(taskId, slot));
       }
       return const Success(null);
     } catch (e, st) {

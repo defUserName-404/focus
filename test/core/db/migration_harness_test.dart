@@ -70,15 +70,7 @@ void main() {
     final completionColNames = completionCols.map((r) => r.read<String>('name')).toSet();
     expect(
       completionColNames,
-      containsAll({
-        'uuid',
-        'task_id',
-        'occurrence_date',
-        'completed_at',
-        'created_at',
-        'updated_at',
-        'deleted_at',
-      }),
+      containsAll({'uuid', 'task_id', 'occurrence_date', 'completed_at', 'created_at', 'updated_at', 'deleted_at'}),
     );
 
     final indexes = await db
@@ -207,10 +199,13 @@ void main() {
   test('migrates v6 schema to v8 backfilling status from is_completed', () async {
     final raw = sqlite3.openInMemory();
     _createV6Schema(raw);
-    raw.execute(
-      'INSERT INTO project_table (id, uuid, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-      [1, 'proj-uuid-1', 'V6 Project', 1700000000, 1700000000],
-    );
+    raw.execute('INSERT INTO project_table (id, uuid, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', [
+      1,
+      'proj-uuid-1',
+      'V6 Project',
+      1700000000,
+      1700000000,
+    ]);
     raw.execute(
       'INSERT INTO task_table '
       '(id, uuid, project_id, title, priority, depth, is_completed, reminder_mode, created_at, updated_at) '

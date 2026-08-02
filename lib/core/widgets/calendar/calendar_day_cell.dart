@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/config/theme/app_theme.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../config/theme/app_theme.dart';
+import '../../constants/app_constants.dart';
 
 class CalendarDayCell extends StatelessWidget {
   final int day;
   final bool hasTasks;
+  final bool hasSessions;
   final bool isToday;
   final bool isSelected;
 
@@ -13,6 +14,7 @@ class CalendarDayCell extends StatelessWidget {
     super.key,
     required this.day,
     required this.hasTasks,
+    this.hasSessions = false,
     required this.isToday,
     required this.isSelected,
   });
@@ -44,12 +46,26 @@ class CalendarDayCell extends StatelessWidget {
                   : context.colors.foreground,
             ),
           ),
-          if (hasTasks && !isSelected)
-            Container(
-              width: 4,
-              height: 4,
-              margin: const EdgeInsets.only(top: 1),
-              decoration: BoxDecoration(color: context.colors.primary, shape: BoxShape.circle),
+          if ((hasTasks || hasSessions) && !isSelected)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasTasks)
+                  Container(
+                    width: 4,
+                    height: 4,
+                    margin: const EdgeInsets.only(top: 1),
+                    decoration: BoxDecoration(color: context.colors.primary, shape: BoxShape.circle),
+                  ),
+                if (hasTasks && hasSessions) const SizedBox(width: 2),
+                if (hasSessions)
+                  Container(
+                    width: 4,
+                    height: 4,
+                    margin: const EdgeInsets.only(top: 1),
+                    decoration: BoxDecoration(color: context.colors.secondary, shape: BoxShape.circle),
+                  ),
+              ],
             ),
         ],
       ),
