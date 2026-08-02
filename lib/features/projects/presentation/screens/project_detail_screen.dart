@@ -138,7 +138,12 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       itemBuilder: (context, index) {
         final task = rootTasks[index];
         final subtasks = filteredTasks.where((t) => t.parentTaskId == task.id).toList();
-        return TaskCard(task: task, subtasks: subtasks, projectIdString: _projectIdString);
+        return TaskCard(
+          task: task,
+          subtasks: subtasks,
+          projectIdString: _projectIdString,
+          onTaskTap: () => TaskCommands.open(context, task),
+        );
       },
     );
   }
@@ -181,7 +186,15 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         children: [
           _buildTasksToolbar(filter),
           SizedBox(height: AppConstants.spacing.small),
-          Expanded(child: TasksBoardView(tasks: _boardTasks(filteredTasks))),
+          Expanded(
+            child: TasksBoardView(
+              tasks: _boardTasks(filteredTasks),
+              onTaskSelected: (selection) {
+                final task = filteredTasks.where((t) => t.id == selection.taskId).firstOrNull;
+                if (task != null) TaskCommands.open(context, task);
+              },
+            ),
+          ),
         ],
       ),
       ProjectDetailTab.milestones => ProjectMilestonesPanel(projectId: widget.projectId),

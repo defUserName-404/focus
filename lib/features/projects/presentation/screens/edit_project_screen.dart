@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:focus/core/utils/date_time_utils.dart';
-
+import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
@@ -86,7 +85,7 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _startDate,
-            onChange: (date) => setState(() => _startDate = date),
+            onChange: (date) => setState(() => _startDate = DateTimeUtils.normalizeLocal(date)),
           ),
           clearable: true,
         ),
@@ -96,7 +95,7 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
           hint: _deadline?.toDateString() ?? 'Select Deadline (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _deadline,
-            onChange: (date) => setState(() => _deadline = date),
+            onChange: (date) => setState(() => _deadline = DateTimeUtils.normalizeLocal(date)),
           ),
           validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           autovalidateMode: AutovalidateMode.onUnfocus,
@@ -114,8 +113,8 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
     final updated = widget.project.copyWith(
       title: title,
       description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-      startDate: _startDate,
-      deadline: _deadline,
+      startDate: DateTimeUtils.normalizeLocal(_startDate),
+      deadline: DateTimeUtils.normalizeLocal(_deadline),
       updatedAt: DateTimeUtils.now(),
     );
 

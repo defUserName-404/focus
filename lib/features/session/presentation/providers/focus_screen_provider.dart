@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/utils/platform_utils.dart';
 import '../../domain/entities/session_state.dart';
 import '../models/focus_screen_state.dart';
 import 'focus_session_provider.dart';
@@ -17,13 +18,12 @@ class FocusScreenNotifier extends _$FocusScreenNotifier {
   @override
   FocusScreenState build() {
     // Listen for session state changes to start/stop the inactivity timer.
-    // We only want immersive mode (hiding controls) when the session is RUNNING or ON_BREAK.
+    // Immersive hide is mobile-only so desktop always keeps transport visible.
     ref.listen(focusTimerProvider.select((s) => s?.state), (prev, next) {
       final isRunning = next == SessionState.running || next == SessionState.onBreak;
-      if (isRunning) {
+      if (isRunning && !PlatformUtils.isDesktop) {
         _startInactivityTimer();
       } else {
-        // If paused/idle/completed, show controls and stop timer.
         _inactivityTimer?.cancel();
         if (!state.isControlsVisible) {
           state = state.copyWith(isControlsVisible: true);
@@ -31,10 +31,9 @@ class FocusScreenNotifier extends _$FocusScreenNotifier {
       }
     });
 
-    // Check initial state
     final session = ref.read(focusTimerProvider);
     final isRunning = session?.state == SessionState.running || session?.state == SessionState.onBreak;
-    if (isRunning) {
+    if (isRunning && !PlatformUtils.isDesktop) {
       _startInactivityTimer();
     }
 
@@ -46,8 +45,8 @@ class FocusScreenNotifier extends _$FocusScreenNotifier {
   }
 
   void _startInactivityTimer() {
+    if (PlatformUtils.isDesktop) return;
     _inactivityTimer?.cancel();
-    // Only schedule if we are actually running
     final session = ref.read(focusTimerProvider);
     final isRunning = session?.state == SessionState.running || session?.state == SessionState.onBreak;
 

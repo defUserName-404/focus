@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
 import '../../../../core/widgets/filter_select.dart';
@@ -104,17 +105,21 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           hint: 'Select Start Date (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _startDate,
-            onChange: (date) => setState(() => _startDate = date),
+            onChange: (date) => setState(() => _startDate = DateTimeUtils.normalizeLocal(date)),
           ),
           clearable: true,
         ),
-        TimeField(label: 'Start Time', value: _startDate, onChanged: (date) => setState(() => _startDate = date)),
+        TimeField(
+          label: 'Start Time',
+          value: _startDate,
+          onChanged: (date) => setState(() => _startDate = DateTimeUtils.normalizeLocal(date)),
+        ),
         FDateField.calendar(
           label: const Text('End Date'),
           hint: 'Select End Date (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _endDate,
-            onChange: (date) => setState(() => _endDate = date),
+            onChange: (date) => setState(() => _endDate = DateTimeUtils.normalizeLocal(date)),
           ),
           validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           autovalidateMode: AutovalidateMode.onUnfocus,
@@ -184,8 +189,8 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
           priority: _priority,
           reminderMode: _reminderMode,
           customReminderMinutesBefore: customMinutesBefore == null ? null : customMinutesBefore * 60,
-          startDate: _startDate,
-          endDate: _endDate,
+          startDate: DateTimeUtils.normalizeLocal(_startDate),
+          endDate: DateTimeUtils.normalizeLocal(_endDate),
           depth: widget.depth,
           recurrenceRule: recurrenceRule,
           isHabit: _isHabit || recurrenceRule != null,

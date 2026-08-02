@@ -93,30 +93,23 @@ class TaskSummarySection extends StatelessWidget {
         if (start != null || end != null)
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: AppConstants.spacing.regular,
+            spacing: AppConstants.spacing.small,
             children: [
-              if (start != null)
-                MetaChip(icon: fu.FLucideIcons.calendarDays, label: 'Start: ${start.toDateTimeString()}'),
-              if (end != null) ...[
-                MetaChip(
-                  icon: fu.FLucideIcons.calendarClock,
-                  label: 'Due: ${end.toDateTimeString()}',
-                  isDestructive: isOverdue && !task.isCompleted,
+              MetaChip(
+                icon: fu.FLucideIcons.calendar,
+                label: _dateRangeLabel(start, end),
+                isDestructive: isOverdue && !task.isCompleted,
+              ),
+              if (isOverdue && !task.isCompleted && end != null) ...[
+                Icon(
+                  fu.FLucideIcons.triangleAlert,
+                  size: AppConstants.size.icon.extraSmall,
+                  color: context.colors.destructive,
                 ),
-                if (isOverdue && !task.isCompleted) ...[
-                  Icon(
-                    fu.FLucideIcons.triangleAlert,
-                    size: AppConstants.size.icon.extraSmall,
-                    color: context.colors.destructive,
-                  ),
-                  Text(
-                    end.toRelativeDueString(),
-                    style: context.typography.xs.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: context.colors.destructive,
-                    ),
-                  ),
-                ],
+                Text(
+                  end.toRelativeDueString(),
+                  style: context.typography.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.destructive),
+                ),
               ],
             ],
           ),
@@ -124,5 +117,13 @@ class TaskSummarySection extends StatelessWidget {
         const fu.FDivider(),
       ],
     );
+  }
+
+  String _dateRangeLabel(DateTime? start, DateTime? end) {
+    if (start != null && end != null) {
+      return '${start.toDateTimeString()} → ${end.toDateTimeString()}';
+    }
+    if (start != null) return start.toDateTimeString();
+    return end!.toDateTimeString();
   }
 }

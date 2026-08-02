@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:focus/core/utils/date_time_utils.dart';
-
+import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
@@ -116,7 +115,7 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _startDate,
-            onChange: (date) => setState(() => _startDate = date),
+            onChange: (date) => setState(() => _startDate = DateTimeUtils.normalizeLocal(date)),
           ),
           clearable: true,
         ),
@@ -126,7 +125,7 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
           hint: _endDate?.toDateString() ?? 'Select End Date (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _endDate,
-            onChange: (date) => setState(() => _endDate = date),
+            onChange: (date) => setState(() => _endDate = DateTimeUtils.normalizeLocal(date)),
           ),
           validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           autovalidateMode: AutovalidateMode.onUnfocus,
@@ -192,8 +191,8 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
       priority: _priority,
       reminderMode: _reminderMode,
       customReminderMinutesBefore: customMinutesBefore == null ? null : customMinutesBefore * 60,
-      startDate: _startDate,
-      endDate: _endDate,
+      startDate: DateTimeUtils.normalizeLocal(_startDate),
+      endDate: DateTimeUtils.normalizeLocal(_endDate),
       recurrenceRule: recurrenceRule,
       recurrenceAnchorDate: recurrenceRule != null
           ? (_startDate ?? widget.task.recurrenceAnchorDate ?? DateTimeUtils.now())

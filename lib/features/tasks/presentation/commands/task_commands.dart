@@ -9,6 +9,8 @@ import 'package:focus/core/utils/result.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
 import 'package:focus/features/tasks/domain/entities/today_agenda_item.dart';
 import 'package:focus/features/tasks/domain/services/task_service.dart';
+import 'package:focus/features/tasks/presentation/models/task_selection.dart';
+import 'package:focus/features/tasks/presentation/providers/selected_task_selection.dart';
 import 'package:focus/features/tasks/presentation/providers/task_provider.dart';
 import 'package:focus/features/tasks/presentation/providers/tasks_pane_form_provider.dart';
 
@@ -18,6 +20,7 @@ class TaskCommands {
       ProviderScope.containerOf(
         context,
       ).read(tasksPaneFormProvider.notifier).showCreate(projectId: projectId, parentTaskId: parentTaskId, depth: depth);
+      context.go(AppRoutes.tasks.path);
       return;
     }
 
@@ -38,6 +41,7 @@ class TaskCommands {
   static void createWithProject(BuildContext context) {
     if (!context.isCompact) {
       ProviderScope.containerOf(context).read(tasksPaneFormProvider.notifier).showCreate();
+      context.go(AppRoutes.tasks.path);
       return;
     }
     context.push(AppRoutes.createTaskWithProject.path);
@@ -47,9 +51,32 @@ class TaskCommands {
     if (task.id == null) return;
     if (!context.isCompact) {
       ProviderScope.containerOf(context).read(tasksPaneFormProvider.notifier).showEdit(task);
+      context.go(AppRoutes.tasks.path);
       return;
     }
     context.push(AppRoutes.editTaskPath(task.id!), extra: task);
+  }
+
+  /// Opens a task in the Tasks master-detail pane on desktop, or pushes the
+  /// full-screen detail route on compact.
+  static void open(BuildContext context, Task task) {
+    if (task.id == null) return;
+    if (!context.isCompact) {
+      final container = ProviderScope.containerOf(context);
+      container.read(tasksPaneFormProvider.notifier).clear();
+      container
+          .read(selectedTaskSelectionProvider.notifier)
+          .select(TaskSelection(taskId: task.id!, projectId: task.projectId));
+      context.go(AppRoutes.tasks.path);
+      return;
+    }
+    context.push(
+      Uri(
+        path: AppRoutes.taskDetailPath(task.id!),
+        queryParameters: {'projectId': task.projectId.toString()},
+      ).toString(),
+      extra: {'projectId': task.projectId},
+    );
   }
 
   static Future<void> delete(

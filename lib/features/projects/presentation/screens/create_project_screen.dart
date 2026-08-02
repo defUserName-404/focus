@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/widgets/base_form_screen.dart';
@@ -96,7 +97,7 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
           hint: 'Select Start Date (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _startDate,
-            onChange: (date) => setState(() => _startDate = date),
+            onChange: (date) => setState(() => _startDate = DateTimeUtils.normalizeLocal(date)),
           ),
           clearable: true,
         ),
@@ -106,7 +107,7 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
           hint: 'Select Deadline (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _deadline,
-            onChange: (date) => setState(() => _deadline = date),
+            onChange: (date) => setState(() => _deadline = DateTimeUtils.normalizeLocal(date)),
           ),
           validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           autovalidateMode: AutovalidateMode.onUnfocus,
@@ -129,8 +130,8 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
             template: template,
             title: title,
             description: description,
-            startDate: _startDate,
-            deadline: _deadline,
+            startDate: DateTimeUtils.normalizeLocal(_startDate),
+            deadline: DateTimeUtils.normalizeLocal(_deadline),
           );
       if (!mounted) return;
       switch (result) {
@@ -145,7 +146,12 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
     }
     final project = await ref
         .read(projectProvider.notifier)
-        .createProject(title: title, description: description, startDate: _startDate, deadline: _deadline);
+        .createProject(
+          title: title,
+          description: description,
+          startDate: DateTimeUtils.normalizeLocal(_startDate),
+          deadline: DateTimeUtils.normalizeLocal(_deadline),
+        );
     if (mounted) _finish(project);
   }
 }

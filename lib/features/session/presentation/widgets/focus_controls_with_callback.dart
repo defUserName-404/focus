@@ -87,15 +87,19 @@ class FocusControlsWithCallback extends ConsumerWidget {
               ),
             ),
           ),
-          FocusCircleIconButton(
-            icon: _centerIcon(progress),
-            size: 64,
-            color: context.colors.primaryForeground,
-            backgroundColor: context.colors.primary,
-            onTap: () {
-              ref.read(focusScreenProvider.notifier).onUserInteraction();
-              notifier.togglePlayPause();
-            },
+          AnimatedOpacity(
+            duration: AppConstants.animation.medium,
+            opacity: (showTransport && controlsVisible) || !showTransport ? 1.0 : 0.0,
+            child: FocusCircleIconButton(
+              icon: _centerIcon(progress),
+              size: 64,
+              color: context.colors.primaryForeground,
+              backgroundColor: context.colors.primary,
+              onTap: () {
+                ref.read(focusScreenProvider.notifier).onUserInteraction();
+                notifier.togglePlayPause();
+              },
+            ),
           ),
         ],
       ),

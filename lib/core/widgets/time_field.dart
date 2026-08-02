@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
 
+import '../utils/date_time_utils.dart';
+
 /// Reusable time picker field that pairs with an [fu.FDateField.calendar].
 ///
 /// Uses ForUI's picker-only time field for visual consistency with other
@@ -14,20 +16,21 @@ class TimeField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedTime = value == null ? null : fu.FTime.fromDateTime(value!);
+    final localValue = value == null ? null : DateTimeUtils.toLocalWallClock(value!);
+    final selectedTime = localValue == null ? null : fu.FTime.fromDateTime(localValue);
 
     return fu.FTimeField.picker(
       label: Text(label),
-      hint: value == null ? 'Pick date first' : 'Select time',
-      enabled: value != null,
+      hint: localValue == null ? 'Pick date first' : 'Select time',
+      enabled: localValue != null,
       control: fu.FTimeFieldControl.lifted(
         time: selectedTime,
         onChange: (time) {
-          if (time == null || value == null) return;
-          onChanged(time.withDate(value!));
+          if (time == null || localValue == null) return;
+          onChanged(DateTimeUtils.combineLocalDateAndTime(localValue, hour: time.hour, minute: time.minute));
         },
       ),
-      suffixBuilder: value == null
+      suffixBuilder: localValue == null
           ? null
           : (_, style, variants) => Padding(
               padding: const EdgeInsetsDirectional.only(end: 8),

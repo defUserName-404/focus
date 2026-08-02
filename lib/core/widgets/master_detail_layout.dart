@@ -47,12 +47,7 @@ class MasterDetailLayout extends StatelessWidget {
           builder: (context, _, child) => child!,
           child: master,
         ),
-        fu.FResizableRegion.flex(
-          flex: 1,
-          minFlex: 1,
-          builder: (context, _, child) => child!,
-          child: detail ?? emptyDetail,
-        ),
+        fu.FResizableRegion.flex(flex: 1, builder: (context, _, child) => child!, child: detail ?? emptyDetail),
       ],
     );
   }
