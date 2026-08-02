@@ -1,16 +1,18 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../config/theme/app_theme.dart';
 import '../constants/app_constants.dart';
-import '../utils/platform_utils.dart';
 import 'app_search_bar.dart';
+import 'filter_select.dart';
 
 /// One-line list chrome: search + optional view switcher + filter (+ create).
 ///
-/// Compact shows filters in a bottom [fu.showFSheet]. Expanded shows them in
-/// an [fu.FPopover] anchored to the filter button. Active-filter chips render
-/// under the toolbar when [activeFilters] is non-empty.
+/// Narrow panes (< 400) show filters in a bottom [fu.showFSheet]. Wider panes
+/// show them in an [fu.FPopover] anchored to the filter button. Active-filter
+/// chips render under the toolbar when [activeFilters] is non-empty.
 ///
 /// Pass [viewModeControl] to slot a segmented List/Board/Calendar (or similar)
 /// control into the same toolbar row instead of stacking another filter row.
@@ -41,25 +43,44 @@ class ListToolbar extends StatelessWidget {
     return Column(
       crossAxisAlignment: .stretch,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: AppSearchBar(hint: searchHint, onChanged: onSearchChanged),
-            ),
-            if (viewModeControl != null) ...[SizedBox(width: AppConstants.spacing.small), viewModeControl!],
-            SizedBox(width: AppConstants.spacing.small),
-            _FilterTrigger(activeFilterCount: activeFilterCount, filterPanel: filterPanel),
-            if (onCreate != null) ...[
-              SizedBox(width: AppConstants.spacing.small),
-              fu.FButton(
-                size: .sm,
-                mainAxisSize: .min,
-                prefix: const Icon(fu.FLucideIcons.plus),
-                onPress: onCreate,
-                child: Text(createLabel),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final narrow = constraints.maxWidth < 360;
+            return ListToolbarLayout(
+              iconOnly: narrow,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AppSearchBar(hint: searchHint, onChanged: onSearchChanged),
+                  ),
+                  if (viewModeControl != null) ...[SizedBox(width: AppConstants.spacing.small), viewModeControl!],
+                  SizedBox(width: AppConstants.spacing.small),
+                  _FilterTrigger(activeFilterCount: activeFilterCount, filterPanel: filterPanel),
+                  if (onCreate != null) ...[
+                    SizedBox(width: AppConstants.spacing.small),
+                    if (narrow)
+                      fu.FTooltip(
+                        tipBuilder: (context, _) => Text(createLabel),
+                        child: fu.FButton.icon(
+                          size: .sm,
+                          semanticsLabel: createLabel,
+                          onPress: onCreate,
+                          child: const Icon(fu.FLucideIcons.plus),
+                        ),
+                      )
+                    else
+                      fu.FButton(
+                        size: .sm,
+                        mainAxisSize: .min,
+                        prefix: const Icon(fu.FLucideIcons.plus),
+                        onPress: onCreate,
+                        child: Text(createLabel),
+                      ),
+                  ],
+                ],
               ),
-            ],
-          ],
+            );
+          },
         ),
         if (activeFilters.isNotEmpty) ...[
           SizedBox(height: AppConstants.spacing.small),
@@ -68,6 +89,20 @@ class ListToolbar extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Density signal for toolbar children (e.g. [TasksViewModeToggle]).
+class ListToolbarLayout extends InheritedWidget {
+  final bool iconOnly;
+
+  const ListToolbarLayout({super.key, required this.iconOnly, required super.child});
+
+  static bool iconOnlyOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<ListToolbarLayout>()?.iconOnly ?? false;
+  }
+
+  @override
+  bool updateShouldNotify(ListToolbarLayout oldWidget) => iconOnly != oldWidget.iconOnly;
 }
 
 class _FilterTrigger extends StatefulWidget {
@@ -82,6 +117,7 @@ class _FilterTrigger extends StatefulWidget {
 
 class _FilterTriggerState extends State<_FilterTrigger> with SingleTickerProviderStateMixin {
   late final fu.FPopoverController _popoverController = fu.FPopoverController(vsync: this);
+  final Object _groupId = Object();
 
   @override
   void dispose() {
@@ -103,7 +139,7 @@ class _FilterTriggerState extends State<_FilterTrigger> with SingleTickerProvide
             children: [
               Text('Filters', style: context.typography.lg.copyWith(fontWeight: FontWeight.w700)),
               SizedBox(height: AppConstants.spacing.regular),
-              widget.filterPanel,
+              FilterSelectGroup(groupId: _groupId, child: widget.filterPanel),
             ],
           ),
         ),
@@ -113,25 +149,33 @@ class _FilterTriggerState extends State<_FilterTrigger> with SingleTickerProvide
 
   @override
   Widget build(BuildContext context) {
+    final paneWidth = MediaQuery.sizeOf(context).width;
+    final useSheet = paneWidth < 400;
+    final popoverMaxWidth = math.min(360.0, paneWidth - 32);
     final label = widget.activeFilterCount > 0 ? 'Filters (${widget.activeFilterCount})' : 'Filters';
     final button = fu.FButton(
       size: .sm,
       mainAxisSize: .min,
       variant: widget.activeFilterCount > 0 ? .secondary : .outline,
       prefix: const Icon(fu.FLucideIcons.listFilter),
-      onPress: context.isCompact ? _openSheet : _popoverController.toggle,
+      onPress: useSheet ? _openSheet : _popoverController.toggle,
       child: Text(label),
     );
 
-    if (context.isCompact) return button;
+    if (useSheet) return button;
 
     return fu.FPopover(
       control: fu.FPopoverControl.managed(controller: _popoverController),
+      groupId: _groupId,
+      hideRegion: fu.FPopoverHideRegion.excludeChild,
       popoverAnchor: .topRight,
       childAnchor: .bottomRight,
       popoverBuilder: (context, _) => ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
-        child: Padding(padding: EdgeInsets.all(AppConstants.spacing.regular), child: widget.filterPanel),
+        constraints: BoxConstraints(maxWidth: popoverMaxWidth),
+        child: Padding(
+          padding: EdgeInsets.all(AppConstants.spacing.regular),
+          child: FilterSelectGroup(groupId: _groupId, child: widget.filterPanel),
+        ),
       ),
       child: button,
     );

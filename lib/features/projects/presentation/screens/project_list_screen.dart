@@ -9,6 +9,7 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/constrained_content.dart';
 import '../../../../core/widgets/list_toolbar.dart';
+import '../../domain/entities/project_list_filter_state.dart';
 import '../commands/project_commands.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_card.dart';
@@ -22,9 +23,18 @@ class ProjectListScreen extends ConsumerWidget {
 
   bool get _isEmbedded => onProjectSelected != null;
 
+  int _activeFilterCount(ProjectListFilterState filter) {
+    var count = 0;
+    if (filter.sortCriteria != ProjectSortCriteria.recentlyModified) count++;
+    if (filter.sortOrder != ProjectSortOrder.none) count++;
+    return count;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filteredAsync = ref.watch(filteredProjectListProvider);
+    final filter = ref.watch(projectListFilterProvider);
+    final activeCount = _activeFilterCount(filter);
 
     final content = ConstrainedContent(
       maxWidth: _isEmbedded ? double.infinity : 980,
@@ -40,6 +50,30 @@ class ProjectListScreen extends ConsumerWidget {
               ref.read(projectListFilterProvider.notifier).updateFilter(searchQuery: query);
             },
             filterPanel: const ProjectFilterPanel(),
+            activeFilterCount: activeCount,
+            activeFilters: [
+              if (filter.sortCriteria != ProjectSortCriteria.recentlyModified)
+                fu.FButton(
+                  size: .xs,
+                  mainAxisSize: .min,
+                  variant: .secondary,
+                  suffix: const Icon(fu.FLucideIcons.x),
+                  onPress: () => ref
+                      .read(projectListFilterProvider.notifier)
+                      .updateFilter(sortCriteria: ProjectSortCriteria.recentlyModified),
+                  child: Text(filter.sortCriteria.label),
+                ),
+              if (filter.sortOrder != ProjectSortOrder.none)
+                fu.FButton(
+                  size: .xs,
+                  mainAxisSize: .min,
+                  variant: .secondary,
+                  suffix: const Icon(fu.FLucideIcons.x),
+                  onPress: () =>
+                      ref.read(projectListFilterProvider.notifier).updateFilter(sortOrder: ProjectSortOrder.none),
+                  child: Text(filter.sortOrder.label),
+                ),
+            ],
             onCreate: () => ProjectCommands.create(context),
             createLabel: 'Create Project',
           ),
