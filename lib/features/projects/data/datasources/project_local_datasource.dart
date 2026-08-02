@@ -84,12 +84,8 @@ class ProjectLocalDataSourceImpl implements IProjectLocalDataSource {
             FocusSessionTableCompanion(deletedAt: Value(now)),
           );
 
-          await (_db
-                  .update(_db.taskCompletionTable)
-                ..where((t) => t.taskId.isIn(taskIds) & t.deletedAt.isNull()))
-              .write(
-                TaskCompletionTableCompanion(deletedAt: Value(now), updatedAt: Value(now)),
-              );
+          await (_db.update(_db.taskCompletionTable)..where((t) => t.taskId.isIn(taskIds) & t.deletedAt.isNull()))
+              .write(TaskCompletionTableCompanion(deletedAt: Value(now), updatedAt: Value(now)));
 
           await (_db.delete(_db.taskTagTable)..where((t) => t.taskId.isIn(taskIds))).go();
 

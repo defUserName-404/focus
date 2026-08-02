@@ -55,14 +55,10 @@ extension TaskCopyWith on Task {
     startDate: startDate == _taskCopyWithUnset ? this.startDate : startDate as DateTime?,
     endDate: endDate == _taskCopyWithUnset ? this.endDate : endDate as DateTime?,
     depth: depth ?? this.depth,
-    estimatedMinutes: estimatedMinutes == _taskCopyWithUnset
-        ? this.estimatedMinutes
-        : estimatedMinutes as int?,
+    estimatedMinutes: estimatedMinutes == _taskCopyWithUnset ? this.estimatedMinutes : estimatedMinutes as int?,
     sortOrder: sortOrder ?? this.sortOrder,
     milestoneId: milestoneId == _taskCopyWithUnset ? this.milestoneId : milestoneId as int?,
-    recurrenceRule: recurrenceRule == _taskCopyWithUnset
-        ? this.recurrenceRule
-        : recurrenceRule as RecurrenceRule?,
+    recurrenceRule: recurrenceRule == _taskCopyWithUnset ? this.recurrenceRule : recurrenceRule as RecurrenceRule?,
     recurrenceAnchorDate: recurrenceAnchorDate == _taskCopyWithUnset
         ? this.recurrenceAnchorDate
         : recurrenceAnchorDate as DateTime?,

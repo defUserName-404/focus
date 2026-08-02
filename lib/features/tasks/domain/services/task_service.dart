@@ -34,8 +34,7 @@ class TaskService {
 
   Future<List<TaskCompletion>> getCompletionsForTask(int taskId) => _repository.getCompletionsForTask(taskId);
 
-  Stream<List<TaskCompletion>> watchCompletionsForTask(int taskId) =>
-      _repository.watchCompletionsForTask(taskId);
+  Stream<List<TaskCompletion>> watchCompletionsForTask(int taskId) => _repository.watchCompletionsForTask(taskId);
 
   //  Write
 
@@ -168,18 +167,10 @@ class TaskService {
       );
       final saved = await _repository.upsertCompletion(completion);
       await _taskNotificationService.scheduleTaskReminder(task);
-      _log.info(
-        'Occurrence completed for task $taskId on ${dateOnly.toIso8601String()}',
-        tag: 'TaskService',
-      );
+      _log.info('Occurrence completed for task $taskId on ${dateOnly.toIso8601String()}', tag: 'TaskService');
       return Success(saved);
     } catch (e, st) {
-      _log.error(
-        'Failed to complete occurrence for task $taskId',
-        tag: 'TaskService',
-        error: e,
-        stackTrace: st,
-      );
+      _log.error('Failed to complete occurrence for task $taskId', tag: 'TaskService', error: e, stackTrace: st);
       return Failure(DatabaseFailure('Failed to complete occurrence', error: e, stackTrace: st));
     }
   }

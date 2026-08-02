@@ -29,7 +29,8 @@ class TagLocalDataSourceImpl implements ITagLocalDataSource {
 
   @override
   Future<List<TagTableData>> getAllTags() async {
-    return await (_db.select(_db.tagTable)..where((t) => t.deletedAt.isNull())
+    return await (_db.select(_db.tagTable)
+          ..where((t) => t.deletedAt.isNull())
           ..orderBy([(t) => OrderingTerm.asc(t.name)]))
         .get();
   }
@@ -41,11 +42,10 @@ class TagLocalDataSourceImpl implements ITagLocalDataSource {
 
   @override
   Future<List<TagTableData>> getTagsForTask(int taskId) async {
-    final query = _db.select(_db.tagTable).join([
-      innerJoin(_db.taskTagTable, _db.taskTagTable.tagId.equalsExp(_db.tagTable.id)),
-    ])
-      ..where(_db.taskTagTable.taskId.equals(taskId) & _db.tagTable.deletedAt.isNull())
-      ..orderBy([OrderingTerm.asc(_db.tagTable.name)]);
+    final query =
+        _db.select(_db.tagTable).join([innerJoin(_db.taskTagTable, _db.taskTagTable.tagId.equalsExp(_db.tagTable.id))])
+          ..where(_db.taskTagTable.taskId.equals(taskId) & _db.tagTable.deletedAt.isNull())
+          ..orderBy([OrderingTerm.asc(_db.tagTable.name)]);
     return query.map((row) => row.readTable(_db.tagTable)).get();
   }
 

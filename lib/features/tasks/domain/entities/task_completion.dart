@@ -28,14 +28,5 @@ class TaskCompletion extends Equatable {
   });
 
   @override
-  List<Object?> get props => [
-    id,
-    uuid,
-    taskId,
-    occurrenceDate,
-    completedAt,
-    createdAt,
-    updatedAt,
-    deletedAt,
-  ];
+  List<Object?> get props => [id, uuid, taskId, occurrenceDate, completedAt, createdAt, updatedAt, deletedAt];
 }

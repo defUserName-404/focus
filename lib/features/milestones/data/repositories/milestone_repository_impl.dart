@@ -63,8 +63,6 @@ class MilestoneRepositoryImpl implements IMilestoneRepository {
 
   @override
   Stream<List<Milestone>> watchMilestonesByProjectId(int projectId) {
-    return _local
-        .watchMilestonesByProjectId(projectId)
-        .map((rows) => rows.map((r) => r.toDomain()).toList());
+    return _local.watchMilestonesByProjectId(projectId).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 }

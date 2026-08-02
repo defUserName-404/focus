@@ -48,27 +48,16 @@ class HabitStreakCalculator {
     final windowFrom = _dateOnly(from);
     final windowTo = _dateOnly(to);
 
-    final scheduled = RecurrenceExpander.expandRule(
-      rule: rule,
-      anchor: anchor,
-      from: windowFrom,
-      to: windowTo,
-    );
+    final scheduled = RecurrenceExpander.expandRule(rule: rule, anchor: anchor, from: windowFrom, to: windowTo);
 
-    final completedKeys = {
-      for (final c in completionDates) _dateKey(_dateOnly(c)),
-    };
+    final completedKeys = {for (final c in completionDates) _dateKey(_dateOnly(c))};
 
     final scheduledKeys = scheduled.map(_dateKey).toList();
     final completedScheduled = scheduledKeys.where(completedKeys.contains).length;
     final rate = scheduledKeys.isEmpty ? 0.0 : completedScheduled / scheduledKeys.length;
 
     final longest = _longestStreak(scheduledKeys, completedKeys);
-    final current = _currentStreak(
-      scheduledKeys: scheduledKeys,
-      completedKeys: completedKeys,
-      today: effectiveNow,
-    );
+    final current = _currentStreak(scheduledKeys: scheduledKeys, completedKeys: completedKeys, today: effectiveNow);
 
     return HabitStreakResult(
       currentStreak: current,

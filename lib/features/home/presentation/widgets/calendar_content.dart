@@ -6,14 +6,15 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/widgets/calendar/calendar_day_info.dart';
+import '../../../../core/widgets/calendar/calendar_month_grid.dart';
+import '../../../../core/widgets/calendar/calendar_week_strip.dart';
 import '../../../tasks/domain/entities/task.dart';
 import '../models/upcoming_calendar_ui_state.dart';
 import '../providers/upcoming_calendar_state_provider.dart';
 import '../providers/upcoming_calendar_view_provider.dart';
 import '../utils/upcoming_calendar_utils.dart';
-import 'calendar_month_grid.dart';
 import 'calendar_view_toggle.dart';
-import 'calendar_week_strip.dart';
 import 'task_popup_content.dart';
 
 class CalendarContent extends ConsumerStatefulWidget {
@@ -37,6 +38,10 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
 
   Map<DateTime, List<Task>> get _tasksByDate {
     return UpcomingCalendarUtils.groupTasksByDate(widget.tasks);
+  }
+
+  Map<DateTime, CalendarDayInfo> get _dayInfo {
+    return {for (final entry in _tasksByDate.entries) entry.key: CalendarDayInfo(taskCount: entry.value.length)};
   }
 
   void _switchView({
@@ -143,6 +148,7 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
     final viewMode = viewModeAsync.value ?? CalendarViewMode.month;
     final uiState = ref.watch(upcomingCalendarUiStateProvider);
     final tasksByDate = _tasksByDate;
+    final dayInfo = _dayInfo;
     final effectiveSelectedDay = UpcomingCalendarUtils.effectiveSelectedDay(
       viewMode: viewMode,
       uiState: uiState,
@@ -226,19 +232,19 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
                   .toList(),
             ),
             SizedBox(height: AppConstants.spacing.small),
-            CalendarMonthGrid(
+            CalendarMonthGrid<Task>(
               displayMonth: displayMonth,
               daysInMonth: daysInMonth,
               firstWeekday: firstWeekday,
-              tasksByDate: tasksByDate,
+              dayInfo: dayInfo,
               now: now,
               selectedDay: effectiveSelectedDay,
               onDateTap: _onDateTapped,
             ),
           ] else
-            CalendarWeekStrip(
+            CalendarWeekStrip<Task>(
               weekStart: displayWeekStart,
-              tasksByDate: tasksByDate,
+              dayInfo: dayInfo,
               now: now,
               selectedDay: effectiveSelectedDay,
               onDateTap: _onDateTapped,

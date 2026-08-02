@@ -95,11 +95,7 @@ void main() {
         recurrenceAnchorDate: DateTime(2026, 8, 1, 10),
         endDate: null,
       );
-      final reminders = TaskReminderPlanner.computeReminderTimes(
-        task,
-        now: DateTime(2026, 8, 2, 8),
-        windowSize: 3,
-      );
+      final reminders = TaskReminderPlanner.computeReminderTimes(task, now: DateTime(2026, 8, 2, 8), windowSize: 3);
       expect(reminders, hasLength(3));
       // Each reminder is 1 day before the occurrence (or now+2s if past).
       expect(reminders[0].isBefore(reminders[1]), isTrue);

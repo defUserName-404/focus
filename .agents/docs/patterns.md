@@ -357,6 +357,32 @@ Gotchas:
 - Habits are recurring tasks with `isHabit = true` — no separate habit table.
 - Reschedule reminders after `completeOccurrence` so the window advances.
 
+## Tasks View Modes + Sparse Board Ordering
+
+Persist Tasks tab chrome with `SettingsKeys.tasksViewMode` (`list` | `board` | `calendar`) via
+`tasksViewModeProvider`, mirroring `upcomingCalendarViewModeProvider`. Slot the segmented
+control into `ListToolbar.viewModeControl` — do not add another stacked filter row.
+
+Shared calendar widgets live in `lib/core/widgets/calendar/` (domain-agnostic day markers +
+optional `DragTarget<T>`). Feature screens map tasks/sessions into `CalendarDayInfo` and use
+`CalendarEventGrouping` for recurrence expansion.
+
+Board columns are `TaskStatus` values. Card order uses sparse `sortOrder` gaps:
+
+```dart
+// Prefer a single-row rewrite between neighbours
+final order = SparseSortOrder.forInsert(
+  neighborOrders: neighbors,
+  insertIndex: index,
+);
+// null => gap collapsed; rewrite the column with SparseSortOrder.rebalance(n)
+```
+
+Gotchas:
+- Cross-column drops update both `status` and `sortOrder` through `TaskService.updateTask`.
+- Compact boards page one column at a time; expanded boards show all four columns.
+- Calendar day-cell drops reschedule `endDate` (skip recurring tasks — occurrences are expanded).
+
 ## Mandatory Follow-Up
 
 When a new pattern is introduced in production code, add it here with:

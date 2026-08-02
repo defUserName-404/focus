@@ -14,11 +14,17 @@ import '../../../../core/widgets/app_search_bar.dart';
 import '../../../../core/widgets/filter_select.dart';
 import '../../../../core/widgets/sort_filter_chips.dart';
 import '../../../../core/widgets/sort_order_selector.dart';
+import '../../../tasks/domain/entities/task.dart';
 import '../../../tasks/presentation/commands/task_commands.dart';
 import '../../../tasks/presentation/widgets/task_card.dart';
+import '../../../tasks/presentation/widgets/tasks_board_view.dart';
 import '../commands/project_commands.dart';
+import '../models/project_detail_tab.dart';
 import '../providers/project_provider.dart';
 import '../widgets/project_detail_header.dart';
+import '../widgets/project_detail_tab_bar.dart';
+import '../widgets/project_milestones_panel.dart';
+import '../widgets/project_timeline_view.dart';
 
 class ProjectDetailScreen extends ConsumerStatefulWidget {
   final int projectId;
@@ -33,6 +39,7 @@ class ProjectDetailScreen extends ConsumerStatefulWidget {
 class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _searchFocusNode = FocusNode();
+  ProjectDetailTab _tab = ProjectDetailTab.tasks;
 
   String get _projectIdString => widget.projectId.toString();
 
@@ -41,6 +48,126 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     _scrollController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  Widget _buildTasksFilters(TaskListFilterState filter) {
+    return Column(
+      children: [
+        AppSearchBar(
+          focusNode: _searchFocusNode,
+          hint: 'Search tasks...',
+          onChanged: (query) {
+            ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(searchQuery: query);
+          },
+        ),
+        Row(
+          children: [
+            SizedBox(
+              width: 120,
+              child: FilterSelect<TaskPriority?>(
+                selected: filter.priorityFilter,
+                onChanged: (priority) {
+                  ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(priorityFilter: priority);
+                },
+                options: TaskPriority.values,
+                hint: 'Priority',
+                allLabel: 'All',
+              ),
+            ),
+            SizedBox(
+              width: 100,
+              child: SortOrderSelector<TaskSortOrder>(
+                selectedOrder: filter.sortOrder,
+                onChanged: (order) {
+                  ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(sortOrder: order);
+                },
+                orderOptions: TaskSortOrder.values,
+              ),
+            ),
+            Expanded(
+              child: SortFilterChips<TaskSortCriteria>(
+                selectedCriteria: filter.sortCriteria,
+                onChanged: (criteria) {
+                  ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(sortCriteria: criteria);
+                },
+                criteriaOptions: TaskSortCriteria.values,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTasksList(List<Task> filteredTasks) {
+    final rootTasks = filteredTasks.where((t) => t.parentTaskId == null).toList();
+
+    if (rootTasks.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: AppConstants.spacing.regular,
+          children: [
+            Icon(
+              fu.FLucideIcons.clipboardList,
+              size: AppConstants.size.icon.extraExtraLarge,
+              color: context.colors.mutedForeground,
+            ),
+            Text('No tasks yet', style: context.typography.md.copyWith(color: context.colors.mutedForeground)),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      controller: _scrollController,
+      padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.small),
+      itemCount: rootTasks.length,
+      itemBuilder: (context, index) {
+        final task = rootTasks[index];
+        final subtasks = filteredTasks.where((t) => t.parentTaskId == task.id).toList();
+        return TaskCard(task: task, subtasks: subtasks, projectIdString: _projectIdString);
+      },
+    );
+  }
+
+  Widget _buildTabBody({
+    required List<Task> filteredTasks,
+    required List<Task> allTasks,
+    required TaskListFilterState filter,
+  }) {
+    return switch (_tab) {
+      ProjectDetailTab.overview => ListView(
+        padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.small),
+        children: [
+          Text('Project overview', style: context.typography.sm.copyWith(fontWeight: FontWeight.w700)),
+          SizedBox(height: AppConstants.spacing.small),
+          Text(
+            '${allTasks.where((t) => t.parentTaskId == null).length} root tasks · '
+            '${allTasks.where((t) => t.isCompleted).length} completed',
+            style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
+          ),
+          SizedBox(height: AppConstants.spacing.regular),
+          Text(
+            'Use the tabs above to manage tasks on a board, track milestones, or review the timeline.',
+            style: context.typography.sm.copyWith(color: context.colors.mutedForeground, height: 1.45),
+          ),
+        ],
+      ),
+      ProjectDetailTab.tasks => Column(
+        children: [
+          _buildTasksFilters(filter),
+          Expanded(
+            child: filteredTasks.isEmpty && filter.searchQuery.isEmpty && filter.priorityFilter == null
+                ? _buildTasksList(const [])
+                : _buildTasksList(filteredTasks),
+          ),
+        ],
+      ),
+      ProjectDetailTab.board => TasksBoardView(tasks: allTasks.where((t) => t.parentTaskId == null).toList()),
+      ProjectDetailTab.milestones => ProjectMilestonesPanel(projectId: widget.projectId),
+      ProjectDetailTab.timeline => ProjectTimelineView(projectId: widget.projectId, tasks: allTasks),
+    };
   }
 
   @override
@@ -70,94 +197,17 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               loading: () => const SizedBox.shrink(),
               error: (_, _) => const SizedBox.shrink(),
             ),
-
-            Column(
-              children: [
-                AppSearchBar(
-                  focusNode: _searchFocusNode,
-                  hint: 'Search tasks...',
-                  onChanged: (query) {
-                    ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(searchQuery: query);
-                  },
-                ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 120,
-                      child: FilterSelect<TaskPriority?>(
-                        selected: filter.priorityFilter,
-                        onChanged: (priority) {
-                          ref
-                              .read(taskListFilterProvider(_projectIdString).notifier)
-                              .updateFilter(priorityFilter: priority);
-                        },
-                        options: TaskPriority.values,
-                        hint: 'Priority',
-                        allLabel: 'All',
-                      ),
-                    ),
-                    SizedBox(
-                      width: 100,
-                      child: SortOrderSelector<TaskSortOrder>(
-                        selectedOrder: filter.sortOrder,
-                        onChanged: (order) {
-                          ref.read(taskListFilterProvider(_projectIdString).notifier).updateFilter(sortOrder: order);
-                        },
-                        orderOptions: TaskSortOrder.values,
-                      ),
-                    ),
-                    Expanded(
-                      child: SortFilterChips<TaskSortCriteria>(
-                        selectedCriteria: filter.sortCriteria,
-                        onChanged: (criteria) {
-                          ref
-                              .read(taskListFilterProvider(_projectIdString).notifier)
-                              .updateFilter(sortCriteria: criteria);
-                        },
-                        criteriaOptions: TaskSortCriteria.values,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
+            ProjectDetailTabBar(selected: _tab, onChanged: (tab) => setState(() => _tab = tab)),
+            SizedBox(height: AppConstants.spacing.small),
             Expanded(
               child: filteredAsync.when(
                 loading: () => const Center(child: fu.FCircularProgress()),
                 error: (err, _) => Center(child: Text('Error: $err')),
                 data: (filteredTasks) {
-                  final rootTasks = filteredTasks.where((t) => t.parentTaskId == null).toList();
-
-                  if (rootTasks.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: AppConstants.spacing.regular,
-                        children: [
-                          Icon(
-                            fu.FLucideIcons.clipboardList,
-                            size: AppConstants.size.icon.extraExtraLarge,
-                            color: context.colors.mutedForeground,
-                          ),
-                          Text(
-                            'No tasks yet',
-                            style: context.typography.md.copyWith(color: context.colors.mutedForeground),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.small),
-                    itemCount: rootTasks.length,
-                    itemBuilder: (context, index) {
-                      final task = rootTasks[index];
-                      final subtasks = filteredTasks.where((t) => t.parentTaskId == task.id).toList();
-                      return TaskCard(task: task, subtasks: subtasks, projectIdString: _projectIdString);
-                    },
+                  return allTasksAsync.when(
+                    loading: () => const Center(child: fu.FCircularProgress()),
+                    error: (err, _) => Center(child: Text('Error: $err')),
+                    data: (allTasks) => _buildTabBody(filteredTasks: filteredTasks, allTasks: allTasks, filter: filter),
                   );
                 },
               ),
@@ -217,6 +267,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             icon: Icon(fu.FLucideIcons.search),
             onPress: () {
               _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+              setState(() => _tab = ProjectDetailTab.tasks);
               _searchFocusNode.requestFocus();
             },
           ),

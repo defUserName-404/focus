@@ -13,8 +13,7 @@ class MilestoneService {
 
   final IMilestoneRepository _repository;
 
-  Future<List<Milestone>> getMilestonesByProjectId(int projectId) =>
-      _repository.getMilestonesByProjectId(projectId);
+  Future<List<Milestone>> getMilestonesByProjectId(int projectId) => _repository.getMilestonesByProjectId(projectId);
 
   Future<Milestone?> getMilestoneById(int id) => _repository.getMilestoneById(id);
 
