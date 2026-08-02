@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
@@ -23,6 +25,8 @@ class YearActivityGraph extends ConsumerStatefulWidget {
 class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
   late final ScrollController _scrollController;
   OverlayEntry? _tooltip;
+  Timer? _tooltipTimer;
+  TappedDateNotifier? _tappedDateNotifier;
 
   @override
   void initState() {
@@ -32,8 +36,19 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tappedDateNotifier ??= ref.read(tappedDateProvider.notifier);
+  }
+
+  @override
   void dispose() {
-    _removeTooltip();
+    _tooltipTimer?.cancel();
+    _tooltip?.remove();
+    _tooltip?.dispose();
+    _tooltip = null;
+    // Clear selection without WidgetRef (unsafe during dispose).
+    _tappedDateNotifier?.setDate(null);
     _scrollController.dispose();
     super.dispose();
   }
@@ -85,14 +100,17 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
     );
     overlay.insert(_tooltip!);
 
-    Future.delayed(ActivityGraphConstants.tooltipDuration, _removeTooltip);
+    _tooltipTimer = Timer(ActivityGraphConstants.tooltipDuration, _removeTooltip);
   }
 
   void _removeTooltip() {
+    _tooltipTimer?.cancel();
+    _tooltipTimer = null;
     _tooltip?.remove();
     _tooltip?.dispose();
     _tooltip = null;
-    if (mounted && ref.read(tappedDateProvider) != null) {
+    if (!mounted) return;
+    if (ref.read(tappedDateProvider) != null) {
       ref.read(tappedDateProvider.notifier).setDate(null);
     }
   }
