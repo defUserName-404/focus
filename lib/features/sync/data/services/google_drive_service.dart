@@ -26,10 +26,12 @@ const _syncFileName = 'focus_sync_data.json';
 /// [GoogleSignInAccount.authorizationClient].
 class GoogleDriveService implements ICloudStorageService {
   static const _scopes = [drive.DriveApi.driveAppdataScope];
-  static const _missingClientMessage =
-      'Google Sign-In is not configured for this build. '
-      'Set GOOGLE_CLIENT_ID (dart-define + Info.plist / GoogleSignIn.xcconfig). '
-      'See .agents/docs/commands.md.';
+  static const _missingClientLog =
+      'Google Sign-In is not configured. Set GOOGLE_CLIENT_ID via dart-define '
+      'and Info.plist / GoogleSignIn.xcconfig. See .agents/docs/commands.md.';
+  static const _missingClientUserMessage = "Google Sign-In isn't set up in this build.";
+  static const _signInFailedUserMessage = "Couldn't sign in to Google. Try again.";
+  static const _signInCancelledUserMessage = 'Sign-in was cancelled.';
 
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   GoogleSignInAccount? _account;
@@ -59,8 +61,8 @@ class GoogleDriveService implements ICloudStorageService {
   @override
   Future<Result<String>> signIn() async {
     if (!GoogleOAuthConfig.isConfigured) {
-      _log.error(_missingClientMessage, tag: 'GoogleDriveService');
-      return const Failure(SyncFailure(_missingClientMessage));
+      _log.error(_missingClientLog, tag: 'GoogleDriveService');
+      return const Failure(SyncFailure(_missingClientUserMessage));
     }
     try {
       await _ensureInitialized();
@@ -72,16 +74,16 @@ class GoogleDriveService implements ICloudStorageService {
       return Success(account.email);
     } on GoogleSignInException catch (e, st) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
-        return const Failure(SyncFailure('Sign-in was cancelled'));
+        return const Failure(SyncFailure(_signInCancelledUserMessage));
       }
       _log.error('Google Drive sign-in failed', tag: 'GoogleDriveService', error: e, stackTrace: st);
-      return Failure(SyncFailure('Failed to sign in to Google Drive', error: e, stackTrace: st));
+      return Failure(SyncFailure(_signInFailedUserMessage, error: e, stackTrace: st));
     } catch (e, st) {
       _log.error('Google Drive sign-in failed', tag: 'GoogleDriveService', error: e, stackTrace: st);
       if (_isMissingGidClientError(e)) {
-        return const Failure(SyncFailure(_missingClientMessage));
+        return const Failure(SyncFailure(_missingClientUserMessage));
       }
-      return Failure(SyncFailure('Failed to sign in to Google Drive', error: e, stackTrace: st));
+      return Failure(SyncFailure(_signInFailedUserMessage, error: e, stackTrace: st));
     }
   }
 
