@@ -74,7 +74,7 @@ final class OnboardingControllerProvider extends $NotifierProvider<OnboardingCon
   }
 }
 
-String _$onboardingControllerHash() => r'fb361e782b5e7211ca88ddc5822c5c0267a8e5f3';
+String _$onboardingControllerHash() => r'425fd3c0bddef1e5d88bf19d5f2f3f61962c9317';
 
 abstract class _$OnboardingController extends $Notifier<OnboardingState> {
   OnboardingState build();

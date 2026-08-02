@@ -1,5 +1,7 @@
 import '../../../../core/services/log_service.dart';
+import '../../../../core/utils/id_utils.dart';
 import '../../../../core/utils/result.dart';
+import '../../../tasks/domain/entities/task_completion.dart';
 import '../../../tasks/domain/entities/task_extensions.dart';
 import '../../../tasks/domain/entities/task_status.dart';
 import '../../../tasks/domain/repositories/i_task_repository.dart';
@@ -28,6 +30,15 @@ class FocusSessionService {
   Future<Result<FocusSession>> startSession(FocusSession session) async {
     try {
       final saved = await _sessionRepo.startSession(session);
+
+      // Auto-move linked task to In Progress if it's currently To Do.
+      if (saved.taskId != null) {
+        final task = await _taskRepo.getTaskById(saved.taskId!);
+        if (task != null && task.status == TaskStatus.todo) {
+          await _taskRepo.updateTask(task.copyWith(status: TaskStatus.inProgress, updatedAt: DateTime.now()));
+        }
+      }
+
       _log.info('Session started (id=${saved.id})', tag: 'FocusSessionService');
       return Success(saved);
     } catch (e, st) {
@@ -74,11 +85,29 @@ class FocusSessionService {
   Future<Result<void>> completeTask(int taskId) async {
     try {
       final task = await _taskRepo.getTaskById(taskId);
-      if (task != null && !task.isCompleted) {
+      if (task == null || task.isCompleted) return const Success(null);
+
+      // For recurring tasks/habits, record a per-day completion instead of
+      // flipping the task row status (which would complete all occurrences).
+      if (task.isRecurring) {
+        final now = DateTime.now();
+        final dateOnly = DateTime(now.year, now.month, now.day);
+        await _taskRepo.upsertCompletion(
+          TaskCompletion(
+            uuid: generateUuid(),
+            taskId: taskId,
+            occurrenceDate: dateOnly,
+            completedAt: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+      } else {
         final completedTask = task.copyWith(status: TaskStatus.done, updatedAt: DateTime.now());
         await _taskRepo.updateTask(completedTask);
-        _log.info('Task $taskId marked as completed', tag: 'FocusSessionService');
       }
+
+      _log.info('Task $taskId marked as completed', tag: 'FocusSessionService');
       return const Success(null);
     } catch (e, st) {
       _log.error('Error completing task $taskId', tag: 'FocusSessionService', error: e, stackTrace: st);

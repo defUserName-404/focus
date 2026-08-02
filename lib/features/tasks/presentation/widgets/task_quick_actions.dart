@@ -42,7 +42,13 @@ class TaskQuickActions extends ConsumerWidget {
               size: .sm,
               mainAxisSize: .min,
               variant: .outline,
-              onPress: () => ref.read(taskProvider(projectId.toString()).notifier).toggleTaskCompletion(task),
+              onPress: () {
+                if (task.isRecurring && task.id != null) {
+                  ref.read(taskProvider(projectId.toString()).notifier).completeOccurrence(task, DateTime.now());
+                } else {
+                  ref.read(taskProvider(projectId.toString()).notifier).toggleTaskCompletion(task);
+                }
+              },
               prefix: Icon(task.isCompleted ? fu.FLucideIcons.rotateCcw : fu.FLucideIcons.check, size: 14),
               child: Text(task.isCompleted ? 'Reopen' : 'Complete'),
             ),

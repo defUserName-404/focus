@@ -7,17 +7,17 @@ import 'package:sqlite3/sqlite3.dart';
 
 /// Phase 8 migration harness.
 ///
-/// Captures the current (v10) schema via [AppDatabase.forTesting] and verifies
-/// that upgrading from a hand-built v1 schema reaches v10 without nested
+/// Captures the current (v11) schema via [AppDatabase.forTesting] and verifies
+/// that upgrading from a hand-built v1 schema reaches v11 without nested
 /// transaction statements, without losing rows, and with PM + recurrence +
 /// task-tag tombstone + project template columns.
 void main() {
-  test('onCreate produces schema version 10 with expected tables', () async {
+  test('onCreate produces schema version 11 with expected tables', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.read<int>('user_version'), 10);
+    expect(version.read<int>('user_version'), 11);
 
     final tables = await db.customSelect("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").get();
     final names = tables.map((row) => row.read<String>('name')).toSet();
@@ -125,7 +125,7 @@ void main() {
     });
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.read<int>('user_version'), 10);
+    expect(version.read<int>('user_version'), 11);
 
     final tasks = await db.select(db.taskTable).get();
     expect(tasks, hasLength(1));
@@ -193,7 +193,7 @@ void main() {
     addTearDown(db.close);
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.read<int>('user_version'), 10);
+    expect(version.read<int>('user_version'), 11);
 
     final project = (await db.select(db.projectTable).get()).single;
     expect(project.uuid, isNotEmpty);
@@ -240,7 +240,7 @@ void main() {
     addTearDown(db.close);
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.read<int>('user_version'), 10);
+    expect(version.read<int>('user_version'), 11);
 
     final tasks = await db.select(db.taskTable).get();
     expect(tasks, hasLength(2));

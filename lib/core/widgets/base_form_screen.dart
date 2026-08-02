@@ -130,7 +130,7 @@ class _BaseFormScreenState extends State<BaseFormScreen> {
     return FScaffold(
       child: Center(
         child: ConstrainedContent(
-          maxWidth: 560,
+          maxWidth: 640,
           padding: EdgeInsets.symmetric(
             horizontal: AppConstants.spacing.large,
             vertical: AppConstants.spacing.extraLarge,
