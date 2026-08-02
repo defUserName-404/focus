@@ -1,11 +1,13 @@
 import '../../domain/entities/all_tasks_filter_state.dart';
 import '../../domain/entities/task.dart';
+import '../../domain/entities/task_completion.dart';
 import '../../domain/entities/task_extensions.dart';
 import '../../domain/entities/task_filter_state.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/entities/task_status.dart';
 import '../../domain/repositories/i_task_repository.dart';
 import '../datasources/task_local_datasource.dart';
+import '../mappers/task_completion_extensions.dart';
 import '../mappers/task_extensions.dart';
 import '../../../../core/services/log_service.dart';
 
@@ -124,5 +126,33 @@ class TaskRepositoryImpl implements ITaskRepository {
           completionFilter: completionFilter,
         )
         .map((rows) => rows.map((r) => r.toDomain()).toList());
+  }
+
+  @override
+  Future<List<TaskCompletion>> getCompletionsForTask(int taskId) async {
+    final rows = await _local.getCompletionsForTask(taskId);
+    return rows.map((r) => r.toDomain()).toList();
+  }
+
+  @override
+  Future<TaskCompletion?> getCompletion(int taskId, DateTime occurrenceDate) async {
+    final row = await _local.getCompletion(taskId, occurrenceDateKey(occurrenceDate));
+    return row?.toDomain();
+  }
+
+  @override
+  Future<TaskCompletion> upsertCompletion(TaskCompletion completion) async {
+    final row = await _local.upsertCompletion(completion.toCompanion());
+    return row.toDomain();
+  }
+
+  @override
+  Future<void> softDeleteCompletion(int id) async {
+    await _local.softDeleteCompletion(id);
+  }
+
+  @override
+  Stream<List<TaskCompletion>> watchCompletionsForTask(int taskId) {
+    return _local.watchCompletionsForTask(taskId).map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 }

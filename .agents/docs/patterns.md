@@ -280,6 +280,8 @@ Guidelines:
 - `smart` uses 1 week for long tasks and 1 day otherwise.
 - `custom` stores minutes-before as an integer.
 - Keep reminder computation in a pure planner utility so UI and services share logic.
+- For recurring tasks, use `computeReminderTimes` (rolling window of upcoming occurrences)
+  rather than a single `endDate`-based reminder.
 
 ## Soft Delete + UUID Sync Identity
 
@@ -296,12 +298,12 @@ await (_db.update(_db.projectTable)..where((t) => t.id.equals(id))).write(
 ```
 
 Gotchas:
-- Soft-deleting a project must transactionally soft-delete its tasks, milestones, and their sessions.
-- Soft-deleting a task must soft-delete descendants and their sessions, and remove `task_tag` rows.
+- Soft-deleting a project must transactionally soft-delete its tasks, milestones, completions, and their sessions.
+- Soft-deleting a task must soft-delete descendants, their completions, and their sessions, and remove `task_tag` rows.
 - Soft-deleting a tag removes its `task_tag` associations then tombstones the tag.
 - Soft-deleting a milestone clears `task.milestoneId` then tombstones the milestone.
 - Generate `uuid` on create via `generateUuid()`; migration backfills existing rows.
-- `SyncPurgeService` permanently removes tombstones past the retention window (including tags/milestones).
+- `SyncPurgeService` permanently removes tombstones past the retention window (including tags/milestones/completions).
 - Persist `SettingsKeys.deviceId` once via `SettingsService.ensureDeviceId()`.
 
 ## Task / Project Status + Tags / Milestones
@@ -324,6 +326,36 @@ Optional `statusFilter` mirrors the existing nullable `priorityFilter` on list f
 Gotchas:
 - Keep writing both `status` and `is_completed` until a later migration drops the bool column.
 - Filter completion chips (`TaskCompletionFilter`) should query `status`, not the legacy bool.
+
+## Recurrence Expansion + Habit Streaks
+
+Recurring tasks stay a **single row**. Occurrences are computed, never materialised as task rows.
+
+```dart
+// Pure expansion — no I/O
+final dates = RecurrenceExpander.expand(task, from, to);
+
+// Occurrence completion log (soft-delete aware upsert)
+await taskService.completeOccurrence(taskId, occurrenceDate);
+
+// Streaks skip days the rule did not schedule
+final streak = HabitStreakCalculator.calculate(
+  rule: task.recurrenceRule!,
+  anchor: task.recurrenceAnchorDate!,
+  completionDates: completions.map((c) => c.occurrenceDate),
+  from: windowStart,
+  to: windowEnd,
+);
+```
+
+Reminder scheduling uses a rolling window (`TaskReminderPlanner.computeReminderTimes`) so
+`flutter_local_notifications` only holds the next few occurrence reminders.
+
+Gotchas:
+- Store `RecurrenceRule` as JSON text via `dart_mappable`; parse with `RecurrenceRule.tryParseJson`.
+- Unique `(task_id, occurrence_date)` is a **partial** index (`WHERE deleted_at IS NULL`).
+- Habits are recurring tasks with `isHabit = true` — no separate habit table.
+- Reschedule reminders after `completeOccurrence` so the window advances.
 
 ## Mandatory Follow-Up
 

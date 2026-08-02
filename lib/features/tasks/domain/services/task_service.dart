@@ -1,7 +1,9 @@
 import '../../../../core/services/log_service.dart';
 import '../../../../core/utils/id_utils.dart';
 import '../../../../core/utils/result.dart';
+import '../entities/recurrence_rule.dart';
 import '../entities/task.dart';
+import '../entities/task_completion.dart';
 import '../entities/task_extensions.dart';
 import '../entities/task_priority.dart';
 import '../entities/task_reminder_mode.dart';
@@ -15,7 +17,7 @@ final _log = LogService.instance;
 ///
 /// Sits between the presentation layer (providers/commands) and the
 /// repository. Encapsulates business logic such as timestamping,
-/// completion toggling, and depth management.
+/// completion toggling, occurrence logging, and depth management.
 class TaskService {
   final ITaskRepository _repository;
   final TaskNotificationService _taskNotificationService;
@@ -29,6 +31,11 @@ class TaskService {
   Future<Task?> getTaskById(int id) => _repository.getTaskById(id);
 
   Stream<List<Task>> watchTasksByProjectId(int projectId) => _repository.watchTasksByProjectId(projectId);
+
+  Future<List<TaskCompletion>> getCompletionsForTask(int taskId) => _repository.getCompletionsForTask(taskId);
+
+  Stream<List<TaskCompletion>> watchCompletionsForTask(int taskId) =>
+      _repository.watchCompletionsForTask(taskId);
 
   //  Write
 
@@ -46,6 +53,9 @@ class TaskService {
     int? estimatedMinutes,
     double sortOrder = 0,
     int? milestoneId,
+    RecurrenceRule? recurrenceRule,
+    DateTime? recurrenceAnchorDate,
+    bool isHabit = false,
     required int depth,
   }) async {
     try {
@@ -65,6 +75,9 @@ class TaskService {
         estimatedMinutes: estimatedMinutes,
         sortOrder: sortOrder,
         milestoneId: milestoneId,
+        recurrenceRule: recurrenceRule,
+        recurrenceAnchorDate: recurrenceAnchorDate ?? (recurrenceRule != null ? (startDate ?? now) : null),
+        isHabit: isHabit,
         depth: depth,
         createdAt: now,
         updatedAt: now,
@@ -120,6 +133,54 @@ class TaskService {
     } catch (e, st) {
       _log.error('Failed to toggle task ${task.id}', tag: 'TaskService', error: e, stackTrace: st);
       return Failure(DatabaseFailure('Failed to toggle task', error: e, stackTrace: st));
+    }
+  }
+
+  /// Records completion of a single occurrence for a recurring task.
+  ///
+  /// For non-recurring tasks, marks the task [TaskStatus.done] (same as
+  /// completing via [toggleTaskCompletion]) and returns `null` completion.
+  Future<Result<TaskCompletion?>> completeOccurrence(int taskId, DateTime occurrenceDate) async {
+    try {
+      final task = await _repository.getTaskById(taskId);
+      if (task == null) {
+        return const Failure(NotFoundFailure('Task not found'));
+      }
+
+      if (!task.isRecurring) {
+        if (!task.isCompleted) {
+          final updated = task.copyWith(status: TaskStatus.done, updatedAt: DateTime.now());
+          await _repository.updateTask(updated);
+          await _taskNotificationService.cancelTaskReminder(taskId);
+        }
+        return const Success(null);
+      }
+
+      final now = DateTime.now();
+      final dateOnly = DateTime(occurrenceDate.year, occurrenceDate.month, occurrenceDate.day);
+      final completion = TaskCompletion(
+        uuid: generateUuid(),
+        taskId: taskId,
+        occurrenceDate: dateOnly,
+        completedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final saved = await _repository.upsertCompletion(completion);
+      await _taskNotificationService.scheduleTaskReminder(task);
+      _log.info(
+        'Occurrence completed for task $taskId on ${dateOnly.toIso8601String()}',
+        tag: 'TaskService',
+      );
+      return Success(saved);
+    } catch (e, st) {
+      _log.error(
+        'Failed to complete occurrence for task $taskId',
+        tag: 'TaskService',
+        error: e,
+        stackTrace: st,
+      );
+      return Failure(DatabaseFailure('Failed to complete occurrence', error: e, stackTrace: st));
     }
   }
 }

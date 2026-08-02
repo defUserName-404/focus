@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../../../core/utils/id_utils.dart';
+import '../../../tasks/domain/entities/recurrence_rule.dart';
 import '../../../tasks/domain/entities/task.dart';
 import '../../../tasks/domain/entities/task_priority.dart';
 import '../../../tasks/domain/entities/task_reminder_mode.dart';
@@ -153,6 +154,9 @@ class SyncTaskData {
   final int? estimatedMinutes;
   final double sortOrder;
   final int? milestoneId;
+  final String? recurrenceRuleJson;
+  final DateTime? recurrenceAnchorDate;
+  final bool isHabit;
   final bool isCompleted;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -175,6 +179,9 @@ class SyncTaskData {
     this.estimatedMinutes,
     this.sortOrder = 0,
     this.milestoneId,
+    this.recurrenceRuleJson,
+    this.recurrenceAnchorDate,
+    this.isHabit = false,
     required this.isCompleted,
     required this.createdAt,
     required this.updatedAt,
@@ -201,6 +208,11 @@ class SyncTaskData {
       estimatedMinutes: json['estimatedMinutes'] as int?,
       sortOrder: (json['sortOrder'] as num?)?.toDouble() ?? 0,
       milestoneId: json['milestoneId'] as int?,
+      recurrenceRuleJson: json['recurrenceRuleJson'] as String?,
+      recurrenceAnchorDate: json['recurrenceAnchorDate'] != null
+          ? DateTime.parse(json['recurrenceAnchorDate'] as String)
+          : null,
+      isHabit: json['isHabit'] as bool? ?? false,
       isCompleted: isCompleted,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
@@ -225,6 +237,9 @@ class SyncTaskData {
     'estimatedMinutes': estimatedMinutes,
     'sortOrder': sortOrder,
     'milestoneId': milestoneId,
+    'recurrenceRuleJson': recurrenceRuleJson,
+    'recurrenceAnchorDate': recurrenceAnchorDate?.toIso8601String(),
+    'isHabit': isHabit,
     'isCompleted': isCompleted,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
@@ -249,6 +264,9 @@ class SyncTaskData {
       estimatedMinutes: task.estimatedMinutes,
       sortOrder: task.sortOrder,
       milestoneId: task.milestoneId,
+      recurrenceRuleJson: task.recurrenceRule?.toJson(),
+      recurrenceAnchorDate: task.recurrenceAnchorDate,
+      isHabit: task.isHabit,
       isCompleted: task.isCompleted,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
@@ -279,6 +297,9 @@ class SyncTaskData {
       estimatedMinutes: estimatedMinutes,
       sortOrder: sortOrder,
       milestoneId: milestoneId,
+      recurrenceRule: RecurrenceRule.tryParseJson(recurrenceRuleJson),
+      recurrenceAnchorDate: recurrenceAnchorDate,
+      isHabit: isHabit,
       createdAt: createdAt,
       updatedAt: updatedAt,
       deletedAt: deletedAt,

@@ -1354,6 +1354,43 @@ class $TaskTableTable extends TaskTable
       'REFERENCES milestone_table (id) ON DELETE SET NULL',
     ),
   );
+  static const VerificationMeta _recurrenceRuleMeta = const VerificationMeta(
+    'recurrenceRule',
+  );
+  @override
+  late final GeneratedColumn<String> recurrenceRule = GeneratedColumn<String>(
+    'recurrence_rule',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _recurrenceAnchorDateMeta =
+      const VerificationMeta('recurrenceAnchorDate');
+  @override
+  late final GeneratedColumn<DateTime> recurrenceAnchorDate =
+      GeneratedColumn<DateTime>(
+        'recurrence_anchor_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _isHabitMeta = const VerificationMeta(
+    'isHabit',
+  );
+  @override
+  late final GeneratedColumn<bool> isHabit = GeneratedColumn<bool>(
+    'is_habit',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_habit" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _isCompletedMeta = const VerificationMeta(
     'isCompleted',
   );
@@ -1420,6 +1457,9 @@ class $TaskTableTable extends TaskTable
     estimatedMinutes,
     sortOrder,
     milestoneId,
+    recurrenceRule,
+    recurrenceAnchorDate,
+    isHabit,
     isCompleted,
     createdAt,
     updatedAt,
@@ -1535,6 +1575,30 @@ class $TaskTableTable extends TaskTable
         ),
       );
     }
+    if (data.containsKey('recurrence_rule')) {
+      context.handle(
+        _recurrenceRuleMeta,
+        recurrenceRule.isAcceptableOrUnknown(
+          data['recurrence_rule']!,
+          _recurrenceRuleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_anchor_date')) {
+      context.handle(
+        _recurrenceAnchorDateMeta,
+        recurrenceAnchorDate.isAcceptableOrUnknown(
+          data['recurrence_anchor_date']!,
+          _recurrenceAnchorDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_habit')) {
+      context.handle(
+        _isHabitMeta,
+        isHabit.isAcceptableOrUnknown(data['is_habit']!, _isHabitMeta),
+      );
+    }
     if (data.containsKey('is_completed')) {
       context.handle(
         _isCompletedMeta,
@@ -1645,6 +1709,18 @@ class $TaskTableTable extends TaskTable
         DriftSqlType.int,
         data['${effectivePrefix}milestone_id'],
       ),
+      recurrenceRule: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_rule'],
+      ),
+      recurrenceAnchorDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}recurrence_anchor_date'],
+      ),
+      isHabit: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_habit'],
+      )!,
       isCompleted: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_completed'],
@@ -1695,6 +1771,15 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   final double sortOrder;
   final int? milestoneId;
 
+  /// JSON-encoded [RecurrenceRule], or null for one-shot tasks.
+  final String? recurrenceRule;
+
+  /// Series start used by [RecurrenceExpander]; defaults to start/created when null.
+  final DateTime? recurrenceAnchorDate;
+
+  /// When true, the recurring task is surfaced as a habit (streaks / agenda).
+  final bool isHabit;
+
   /// Kept in sync with [status] == done for one migration cycle (v7).
   final bool isCompleted;
   final DateTime createdAt;
@@ -1717,6 +1802,9 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     this.estimatedMinutes,
     required this.sortOrder,
     this.milestoneId,
+    this.recurrenceRule,
+    this.recurrenceAnchorDate,
+    required this.isHabit,
     required this.isCompleted,
     required this.createdAt,
     required this.updatedAt,
@@ -1769,6 +1857,13 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     if (!nullToAbsent || milestoneId != null) {
       map['milestone_id'] = Variable<int>(milestoneId);
     }
+    if (!nullToAbsent || recurrenceRule != null) {
+      map['recurrence_rule'] = Variable<String>(recurrenceRule);
+    }
+    if (!nullToAbsent || recurrenceAnchorDate != null) {
+      map['recurrence_anchor_date'] = Variable<DateTime>(recurrenceAnchorDate);
+    }
+    map['is_habit'] = Variable<bool>(isHabit);
     map['is_completed'] = Variable<bool>(isCompleted);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1811,6 +1906,13 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       milestoneId: milestoneId == null && nullToAbsent
           ? const Value.absent()
           : Value(milestoneId),
+      recurrenceRule: recurrenceRule == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceRule),
+      recurrenceAnchorDate: recurrenceAnchorDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceAnchorDate),
+      isHabit: Value(isHabit),
       isCompleted: Value(isCompleted),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -1850,6 +1952,11 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       estimatedMinutes: serializer.fromJson<int?>(json['estimatedMinutes']),
       sortOrder: serializer.fromJson<double>(json['sortOrder']),
       milestoneId: serializer.fromJson<int?>(json['milestoneId']),
+      recurrenceRule: serializer.fromJson<String?>(json['recurrenceRule']),
+      recurrenceAnchorDate: serializer.fromJson<DateTime?>(
+        json['recurrenceAnchorDate'],
+      ),
+      isHabit: serializer.fromJson<bool>(json['isHabit']),
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -1884,6 +1991,11 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       'estimatedMinutes': serializer.toJson<int?>(estimatedMinutes),
       'sortOrder': serializer.toJson<double>(sortOrder),
       'milestoneId': serializer.toJson<int?>(milestoneId),
+      'recurrenceRule': serializer.toJson<String?>(recurrenceRule),
+      'recurrenceAnchorDate': serializer.toJson<DateTime?>(
+        recurrenceAnchorDate,
+      ),
+      'isHabit': serializer.toJson<bool>(isHabit),
       'isCompleted': serializer.toJson<bool>(isCompleted),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -1908,6 +2020,9 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     Value<int?> estimatedMinutes = const Value.absent(),
     double? sortOrder,
     Value<int?> milestoneId = const Value.absent(),
+    Value<String?> recurrenceRule = const Value.absent(),
+    Value<DateTime?> recurrenceAnchorDate = const Value.absent(),
+    bool? isHabit,
     bool? isCompleted,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -1933,6 +2048,13 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
         : this.estimatedMinutes,
     sortOrder: sortOrder ?? this.sortOrder,
     milestoneId: milestoneId.present ? milestoneId.value : this.milestoneId,
+    recurrenceRule: recurrenceRule.present
+        ? recurrenceRule.value
+        : this.recurrenceRule,
+    recurrenceAnchorDate: recurrenceAnchorDate.present
+        ? recurrenceAnchorDate.value
+        : this.recurrenceAnchorDate,
+    isHabit: isHabit ?? this.isHabit,
     isCompleted: isCompleted ?? this.isCompleted,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1968,6 +2090,13 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
       milestoneId: data.milestoneId.present
           ? data.milestoneId.value
           : this.milestoneId,
+      recurrenceRule: data.recurrenceRule.present
+          ? data.recurrenceRule.value
+          : this.recurrenceRule,
+      recurrenceAnchorDate: data.recurrenceAnchorDate.present
+          ? data.recurrenceAnchorDate.value
+          : this.recurrenceAnchorDate,
+      isHabit: data.isHabit.present ? data.isHabit.value : this.isHabit,
       isCompleted: data.isCompleted.present
           ? data.isCompleted.value
           : this.isCompleted,
@@ -1996,6 +2125,9 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           ..write('estimatedMinutes: $estimatedMinutes, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('milestoneId: $milestoneId, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('recurrenceAnchorDate: $recurrenceAnchorDate, ')
+          ..write('isHabit: $isHabit, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -2005,7 +2137,7 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     uuid,
     projectId,
@@ -2022,11 +2154,14 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
     estimatedMinutes,
     sortOrder,
     milestoneId,
+    recurrenceRule,
+    recurrenceAnchorDate,
+    isHabit,
     isCompleted,
     createdAt,
     updatedAt,
     deletedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2048,6 +2183,9 @@ class TaskTableData extends DataClass implements Insertable<TaskTableData> {
           other.estimatedMinutes == this.estimatedMinutes &&
           other.sortOrder == this.sortOrder &&
           other.milestoneId == this.milestoneId &&
+          other.recurrenceRule == this.recurrenceRule &&
+          other.recurrenceAnchorDate == this.recurrenceAnchorDate &&
+          other.isHabit == this.isHabit &&
           other.isCompleted == this.isCompleted &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -2071,6 +2209,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
   final Value<int?> estimatedMinutes;
   final Value<double> sortOrder;
   final Value<int?> milestoneId;
+  final Value<String?> recurrenceRule;
+  final Value<DateTime?> recurrenceAnchorDate;
+  final Value<bool> isHabit;
   final Value<bool> isCompleted;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -2092,6 +2233,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     this.estimatedMinutes = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.milestoneId = const Value.absent(),
+    this.recurrenceRule = const Value.absent(),
+    this.recurrenceAnchorDate = const Value.absent(),
+    this.isHabit = const Value.absent(),
     this.isCompleted = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -2114,6 +2258,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     this.estimatedMinutes = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.milestoneId = const Value.absent(),
+    this.recurrenceRule = const Value.absent(),
+    this.recurrenceAnchorDate = const Value.absent(),
+    this.isHabit = const Value.absent(),
     this.isCompleted = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -2142,6 +2289,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     Expression<int>? estimatedMinutes,
     Expression<double>? sortOrder,
     Expression<int>? milestoneId,
+    Expression<String>? recurrenceRule,
+    Expression<DateTime>? recurrenceAnchorDate,
+    Expression<bool>? isHabit,
     Expression<bool>? isCompleted,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -2165,6 +2315,10 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       if (estimatedMinutes != null) 'estimated_minutes': estimatedMinutes,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (milestoneId != null) 'milestone_id': milestoneId,
+      if (recurrenceRule != null) 'recurrence_rule': recurrenceRule,
+      if (recurrenceAnchorDate != null)
+        'recurrence_anchor_date': recurrenceAnchorDate,
+      if (isHabit != null) 'is_habit': isHabit,
       if (isCompleted != null) 'is_completed': isCompleted,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -2189,6 +2343,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     Value<int?>? estimatedMinutes,
     Value<double>? sortOrder,
     Value<int?>? milestoneId,
+    Value<String?>? recurrenceRule,
+    Value<DateTime?>? recurrenceAnchorDate,
+    Value<bool>? isHabit,
     Value<bool>? isCompleted,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -2212,6 +2369,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
       estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
       sortOrder: sortOrder ?? this.sortOrder,
       milestoneId: milestoneId ?? this.milestoneId,
+      recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+      recurrenceAnchorDate: recurrenceAnchorDate ?? this.recurrenceAnchorDate,
+      isHabit: isHabit ?? this.isHabit,
       isCompleted: isCompleted ?? this.isCompleted,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -2278,6 +2438,17 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
     if (milestoneId.present) {
       map['milestone_id'] = Variable<int>(milestoneId.value);
     }
+    if (recurrenceRule.present) {
+      map['recurrence_rule'] = Variable<String>(recurrenceRule.value);
+    }
+    if (recurrenceAnchorDate.present) {
+      map['recurrence_anchor_date'] = Variable<DateTime>(
+        recurrenceAnchorDate.value,
+      );
+    }
+    if (isHabit.present) {
+      map['is_habit'] = Variable<bool>(isHabit.value);
+    }
     if (isCompleted.present) {
       map['is_completed'] = Variable<bool>(isCompleted.value);
     }
@@ -2312,6 +2483,9 @@ class TaskTableCompanion extends UpdateCompanion<TaskTableData> {
           ..write('estimatedMinutes: $estimatedMinutes, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('milestoneId: $milestoneId, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('recurrenceAnchorDate: $recurrenceAnchorDate, ')
+          ..write('isHabit: $isHabit, ')
           ..write('isCompleted: $isCompleted, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -4942,6 +5116,526 @@ class TaskTagTableCompanion extends UpdateCompanion<TaskTagTableData> {
   }
 }
 
+class $TaskCompletionTableTable extends TaskCompletionTable
+    with TableInfo<$TaskCompletionTableTable, TaskCompletionTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TaskCompletionTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+    'uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
+  @override
+  late final GeneratedColumn<int> taskId = GeneratedColumn<int>(
+    'task_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES task_table (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _occurrenceDateMeta = const VerificationMeta(
+    'occurrenceDate',
+  );
+  @override
+  late final GeneratedColumn<String> occurrenceDate = GeneratedColumn<String>(
+    'occurrence_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    uuid,
+    taskId,
+    occurrenceDate,
+    completedAt,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'task_completion_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TaskCompletionTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uuid')) {
+      context.handle(
+        _uuidMeta,
+        uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('task_id')) {
+      context.handle(
+        _taskIdMeta,
+        taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_taskIdMeta);
+    }
+    if (data.containsKey('occurrence_date')) {
+      context.handle(
+        _occurrenceDateMeta,
+        occurrenceDate.isAcceptableOrUnknown(
+          data['occurrence_date']!,
+          _occurrenceDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_occurrenceDateMeta);
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_completedAtMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TaskCompletionTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TaskCompletionTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      uuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uuid'],
+      )!,
+      taskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}task_id'],
+      )!,
+      occurrenceDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}occurrence_date'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $TaskCompletionTableTable createAlias(String alias) {
+    return $TaskCompletionTableTable(attachedDatabase, alias);
+  }
+}
+
+class TaskCompletionTableData extends DataClass
+    implements Insertable<TaskCompletionTableData> {
+  final int id;
+  final String uuid;
+  final int taskId;
+
+  /// Local calendar date as `YYYY-MM-DD` (date-only, no time component).
+  final String occurrenceDate;
+  final DateTime completedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const TaskCompletionTableData({
+    required this.id,
+    required this.uuid,
+    required this.taskId,
+    required this.occurrenceDate,
+    required this.completedAt,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uuid'] = Variable<String>(uuid);
+    map['task_id'] = Variable<int>(taskId);
+    map['occurrence_date'] = Variable<String>(occurrenceDate);
+    map['completed_at'] = Variable<DateTime>(completedAt);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  TaskCompletionTableCompanion toCompanion(bool nullToAbsent) {
+    return TaskCompletionTableCompanion(
+      id: Value(id),
+      uuid: Value(uuid),
+      taskId: Value(taskId),
+      occurrenceDate: Value(occurrenceDate),
+      completedAt: Value(completedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory TaskCompletionTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TaskCompletionTableData(
+      id: serializer.fromJson<int>(json['id']),
+      uuid: serializer.fromJson<String>(json['uuid']),
+      taskId: serializer.fromJson<int>(json['taskId']),
+      occurrenceDate: serializer.fromJson<String>(json['occurrenceDate']),
+      completedAt: serializer.fromJson<DateTime>(json['completedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uuid': serializer.toJson<String>(uuid),
+      'taskId': serializer.toJson<int>(taskId),
+      'occurrenceDate': serializer.toJson<String>(occurrenceDate),
+      'completedAt': serializer.toJson<DateTime>(completedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  TaskCompletionTableData copyWith({
+    int? id,
+    String? uuid,
+    int? taskId,
+    String? occurrenceDate,
+    DateTime? completedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => TaskCompletionTableData(
+    id: id ?? this.id,
+    uuid: uuid ?? this.uuid,
+    taskId: taskId ?? this.taskId,
+    occurrenceDate: occurrenceDate ?? this.occurrenceDate,
+    completedAt: completedAt ?? this.completedAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  TaskCompletionTableData copyWithCompanion(TaskCompletionTableCompanion data) {
+    return TaskCompletionTableData(
+      id: data.id.present ? data.id.value : this.id,
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      taskId: data.taskId.present ? data.taskId.value : this.taskId,
+      occurrenceDate: data.occurrenceDate.present
+          ? data.occurrenceDate.value
+          : this.occurrenceDate,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaskCompletionTableData(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('taskId: $taskId, ')
+          ..write('occurrenceDate: $occurrenceDate, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    uuid,
+    taskId,
+    occurrenceDate,
+    completedAt,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TaskCompletionTableData &&
+          other.id == this.id &&
+          other.uuid == this.uuid &&
+          other.taskId == this.taskId &&
+          other.occurrenceDate == this.occurrenceDate &&
+          other.completedAt == this.completedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class TaskCompletionTableCompanion
+    extends UpdateCompanion<TaskCompletionTableData> {
+  final Value<int> id;
+  final Value<String> uuid;
+  final Value<int> taskId;
+  final Value<String> occurrenceDate;
+  final Value<DateTime> completedAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  const TaskCompletionTableCompanion({
+    this.id = const Value.absent(),
+    this.uuid = const Value.absent(),
+    this.taskId = const Value.absent(),
+    this.occurrenceDate = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+  });
+  TaskCompletionTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String uuid,
+    required int taskId,
+    required String occurrenceDate,
+    required DateTime completedAt,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+  }) : uuid = Value(uuid),
+       taskId = Value(taskId),
+       occurrenceDate = Value(occurrenceDate),
+       completedAt = Value(completedAt),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<TaskCompletionTableData> custom({
+    Expression<int>? id,
+    Expression<String>? uuid,
+    Expression<int>? taskId,
+    Expression<String>? occurrenceDate,
+    Expression<DateTime>? completedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uuid != null) 'uuid': uuid,
+      if (taskId != null) 'task_id': taskId,
+      if (occurrenceDate != null) 'occurrence_date': occurrenceDate,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+    });
+  }
+
+  TaskCompletionTableCompanion copyWith({
+    Value<int>? id,
+    Value<String>? uuid,
+    Value<int>? taskId,
+    Value<String>? occurrenceDate,
+    Value<DateTime>? completedAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+  }) {
+    return TaskCompletionTableCompanion(
+      id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
+      taskId: taskId ?? this.taskId,
+      occurrenceDate: occurrenceDate ?? this.occurrenceDate,
+      completedAt: completedAt ?? this.completedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (taskId.present) {
+      map['task_id'] = Variable<int>(taskId.value);
+    }
+    if (occurrenceDate.present) {
+      map['occurrence_date'] = Variable<String>(occurrenceDate.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaskCompletionTableCompanion(')
+          ..write('id: $id, ')
+          ..write('uuid: $uuid, ')
+          ..write('taskId: $taskId, ')
+          ..write('occurrenceDate: $occurrenceDate, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4957,6 +5651,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $NotificationInboxTableTable(this);
   late final $TagTableTable tagTable = $TagTableTable(this);
   late final $TaskTagTableTable taskTagTable = $TaskTagTableTable(this);
+  late final $TaskCompletionTableTable taskCompletionTable =
+      $TaskCompletionTableTable(this);
   late final Index projectCreatedAtIdx = Index(
     'project_created_at_idx',
     'CREATE INDEX project_created_at_idx ON project_table (created_at)',
@@ -5077,6 +5773,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'milestone_deleted_at_idx',
     'CREATE INDEX milestone_deleted_at_idx ON milestone_table (deleted_at)',
   );
+  late final Index taskCompletionUuidIdx = Index(
+    'task_completion_uuid_idx',
+    'CREATE UNIQUE INDEX task_completion_uuid_idx ON task_completion_table (uuid)',
+  );
+  late final Index taskCompletionTaskIdIdx = Index(
+    'task_completion_task_id_idx',
+    'CREATE INDEX task_completion_task_id_idx ON task_completion_table (task_id)',
+  );
+  late final Index taskCompletionOccurrenceDateIdx = Index(
+    'task_completion_occurrence_date_idx',
+    'CREATE INDEX task_completion_occurrence_date_idx ON task_completion_table (occurrence_date)',
+  );
+  late final Index taskCompletionDeletedAtIdx = Index(
+    'task_completion_deleted_at_idx',
+    'CREATE INDEX task_completion_deleted_at_idx ON task_completion_table (deleted_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5091,6 +5803,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     notificationInboxTable,
     tagTable,
     taskTagTable,
+    taskCompletionTable,
     projectCreatedAtIdx,
     projectUpdatedAtIdx,
     projectUuidIdx,
@@ -5121,6 +5834,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     milestoneUuidIdx,
     milestoneProjectIdIdx,
     milestoneDeletedAtIdx,
+    taskCompletionUuidIdx,
+    taskCompletionTaskIdIdx,
+    taskCompletionOccurrenceDateIdx,
+    taskCompletionDeletedAtIdx,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -5172,6 +5889,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('task_tag_table', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'task_table',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('task_completion_table', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -6174,6 +6898,9 @@ typedef $$TaskTableTableCreateCompanionBuilder =
       Value<int?> estimatedMinutes,
       Value<double> sortOrder,
       Value<int?> milestoneId,
+      Value<String?> recurrenceRule,
+      Value<DateTime?> recurrenceAnchorDate,
+      Value<bool> isHabit,
       Value<bool> isCompleted,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -6197,6 +6924,9 @@ typedef $$TaskTableTableUpdateCompanionBuilder =
       Value<int?> estimatedMinutes,
       Value<double> sortOrder,
       Value<int?> milestoneId,
+      Value<String?> recurrenceRule,
+      Value<DateTime?> recurrenceAnchorDate,
+      Value<bool> isHabit,
       Value<bool> isCompleted,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -6297,6 +7027,30 @@ final class $$TaskTableTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $TaskCompletionTableTable,
+    List<TaskCompletionTableData>
+  >
+  _taskCompletionTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.taskCompletionTable,
+        aliasName: 'task_table__id__task_completion_table__task_id',
+      );
+
+  $$TaskCompletionTableTableProcessedTableManager get taskCompletionTableRefs {
+    final manager = $$TaskCompletionTableTableTableManager(
+      $_db,
+      $_db.taskCompletionTable,
+    ).filter((f) => f.taskId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _taskCompletionTableRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TaskTableTableFilterComposer
@@ -6373,6 +7127,21 @@ class $$TaskTableTableFilterComposer
 
   ColumnFilters<double> get sortOrder => $composableBuilder(
     column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get recurrenceAnchorDate => $composableBuilder(
+    column: $table.recurrenceAnchorDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isHabit => $composableBuilder(
+    column: $table.isHabit,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6514,6 +7283,31 @@ class $$TaskTableTableFilterComposer
     );
     return f(composer);
   }
+
+  Expression<bool> taskCompletionTableRefs(
+    Expression<bool> Function($$TaskCompletionTableTableFilterComposer f) f,
+  ) {
+    final $$TaskCompletionTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.taskCompletionTable,
+      getReferencedColumn: (t) => t.taskId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskCompletionTableTableFilterComposer(
+            $db: $db,
+            $table: $db.taskCompletionTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TaskTableTableOrderingComposer
@@ -6587,6 +7381,21 @@ class $$TaskTableTableOrderingComposer
 
   ColumnOrderings<double> get sortOrder => $composableBuilder(
     column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get recurrenceAnchorDate => $composableBuilder(
+    column: $table.recurrenceAnchorDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isHabit => $composableBuilder(
+    column: $table.isHabit,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -6737,6 +7546,19 @@ class $$TaskTableTableAnnotationComposer
   GeneratedColumn<double> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
 
+  GeneratedColumn<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get recurrenceAnchorDate => $composableBuilder(
+    column: $table.recurrenceAnchorDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isHabit =>
+      $composableBuilder(column: $table.isHabit, builder: (column) => column);
+
   GeneratedColumn<bool> get isCompleted => $composableBuilder(
     column: $table.isCompleted,
     builder: (column) => column,
@@ -6870,6 +7692,32 @@ class $$TaskTableTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> taskCompletionTableRefs<T extends Object>(
+    Expression<T> Function($$TaskCompletionTableTableAnnotationComposer a) f,
+  ) {
+    final $$TaskCompletionTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.taskCompletionTable,
+          getReferencedColumn: (t) => t.taskId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TaskCompletionTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.taskCompletionTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$TaskTableTableTableManager
@@ -6891,6 +7739,7 @@ class $$TaskTableTableTableManager
             bool milestoneId,
             bool focusSessionTableRefs,
             bool taskTagTableRefs,
+            bool taskCompletionTableRefs,
           })
         > {
   $$TaskTableTableTableManager(_$AppDatabase db, $TaskTableTable table)
@@ -6922,6 +7771,9 @@ class $$TaskTableTableTableManager
                 Value<int?> estimatedMinutes = const Value.absent(),
                 Value<double> sortOrder = const Value.absent(),
                 Value<int?> milestoneId = const Value.absent(),
+                Value<String?> recurrenceRule = const Value.absent(),
+                Value<DateTime?> recurrenceAnchorDate = const Value.absent(),
+                Value<bool> isHabit = const Value.absent(),
                 Value<bool> isCompleted = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -6943,6 +7795,9 @@ class $$TaskTableTableTableManager
                 estimatedMinutes: estimatedMinutes,
                 sortOrder: sortOrder,
                 milestoneId: milestoneId,
+                recurrenceRule: recurrenceRule,
+                recurrenceAnchorDate: recurrenceAnchorDate,
+                isHabit: isHabit,
                 isCompleted: isCompleted,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -6966,6 +7821,9 @@ class $$TaskTableTableTableManager
                 Value<int?> estimatedMinutes = const Value.absent(),
                 Value<double> sortOrder = const Value.absent(),
                 Value<int?> milestoneId = const Value.absent(),
+                Value<String?> recurrenceRule = const Value.absent(),
+                Value<DateTime?> recurrenceAnchorDate = const Value.absent(),
+                Value<bool> isHabit = const Value.absent(),
                 Value<bool> isCompleted = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -6987,6 +7845,9 @@ class $$TaskTableTableTableManager
                 estimatedMinutes: estimatedMinutes,
                 sortOrder: sortOrder,
                 milestoneId: milestoneId,
+                recurrenceRule: recurrenceRule,
+                recurrenceAnchorDate: recurrenceAnchorDate,
+                isHabit: isHabit,
                 isCompleted: isCompleted,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -7007,12 +7868,14 @@ class $$TaskTableTableTableManager
                 milestoneId = false,
                 focusSessionTableRefs = false,
                 taskTagTableRefs = false,
+                taskCompletionTableRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (focusSessionTableRefs) db.focusSessionTable,
                     if (taskTagTableRefs) db.taskTagTable,
+                    if (taskCompletionTableRefs) db.taskCompletionTable,
                   ],
                   addJoins:
                       <
@@ -7116,6 +7979,27 @@ class $$TaskTableTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (taskCompletionTableRefs)
+                        await $_getPrefetchedData<
+                          TaskTableData,
+                          $TaskTableTable,
+                          TaskCompletionTableData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TaskTableTableReferences
+                              ._taskCompletionTableRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TaskTableTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).taskCompletionTableRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.taskId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -7142,6 +8026,7 @@ typedef $$TaskTableTableProcessedTableManager =
         bool milestoneId,
         bool focusSessionTableRefs,
         bool taskTagTableRefs,
+        bool taskCompletionTableRefs,
       })
     >;
 typedef $$FocusSessionTableTableCreateCompanionBuilder =
@@ -8979,6 +9864,397 @@ typedef $$TaskTagTableTableProcessedTableManager =
       TaskTagTableData,
       PrefetchHooks Function({bool taskId, bool tagId})
     >;
+typedef $$TaskCompletionTableTableCreateCompanionBuilder =
+    TaskCompletionTableCompanion Function({
+      Value<int> id,
+      required String uuid,
+      required int taskId,
+      required String occurrenceDate,
+      required DateTime completedAt,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+    });
+typedef $$TaskCompletionTableTableUpdateCompanionBuilder =
+    TaskCompletionTableCompanion Function({
+      Value<int> id,
+      Value<String> uuid,
+      Value<int> taskId,
+      Value<String> occurrenceDate,
+      Value<DateTime> completedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+    });
+
+final class $$TaskCompletionTableTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $TaskCompletionTableTable,
+          TaskCompletionTableData
+        > {
+  $$TaskCompletionTableTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TaskTableTable _taskIdTable(_$AppDatabase db) => db.taskTable
+      .createAlias('task_completion_table__task_id__task_table__id');
+
+  $$TaskTableTableProcessedTableManager get taskId {
+    final $_column = $_itemColumn<int>('task_id')!;
+
+    final manager = $$TaskTableTableTableManager(
+      $_db,
+      $_db.taskTable,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_taskIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TaskCompletionTableTableFilterComposer
+    extends Composer<_$AppDatabase, $TaskCompletionTableTable> {
+  $$TaskCompletionTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get uuid => $composableBuilder(
+    column: $table.uuid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get occurrenceDate => $composableBuilder(
+    column: $table.occurrenceDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TaskTableTableFilterComposer get taskId {
+    final $$TaskTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.taskId,
+      referencedTable: $db.taskTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableFilterComposer(
+            $db: $db,
+            $table: $db.taskTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TaskCompletionTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $TaskCompletionTableTable> {
+  $$TaskCompletionTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get uuid => $composableBuilder(
+    column: $table.uuid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get occurrenceDate => $composableBuilder(
+    column: $table.occurrenceDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TaskTableTableOrderingComposer get taskId {
+    final $$TaskTableTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.taskId,
+      referencedTable: $db.taskTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableOrderingComposer(
+            $db: $db,
+            $table: $db.taskTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TaskCompletionTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TaskCompletionTableTable> {
+  $$TaskCompletionTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<String> get occurrenceDate => $composableBuilder(
+    column: $table.occurrenceDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$TaskTableTableAnnotationComposer get taskId {
+    final $$TaskTableTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.taskId,
+      referencedTable: $db.taskTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TaskTableTableAnnotationComposer(
+            $db: $db,
+            $table: $db.taskTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TaskCompletionTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TaskCompletionTableTable,
+          TaskCompletionTableData,
+          $$TaskCompletionTableTableFilterComposer,
+          $$TaskCompletionTableTableOrderingComposer,
+          $$TaskCompletionTableTableAnnotationComposer,
+          $$TaskCompletionTableTableCreateCompanionBuilder,
+          $$TaskCompletionTableTableUpdateCompanionBuilder,
+          (TaskCompletionTableData, $$TaskCompletionTableTableReferences),
+          TaskCompletionTableData,
+          PrefetchHooks Function({bool taskId})
+        > {
+  $$TaskCompletionTableTableTableManager(
+    _$AppDatabase db,
+    $TaskCompletionTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TaskCompletionTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TaskCompletionTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$TaskCompletionTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> uuid = const Value.absent(),
+                Value<int> taskId = const Value.absent(),
+                Value<String> occurrenceDate = const Value.absent(),
+                Value<DateTime> completedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+              }) => TaskCompletionTableCompanion(
+                id: id,
+                uuid: uuid,
+                taskId: taskId,
+                occurrenceDate: occurrenceDate,
+                completedAt: completedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String uuid,
+                required int taskId,
+                required String occurrenceDate,
+                required DateTime completedAt,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+              }) => TaskCompletionTableCompanion.insert(
+                id: id,
+                uuid: uuid,
+                taskId: taskId,
+                occurrenceDate: occurrenceDate,
+                completedAt: completedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TaskCompletionTableTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({taskId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (taskId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.taskId,
+                                referencedTable:
+                                    $$TaskCompletionTableTableReferences
+                                        ._taskIdTable(db),
+                                referencedColumn:
+                                    $$TaskCompletionTableTableReferences
+                                        ._taskIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TaskCompletionTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TaskCompletionTableTable,
+      TaskCompletionTableData,
+      $$TaskCompletionTableTableFilterComposer,
+      $$TaskCompletionTableTableOrderingComposer,
+      $$TaskCompletionTableTableAnnotationComposer,
+      $$TaskCompletionTableTableCreateCompanionBuilder,
+      $$TaskCompletionTableTableUpdateCompanionBuilder,
+      (TaskCompletionTableData, $$TaskCompletionTableTableReferences),
+      TaskCompletionTableData,
+      PrefetchHooks Function({bool taskId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9007,4 +10283,6 @@ class $AppDatabaseManager {
       $$TagTableTableTableManager(_db, _db.tagTable);
   $$TaskTagTableTableTableManager get taskTagTable =>
       $$TaskTagTableTableTableManager(_db, _db.taskTagTable);
+  $$TaskCompletionTableTableTableManager get taskCompletionTable =>
+      $$TaskCompletionTableTableTableManager(_db, _db.taskCompletionTable);
 }

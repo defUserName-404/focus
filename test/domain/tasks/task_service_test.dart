@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus/core/utils/result.dart';
+import 'package:focus/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
+import 'package:focus/features/tasks/domain/entities/task_completion.dart';
+import 'package:focus/features/tasks/domain/entities/task_completion_extensions.dart';
 import 'package:focus/features/tasks/domain/entities/task_extensions.dart';
 import 'package:focus/features/tasks/domain/entities/task_status.dart';
 import 'package:focus/features/tasks/domain/repositories/i_task_repository.dart';
@@ -21,6 +24,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(buildTask());
+    registerFallbackValue(buildCompletion());
   });
 
   setUp(() {
@@ -82,6 +86,48 @@ void main() {
     final result = await service.toggleTaskCompletion(task);
     expect(result, isA<Success<void>>());
     verify(() => notifications.scheduleTaskReminder(any())).called(1);
+  });
+
+  test('completeOccurrence marks non-recurring task done', () async {
+    when(() => repository.getTaskById(4)).thenAnswer((_) async => buildTask(id: 4, isCompleted: false));
+    when(() => repository.updateTask(any())).thenAnswer((_) async {});
+
+    final result = await service.completeOccurrence(4, DateTime(2026, 8, 2));
+    expect(result, isA<Success<TaskCompletion?>>());
+    expect((result as Success<TaskCompletion?>).value, isNull);
+    final captured = verify(() => repository.updateTask(captureAny())).captured.single as Task;
+    expect(captured.status, TaskStatus.done);
+    verify(() => notifications.cancelTaskReminder(4)).called(1);
+    verifyNever(() => repository.upsertCompletion(any()));
+  });
+
+  test('completeOccurrence upserts completion for recurring tasks', () async {
+    final task = buildTask(
+      id: 9,
+      recurrenceRule: const RecurrenceRule(frequency: RecurrenceFrequency.daily),
+      recurrenceAnchorDate: DateTime(2026, 8, 1),
+      isHabit: true,
+      endDate: null,
+    );
+    when(() => repository.getTaskById(9)).thenAnswer((_) async => task);
+    when(() => repository.upsertCompletion(any())).thenAnswer((invocation) async {
+      final c = invocation.positionalArguments.first as TaskCompletion;
+      return c.copyWith(id: 42);
+    });
+
+    final result = await service.completeOccurrence(9, DateTime(2026, 8, 2, 15));
+    expect(result, isA<Success<TaskCompletion?>>());
+    final saved = (result as Success<TaskCompletion?>).value!;
+    expect(saved.id, 42);
+    expect(saved.occurrenceDate, DateTime(2026, 8, 2));
+    verify(() => notifications.scheduleTaskReminder(task)).called(1);
+    verifyNever(() => repository.updateTask(any()));
+  });
+
+  test('completeOccurrence returns NotFound when task missing', () async {
+    when(() => repository.getTaskById(99)).thenAnswer((_) async => null);
+    final result = await service.completeOccurrence(99, DateTime(2026, 8, 2));
+    expect(result, isA<Failure<TaskCompletion?>>());
   });
 
   test('createTask returns Failure when repository throws', () async {

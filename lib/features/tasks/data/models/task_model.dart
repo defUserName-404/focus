@@ -50,6 +50,15 @@ class TaskTable extends Table {
 
   IntColumn get milestoneId => integer().nullable().references(MilestoneTable, #id, onDelete: KeyAction.setNull)();
 
+  /// JSON-encoded [RecurrenceRule], or null for one-shot tasks.
+  TextColumn get recurrenceRule => text().nullable()();
+
+  /// Series start used by [RecurrenceExpander]; defaults to start/created when null.
+  DateTimeColumn get recurrenceAnchorDate => dateTime().nullable()();
+
+  /// When true, the recurring task is surfaced as a habit (streaks / agenda).
+  BoolColumn get isHabit => boolean().withDefault(const Constant(false))();
+
   /// Kept in sync with [status] == done for one migration cycle (v7).
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
 

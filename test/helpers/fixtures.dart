@@ -5,7 +5,9 @@ import 'package:focus/features/projects/domain/entities/project_status.dart';
 import 'package:focus/features/session/domain/entities/focus_session.dart';
 import 'package:focus/features/session/domain/entities/session_state.dart';
 import 'package:focus/features/tags/domain/entities/tag.dart';
+import 'package:focus/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:focus/features/tasks/domain/entities/task.dart';
+import 'package:focus/features/tasks/domain/entities/task_completion.dart';
 import 'package:focus/features/tasks/domain/entities/task_priority.dart';
 import 'package:focus/features/tasks/domain/entities/task_reminder_mode.dart';
 import 'package:focus/features/tasks/domain/entities/task_status.dart';
@@ -28,6 +30,9 @@ Task buildTask({
   int? estimatedMinutes,
   double sortOrder = 0,
   int? milestoneId,
+  RecurrenceRule? recurrenceRule,
+  DateTime? recurrenceAnchorDate,
+  bool isHabit = false,
   bool isCompleted = false,
   DateTime? createdAt,
   DateTime? updatedAt,
@@ -50,6 +55,9 @@ Task buildTask({
     estimatedMinutes: estimatedMinutes,
     sortOrder: sortOrder,
     milestoneId: milestoneId,
+    recurrenceRule: recurrenceRule,
+    recurrenceAnchorDate: recurrenceAnchorDate,
+    isHabit: isHabit,
     createdAt: created,
     updatedAt: updatedAt ?? created,
     deletedAt: deletedAt,
@@ -57,6 +65,29 @@ Task buildTask({
 }
 
 const _sentinel = Object();
+
+TaskCompletion buildCompletion({
+  int? id = 1,
+  String? uuid,
+  int taskId = 1,
+  DateTime? occurrenceDate,
+  DateTime? completedAt,
+  DateTime? createdAt,
+  DateTime? updatedAt,
+  DateTime? deletedAt,
+}) {
+  final created = createdAt ?? testNow;
+  return TaskCompletion(
+    id: id,
+    uuid: uuid ?? 'completion-uuid-${id ?? 0}',
+    taskId: taskId,
+    occurrenceDate: occurrenceDate ?? DateTime(testNow.year, testNow.month, testNow.day),
+    completedAt: completedAt ?? created,
+    createdAt: created,
+    updatedAt: updatedAt ?? created,
+    deletedAt: deletedAt,
+  );
+}
 
 Project buildProject({
   int? id = 1,
