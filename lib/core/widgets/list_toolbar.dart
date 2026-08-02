@@ -49,26 +49,31 @@ class ListToolbar extends StatelessWidget {
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
-            final narrow = constraints.maxWidth < 360;
+            // Icon-only Filters/Create below 520 so master-detail panes and phones
+            // keep a usable search field instead of crushing labels.
+            final iconOnly = constraints.maxWidth < 520;
             return ListToolbarLayout(
-              iconOnly: narrow,
+              iconOnly: iconOnly,
               child: FocusTraversalGroup(
                 child: Row(
                   children: [
                     Expanded(
-                      child: AppSearchBar(hint: searchHint, onChanged: onSearchChanged, focusNode: searchFocusNode),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minWidth: 140),
+                        child: AppSearchBar(hint: searchHint, onChanged: onSearchChanged, focusNode: searchFocusNode),
+                      ),
                     ),
                     if (viewModeControl != null) ...[SizedBox(width: AppConstants.spacing.small), viewModeControl!],
                     SizedBox(width: AppConstants.spacing.small),
                     _FilterTrigger(
                       activeFilterCount: activeFilterCount,
                       filterPanel: filterPanel,
-                      iconOnly: narrow,
+                      iconOnly: iconOnly,
                       onReset: onReset,
                     ),
                     if (onCreate != null) ...[
                       SizedBox(width: AppConstants.spacing.small),
-                      if (narrow)
+                      if (iconOnly)
                         fu.FTooltip(
                           tipBuilder: (context, _) => Text(createLabel),
                           child: fu.FButton.icon(
