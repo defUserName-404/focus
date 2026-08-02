@@ -236,7 +236,7 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
                 separatorBuilder: (_, _) => SizedBox(width: AppConstants.spacing.small),
                 itemBuilder: (context, index) {
                   final status = TaskStatus.values[index];
-                  final columnWidth = 240.0;
+                  final columnWidth = 168.0;
                   return SizedBox(
                     width: columnWidth,
                     child: _BoardColumn(
