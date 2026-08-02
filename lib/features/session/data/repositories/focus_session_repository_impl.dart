@@ -33,7 +33,12 @@ class FocusSessionRepositoryImpl implements IFocusSessionRepository {
       final companion = session.toCompanion();
       await _local.updateSession(companion);
     } catch (e, st) {
-      _log.error('Failed to update session (id=${session.id})', tag: 'FocusSessionRepository', error: e, stackTrace: st);
+      _log.error(
+        'Failed to update session (id=${session.id})',
+        tag: 'FocusSessionRepository',
+        error: e,
+        stackTrace: st,
+      );
       rethrow;
     }
   }

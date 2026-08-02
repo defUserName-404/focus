@@ -19,43 +19,92 @@ const _syncFileName = 'focus_sync_data.json';
 ///
 /// Uses the appDataFolder space so the sync file is hidden from the user's
 /// normal Drive view. Requires the `drive.appdata` scope.
+///
+/// Targets google_sign_in 7.x: singleton [GoogleSignIn.instance], explicit
+/// [GoogleSignIn.initialize], and scope authorization via
+/// [GoogleSignInAccount.authorizationClient].
 class GoogleDriveService implements ICloudStorageService {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: [drive.DriveApi.driveAppdataScope]);
+  static const _scopes = [drive.DriveApi.driveAppdataScope];
 
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  GoogleSignInAccount? _account;
   drive.DriveApi? _driveApi;
+  Future<void>? _initFuture;
+  bool _listening = false;
+
+  Future<void> _ensureInitialized() {
+    return _initFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await _googleSignIn.initialize();
+    if (_listening) return;
+    _listening = true;
+    _googleSignIn.authenticationEvents.listen((event) {
+      switch (event) {
+        case GoogleSignInAuthenticationEventSignIn(:final user):
+          _account = user;
+        case GoogleSignInAuthenticationEventSignOut():
+          _account = null;
+          _driveApi = null;
+      }
+    });
+  }
 
   Future<drive.DriveApi?> _getDriveApi() async {
+    await _ensureInitialized();
     if (_driveApi != null) return _driveApi;
 
-    final httpClient = await _googleSignIn.authenticatedClient();
-    if (httpClient == null) return null;
+    var account = _account;
+    if (account == null) {
+      final lightweight = _googleSignIn.attemptLightweightAuthentication();
+      if (lightweight != null) {
+        account = await lightweight;
+        _account = account;
+      }
+    }
+    if (account == null) return null;
 
-    _driveApi = drive.DriveApi(httpClient);
+    final authz =
+        await account.authorizationClient.authorizationForScopes(_scopes) ??
+        await account.authorizationClient.authorizeScopes(_scopes);
+    final client = authz.authClient(scopes: _scopes);
+    _driveApi = drive.DriveApi(client);
     return _driveApi;
   }
 
   @override
   Future<bool> isSignedIn() async {
-    return _googleSignIn.isSignedIn();
+    await _ensureInitialized();
+    if (_account != null) return true;
+    final lightweight = _googleSignIn.attemptLightweightAuthentication();
+    if (lightweight == null) return false;
+    _account = await lightweight;
+    return _account != null;
   }
 
   @override
   Future<String?> getAccountEmail() async {
-    final account = _googleSignIn.currentUser;
-    return account?.email;
+    await _ensureInitialized();
+    return _account?.email;
   }
 
   @override
   Future<Result<String>> signIn() async {
     try {
-      final account = await _googleSignIn.signIn();
-      if (account == null) {
-        return const Failure(SyncFailure('Sign-in was cancelled'));
-      }
+      await _ensureInitialized();
+      final account = await _googleSignIn.authenticate(scopeHint: _scopes);
+      _account = account;
       // Reset cached API client so the new auth is used.
       _driveApi = null;
       _log.info('Google Drive sign-in successful: ${account.email}', tag: 'GoogleDriveService');
       return Success(account.email);
+    } on GoogleSignInException catch (e, st) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return const Failure(SyncFailure('Sign-in was cancelled'));
+      }
+      _log.error('Google Drive sign-in failed', tag: 'GoogleDriveService', error: e, stackTrace: st);
+      return Failure(SyncFailure('Failed to sign in to Google Drive', error: e, stackTrace: st));
     } catch (e, st) {
       _log.error('Google Drive sign-in failed', tag: 'GoogleDriveService', error: e, stackTrace: st);
       return Failure(SyncFailure('Failed to sign in to Google Drive', error: e, stackTrace: st));
@@ -65,7 +114,9 @@ class GoogleDriveService implements ICloudStorageService {
   @override
   Future<Result<void>> signOut() async {
     try {
+      await _ensureInitialized();
       await _googleSignIn.signOut();
+      _account = null;
       _driveApi = null;
       _log.info('Google Drive sign-out successful', tag: 'GoogleDriveService');
       return const Success(null);

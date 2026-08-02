@@ -67,20 +67,21 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
-          start: DateTimeUtils.now(),
-          control: FDateFieldControl.lifted(date: _startDate, onChange: (date) => setState(() => _startDate = date)),
+          selectionControl: FDateSelectionControl.liftedSingle(
+            value: _startDate,
+            onChange: (date) => setState(() => _startDate = date),
+          ),
           clearable: true,
         ),
         TimeField(label: 'Start Time', value: _startDate, onChanged: (date) => setState(() => _startDate = date)),
         FDateField.calendar(
           label: const Text('Deadline'),
           hint: _deadline?.toDateString() ?? 'Select Deadline (Optional)',
-          start: DateTimeUtils.now(),
-          control: FDateFieldControl.lifted(
-            date: _deadline,
+          selectionControl: FDateSelectionControl.liftedSingle(
+            value: _deadline,
             onChange: (date) => setState(() => _deadline = date),
-            validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           ),
+          validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           autovalidateMode: AutovalidateMode.onUnfocus,
           clearable: true,
         ),

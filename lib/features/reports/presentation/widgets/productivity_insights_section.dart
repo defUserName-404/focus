@@ -28,7 +28,7 @@ class ProductivityInsightsSection extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Productivity Insights', style: context.typography.base.copyWith(fontWeight: FontWeight.w700)),
+            Text('Productivity Insights', style: context.typography.md.copyWith(fontWeight: FontWeight.w700)),
             InsightsWindowToggle(
               window: window,
               onChanged: (value) {

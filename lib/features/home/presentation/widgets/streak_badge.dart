@@ -14,7 +14,7 @@ class StreakBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FBadge(
-      style: FBadgeStyle.secondary(),
+      variant: .secondary,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         spacing: AppConstants.spacing.small,

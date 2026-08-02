@@ -50,7 +50,11 @@ class TaskPopupContent extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: onClose,
-                  child: Icon(fu.FIcons.x, size: AppConstants.size.icon.small, color: context.colors.mutedForeground),
+                  child: Icon(
+                    fu.FLucideIcons.x,
+                    size: AppConstants.size.icon.small,
+                    color: context.colors.mutedForeground,
+                  ),
                 ),
               ],
             ),

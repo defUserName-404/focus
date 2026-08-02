@@ -100,7 +100,7 @@ class _InlineAddSubtaskState extends State<InlineAddSubtask> {
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
                         child: Icon(
-                          fu.FIcons.x,
+                          fu.FLucideIcons.x,
                           size: AppConstants.size.icon.regular,
                           color: context.colors.mutedForeground,
                         ),

@@ -25,7 +25,7 @@ class AmbienceMarqueeRow extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FIcons.music2, size: 14, color: color),
+          Icon(FLucideIcons.music2, size: 14, color: color),
           SizedBox(width: AppConstants.spacing.small),
           Flexible(
             child: SizedBox(
@@ -43,7 +43,7 @@ class AmbienceMarqueeRow extends ConsumerWidget {
             child: AnimatedSwitcher(
               duration: AppConstants.animation.short,
               child: Icon(
-                state.isMuted ? FIcons.volumeOff : FIcons.volume2,
+                state.isMuted ? FLucideIcons.volumeOff : FLucideIcons.volume2,
                 key: ValueKey(state.isMuted),
                 size: 20,
                 color: color,

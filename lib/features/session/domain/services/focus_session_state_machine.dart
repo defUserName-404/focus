@@ -92,9 +92,7 @@ class FocusSessionStateMachine {
       // focusEndElapsed accounts for skipped focus phases.
       final breakEnd = session.focusEndElapsed + session.breakDurationMinutes * 60;
       if (newElapsed >= breakEnd) {
-        return CycleCompleted(
-          session.copyWith(state: SessionState.completed, endTime: DateTime.now()),
-        );
+        return CycleCompleted(session.copyWith(state: SessionState.completed, endTime: DateTime.now()));
       }
       return TickUpdate(
         session.copyWith(elapsedSeconds: newElapsed),
@@ -131,9 +129,7 @@ class FocusSessionStateMachine {
       return FocusPhaseCompleted(_toBreak(session, fromSkip: true));
     }
 
-    return CycleCompleted(
-      session.copyWith(state: SessionState.completed, endTime: DateTime.now()),
-    );
+    return CycleCompleted(session.copyWith(state: SessionState.completed, endTime: DateTime.now()));
   }
 
   // -- Pause / Resume ------------------------------------------------------
@@ -154,9 +150,7 @@ class FocusSessionStateMachine {
   FocusSession? resume(FocusSession session) {
     if (session.state != SessionState.paused) return null;
     final wasOnBreak = session.elapsedSeconds >= session.focusEndElapsed;
-    return session.copyWith(
-      state: wasOnBreak ? SessionState.onBreak : SessionState.running,
-    );
+    return session.copyWith(state: wasOnBreak ? SessionState.onBreak : SessionState.running);
   }
 
   // -- Helpers -------------------------------------------------------------
@@ -169,10 +163,6 @@ class FocusSessionStateMachine {
   FocusSession _toBreak(FocusSession session, {required bool fromSkip}) {
     final focusSeconds = session.focusDurationMinutes * 60;
     final newElapsed = fromSkip ? session.elapsedSeconds : focusSeconds;
-    return session.copyWith(
-      state: SessionState.onBreak,
-      elapsedSeconds: newElapsed,
-      focusPhaseEndedAt: newElapsed,
-    );
+    return session.copyWith(state: SessionState.onBreak, elapsedSeconds: newElapsed, focusPhaseEndedAt: newElapsed);
   }
 }

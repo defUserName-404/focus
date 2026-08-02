@@ -24,7 +24,7 @@ class SyncSettingsCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(fu.FIcons.cloud, size: AppConstants.size.icon.regular, color: context.colors.primary),
+              Icon(fu.FLucideIcons.cloud, size: AppConstants.size.icon.regular, color: context.colors.primary),
               SizedBox(width: AppConstants.spacing.regular),
               Expanded(
                 child: Column(
@@ -92,7 +92,7 @@ class SyncSettingsCard extends ConsumerWidget {
                 ),
                 SizedBox(width: AppConstants.spacing.regular),
                 fu.FButton(
-                  style: fu.FButtonStyle.outline(),
+                  variant: .outline,
                   onPress: () => ref.read(syncProvider.notifier).signOut(),
                   child: const Text('Sign Out'),
                 ),

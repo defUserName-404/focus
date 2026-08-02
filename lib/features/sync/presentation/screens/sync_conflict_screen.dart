@@ -113,7 +113,7 @@ class _ConflictCard extends StatelessWidget {
           Row(
             children: [
               Icon(
-                conflict.entityType == 'project' ? fu.FIcons.folderOpen : fu.FIcons.squareCheck,
+                conflict.entityType == 'project' ? fu.FLucideIcons.folderOpen : fu.FLucideIcons.squareCheck,
                 size: AppConstants.size.icon.regular,
                 color: context.colors.primary,
               ),
@@ -166,7 +166,7 @@ class _ConflictCard extends StatelessWidget {
             children: [
               Expanded(
                 child: fu.FButton(
-                  style: isLocal ? fu.FButtonStyle.primary() : fu.FButtonStyle.outline(),
+                  variant: isLocal ? .primary : .outline,
                   onPress: onKeepLocal,
                   child: const Text('Keep Local'),
                 ),
@@ -174,7 +174,7 @@ class _ConflictCard extends StatelessWidget {
               SizedBox(width: AppConstants.spacing.regular),
               Expanded(
                 child: fu.FButton(
-                  style: isRemote ? fu.FButtonStyle.primary() : fu.FButtonStyle.outline(),
+                  variant: isRemote ? .primary : .outline,
                   onPress: onKeepRemote,
                   child: const Text('Keep Remote'),
                 ),

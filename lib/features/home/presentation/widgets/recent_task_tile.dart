@@ -35,7 +35,7 @@ class RecentTaskTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
                 ),
                 child: Icon(
-                  task.isCompleted ? fu.FIcons.check : fu.FIcons.circle,
+                  task.isCompleted ? fu.FLucideIcons.check : fu.FLucideIcons.circle,
                   size: AppConstants.size.icon.extraSmall,
                   color: task.isCompleted ? context.colors.primary : context.colors.mutedForeground,
                 ),
@@ -67,7 +67,7 @@ class RecentTaskTile extends StatelessWidget {
               TaskPriorityBadge(priority: task.priority),
               SizedBox(width: AppConstants.spacing.small),
               Icon(
-                fu.FIcons.chevronRight,
+                fu.FLucideIcons.chevronRight,
                 size: AppConstants.size.icon.extraSmall,
                 color: context.colors.mutedForeground,
               ),

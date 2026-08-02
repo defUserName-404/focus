@@ -26,7 +26,7 @@ class TaskDateRow extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 2), // Slight lift for optical alignment
               child: Icon(
-                fu.FIcons.calendar,
+                fu.FLucideIcons.calendar,
                 size: AppConstants.size.icon.small,
                 color: context.colors.mutedForeground,
               ),
@@ -44,7 +44,7 @@ class TaskDateRow extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Icon(
-                  _isActuallyOverdue(deadline!) ? fu.FIcons.triangleAlert : fu.FIcons.clock,
+                  _isActuallyOverdue(deadline!) ? fu.FLucideIcons.triangleAlert : fu.FLucideIcons.clock,
                   color: _getStatusColor(context, deadline!),
                   size: AppConstants.size.icon.small,
                 ),

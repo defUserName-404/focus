@@ -33,7 +33,11 @@ class RecentProjectTile extends StatelessWidget {
                   color: context.colors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppConstants.border.radius.regular),
                 ),
-                child: Icon(fu.FIcons.folder, size: AppConstants.size.icon.extraSmall, color: context.colors.primary),
+                child: Icon(
+                  fu.FLucideIcons.folder,
+                  size: AppConstants.size.icon.extraSmall,
+                  color: context.colors.primary,
+                ),
               ),
               SizedBox(width: AppConstants.spacing.regular),
               Expanded(
@@ -66,7 +70,7 @@ class RecentProjectTile extends StatelessWidget {
                 SizedBox(width: AppConstants.spacing.small),
               ],
               Icon(
-                fu.FIcons.chevronRight,
+                fu.FLucideIcons.chevronRight,
                 size: AppConstants.size.icon.extraSmall,
                 color: context.colors.mutedForeground,
               ),

@@ -43,13 +43,7 @@ class LogService {
 
   // ---- Internal ------------------------------------------------------------
 
-  void _emit(
-    LogLevel level,
-    String message, {
-    String? tag,
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
+  void _emit(LogLevel level, String message, {String? tag, Object? error, StackTrace? stackTrace}) {
     if (level.index < minLevel.index) return;
 
     final prefix = tag != null ? '[$tag] ' : '';

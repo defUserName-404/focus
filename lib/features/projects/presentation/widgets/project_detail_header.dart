@@ -26,7 +26,7 @@ class ProjectDetailHeader extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.only(top: AppConstants.spacing.small),
-              child: Icon(fu.FIcons.folderOpenDot, color: context.colors.mutedForeground),
+              child: Icon(fu.FLucideIcons.folderOpenDot, color: context.colors.mutedForeground),
             ),
             Text(project.title, style: context.typography.lg),
           ],

@@ -24,7 +24,7 @@ class OverlayTaskTile extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            fu.FIcons.clock,
+            fu.FLucideIcons.clock,
             size: AppConstants.size.icon.extraSmall,
             color: isOverdue ? context.colors.destructive : context.colors.primary,
           ),

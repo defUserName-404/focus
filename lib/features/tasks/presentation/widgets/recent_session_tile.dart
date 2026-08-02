@@ -42,10 +42,10 @@ class RecentSessionTile extends StatelessWidget {
                 ),
                 child: Icon(
                   isCompleted
-                      ? fu.FIcons.check
+                      ? fu.FLucideIcons.check
                       : isCancelled
-                      ? fu.FIcons.x
-                      : fu.FIcons.clock,
+                      ? fu.FLucideIcons.x
+                      : fu.FLucideIcons.clock,
                   size: 14,
                   color: isCompleted
                       ? context.colors.primary
@@ -72,7 +72,7 @@ class RecentSessionTile extends StatelessWidget {
                 ),
               ),
               fu.FBadge(
-                style: isCompleted ? fu.FBadgeStyle.secondary() : fu.FBadgeStyle.outline(),
+                variant: isCompleted ? .secondary : .outline,
                 child: Text(session.state.label, style: context.typography.sm),
               ),
             ],

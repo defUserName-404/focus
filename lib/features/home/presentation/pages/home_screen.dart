@@ -36,7 +36,7 @@ class HomeScreen extends ConsumerWidget {
         suffixes: [
           if (stats.currentStreak > 0) StreakBadge(streak: stats.currentStreak),
           fu.FHeaderAction(
-            icon: Icon(fu.FIcons.settings, size: AppConstants.size.icon.regular),
+            icon: Icon(fu.FLucideIcons.settings, size: AppConstants.size.icon.regular),
             onPress: () => context.push(AppRoutes.settings.path),
           ),
         ],
@@ -63,7 +63,7 @@ class HomeScreen extends ConsumerWidget {
           children: [
             const QuickSessionButton(),
             fu.FButton(
-              style: fu.FButtonStyle.outline(),
+              variant: .outline,
               onPress: () => context.push(AppRoutes.reports.path),
               child: const Text('Open Reports'),
             ),
@@ -87,7 +87,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               data: (tasks) {
                 if (tasks.isEmpty) {
-                  return const EmptySection(icon: fu.FIcons.squareCheck, message: 'No tasks yet');
+                  return const EmptySection(icon: fu.FLucideIcons.squareCheck, message: 'No tasks yet');
                 }
                 return Column(children: tasks.map((task) => RecentTaskTile(task: task)).toList());
               },
@@ -102,7 +102,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               data: (projects) {
                 if (projects.isEmpty) {
-                  return const EmptySection(icon: fu.FIcons.folderOpen, message: 'No projects yet');
+                  return const EmptySection(icon: fu.FLucideIcons.folderOpen, message: 'No projects yet');
                 }
                 return Column(
                   children: projects.take(3).map((project) => RecentProjectTile(project: project)).toList(),

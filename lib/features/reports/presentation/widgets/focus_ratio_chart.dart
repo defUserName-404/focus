@@ -10,12 +10,7 @@ class FocusRatioChart extends StatelessWidget {
   final double breakRatio;
   final String ratioLabel;
 
-  const FocusRatioChart({
-    super.key,
-    required this.focusRatio,
-    required this.breakRatio,
-    required this.ratioLabel,
-  });
+  const FocusRatioChart({super.key, required this.focusRatio, required this.breakRatio, required this.ratioLabel});
 
   @override
   Widget build(BuildContext context) {

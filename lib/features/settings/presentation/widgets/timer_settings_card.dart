@@ -50,12 +50,12 @@ class TimerSettingsCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TimerStepButton(icon: fu.FIcons.minus, onTap: value > min ? () => onChanged(value - step) : null),
+                TimerStepButton(icon: fu.FLucideIcons.minus, onTap: value > min ? () => onChanged(value - step) : null),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.regular),
-                  child: Text('${value}m', style: context.typography.base.copyWith(fontWeight: FontWeight.w700)),
+                  child: Text('${value}m', style: context.typography.md.copyWith(fontWeight: FontWeight.w700)),
                 ),
-                TimerStepButton(icon: fu.FIcons.plus, onTap: value < max ? () => onChanged(value + step) : null),
+                TimerStepButton(icon: fu.FLucideIcons.plus, onTap: value < max ? () => onChanged(value + step) : null),
               ],
             ),
           ),

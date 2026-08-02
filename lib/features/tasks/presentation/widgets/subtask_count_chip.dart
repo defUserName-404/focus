@@ -14,9 +14,12 @@ class SubtaskCountChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return fu.FButton(
-      style: fu.FButtonStyle.outline(),
+      variant: .outline,
       onPress: onToggle,
-      suffix: Icon(expanded ? fu.FIcons.chevronDown : fu.FIcons.chevronRight, size: AppConstants.size.icon.small),
+      suffix: Icon(
+        expanded ? fu.FLucideIcons.chevronDown : fu.FLucideIcons.chevronRight,
+        size: AppConstants.size.icon.small,
+      ),
       child: Text('$count', style: context.typography.xs),
     );
   }

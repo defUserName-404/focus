@@ -47,7 +47,10 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
   }) {
     if (currentView == nextView) return;
 
-    final anchor = UpcomingCalendarUtils.resolveViewAnchor(selectedDay: selectedDay, uiSelectedDay: uiState.selectedDay);
+    final anchor = UpcomingCalendarUtils.resolveViewAnchor(
+      selectedDay: selectedDay,
+      uiSelectedDay: uiState.selectedDay,
+    );
     _removeOverlay();
 
     ref.read(upcomingCalendarUiStateProvider.notifier).switchView(nextView, anchor: anchor);
@@ -180,7 +183,7 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
               GestureDetector(
                 onTap: () => _previousPeriod(viewMode),
                 child: Icon(
-                  fu.FIcons.chevronLeft,
+                  fu.FLucideIcons.chevronLeft,
                   size: AppConstants.size.icon.regular,
                   color: context.colors.mutedForeground,
                 ),
@@ -196,7 +199,7 @@ class _CalendarContentState extends ConsumerState<CalendarContent> {
               GestureDetector(
                 onTap: () => _nextPeriod(viewMode),
                 child: Icon(
-                  fu.FIcons.chevronRight,
+                  fu.FLucideIcons.chevronRight,
                   size: AppConstants.size.icon.regular,
                   color: context.colors.mutedForeground,
                 ),

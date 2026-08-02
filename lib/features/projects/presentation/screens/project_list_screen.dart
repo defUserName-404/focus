@@ -76,7 +76,7 @@ class ProjectListScreen extends ConsumerWidget {
                   Padding(
                     padding: EdgeInsets.only(left: AppConstants.spacing.regular),
                     child: fu.FButton(
-                      prefix: Icon(fu.FIcons.plus),
+                      prefix: Icon(fu.FLucideIcons.plus),
                       onPress: () => ProjectCommands.create(context),
                       child: const Text('Create Project'),
                     ),
@@ -116,7 +116,7 @@ class ProjectListScreen extends ConsumerWidget {
                       spacing: AppConstants.spacing.regular,
                       children: [
                         Icon(
-                          fu.FIcons.folderOpen,
+                          fu.FLucideIcons.folderOpen,
                           size: AppConstants.size.icon.extraExtraLarge,
                           color: Theme.of(context).disabledColor,
                         ),
@@ -179,7 +179,7 @@ class ProjectListScreen extends ConsumerWidget {
       footer: Padding(
         padding: EdgeInsets.all(isCompact ? AppConstants.spacing.regular : AppConstants.spacing.large),
         child: fu.FButton(
-          prefix: Icon(fu.FIcons.plus),
+          prefix: Icon(fu.FLucideIcons.plus),
           child: const Text('Create New Project'),
           onPress: () => ProjectCommands.create(context),
         ),

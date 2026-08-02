@@ -15,7 +15,7 @@ class EmbeddedCreateTaskButton extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerRight,
         child: fu.FButton(
-          prefix: Icon(fu.FIcons.plus),
+          prefix: Icon(fu.FLucideIcons.plus),
           onPress: () => context.push(AppRoutes.createTaskWithProject.path),
           child: const Text('Create Task'),
         ),

@@ -19,7 +19,7 @@ class SectionHeader extends StatelessWidget {
         const Spacer(),
         if (onViewAll != null)
           fu.FButton(
-            style: fu.FButtonStyle.ghost(),
+            variant: .ghost,
             onPress: onViewAll,
             child: Text('View All', style: context.typography.xs),
           ),

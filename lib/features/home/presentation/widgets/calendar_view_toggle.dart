@@ -16,13 +16,13 @@ class CalendarViewToggle extends StatelessWidget {
     return Row(
       children: [
         fu.FButton(
-          style: view == CalendarViewMode.week ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          variant: view == CalendarViewMode.week ? .secondary : .outline,
           onPress: () => onChanged(CalendarViewMode.week),
           child: Text('Week', style: context.typography.xs),
         ),
         SizedBox(width: AppConstants.spacing.extraSmall),
         fu.FButton(
-          style: view == CalendarViewMode.month ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          variant: view == CalendarViewMode.month ? .secondary : .outline,
           onPress: () => onChanged(CalendarViewMode.month),
           child: Text('Month', style: context.typography.xs),
         ),

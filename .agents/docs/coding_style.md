@@ -14,6 +14,11 @@ This document defines the coding style expected from coding agents in Focus.
 - Within a function, there should not be any blank lines.
 - Between two functions on a class there should exactly be one blank line.
 
+## Dart/Flutter rules
+-  Always use dart shorthands whereever applicable
+- Don't use deprecated .withOpacity() for defining opacity. use withValues(alpha: ) instead
+- Remove the unnecessary comments, blank lines rule as defined in the formatting section. 
+
 ## Generated File Policy
 
 - Never manually edit generated files (`*.g.dart`, `*.mapper.dart`).

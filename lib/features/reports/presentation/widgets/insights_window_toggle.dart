@@ -16,13 +16,13 @@ class InsightsWindowToggle extends StatelessWidget {
     return Row(
       children: [
         fu.FButton(
-          style: window == InsightsWindowMode.weekly ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          variant: window == InsightsWindowMode.weekly ? .secondary : .outline,
           onPress: () => onChanged(InsightsWindowMode.weekly),
           child: Text('Weekly', style: context.typography.xs),
         ),
         SizedBox(width: AppConstants.spacing.extraSmall),
         fu.FButton(
-          style: window == InsightsWindowMode.monthly ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+          variant: window == InsightsWindowMode.monthly ? .secondary : .outline,
           onPress: () => onChanged(InsightsWindowMode.monthly),
           child: Text('Monthly', style: context.typography.xs),
         ),

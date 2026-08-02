@@ -48,8 +48,8 @@ class TaskSummarySection extends StatelessWidget {
                       context.push(AppRoutes.projectDetailPath(projectId!));
                     }
                   },
-                  style: fu.FButtonStyle.ghost(),
-                  child: MetaChip(icon: fu.FIcons.folder, label: projectName!),
+                  variant: .ghost,
+                  child: MetaChip(icon: fu.FLucideIcons.folder, label: projectName!),
                 ),
               ),
             ],
@@ -60,7 +60,7 @@ class TaskSummarySection extends StatelessWidget {
           spacing: AppConstants.spacing.regular,
           children: [
             TaskPriorityBadge(priority: task.priority),
-            if (task.isCompleted) fu.FBadge(style: fu.FBadgeStyle.primary(), child: Text('Completed')),
+            if (task.isCompleted) fu.FBadge(variant: .primary, child: Text('Completed')),
           ],
         ),
 
@@ -80,16 +80,17 @@ class TaskSummarySection extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: AppConstants.spacing.regular,
             children: [
-              if (start != null) MetaChip(icon: fu.FIcons.calendarDays, label: 'Start: ${start.toDateTimeString()}'),
+              if (start != null)
+                MetaChip(icon: fu.FLucideIcons.calendarDays, label: 'Start: ${start.toDateTimeString()}'),
               if (end != null) ...[
                 MetaChip(
-                  icon: fu.FIcons.calendarClock,
+                  icon: fu.FLucideIcons.calendarClock,
                   label: 'Due: ${end.toDateTimeString()}',
                   isDestructive: isOverdue && !task.isCompleted,
                 ),
                 if (isOverdue && !task.isCompleted) ...[
                   Icon(
-                    fu.FIcons.triangleAlert,
+                    fu.FLucideIcons.triangleAlert,
                     size: AppConstants.size.icon.extraSmall,
                     color: context.colors.destructive,
                   ),

@@ -37,14 +37,14 @@ class SubtasksSection extends ConsumerWidget {
             Text('$completed / $total', style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
             const Spacer(),
             fu.FButton(
-              style: fu.FButtonStyle.outline(),
+              variant: .outline,
               onPress: () => TaskCommands.create(
                 context,
                 projectId: parentTask.projectId,
                 parentTaskId: parentTask.id,
                 depth: parentTask.depth + 1,
               ),
-              prefix: Icon(fu.FIcons.plus, size: AppConstants.size.icon.extraSmall),
+              prefix: Icon(fu.FLucideIcons.plus, size: AppConstants.size.icon.extraSmall),
               child: Text('Add', style: context.typography.xs),
             ),
           ],

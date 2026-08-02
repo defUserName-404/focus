@@ -136,13 +136,13 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                         spacing: AppConstants.spacing.regular,
                         children: [
                           Icon(
-                            fu.FIcons.clipboardList,
+                            fu.FLucideIcons.clipboardList,
                             size: AppConstants.size.icon.extraExtraLarge,
                             color: context.colors.mutedForeground,
                           ),
                           Text(
                             'No tasks yet',
-                            style: context.typography.base.copyWith(color: context.colors.mutedForeground),
+                            style: context.typography.md.copyWith(color: context.colors.mutedForeground),
                           ),
                         ],
                       ),
@@ -198,7 +198,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 SizedBox(width: AppConstants.spacing.small),
                 fu.FButton.icon(
                   onPress: () => TaskCommands.create(context, projectId: widget.projectId),
-                  child: Icon(fu.FIcons.plus),
+                  child: Icon(fu.FLucideIcons.plus),
                 ),
               ],
             ),
@@ -214,7 +214,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         title: Text('Project Details'),
         suffixes: [
           fu.FHeaderAction(
-            icon: Icon(fu.FIcons.search),
+            icon: Icon(fu.FLucideIcons.search),
             onPress: () {
               _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
               _searchFocusNode.requestFocus();
@@ -235,7 +235,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       footer: Padding(
         padding: EdgeInsets.all(AppConstants.spacing.large),
         child: fu.FButton(
-          prefix: Icon(fu.FIcons.plus),
+          prefix: Icon(fu.FLucideIcons.plus),
           child: const Text('Create New Task'),
           onPress: () => TaskCommands.create(context, projectId: widget.projectId),
         ),

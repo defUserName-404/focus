@@ -26,7 +26,9 @@ abstract final class AppTheme {
 
 /// Theme extensions for easy access in widgets
 extension AppThemeX on BuildContext {
-  FTypography get typography => theme.typography;
+  /// Resolves to the body typeface. ForUI splits [FTypography] into `display`
+  /// and `body` typefaces; the app's scale tokens all come from `body`.
+  FTypeface get typography => theme.typography.body;
 
   FColors get colors => theme.colors;
 

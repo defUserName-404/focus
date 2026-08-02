@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:focus/core/utils/date_time_utils.dart';
-
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
 import '../../../../core/widgets/filter_select.dart';
@@ -75,20 +73,21 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
         FDateField.calendar(
           label: const Text('Start Date'),
           hint: 'Select Start Date (Optional)',
-          start: DateTimeUtils.now(),
-          control: FDateFieldControl.lifted(date: _startDate, onChange: (date) => setState(() => _startDate = date)),
+          selectionControl: FDateSelectionControl.liftedSingle(
+            value: _startDate,
+            onChange: (date) => setState(() => _startDate = date),
+          ),
           clearable: true,
         ),
         TimeField(label: 'Start Time', value: _startDate, onChanged: (date) => setState(() => _startDate = date)),
         FDateField.calendar(
           label: const Text('End Date'),
           hint: 'Select End Date (Optional)',
-          start: DateTimeUtils.now(),
-          control: FDateFieldControl.lifted(
-            date: _endDate,
+          selectionControl: FDateSelectionControl.liftedSingle(
+            value: _endDate,
             onChange: (date) => setState(() => _endDate = date),
-            validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           ),
+          validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           autovalidateMode: AutovalidateMode.onUnfocus,
           clearable: true,
         ),

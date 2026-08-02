@@ -54,11 +54,9 @@ import 'package:forui/forui.dart';
 FCardStyle cardStyle({required FColors colors, required FTypography typography, required FStyle style}) => FCardStyle(
   decoration: BoxDecoration(
     border: .all(color: colors.border),
-    borderRadius: style.borderRadius,
+    borderRadius: style.borderRadius.md,
     color: colors.secondary.withValues(alpha: 0.20),
   ),
-  contentStyle: FCardContentStyle(
-    titleTextStyle: typography.xl2.copyWith(fontWeight: .w800, color: colors.foreground, height: 1.5),
-    subtitleTextStyle: typography.sm.copyWith(color: colors.mutedForeground),
-  ),
+  titleTextStyle: typography.body.xl2.copyWith(fontWeight: .w800, color: colors.foreground, height: 1.5),
+  subtitleTextStyle: typography.body.sm.copyWith(color: colors.mutedForeground),
 );

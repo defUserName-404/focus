@@ -29,7 +29,7 @@ class SoundItemTile extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              preset.type == SoundType.ambience ? fu.FIcons.audioLines : fu.FIcons.bellRing,
+              preset.type == SoundType.ambience ? fu.FLucideIcons.audioLines : fu.FLucideIcons.bellRing,
               color: isSelected ? context.colors.primary : context.colors.mutedForeground,
               size: 20,
             ),
@@ -56,7 +56,7 @@ class SoundItemTile extends StatelessWidget {
             if (isPreviewing)
               SizedBox(width: 18, height: 18, child: fu.FCircularProgress())
             else if (isSelected)
-              Icon(fu.FIcons.check, color: context.colors.primary, size: 18),
+              Icon(fu.FLucideIcons.check, color: context.colors.primary, size: 18),
           ],
         ),
       ),

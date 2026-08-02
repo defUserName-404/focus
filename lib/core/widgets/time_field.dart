@@ -29,14 +29,14 @@ class TimeField extends StatelessWidget {
       ),
       suffixBuilder: value == null
           ? null
-          : (_, style, states) => Padding(
+          : (_, style, variants) => Padding(
               padding: const EdgeInsetsDirectional.only(end: 8),
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => onChanged(null),
                 child: Opacity(
-                  opacity: states.contains(WidgetState.disabled) ? 0.5 : 1,
-                  child: Icon(fu.FIcons.x, size: style.iconStyle.size),
+                  opacity: variants.contains(fu.FTextFieldVariant.disabled) ? 0.5 : 1,
+                  child: Icon(fu.FLucideIcons.x, size: style.iconStyle.resolve(variants).size ?? 18),
                 ),
               ),
             ),

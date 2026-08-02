@@ -12,8 +12,7 @@ part of 'projects_screen.dart';
 @ProviderFor(SelectedProjectId)
 final selectedProjectIdProvider = SelectedProjectIdProvider._();
 
-final class SelectedProjectIdProvider
-    extends $NotifierProvider<SelectedProjectId, int?> {
+final class SelectedProjectIdProvider extends $NotifierProvider<SelectedProjectId, int?> {
   SelectedProjectIdProvider._()
     : super(
         from: null,
@@ -34,10 +33,7 @@ final class SelectedProjectIdProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(int? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int?>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<int?>(value));
   }
 }
 
@@ -47,16 +43,9 @@ abstract class _$SelectedProjectId extends $Notifier<int?> {
   int? build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int?, int?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<int?, int?>,
-              int?,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
+    final element = ref.element as $ClassProviderElement<AnyNotifier<int?, int?>, int?, Object?, Object?>;
+    return element.handleCreate(ref, build);
   }
 }

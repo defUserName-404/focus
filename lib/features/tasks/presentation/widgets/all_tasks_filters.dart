@@ -91,7 +91,7 @@ class AllTasksFilters extends ConsumerWidget {
               (f) => Padding(
                 padding: EdgeInsets.only(right: AppConstants.spacing.small),
                 child: fu.FButton(
-                  style: filter.completionFilter == f ? fu.FButtonStyle.secondary() : fu.FButtonStyle.outline(),
+                  variant: filter.completionFilter == f ? .secondary : .outline,
                   onPress: () {
                     ref.read(allTasksFilterProvider.notifier).updateFilter(completionFilter: f);
                   },

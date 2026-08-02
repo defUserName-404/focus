@@ -90,7 +90,7 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
                             duration: AppConstants.animation.medium,
                             switchInCurve: Curves.easeOut,
                             switchOutCurve: Curves.easeIn,
-                            child: FBadge(key: ValueKey(label), style: FBadgeStyle.secondary(), child: Text(label)),
+                            child: FBadge(key: ValueKey(label), variant: .secondary, child: Text(label)),
                           ),
                         );
                       })(),

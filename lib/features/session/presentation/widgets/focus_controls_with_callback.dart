@@ -15,11 +15,7 @@ class FocusControlsWithCallback extends ConsumerWidget {
   final VoidCallback onCompleteTask;
   final bool controlsVisible;
 
-  const FocusControlsWithCallback({
-    super.key,
-    required this.onCompleteTask,
-    required this.controlsVisible,
-  });
+  const FocusControlsWithCallback({super.key, required this.onCompleteTask, required this.controlsVisible});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,7 +52,7 @@ class FocusControlsWithCallback extends ConsumerWidget {
                     child: IgnorePointer(
                       ignoring: !showTransport || !controlsVisible,
                       child: FocusCircleIconButton(
-                        icon: FIcons.square,
+                        icon: FLucideIcons.square,
                         size: 44,
                         color: context.colors.mutedForeground,
                         backgroundColor: context.colors.muted,
@@ -83,7 +79,7 @@ class FocusControlsWithCallback extends ConsumerWidget {
                     child: IgnorePointer(
                       ignoring: !showTransport || !controlsVisible,
                       child: FocusCircleIconButton(
-                        icon: FIcons.skipForward,
+                        icon: FLucideIcons.skipForward,
                         size: 44,
                         color: context.colors.mutedForeground,
                         backgroundColor: context.colors.muted,
@@ -127,7 +123,7 @@ class FocusControlsWithCallback extends ConsumerWidget {
             child: showTransport
                 ? FButton(
                     key: const ValueKey('complete-btn'),
-                    style: FButtonStyle.outline(),
+                    variant: .outline,
                     onPress: () {
                       ref.read(focusScreenProvider.notifier).onUserInteraction();
                       if (isQuickSession) {
@@ -136,7 +132,7 @@ class FocusControlsWithCallback extends ConsumerWidget {
                         onCompleteTask();
                       }
                     },
-                    prefix: Icon(isQuickSession ? FIcons.check : FIcons.checkCheck),
+                    prefix: Icon(isQuickSession ? FLucideIcons.check : FLucideIcons.checkCheck),
                     child: Text(isQuickSession ? 'End Session' : 'Complete Task'),
                   )
                 : const SizedBox.shrink(key: ValueKey('empty-btn')),
@@ -147,28 +143,46 @@ class FocusControlsWithCallback extends ConsumerWidget {
   }
 
   IconData _centerIcon(FocusProgress progress) {
-    if (progress.isIdle) return FIcons.play;
-    if (progress.isPaused) return FIcons.play;
-    return FIcons.pause;
+    if (progress.isIdle) return FLucideIcons.play;
+    if (progress.isPaused) return FLucideIcons.play;
+    return FLucideIcons.pause;
   }
 
   void _confirmEnd(BuildContext context, WidgetRef ref) {
     showFDialog(
       context: context,
       builder: (ctx, _, _) => FDialog(
-        title: const Text('End session?'),
-        body: const Text("This session will be saved but won't count as completed."),
-        actions: [
-          FButton(onPress: () => ctx.pop(), style: FButtonStyle.ghost(), child: const Text('Keep going')),
-          FButton(
-            onPress: () {
-              ctx.pop();
-              ref.read(focusTimerProvider.notifier).cancelSession();
-            },
-            style: FButtonStyle.destructive(),
-            child: const Text('End session'),
+        builder: (context, style) => Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
+            children: [
+              DefaultTextStyle(style: style.titleTextStyle, child: const Text('End session?')),
+              const SizedBox(height: 8),
+              DefaultTextStyle(
+                style: style.bodyTextStyle,
+                child: const Text("This session will be saved but won't count as completed."),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: .end,
+                spacing: 8,
+                children: [
+                  FButton(onPress: () => ctx.pop(), variant: .ghost, child: const Text('Keep going')),
+                  FButton(
+                    onPress: () {
+                      ctx.pop();
+                      ref.read(focusTimerProvider.notifier).cancelSession();
+                    },
+                    variant: .destructive,
+                    child: const Text('End session'),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

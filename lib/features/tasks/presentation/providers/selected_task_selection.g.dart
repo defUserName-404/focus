@@ -12,8 +12,7 @@ part of 'selected_task_selection.dart';
 @ProviderFor(SelectedTaskSelection)
 final selectedTaskSelectionProvider = SelectedTaskSelectionProvider._();
 
-final class SelectedTaskSelectionProvider
-    extends $NotifierProvider<SelectedTaskSelection, TaskSelection?> {
+final class SelectedTaskSelectionProvider extends $NotifierProvider<SelectedTaskSelection, TaskSelection?> {
   SelectedTaskSelectionProvider._()
     : super(
         from: null,
@@ -34,30 +33,21 @@ final class SelectedTaskSelectionProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(TaskSelection? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<TaskSelection?>(value),
-    );
+    return $ProviderOverride(origin: this, providerOverride: $SyncValueProvider<TaskSelection?>(value));
   }
 }
 
-String _$selectedTaskSelectionHash() =>
-    r'191322509414ca332b94a395f70422713b38c11a';
+String _$selectedTaskSelectionHash() => r'191322509414ca332b94a395f70422713b38c11a';
 
 abstract class _$SelectedTaskSelection extends $Notifier<TaskSelection?> {
   TaskSelection? build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<TaskSelection?, TaskSelection?>;
     final element =
         ref.element
-            as $ClassProviderElement<
-              AnyNotifier<TaskSelection?, TaskSelection?>,
-              TaskSelection?,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
+            as $ClassProviderElement<AnyNotifier<TaskSelection?, TaskSelection?>, TaskSelection?, Object?, Object?>;
+    return element.handleCreate(ref, build);
   }
 }

@@ -35,8 +35,6 @@ extension FocusSessionCopyWith on FocusSession {
     endTime: endTime == _unset ? this.endTime : endTime as DateTime?,
     state: state ?? this.state,
     elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
-    focusPhaseEndedAt: focusPhaseEndedAt == _unset
-        ? this.focusPhaseEndedAt
-        : focusPhaseEndedAt as int?,
+    focusPhaseEndedAt: focusPhaseEndedAt == _unset ? this.focusPhaseEndedAt : focusPhaseEndedAt as int?,
   );
 }

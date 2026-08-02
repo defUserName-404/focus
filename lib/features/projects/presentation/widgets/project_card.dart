@@ -48,13 +48,13 @@ class ProjectCard extends StatelessWidget {
               : null,
           footerActions: [
             fu.FBadge(
-              style: project.deadline?.isOverdue ?? false ? fu.FBadgeStyle.destructive() : fu.FBadgeStyle.secondary(),
+              variant: project.deadline?.isOverdue ?? false ? .destructive : .secondary,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2),
-                    child: Icon(fu.FIcons.calendarCheck, size: AppConstants.size.icon.small),
+                    child: Icon(fu.FLucideIcons.calendarCheck, size: AppConstants.size.icon.small),
                   ),
                   const SizedBox(width: 4),
                   Text(project.deadline?.toRelativeDueString() ?? 'No deadline'),
@@ -64,7 +64,7 @@ class ProjectCard extends StatelessWidget {
             const Spacer(),
             fu.FButton.icon(
               onPress: onTap,
-              child: Icon(fu.FIcons.arrowRight, size: AppConstants.size.icon.regular),
+              child: Icon(fu.FLucideIcons.arrowRight, size: AppConstants.size.icon.regular),
             ),
           ],
         ),

@@ -7,7 +7,7 @@ class ConfirmationDialog extends StatelessWidget {
   final String confirmLabel;
   final String cancelLabel;
   final VoidCallback onConfirm;
-  final dynamic confirmStyle;
+  final fu.FButtonVariant? confirmVariant;
 
   const ConfirmationDialog({
     super.key,
@@ -16,7 +16,7 @@ class ConfirmationDialog extends StatelessWidget {
     required this.onConfirm,
     this.confirmLabel = 'Delete',
     this.cancelLabel = 'Cancel',
-    this.confirmStyle,
+    this.confirmVariant,
   });
 
   static Future<void> show(
@@ -26,7 +26,7 @@ class ConfirmationDialog extends StatelessWidget {
     required VoidCallback onConfirm,
     String confirmLabel = 'Delete',
     String cancelLabel = 'Cancel',
-    dynamic confirmStyle,
+    fu.FButtonVariant? confirmVariant,
   }) {
     return fu.showFDialog(
       context: context,
@@ -36,7 +36,7 @@ class ConfirmationDialog extends StatelessWidget {
         onConfirm: onConfirm,
         confirmLabel: confirmLabel,
         cancelLabel: cancelLabel,
-        confirmStyle: confirmStyle,
+        confirmVariant: confirmVariant,
       ),
     );
   }
@@ -44,19 +44,34 @@ class ConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return fu.FDialog(
-      title: Text(title),
-      body: Text(body),
-      actions: [
-        fu.FButton(onPress: () => Navigator.pop(context), style: fu.FButtonStyle.ghost(), child: Text(cancelLabel)),
-        fu.FButton(
-          onPress: () {
-            Navigator.pop(context);
-            onConfirm();
-          },
-          style: confirmStyle ?? fu.FButtonStyle.destructive(),
-          child: Text(confirmLabel),
+      builder: (context, style) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: .min,
+          crossAxisAlignment: .start,
+          children: [
+            DefaultTextStyle(style: style.titleTextStyle, child: Text(title)),
+            const SizedBox(height: 8),
+            DefaultTextStyle(style: style.bodyTextStyle, child: Text(body)),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: .end,
+              spacing: 8,
+              children: [
+                fu.FButton(onPress: () => Navigator.pop(context), variant: .ghost, child: Text(cancelLabel)),
+                fu.FButton(
+                  onPress: () {
+                    Navigator.pop(context);
+                    onConfirm();
+                  },
+                  variant: confirmVariant ?? .destructive,
+                  child: Text(confirmLabel),
+                ),
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

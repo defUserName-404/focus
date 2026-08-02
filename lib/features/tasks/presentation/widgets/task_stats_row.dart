@@ -16,27 +16,15 @@ class TaskStatsRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: TaskStatCard(
-            icon: Icons.timer_outlined,
-            value: stats.formattedTotalTime,
-            label: 'Total',
-          ),
+          child: TaskStatCard(icon: Icons.timer_outlined, value: stats.formattedTotalTime, label: 'Total'),
         ),
         SizedBox(width: AppConstants.spacing.regular),
         Expanded(
-          child: TaskStatCard(
-            icon: Icons.bar_chart_rounded,
-            value: stats.totalSessions.toString(),
-            label: 'Sessions',
-          ),
+          child: TaskStatCard(icon: Icons.bar_chart_rounded, value: stats.totalSessions.toString(), label: 'Sessions'),
         ),
         SizedBox(width: AppConstants.spacing.regular),
         Expanded(
-          child: TaskStatCard(
-            icon: Icons.av_timer_outlined,
-            value: stats.formattedAvgTime,
-            label: 'Average',
-          ),
+          child: TaskStatCard(icon: Icons.av_timer_outlined, value: stats.formattedAvgTime, label: 'Average'),
         ),
       ],
     );

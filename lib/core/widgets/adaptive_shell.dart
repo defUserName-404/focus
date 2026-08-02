@@ -22,18 +22,18 @@ class AdaptiveShell extends ConsumerWidget {
   const AdaptiveShell({super.key, required this.child});
 
   static final _desktopTabs = [
-    _TabDefinition(icon: fu.FIcons.house, label: 'Home', route: AppRoutes.home.path),
-    _TabDefinition(icon: fu.FIcons.squareCheck, label: 'Tasks', route: AppRoutes.tasks.path),
-    _TabDefinition(icon: fu.FIcons.folderOpen, label: 'Projects', route: AppRoutes.projects.path),
-    _TabDefinition(icon: fu.FIcons.chartBar, label: 'Reports', route: AppRoutes.reports.path),
-    _TabDefinition(icon: fu.FIcons.bell, label: 'Notifications', route: AppRoutes.notifications.path),
+    _TabDefinition(icon: fu.FLucideIcons.house, label: 'Home', route: AppRoutes.home.path),
+    _TabDefinition(icon: fu.FLucideIcons.squareCheck, label: 'Tasks', route: AppRoutes.tasks.path),
+    _TabDefinition(icon: fu.FLucideIcons.folderOpen, label: 'Projects', route: AppRoutes.projects.path),
+    _TabDefinition(icon: fu.FLucideIcons.chartBar, label: 'Reports', route: AppRoutes.reports.path),
+    _TabDefinition(icon: fu.FLucideIcons.bell, label: 'Notifications', route: AppRoutes.notifications.path),
   ];
 
   static final _mobileTabs = [
-    _TabDefinition(icon: fu.FIcons.house, label: 'Home', route: AppRoutes.home.path),
-    _TabDefinition(icon: fu.FIcons.squareCheck, label: 'Tasks', route: AppRoutes.tasks.path),
-    _TabDefinition(icon: fu.FIcons.folderOpen, label: 'Projects', route: AppRoutes.projects.path),
-    _TabDefinition(icon: fu.FIcons.bell, label: 'Notifications', route: AppRoutes.notifications.path),
+    _TabDefinition(icon: fu.FLucideIcons.house, label: 'Home', route: AppRoutes.home.path),
+    _TabDefinition(icon: fu.FLucideIcons.squareCheck, label: 'Tasks', route: AppRoutes.tasks.path),
+    _TabDefinition(icon: fu.FLucideIcons.folderOpen, label: 'Projects', route: AppRoutes.projects.path),
+    _TabDefinition(icon: fu.FLucideIcons.bell, label: 'Notifications', route: AppRoutes.notifications.path),
   ];
 
   @override
@@ -45,7 +45,9 @@ class AdaptiveShell extends ConsumerWidget {
     final desktopDestinations = [
       for (final tab in tabs) NavigationRailDestination(icon: Icon(tab.icon), label: Text(tab.label)),
     ];
-    final mobileItems = [for (final tab in tabs) fu.FBottomNavigationBarItem(icon: Icon(tab.icon), label: Text(tab.label))];
+    final mobileItems = [
+      for (final tab in tabs) fu.FBottomNavigationBarItem(icon: Icon(tab.icon), label: Text(tab.label)),
+    ];
 
     return isExpanded
         ? AdaptiveShellDesktopLayout(

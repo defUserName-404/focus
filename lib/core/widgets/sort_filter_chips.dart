@@ -45,7 +45,7 @@ class SortFilterChips<T extends SortCriteria> extends StatelessWidget {
           children: [
             for (final criteria in criteriaOptions)
               FButton(
-                style: selectedCriteria == criteria ? FButtonStyle.secondary() : FButtonStyle.outline(),
+                variant: selectedCriteria == criteria ? .secondary : .outline,
                 onPress: () => onChanged(criteria),
                 child: Text(criteria.label, style: context.typography.xs),
               ),

@@ -20,7 +20,7 @@ class TodaySummaryCard extends StatelessWidget {
         children: [
           Text(
             'Today',
-            style: context.typography.base.copyWith(
+            style: context.typography.md.copyWith(
               fontWeight: FontWeight.w600,
               color: context.colors.primary,
               letterSpacing: 0.5,
