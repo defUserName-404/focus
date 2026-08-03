@@ -105,4 +105,23 @@ class SettingsRepositoryImpl implements ISettingsRepository {
       launchAtStartupEnabled: (all[SettingsKeys.desktopLaunchAtStartupEnabled] ?? 'true') == 'true',
     );
   }
+
+  @override
+  Future<UserPreferences> getUserPreferences() async {
+    final all = await _local.getAll();
+    return _decodeUserPreferences(all);
+  }
+
+  @override
+  Stream<UserPreferences> watchUserPreferences() {
+    return _local.watchAll().map(_decodeUserPreferences);
+  }
+
+  UserPreferences _decodeUserPreferences(Map<String, String> all) {
+    final rawName = all[SettingsKeys.displayName]?.trim();
+    return UserPreferences(
+      displayName: (rawName == null || rawName.isEmpty) ? null : rawName,
+      onboardingCompleted: (all[SettingsKeys.onboardingCompleted] ?? 'false') == 'true',
+    );
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/home/presentation/pages/home_screen.dart';
@@ -11,6 +12,8 @@ import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/session/presentation/screens/focus_session_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
+import '../../features/settings/presentation/providers/settings_provider.dart';
 import '../../features/sync/domain/entities/sync_state.dart';
 import '../../features/sync/presentation/screens/sync_conflict_screen.dart';
 import '../../features/tasks/domain/entities/task.dart';
@@ -30,6 +33,9 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 /// Shell navigator key for the adaptive shell.
 final shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
+/// Global Riverpod container used to read settings from the router redirect.
+final ProviderContainer appRouterContainer = ProviderContainer();
+
 /// Creates and configures the app router.
 ///
 /// This is a singleton instance used throughout the app.
@@ -37,6 +43,14 @@ final GoRouter appRouter = GoRouter(
   navigatorKey: rootNavigatorKey,
   initialLocation: AppRoutes.home.path,
   debugLogDiagnostics: true,
+  redirect: (context, state) {
+    final sub = state.matchedLocation;
+    if (sub == AppRoutes.onboarding.path) return null;
+    final prefs = appRouterContainer.read(userPreferencesProvider).value;
+    if (prefs == null) return null;
+    if (!prefs.onboardingCompleted) return AppRoutes.onboarding.path;
+    return null;
+  },
   routes: [
     // Shell route wraps the main navigation (bottom nav / side rail)
     ShellRoute(
@@ -165,6 +179,14 @@ final GoRouter appRouter = GoRouter(
           pageBuilder: (context, state) => const NoTransitionPage(child: SettingsScreen()),
         ),
       ],
+    ),
+
+    // Onboarding (full-screen, above shell)
+    GoRoute(
+      path: AppRoutes.onboarding.path,
+      name: AppRoutes.onboarding.name,
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const OnboardingScreen(),
     ),
 
     // Focus session (full-screen, above shell)

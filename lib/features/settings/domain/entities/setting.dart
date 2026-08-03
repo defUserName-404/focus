@@ -35,11 +35,25 @@ abstract final class SettingsKeys {
   /// Tasks screen view mode (`list`, `board`, or `calendar`).
   static const String tasksViewMode = 'tasks_view_mode';
 
+  /// Persisted master pane width for the Tasks master-detail layout.
+  static const String tasksMasterPaneWidth = 'tasks_master_pane_width';
+
+  /// Persisted master pane width for the Projects master-detail layout.
+  static const String projectsMasterPaneWidth = 'projects_master_pane_width';
+
   /// Reports productivity insights window (`weekly` or `monthly`).
   static const String reportsInsightsWindowMode = 'reports_insights_window_mode';
 
   /// Stable per-install device UUID used for sync provenance.
   static const String deviceId = 'device_id';
+
+  /// The display name captured during onboarding (or set later in Settings).
+  /// Null when the user skipped the name step.
+  static const String displayName = 'display_name';
+
+  /// Whether the first-run onboarding flow has been completed.
+  /// Stored as the string 'true' / 'false'.
+  static const String onboardingCompleted = 'onboarding_completed';
 
   /// Timer + audio preference keys that participate in cloud sync / backup.
   ///
@@ -138,4 +152,23 @@ class DesktopPreferences extends Equatable {
 
   @override
   List<Object?> get props => [trayEnabled, launchAtStartupEnabled];
+}
+
+/// Convenience wrapper for user identity / first-run state.
+@immutable
+class UserPreferences extends Equatable {
+  final String? displayName;
+  final bool onboardingCompleted;
+
+  const UserPreferences({this.displayName, this.onboardingCompleted = false});
+
+  UserPreferences copyWith({String? displayName, bool? onboardingCompleted}) {
+    return UserPreferences(
+      displayName: displayName ?? this.displayName,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+    );
+  }
+
+  @override
+  List<Object?> get props => [displayName, onboardingCompleted];
 }

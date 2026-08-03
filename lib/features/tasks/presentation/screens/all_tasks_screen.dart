@@ -7,6 +7,7 @@ import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/constrained_content.dart';
+import '../commands/task_commands.dart';
 import '../models/task_selection.dart';
 import '../widgets/all_tasks_content.dart';
 
@@ -57,7 +58,7 @@ class AllTasksScreen extends ConsumerWidget {
             child: fu.FHeaderAction(
               icon: const Icon(fu.FLucideIcons.plus),
               semanticsLabel: 'Create task',
-              onPress: () => context.push(AppRoutes.createTaskWithProject.path),
+              onPress: () => TaskCommands.createWithProject(context),
             ),
           ),
         ],

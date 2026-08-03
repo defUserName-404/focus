@@ -14,18 +14,21 @@ class MiniStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FCard(
-      child: Column(
-        children: [
-          Icon(icon, size: AppConstants.size.icon.regular, color: context.colors.mutedForeground),
-          SizedBox(height: AppConstants.spacing.small),
-          Text(value, style: context.typography.lg.copyWith(fontWeight: FontWeight.w700)),
-          SizedBox(height: AppConstants.spacing.extraSmall),
-          Text(
-            label,
-            style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
-            textAlign: TextAlign.center,
-          ),
-        ],
+      child: Padding(
+        padding: EdgeInsets.all(AppConstants.spacing.regular),
+        child: Column(
+          children: [
+            Icon(icon, size: AppConstants.size.icon.regular, color: context.colors.mutedForeground),
+            SizedBox(height: AppConstants.spacing.small),
+            Text(value, style: context.typography.lg.copyWith(fontWeight: FontWeight.w700)),
+            SizedBox(height: AppConstants.spacing.extraSmall),
+            Text(
+              label,
+              style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

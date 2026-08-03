@@ -33,4 +33,7 @@ extension AppThemeX on BuildContext {
   FColors get colors => theme.colors;
 
   FStyle get style => theme.style;
+
+  /// Content inset for [FCard] children (ForUI 0.24 no longer pads automatically).
+  EdgeInsetsGeometry get cardPadding => theme.cardStyle.padding;
 }

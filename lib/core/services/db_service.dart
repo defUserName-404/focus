@@ -46,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   /// Recalculates the [dailySessionStatsTable] row for the given
   /// local calendar [dateKey] (format `YYYY-MM-DD`).
@@ -237,10 +237,8 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('ALTER TABLE project_table ADD COLUMN color INTEGER');
 
         // Backfill task status from legacy is_completed bool.
-        await customStatement(
-          'UPDATE task_table SET status = CASE WHEN is_completed = 1 '
-          'THEN ${TaskStatus.done.index} ELSE ${TaskStatus.todo.index} END',
-        );
+        // Hardcoded indices: old enum was todo=0, inProgress=1, blocked=2, done=3.
+        await customStatement('UPDATE task_table SET status = CASE WHEN is_completed = 1 THEN 3 ELSE 0 END');
 
         await customStatement('CREATE INDEX IF NOT EXISTS task_status_idx ON task_table(status)');
         await customStatement('CREATE INDEX IF NOT EXISTS task_sort_order_idx ON task_table(sort_order)');
@@ -333,6 +331,14 @@ class AppDatabase extends _$AppDatabase {
           'CREATE INDEX IF NOT EXISTS project_template_builtin_idx ON project_template_table(is_builtin)',
         );
         await _seedBuiltInTemplates();
+      }
+
+      // v10 → v11: Remove blocked status, reindex done.
+      if (from < 11) {
+        // Reassign any blocked tasks (index 2) to todo (index 0).
+        await customStatement('UPDATE task_table SET status = 0 WHERE status = 2');
+        // Shift done from old index 3 → new index 2 (blocked removed, enum reindexed).
+        await customStatement('UPDATE task_table SET status = 2 WHERE status = 3');
       }
     },
     beforeOpen: (details) async {

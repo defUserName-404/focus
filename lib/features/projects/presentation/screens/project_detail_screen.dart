@@ -27,8 +27,9 @@ import '../widgets/project_timeline_view.dart';
 class ProjectDetailScreen extends ConsumerStatefulWidget {
   final int projectId;
   final bool isEmbedded;
+  final VoidCallback? onClose;
 
-  const ProjectDetailScreen({super.key, required this.projectId, this.isEmbedded = false});
+  const ProjectDetailScreen({super.key, required this.projectId, this.isEmbedded = false, this.onClose});
 
   @override
   ConsumerState<ProjectDetailScreen> createState() => _ProjectDetailScreenState();
@@ -137,7 +138,12 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       itemBuilder: (context, index) {
         final task = rootTasks[index];
         final subtasks = filteredTasks.where((t) => t.parentTaskId == task.id).toList();
-        return TaskCard(task: task, subtasks: subtasks, projectIdString: _projectIdString);
+        return TaskCard(
+          task: task,
+          subtasks: subtasks,
+          projectIdString: _projectIdString,
+          onTaskTap: () => TaskCommands.open(context, task),
+        );
       },
     );
   }
@@ -180,7 +186,15 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         children: [
           _buildTasksToolbar(filter),
           SizedBox(height: AppConstants.spacing.small),
-          Expanded(child: TasksBoardView(tasks: _boardTasks(filteredTasks))),
+          Expanded(
+            child: TasksBoardView(
+              tasks: _boardTasks(filteredTasks),
+              onTaskSelected: (selection) {
+                final task = filteredTasks.where((t) => t.id == selection.taskId).firstOrNull;
+                if (task != null) TaskCommands.open(context, task);
+              },
+            ),
+          ),
         ],
       ),
       ProjectDetailTab.milestones => ProjectMilestonesPanel(projectId: widget.projectId),
@@ -247,6 +261,16 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             ),
             child: Row(
               children: [
+                fu.FButton.icon(
+                  variant: .ghost,
+                  onPress: () {
+                    if (widget.onClose != null) {
+                      widget.onClose!();
+                    }
+                  },
+                  child: const Icon(fu.FLucideIcons.arrowLeft),
+                ),
+                SizedBox(width: AppConstants.spacing.small),
                 Expanded(
                   child: Text(
                     'Project Details',
@@ -259,13 +283,14 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                     return ActionMenuButton(
                       onEdit: () => ProjectCommands.edit(context, project),
                       onSaveAsTemplate: () => ProjectCommands.saveAsTemplate(context, ref, project),
-                      onDelete: () => ProjectCommands.delete(context, ref, project),
+                      onDelete: () => ProjectCommands.delete(context, ref, project, onDeleted: widget.onClose),
                     );
                   },
                   orElse: () => const SizedBox.shrink(),
                 ),
                 SizedBox(width: AppConstants.spacing.small),
                 fu.FButton.icon(
+                  variant: .primary,
                   onPress: () => TaskCommands.create(context, projectId: widget.projectId),
                   child: Icon(fu.FLucideIcons.plus),
                 ),

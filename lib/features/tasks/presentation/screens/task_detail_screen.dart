@@ -6,12 +6,14 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/action_menu_button.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/utils/platform_utils.dart';
 import '../../../home/presentation/widgets/section_header.dart';
 import '../../../projects/presentation/providers/project_provider.dart';
 import '../../../session/domain/entities/session_state.dart';
 import '../../../session/presentation/commands/focus_commands.dart';
 import '../../../session/presentation/providers/focus_session_provider.dart';
 import '../../domain/entities/task_stats.dart';
+import '../../domain/entities/task_extensions.dart';
 import '../commands/task_commands.dart';
 import '../providers/task_provider.dart';
 import '../providers/task_stats_provider.dart';
@@ -25,8 +27,15 @@ class TaskDetailScreen extends ConsumerWidget {
   final int taskId;
   final int projectId;
   final bool isEmbedded;
+  final VoidCallback? onClose;
 
-  const TaskDetailScreen({super.key, required this.taskId, required this.projectId, this.isEmbedded = false});
+  const TaskDetailScreen({
+    super.key,
+    required this.taskId,
+    required this.projectId,
+    this.isEmbedded = false,
+    this.onClose,
+  });
 
   String get _taskIdString => taskId.toString();
 
@@ -38,6 +47,14 @@ class TaskDetailScreen extends ConsumerWidget {
     } else {
       context.go(AppRoutes.tasks.path);
     }
+  }
+
+  void _handleClose(BuildContext context) {
+    if (onClose != null) {
+      onClose!();
+      return;
+    }
+    _safePop(context);
   }
 
   @override
@@ -80,7 +97,16 @@ class TaskDetailScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: AppConstants.spacing.regular,
             children: [
-              TaskSummarySection(task: task, projectName: project?.title, projectId: project?.id),
+              TaskSummarySection(
+                task: task,
+                projectName: project?.title,
+                projectId: project?.id,
+                onStatusChanged: (status) {
+                  ref
+                      .read(taskProvider(_projectIdString).notifier)
+                      .updateTask(task.copyWith(status: status, updatedAt: DateTime.now()));
+                },
+              ),
               SectionHeader(title: 'Stats'),
               TaskStatsRow(stats: stats),
               SizedBox(height: AppConstants.spacing.regular),
@@ -106,6 +132,12 @@ class TaskDetailScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
+                    fu.FButton.icon(
+                      variant: .ghost,
+                      onPress: () => _handleClose(context),
+                      child: const Icon(fu.FLucideIcons.arrowLeft),
+                    ),
+                    SizedBox(width: AppConstants.spacing.small),
                     Expanded(
                       child: Text(
                         'Task Details',
@@ -113,13 +145,20 @@ class TaskDetailScreen extends ConsumerWidget {
                       ),
                     ),
                     fu.FButton.icon(
+                      variant: .primary,
                       onPress: () => TaskCommands.create(context, projectId: projectId),
                       child: Icon(fu.FLucideIcons.plus),
                     ),
                     SizedBox(width: AppConstants.spacing.small),
                     ActionMenuButton(
                       onEdit: () => TaskCommands.edit(context, task),
-                      onDelete: () => TaskCommands.delete(context, ref, task, _projectIdString),
+                      onDelete: () => TaskCommands.delete(
+                        context,
+                        ref,
+                        task,
+                        _projectIdString,
+                        onDeleted: () => _handleClose(context),
+                      ),
                     ),
                   ],
                 ),
@@ -127,13 +166,19 @@ class TaskDetailScreen extends ConsumerWidget {
               if (!(task.isCompleted && !hasActiveSession))
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: AppConstants.spacing.large),
-                  child: fu.FButton(
-                    onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
-                    prefix: Icon(
-                      hasActiveSession ? fu.FLucideIcons.eye : fu.FLucideIcons.play,
-                      size: AppConstants.size.icon.small,
+                  child: Align(
+                    alignment: .centerLeft,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: context.isCompact ? double.infinity : 320),
+                      child: fu.FButton(
+                        onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
+                        prefix: Icon(
+                          hasActiveSession ? fu.FLucideIcons.eye : fu.FLucideIcons.play,
+                          size: AppConstants.size.icon.small,
+                        ),
+                        child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
+                      ),
                     ),
-                    child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
                   ),
                 ),
               const SizedBox(height: 8),
@@ -158,13 +203,19 @@ class TaskDetailScreen extends ConsumerWidget {
               ? null
               : Padding(
                   padding: EdgeInsets.all(AppConstants.spacing.large),
-                  child: fu.FButton(
-                    onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
-                    prefix: Icon(
-                      hasActiveSession ? fu.FLucideIcons.eye : fu.FLucideIcons.play,
-                      size: AppConstants.size.icon.small,
+                  child: Align(
+                    alignment: .center,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: context.isCompact ? double.infinity : 320),
+                      child: fu.FButton(
+                        onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
+                        prefix: Icon(
+                          hasActiveSession ? fu.FLucideIcons.eye : fu.FLucideIcons.play,
+                          size: AppConstants.size.icon.small,
+                        ),
+                        child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
+                      ),
                     ),
-                    child: Text(hasActiveSession ? 'View Active Session' : 'Start Focus Session'),
                   ),
                 ),
           child: content,

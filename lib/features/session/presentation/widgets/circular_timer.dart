@@ -4,8 +4,9 @@ import 'package:forui/assets.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../providers/focus_session_provider.dart';
 import '../providers/focus_progress_provider.dart';
+import '../providers/focus_screen_provider.dart';
+import '../providers/focus_session_provider.dart';
 import 'circular_progress_painter.dart';
 
 /// Circular progress ring with countdown timer inside.
@@ -37,7 +38,10 @@ class CircularTimer extends ConsumerWidget {
     final progressColor = progress.isFocusPhase ? context.colors.primary : context.colors.mutedForeground;
 
     return GestureDetector(
-      onTap: () => ref.read(focusTimerProvider.notifier).togglePlayPause(),
+      onTap: () {
+        ref.read(focusScreenProvider.notifier).onUserInteraction();
+        ref.read(focusTimerProvider.notifier).togglePlayPause();
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

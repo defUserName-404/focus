@@ -35,6 +35,9 @@ abstract final class AppRoutes {
   // Sync routes
   static const syncConflicts = AppRoute(path: '/sync/conflicts', name: 'syncConflicts');
 
+  // Onboarding
+  static const onboarding = AppRoute(path: '/onboarding', name: 'onboarding');
+
   // Helper methods to build parameterized paths
 
   /// Build path for project detail: `/projects/123`

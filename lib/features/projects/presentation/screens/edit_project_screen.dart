@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:focus/core/utils/date_time_utils.dart';
-
+import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
@@ -15,8 +14,11 @@ import '../providers/project_provider.dart';
 
 class EditProjectScreen extends ConsumerStatefulWidget {
   final Project project;
+  final bool isEmbedded;
+  final VoidCallback? onDismiss;
+  final ValueChanged<Project>? onSaved;
 
-  const EditProjectScreen({super.key, required this.project});
+  const EditProjectScreen({super.key, required this.project, this.isEmbedded = false, this.onDismiss, this.onSaved});
 
   @override
   ConsumerState<EditProjectScreen> createState() => _EditProjectScreenState();
@@ -44,11 +46,25 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
     super.dispose();
   }
 
+  void _finish(Project project) {
+    if (widget.onSaved != null) {
+      widget.onSaved!(project);
+      return;
+    }
+    if (widget.onDismiss != null) {
+      widget.onDismiss!();
+      return;
+    }
+    if (mounted) context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseFormScreen(
       title: 'Edit Project',
       submitButtonText: 'Save',
+      isEmbedded: widget.isEmbedded,
+      onDismiss: widget.onDismiss,
       onSubmit: _submit,
       fields: [
         FTextFormField(
@@ -69,7 +85,7 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _startDate,
-            onChange: (date) => setState(() => _startDate = date),
+            onChange: (date) => setState(() => _startDate = DateTimeUtils.normalizeLocal(date)),
           ),
           clearable: true,
         ),
@@ -79,7 +95,7 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
           hint: _deadline?.toDateString() ?? 'Select Deadline (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _deadline,
-            onChange: (date) => setState(() => _deadline = date),
+            onChange: (date) => setState(() => _deadline = DateTimeUtils.normalizeLocal(date)),
           ),
           validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           autovalidateMode: AutovalidateMode.onUnfocus,
@@ -97,12 +113,12 @@ class _EditProjectScreenState extends ConsumerState<EditProjectScreen> {
     final updated = widget.project.copyWith(
       title: title,
       description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-      startDate: _startDate,
-      deadline: _deadline,
+      startDate: DateTimeUtils.normalizeLocal(_startDate),
+      deadline: DateTimeUtils.normalizeLocal(_deadline),
       updatedAt: DateTimeUtils.now(),
     );
 
     await ref.read(projectProvider.notifier).updateProject(updated);
-    if (mounted) context.pop();
+    if (mounted) _finish(updated);
   }
 }

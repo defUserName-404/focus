@@ -54,7 +54,13 @@ class TaskCard extends ConsumerWidget {
       isCompleted: task.isCompleted,
       leading: fu.FCheckbox(
         value: task.isCompleted,
-        onChange: (_) => ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(task),
+        onChange: (_) {
+          if (task.isRecurring && task.id != null) {
+            ref.read(taskProvider(projectIdString).notifier).completeOccurrence(task, DateTime.now());
+          } else {
+            ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(task);
+          }
+        },
       ),
       title: Text(task.title),
       trailing: showHierarchy
@@ -110,7 +116,13 @@ class TaskCard extends ConsumerWidget {
                 .map(
                   (st) => SubtaskRow(
                     subtask: st,
-                    onToggle: () => ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(st),
+                    onToggle: () {
+                      if (st.isRecurring && st.id != null) {
+                        ref.read(taskProvider(projectIdString).notifier).completeOccurrence(st, DateTime.now());
+                      } else {
+                        ref.read(taskProvider(projectIdString).notifier).toggleTaskCompletion(st);
+                      }
+                    },
                     onTap: () {
                       context.push(AppRoutes.taskDetailPath(st.id!), extra: {'projectId': st.projectId});
                       if (onSubtaskTap != null) onSubtaskTap!(st);

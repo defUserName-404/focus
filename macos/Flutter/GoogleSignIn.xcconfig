@@ -1,0 +1,5 @@
+// Local Google Sign-In OAuth values for Info.plist.
+// Copy from GoogleSignIn.xcconfig.example and fill in real IDs.
+
+GOOGLE_CLIENT_ID=
+GOOGLE_REVERSED_CLIENT_ID=

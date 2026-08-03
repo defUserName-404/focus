@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/routing/routes.dart';
+import '../../../../core/widgets/constrained_content.dart';
 import '../widgets/recent_notifications_section.dart';
 import '../widgets/upcoming_reminders_section.dart';
 
@@ -28,14 +29,16 @@ class NotificationsScreen extends ConsumerWidget {
         ],
         title: const Text('Notifications'),
       ),
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          const UpcomingRemindersSection(),
-          SizedBox(height: AppConstants.spacing.large),
-          const RecentNotificationsSection(),
-          SizedBox(height: AppConstants.spacing.large),
-        ],
+      child: ConstrainedContent(
+        maxWidth: 840,
+        child: ListView(
+          children: [
+            const UpcomingRemindersSection(),
+            SizedBox(height: AppConstants.spacing.large),
+            const RecentNotificationsSection(),
+            SizedBox(height: AppConstants.spacing.large),
+          ],
+        ),
       ),
     );
   }

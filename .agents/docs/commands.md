@@ -25,6 +25,28 @@ dart format . --line-length=120
 flutter run
 ```
 
+## Google Sign-In (iOS / macOS)
+
+Apple platforms require an OAuth **iOS** (or macOS) client ID from Google Cloud Console.
+
+1. Copy `ios/Flutter/GoogleSignIn.xcconfig.example` → `ios/Flutter/GoogleSignIn.xcconfig` (and the same under `macos/Flutter/`).
+2. Set:
+
+```text
+GOOGLE_CLIENT_ID=YOUR_ID.apps.googleusercontent.com
+GOOGLE_REVERSED_CLIENT_ID=com.googleusercontent.apps.YOUR_ID_PREFIX
+```
+
+(`YOUR_ID_PREFIX` is the part before `.apps.googleusercontent.com`.)
+
+3. Run with the same client ID for Dart:
+
+```bash
+fvm flutter run --dart-define=GOOGLE_CLIENT_ID=YOUR_ID.apps.googleusercontent.com
+```
+
+`Info.plist` reads `GIDClientID` / URL scheme from the xcconfig. Without these, Settings shows a clear “not configured” error instead of a native crash.
+
 ## Code Generation
 
 Run after changing Riverpod annotations, Drift schema/queries, or files with `part '*.g.dart'`:

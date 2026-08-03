@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
 
 import '../config/theme/app_theme.dart';
 import '../constants/app_constants.dart';
+import '../providers/keyboard_action_provider.dart';
 import 'app_search_bar.dart';
 import 'filter_select.dart';
 
@@ -78,6 +80,7 @@ class ListToolbar extends StatelessWidget {
                           tipBuilder: (context, _) => Text(createLabel),
                           child: fu.FButton.icon(
                             size: .sm,
+                            variant: .primary,
                             semanticsLabel: createLabel,
                             onPress: onCreate,
                             child: const Icon(fu.FLucideIcons.plus),
@@ -86,6 +89,7 @@ class ListToolbar extends StatelessWidget {
                       else
                         fu.FButton(
                           size: .sm,
+                          variant: .primary,
                           mainAxisSize: .min,
                           prefix: const Icon(fu.FLucideIcons.plus),
                           onPress: onCreate,
@@ -121,7 +125,7 @@ class ListToolbarLayout extends InheritedWidget {
   bool updateShouldNotify(ListToolbarLayout oldWidget) => iconOnly != oldWidget.iconOnly;
 }
 
-class _FilterTrigger extends StatefulWidget {
+class _FilterTrigger extends ConsumerStatefulWidget {
   final int activeFilterCount;
   final Widget filterPanel;
   final bool iconOnly;
@@ -135,10 +139,10 @@ class _FilterTrigger extends StatefulWidget {
   });
 
   @override
-  State<_FilterTrigger> createState() => _FilterTriggerState();
+  ConsumerState<_FilterTrigger> createState() => _FilterTriggerState();
 }
 
-class _FilterTriggerState extends State<_FilterTrigger> with SingleTickerProviderStateMixin {
+class _FilterTriggerState extends ConsumerState<_FilterTrigger> with SingleTickerProviderStateMixin {
   late final fu.FPopoverController _popoverController = fu.FPopoverController(vsync: this);
   final Object _groupId = Object();
 
@@ -207,6 +211,17 @@ class _FilterTriggerState extends State<_FilterTrigger> with SingleTickerProvide
 
   @override
   Widget build(BuildContext context) {
+    // Watch the filter toggle provider — keyboard shortcut triggers this.
+    ref.listen(filterToggleProvider, (prev, next) {
+      if (prev == next) return;
+      final paneWidth = MediaQuery.sizeOf(context).width;
+      if (paneWidth < 400) {
+        _openSheet();
+      } else {
+        _popoverController.toggle();
+      }
+    });
+
     final paneWidth = MediaQuery.sizeOf(context).width;
     final useSheet = paneWidth < 400;
     final popoverMaxWidth = math.min(360.0, paneWidth - 32);

@@ -19,7 +19,10 @@ class FocusApp extends StatelessWidget {
       localizationsDelegates: const [...FLocalizations.localizationsDelegates],
       debugShowCheckedModeBanner: false,
       theme: theme.toApproximateMaterialTheme(),
-      builder: (_, child) => FTheme(data: theme, child: child!),
+      builder: (_, child) => FTheme(
+        data: theme,
+        child: FToaster(child: child!),
+      ),
     );
   }
 }

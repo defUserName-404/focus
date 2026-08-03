@@ -178,6 +178,8 @@ Commit titles should default to Conventional Commit types (`feat`, `fix`, `refac
 | `lib/features/notifications/presentation/screens/notifications_screen.dart` | Notifications inbox UI |
 | `lib/features/tasks/domain/services/task_reminder_planner.dart` | Task reminder scheduling logic |
 | `lib/core/constants/app_constants.dart` | Shared spacing/sizing constants |
+| `lib/features/onboarding/presentation/screens/onboarding_screen.dart` | Multi-step first-run flow (welcome → tour → name → done) |
+| `lib/core/utils/greeting.dart` | Pure time-of-day greeting with optional name suffix |
 
 ## Agent Self-Update Protocol (Mandatory)
 

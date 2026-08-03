@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
-class AppSearchBar extends StatefulWidget {
+import '../providers/keyboard_action_provider.dart';
+
+class AppSearchBar extends ConsumerStatefulWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final ValueChanged<String> onChanged;
@@ -20,12 +23,14 @@ class AppSearchBar extends StatefulWidget {
   });
 
   @override
-  State<AppSearchBar> createState() => _AppSearchBarState();
+  ConsumerState<AppSearchBar> createState() => _AppSearchBarState();
 }
 
-class _AppSearchBarState extends State<AppSearchBar> {
+class _AppSearchBarState extends ConsumerState<AppSearchBar> {
   late final TextEditingController _controller;
   late final bool _ownsController;
+  late final FocusNode _focusNode;
+  late final bool _ownsFocusNode;
   Timer? _debounce;
 
   @override
@@ -39,6 +44,14 @@ class _AppSearchBarState extends State<AppSearchBar> {
       _ownsController = true;
     }
     _controller.addListener(_onTextChanged);
+
+    if (widget.focusNode != null) {
+      _focusNode = widget.focusNode!;
+      _ownsFocusNode = false;
+    } else {
+      _focusNode = FocusNode();
+      _ownsFocusNode = true;
+    }
   }
 
   @override
@@ -46,6 +59,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
     _debounce?.cancel();
     _controller.removeListener(_onTextChanged);
     if (_ownsController) _controller.dispose();
+    if (_ownsFocusNode) _focusNode.dispose();
     super.dispose();
   }
 
@@ -58,9 +72,15 @@ class _AppSearchBarState extends State<AppSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch the search focus toggle — keyboard shortcut triggers this.
+    ref.listen(searchFocusToggleProvider, (prev, next) {
+      if (prev == next) return;
+      _focusNode.requestFocus();
+    });
+
     return FTextField(
       control: FTextFieldControl.managed(controller: _controller),
-      focusNode: widget.focusNode,
+      focusNode: _focusNode,
       hint: widget.hint,
       prefixBuilder: (_, _, _) =>
           const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0), child: Icon(FLucideIcons.search)),

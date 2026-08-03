@@ -4,12 +4,14 @@ import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/platform_utils.dart';
+import '../../../sync/presentation/widgets/local_backup_card.dart';
 import '../../../sync/presentation/widgets/sync_settings_card.dart';
 import '../../domain/entities/setting.dart';
 import '../providers/settings_provider.dart';
 import 'audio_accordion.dart';
 import 'ambience_toggle_card.dart';
 import 'desktop_toggle_card.dart';
+import 'keyboard_shortcuts_section.dart';
 import 'section_title.dart';
 import 'timer_settings_card.dart';
 
@@ -25,7 +27,9 @@ class SettingsContent extends ConsumerWidget {
     final desktopPrefsAsync = ref.watch(desktopSettingsProvider);
 
     return ListView(
-      padding: EdgeInsets.symmetric(vertical: AppConstants.spacing.regular),
+      padding: EdgeInsets.symmetric(
+        vertical: AppConstants.spacing.regular,
+      ).copyWith(bottom: AppConstants.spacing.extraLarge * 2),
       children: [
         const SectionTitle(title: 'Focus Audio'),
         SizedBox(height: AppConstants.spacing.regular),
@@ -69,7 +73,12 @@ class SettingsContent extends ConsumerWidget {
           SizedBox(height: AppConstants.spacing.regular),
           desktopPrefsAsync.when(
             loading: () => const Center(child: fu.FCircularProgress()),
-            error: (err, _) => fu.FCard(child: Text('Desktop settings unavailable: $err')),
+            error: (err, _) => fu.FCard(
+              child: Padding(
+                padding: EdgeInsets.all(AppConstants.spacing.regular),
+                child: Text('Desktop settings unavailable: $err'),
+              ),
+            ),
             data: (desktopPrefs) => Column(
               children: [
                 DesktopToggleCard(
@@ -85,6 +94,8 @@ class SettingsContent extends ConsumerWidget {
                   enabled: desktopPrefs.launchAtStartupEnabled,
                   onChanged: notifier.setDesktopLaunchAtStartupEnabled,
                 ),
+                SizedBox(height: AppConstants.spacing.small),
+                const KeyboardShortcutsSection(),
               ],
             ),
           ),
@@ -93,7 +104,10 @@ class SettingsContent extends ConsumerWidget {
         const SectionTitle(title: 'Cloud Sync'),
         SizedBox(height: AppConstants.spacing.regular),
         const SyncSettingsCard(),
-        SizedBox(height: AppConstants.spacing.extraLarge),
+        SizedBox(height: AppConstants.spacing.large),
+        const SectionTitle(title: 'Local backup'),
+        SizedBox(height: AppConstants.spacing.regular),
+        const LocalBackupCard(),
       ],
     );
   }
