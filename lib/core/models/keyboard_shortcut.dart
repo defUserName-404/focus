@@ -1,7 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../providers/keyboard_action_provider.dart';
 import '../routing/routes.dart';
 import '../utils/platform_utils.dart';
 import '../../features/projects/presentation/commands/project_commands.dart';
@@ -99,6 +101,12 @@ abstract final class KeyboardShortcuts {
     KeyboardShortcut(
       key: LogicalKeyboardKey.keyF,
       displayLabel: 'F',
+      description: 'Search',
+      actionBuilder: _focusSearch,
+    ),
+    KeyboardShortcut(
+      key: LogicalKeyboardKey.keyF,
+      displayLabel: 'F',
       description: 'Toggle filter',
       shift: true,
       actionBuilder: _toggleFilter,
@@ -131,7 +139,14 @@ void _goProjects(BuildContext context) => context.go(AppRoutes.projects.path);
 void _goReports(BuildContext context) => context.go(AppRoutes.reports.path);
 void _goNotifications(BuildContext context) => context.go(AppRoutes.notifications.path);
 void _startSession(BuildContext context) => context.push(AppRoutes.focusSession.path);
-void _toggleFilter(BuildContext context) => context.go(AppRoutes.tasks.path);
+void _focusSearch(BuildContext context) {
+  ProviderScope.containerOf(context).read(searchFocusToggleProvider.notifier).increment();
+}
+
+void _toggleFilter(BuildContext context) {
+  ProviderScope.containerOf(context).read(filterToggleProvider.notifier).increment();
+}
+
 void _goBack(BuildContext context) {
   if (context.canPop()) context.pop();
 }

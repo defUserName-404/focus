@@ -22,13 +22,11 @@ class _KeyboardShortcutsSectionState extends State<KeyboardShortcutsSection> {
       subtitle: 'Quick actions for power users',
       isExpanded: _expanded,
       onToggle: () => setState(() => _expanded = !_expanded),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Wrap(
+        spacing: AppConstants.spacing.extraLarge,
+        runSpacing: AppConstants.spacing.small,
         children: [
-          for (var i = 0; i < KeyboardShortcuts.all.length; i++) ...[
-            if (i > 0) SizedBox(height: AppConstants.spacing.small),
-            _ShortcutRow(shortcut: KeyboardShortcuts.all[i]),
-          ],
+          for (final shortcut in KeyboardShortcuts.all) SizedBox(width: 260, child: _ShortcutRow(shortcut: shortcut)),
         ],
       ),
     );
