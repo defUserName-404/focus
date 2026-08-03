@@ -58,8 +58,16 @@ class ConfirmationDialog extends StatelessWidget {
               mainAxisAlignment: .end,
               spacing: 8,
               children: [
-                fu.FButton(onPress: () => Navigator.pop(context), variant: .ghost, child: Text(cancelLabel)),
                 fu.FButton(
+                  size: .sm,
+                  mainAxisSize: .min,
+                  onPress: () => Navigator.pop(context),
+                  variant: .ghost,
+                  child: Text(cancelLabel),
+                ),
+                fu.FButton(
+                  size: .sm,
+                  mainAxisSize: .min,
                   onPress: () {
                     Navigator.pop(context);
                     onConfirm();

@@ -17,7 +17,7 @@ class FocusScreenNotifier extends _$FocusScreenNotifier {
   @override
   FocusScreenState build() {
     // Listen for session state changes to start/stop the inactivity timer.
-    // We only want immersive mode (hiding controls) when the session is RUNNING or ON_BREAK.
+    // Immersive mode (hiding controls) only while RUNNING or ON_BREAK.
     ref.listen(focusTimerProvider.select((s) => s?.state), (prev, next) {
       final isRunning = next == SessionState.running || next == SessionState.onBreak;
       if (isRunning) {

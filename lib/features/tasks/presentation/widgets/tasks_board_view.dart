@@ -167,46 +167,79 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
         detail: 'Create a task to start organizing by status.',
       );
     }
-    final board = context.isCompact
-        ? Column(
-            children: [
-              Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final usePaged = context.isCompact;
+        final board = usePaged
+            ? Column(
                 children: [
-                  IconButton(
-                    onPressed: _compactPage > 0
-                        ? () => _pageController.previousPage(
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeOut,
-                          )
-                        : null,
-                    icon: const Icon(fu.FLucideIcons.chevronLeft),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: _compactPage > 0
+                            ? () => _pageController.previousPage(
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOut,
+                              )
+                            : null,
+                        icon: const Icon(fu.FLucideIcons.chevronLeft),
+                      ),
+                      Expanded(
+                        child: Text(
+                          TaskStatus.values[_compactPage].label,
+                          textAlign: TextAlign.center,
+                          style: context.typography.sm.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _compactPage < TaskStatus.values.length - 1
+                            ? () => _pageController.nextPage(
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOut,
+                              )
+                            : null,
+                        icon: const Icon(fu.FLucideIcons.chevronRight),
+                      ),
+                    ],
                   ),
                   Expanded(
-                    child: Text(
-                      TaskStatus.values[_compactPage].label,
-                      textAlign: TextAlign.center,
-                      style: context.typography.sm.copyWith(fontWeight: FontWeight.w700),
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: TaskStatus.values.length,
+                      onPageChanged: (index) => setState(() => _compactPage = index),
+                      itemBuilder: (context, index) {
+                        final status = TaskStatus.values[index];
+                        return _BoardColumn(
+                          status: status,
+                          tasks: columns[status]!,
+                          selectedTaskId: widget.selectedTaskId,
+                          onOpenTask: _openTask,
+                          onDragStarted: _onDragStarted,
+                          onDragEnded: _onDragEnded,
+                          onDragUpdate: _onDragUpdate,
+                          onDrop: (task, insertIndex) => _moveTask(
+                            task: task,
+                            targetStatus: status,
+                            insertIndex: insertIndex,
+                            targetColumn: columns[status]!,
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  IconButton(
-                    onPressed: _compactPage < TaskStatus.values.length - 1
-                        ? () => _pageController.nextPage(
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeOut,
-                          )
-                        : null,
-                    icon: const Icon(fu.FLucideIcons.chevronRight),
-                  ),
                 ],
-              ),
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: TaskStatus.values.length,
-                  onPageChanged: (index) => setState(() => _compactPage = index),
-                  itemBuilder: (context, index) {
-                    final status = TaskStatus.values[index];
-                    return _BoardColumn(
+              )
+            : ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.only(right: AppConstants.spacing.small),
+                itemCount: TaskStatus.values.length,
+                separatorBuilder: (_, _) => SizedBox(width: AppConstants.spacing.small),
+                itemBuilder: (context, index) {
+                  final status = TaskStatus.values[index];
+                  final columnWidth = 168.0;
+                  return SizedBox(
+                    width: columnWidth,
+                    child: _BoardColumn(
                       status: status,
                       tasks: columns[status]!,
                       selectedTaskId: widget.selectedTaskId,
@@ -220,47 +253,22 @@ class _TasksBoardViewState extends ConsumerState<TasksBoardView> {
                         insertIndex: insertIndex,
                         targetColumn: columns[status]!,
                       ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          )
-        : Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final status in TaskStatus.values) ...[
-                if (status != TaskStatus.values.first) SizedBox(width: AppConstants.spacing.small),
-                Expanded(
-                  child: _BoardColumn(
-                    status: status,
-                    tasks: columns[status]!,
-                    selectedTaskId: widget.selectedTaskId,
-                    onOpenTask: _openTask,
-                    onDragStarted: _onDragStarted,
-                    onDragEnded: _onDragEnded,
-                    onDragUpdate: _onDragUpdate,
-                    onDrop: (task, insertIndex) => _moveTask(
-                      task: task,
-                      targetStatus: status,
-                      insertIndex: insertIndex,
-                      targetColumn: columns[status]!,
                     ),
-                  ),
-                ),
-              ],
-            ],
-          );
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _goToColumn(_compactPage - 1),
-        const SingleActivator(LogicalKeyboardKey.arrowRight): () => _goToColumn(_compactPage + 1),
-        const SingleActivator(LogicalKeyboardKey.digit1): () => _goToColumn(0),
-        const SingleActivator(LogicalKeyboardKey.digit2): () => _goToColumn(1),
-        const SingleActivator(LogicalKeyboardKey.digit3): () => _goToColumn(2),
-        const SingleActivator(LogicalKeyboardKey.digit4): () => _goToColumn(3),
+                  );
+                },
+              );
+        return CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _goToColumn(_compactPage - 1),
+            const SingleActivator(LogicalKeyboardKey.arrowRight): () => _goToColumn(_compactPage + 1),
+            const SingleActivator(LogicalKeyboardKey.digit1): () => _goToColumn(0),
+            const SingleActivator(LogicalKeyboardKey.digit2): () => _goToColumn(1),
+            const SingleActivator(LogicalKeyboardKey.digit3): () => _goToColumn(2),
+            const SingleActivator(LogicalKeyboardKey.digit4): () => _goToColumn(3),
+          },
+          child: Focus(autofocus: PlatformUtils.isDesktop, child: board),
+        );
       },
-      child: Focus(autofocus: PlatformUtils.isDesktop, child: board),
     );
   }
 }
@@ -570,17 +578,25 @@ class _BoardCardState extends State<_BoardCard> {
     final card = AppCard(
       onTap: widget.onTap,
       isCompleted: widget.task.isCompleted,
+      dense: true,
       mouseCursor: _dragging ? SystemMouseCursors.grabbing : SystemMouseCursors.grab,
       title: Text(widget.task.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-      trailing: TaskPriorityBadge(priority: widget.task.priority),
-      subtitle: (widget.task.description != null && widget.task.description!.isNotEmpty)
-          ? Text(
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TaskPriorityBadge(priority: widget.task.priority),
+          if (widget.task.description != null && widget.task.description!.isNotEmpty) ...[
+            SizedBox(height: AppConstants.spacing.extraSmall),
+            Text(
               widget.task.description!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: context.typography.xs.copyWith(color: context.colors.mutedForeground),
-            )
-          : null,
+            ),
+          ],
+        ],
+      ),
     );
 
     final feedback = Material(

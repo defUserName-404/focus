@@ -3,18 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:focus/core/widgets/confirmation_dialog.dart';
 import 'package:focus/core/routing/routes.dart';
+import 'package:focus/core/utils/platform_utils.dart';
 import 'package:focus/core/utils/result.dart';
 import 'package:focus/features/projects/domain/entities/project.dart';
 import 'package:focus/features/projects/presentation/providers/project_provider.dart';
 import 'package:focus/features/projects/presentation/providers/project_template_provider.dart';
+import 'package:focus/features/projects/presentation/providers/projects_pane_form_provider.dart';
 
 class ProjectCommands {
   static void create(BuildContext context) {
+    if (!context.isCompact) {
+      context.go(AppRoutes.projects.path);
+      ProviderScope.containerOf(context).read(projectsPaneFormProvider.notifier).showCreate();
+      return;
+    }
     context.push(AppRoutes.createProject.path);
   }
 
   static void edit(BuildContext context, Project project) {
     if (project.id == null) return;
+    if (!context.isCompact) {
+      ProviderScope.containerOf(context).read(projectsPaneFormProvider.notifier).showEdit(project);
+      return;
+    }
     context.push(AppRoutes.editProjectPath(project.id!), extra: project);
   }
 

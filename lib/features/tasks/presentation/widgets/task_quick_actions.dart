@@ -4,7 +4,6 @@ import 'package:forui/forui.dart' as fu;
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../session/presentation/commands/focus_commands.dart';
 import '../../domain/entities/task.dart';
 import '../commands/task_commands.dart';
 import '../providers/task_provider.dart';
@@ -27,16 +26,12 @@ class TaskQuickActions extends ConsumerWidget {
         ),
         SizedBox(height: AppConstants.spacing.regular),
         Wrap(
-          spacing: AppConstants.spacing.regular,
-          runSpacing: AppConstants.spacing.regular,
+          spacing: AppConstants.spacing.small,
+          runSpacing: AppConstants.spacing.small,
           children: [
-            if (!task.isCompleted)
-              fu.FButton(
-                onPress: () => FocusCommands.start(context, ref, taskId: task.id!),
-                prefix: const Icon(fu.FLucideIcons.play, size: 14),
-                child: const Text('Start Focus'),
-              ),
             fu.FButton(
+              size: .sm,
+              mainAxisSize: .min,
               variant: .outline,
               onPress: () =>
                   TaskCommands.create(context, projectId: projectId, parentTaskId: task.id, depth: task.depth + 1),
@@ -44,12 +39,22 @@ class TaskQuickActions extends ConsumerWidget {
               child: const Text('Add Subtask'),
             ),
             fu.FButton(
+              size: .sm,
+              mainAxisSize: .min,
               variant: .outline,
-              onPress: () => ref.read(taskProvider(projectId.toString()).notifier).toggleTaskCompletion(task),
+              onPress: () {
+                if (task.isRecurring && task.id != null) {
+                  ref.read(taskProvider(projectId.toString()).notifier).completeOccurrence(task, DateTime.now());
+                } else {
+                  ref.read(taskProvider(projectId.toString()).notifier).toggleTaskCompletion(task);
+                }
+              },
               prefix: Icon(task.isCompleted ? fu.FLucideIcons.rotateCcw : fu.FLucideIcons.check, size: 14),
               child: Text(task.isCompleted ? 'Reopen' : 'Complete'),
             ),
             fu.FButton(
+              size: .sm,
+              mainAxisSize: .min,
               variant: .outline,
               onPress: () => TaskCommands.edit(context, task),
               prefix: const Icon(fu.FLucideIcons.pencil, size: 14),

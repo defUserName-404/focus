@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:focus/core/utils/date_time_utils.dart';
-
+import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/utils/datetime_formatter.dart';
 import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/base_form_screen.dart';
@@ -16,11 +15,15 @@ import '../../domain/entities/task_extensions.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/entities/task_reminder_mode.dart';
 import '../providers/task_provider.dart';
+import '../widgets/task_recurrence_fields.dart';
 
 class EditTaskScreen extends ConsumerStatefulWidget {
   final Task task;
+  final bool isEmbedded;
+  final VoidCallback? onDismiss;
+  final ValueChanged<Task>? onSaved;
 
-  const EditTaskScreen({super.key, required this.task});
+  const EditTaskScreen({super.key, required this.task, this.isEmbedded = false, this.onDismiss, this.onSaved});
 
   @override
   ConsumerState<EditTaskScreen> createState() => _EditTaskScreenState();
@@ -34,6 +37,8 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
   late DateTime? _endDate;
   late TaskPriority _priority;
   late TaskReminderMode _reminderMode;
+  late bool _isHabit;
+  late RecurrencePreset _recurrencePreset;
 
   @override
   void initState() {
@@ -49,6 +54,8 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
     _endDate = widget.task.endDate;
     _priority = widget.task.priority;
     _reminderMode = widget.task.reminderMode;
+    _isHabit = widget.task.isHabit;
+    _recurrencePreset = TaskRecurrenceFields.presetFromRule(widget.task.recurrenceRule);
   }
 
   @override
@@ -59,11 +66,25 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
     super.dispose();
   }
 
+  void _finish(Task task) {
+    if (widget.onSaved != null) {
+      widget.onSaved!(task);
+      return;
+    }
+    if (widget.onDismiss != null) {
+      widget.onDismiss!();
+      return;
+    }
+    if (mounted) context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseFormScreen(
       title: 'Edit Task',
       submitButtonText: 'Save',
+      isEmbedded: widget.isEmbedded,
+      onDismiss: widget.onDismiss,
       onSubmit: _submit,
       fields: [
         FTextFormField(
@@ -94,7 +115,7 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
           hint: _startDate?.toDateString() ?? 'Select Start Date (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _startDate,
-            onChange: (date) => setState(() => _startDate = date),
+            onChange: (date) => setState(() => _startDate = DateTimeUtils.normalizeLocal(date)),
           ),
           clearable: true,
         ),
@@ -104,7 +125,7 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
           hint: _endDate?.toDateString() ?? 'Select End Date (Optional)',
           selectionControl: FDateSelectionControl.liftedSingle(
             value: _endDate,
-            onChange: (date) => setState(() => _endDate = date),
+            onChange: (date) => setState(() => _endDate = DateTimeUtils.normalizeLocal(date)),
           ),
           validator: (value) => AppFormValidator.startDateBeforeEndDate(_startDate, value),
           autovalidateMode: AutovalidateMode.onUnfocus,
@@ -136,6 +157,17 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
             },
             autovalidateMode: AutovalidateMode.onUnfocus,
           ),
+        TaskRecurrenceFields(
+          isHabit: _isHabit,
+          preset: _recurrencePreset,
+          onHabitChanged: (value) => setState(() => _isHabit = value),
+          onPresetChanged: (value) => setState(() {
+            _recurrencePreset = value;
+            if (value != RecurrencePreset.none && !_isHabit) {
+              _isHabit = true;
+            }
+          }),
+        ),
       ],
     );
   }
@@ -151,18 +183,25 @@ class _EditTaskScreenState extends ConsumerState<EditTaskScreen> {
       return;
     }
 
+    final recurrenceRule = TaskRecurrenceFields.ruleForPreset(_recurrencePreset, anchor: _startDate);
+
     final updated = widget.task.copyWith(
       title: title,
       description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
       priority: _priority,
       reminderMode: _reminderMode,
       customReminderMinutesBefore: customMinutesBefore == null ? null : customMinutesBefore * 60,
-      startDate: _startDate,
-      endDate: _endDate,
+      startDate: DateTimeUtils.normalizeLocal(_startDate),
+      endDate: DateTimeUtils.normalizeLocal(_endDate),
+      recurrenceRule: recurrenceRule,
+      recurrenceAnchorDate: recurrenceRule != null
+          ? (_startDate ?? widget.task.recurrenceAnchorDate ?? DateTimeUtils.now())
+          : null,
+      isHabit: _isHabit || recurrenceRule != null,
       updatedAt: DateTimeUtils.now(),
     );
 
     await ref.read(taskProvider(widget.task.projectId.toString()).notifier).updateTask(updated);
-    if (mounted) context.pop();
+    if (mounted) _finish(updated);
   }
 }

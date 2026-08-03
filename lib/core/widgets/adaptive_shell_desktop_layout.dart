@@ -1,9 +1,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart' as fu;
+import 'package:go_router/go_router.dart';
 
 import '../../../features/session/presentation/widgets/mini_player_overlay.dart';
 import '../config/theme/app_theme.dart';
 import '../constants/app_constants.dart';
+import '../routing/routes.dart';
 import 'keyboard_shortcuts.dart';
 
 class DesktopNavDestination {
@@ -40,11 +42,23 @@ class AdaptiveShellDesktopLayout extends StatelessWidget {
                   padding: EdgeInsets.all(AppConstants.spacing.regular),
                   child: Text('Focus', style: context.typography.xl.copyWith(fontWeight: FontWeight.w700)),
                 ),
+                footer: Padding(
+                  padding: EdgeInsets.all(AppConstants.spacing.regular),
+                  child: fu.FSidebarItem(
+                    icon: Icon(fu.FLucideIcons.settings),
+                    label: Text('Settings', style: context.typography.md.copyWith(fontWeight: FontWeight.w600)),
+                    selected: false,
+                    onPress: () => context.push(AppRoutes.settings.path),
+                  ),
+                ),
                 children: [
                   for (var i = 0; i < destinations.length; i++)
                     fu.FSidebarItem(
                       icon: Icon(destinations[i].icon),
-                      label: Text(destinations[i].label),
+                      label: Text(
+                        destinations[i].label,
+                        style: context.typography.md.copyWith(fontWeight: FontWeight.w600),
+                      ),
                       selected: i == currentIndex,
                       onPress: () => onTabChanged(i),
                     ),

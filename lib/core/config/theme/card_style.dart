@@ -55,7 +55,7 @@ FCardStyle cardStyle({required FColors colors, required FTypography typography, 
   decoration: BoxDecoration(
     border: .all(color: colors.border),
     borderRadius: style.borderRadius.md,
-    color: colors.secondary.withValues(alpha: 0.20),
+    color: colors.card,
   ),
   titleTextStyle: typography.body.xl2.copyWith(fontWeight: .w800, color: colors.foreground, height: 1.5),
   subtitleTextStyle: typography.body.sm.copyWith(color: colors.mutedForeground),

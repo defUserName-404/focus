@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart' as fu;
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/routing/routes.dart';
 import '../../../../core/widgets/list_toolbar.dart';
 import '../../domain/entities/all_tasks_filter_state.dart';
+import '../commands/task_commands.dart';
 import '../models/task_selection.dart';
 import '../providers/all_tasks_provider.dart';
 import '../providers/tasks_view_mode_provider.dart';
@@ -78,7 +77,7 @@ class AllTasksContent extends ConsumerWidget {
                 ),
               ),
           ],
-          onCreate: isEmbedded ? () => context.push(AppRoutes.createTaskWithProject.path) : null,
+          onCreate: isEmbedded ? () => TaskCommands.createWithProject(context) : null,
           createLabel: 'Create Task',
         ),
         SizedBox(height: AppConstants.spacing.small),

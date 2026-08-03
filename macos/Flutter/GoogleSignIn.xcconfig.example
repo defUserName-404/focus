@@ -1,0 +1,9 @@
+// Copy to GoogleSignIn.xcconfig and fill in your OAuth iOS/macOS client ID.
+// Reversed scheme: YOUR_PREFIX.apps.googleusercontent.com
+//   → com.googleusercontent.apps.YOUR_PREFIX
+//
+// GOOGLE_CLIENT_ID=123456789-abcdef.apps.googleusercontent.com
+// GOOGLE_REVERSED_CLIENT_ID=com.googleusercontent.apps.123456789-abcdef
+
+GOOGLE_CLIENT_ID=
+GOOGLE_REVERSED_CLIENT_ID=

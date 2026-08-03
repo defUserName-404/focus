@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
 
+import '../../../../core/config/google_oauth_config.dart';
 import '../../../../core/services/log_service.dart';
 import '../../../../core/utils/result.dart';
 import '../../domain/entities/sync_data.dart';
@@ -25,6 +26,12 @@ const _syncFileName = 'focus_sync_data.json';
 /// [GoogleSignInAccount.authorizationClient].
 class GoogleDriveService implements ICloudStorageService {
   static const _scopes = [drive.DriveApi.driveAppdataScope];
+  static const _missingClientLog =
+      'Google Sign-In is not configured. Set GOOGLE_CLIENT_ID via dart-define '
+      'and Info.plist / GoogleSignIn.xcconfig. See .agents/docs/commands.md.';
+  static const _missingClientUserMessage = "Google Sign-In isn't set up in this build.";
+  static const _signInFailedUserMessage = "Couldn't sign in to Google. Try again.";
+  static const _signInCancelledUserMessage = 'Sign-in was cancelled.';
 
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   GoogleSignInAccount? _account;
@@ -37,7 +44,7 @@ class GoogleDriveService implements ICloudStorageService {
   }
 
   Future<void> _initialize() async {
-    await _googleSignIn.initialize();
+    await _googleSignIn.initialize(clientId: GoogleOAuthConfig.isConfigured ? GoogleOAuthConfig.clientId : null);
     if (_listening) return;
     _listening = true;
     _googleSignIn.authenticationEvents.listen((event) {
@@ -49,6 +56,40 @@ class GoogleDriveService implements ICloudStorageService {
           _driveApi = null;
       }
     });
+  }
+
+  @override
+  Future<Result<String>> signIn() async {
+    if (!GoogleOAuthConfig.isConfigured) {
+      _log.error(_missingClientLog, tag: 'GoogleDriveService');
+      return const Failure(SyncFailure(_missingClientUserMessage));
+    }
+    try {
+      await _ensureInitialized();
+      final account = await _googleSignIn.authenticate(scopeHint: _scopes);
+      _account = account;
+      // Reset cached API client so the new auth is used.
+      _driveApi = null;
+      _log.info('Google Drive sign-in successful: ${account.email}', tag: 'GoogleDriveService');
+      return Success(account.email);
+    } on GoogleSignInException catch (e, st) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return const Failure(SyncFailure(_signInCancelledUserMessage));
+      }
+      _log.error('Google Drive sign-in failed', tag: 'GoogleDriveService', error: e, stackTrace: st);
+      return Failure(SyncFailure(_signInFailedUserMessage, error: e, stackTrace: st));
+    } catch (e, st) {
+      _log.error('Google Drive sign-in failed', tag: 'GoogleDriveService', error: e, stackTrace: st);
+      if (_isMissingGidClientError(e)) {
+        return const Failure(SyncFailure(_missingClientUserMessage));
+      }
+      return Failure(SyncFailure(_signInFailedUserMessage, error: e, stackTrace: st));
+    }
+  }
+
+  bool _isMissingGidClientError(Object error) {
+    final text = error.toString();
+    return text.contains('GIDClientID') || text.contains('No active configuration');
   }
 
   Future<drive.DriveApi?> _getDriveApi() async {
@@ -75,6 +116,7 @@ class GoogleDriveService implements ICloudStorageService {
 
   @override
   Future<bool> isSignedIn() async {
+    if (!GoogleOAuthConfig.isConfigured) return false;
     await _ensureInitialized();
     if (_account != null) return true;
     final lightweight = _googleSignIn.attemptLightweightAuthentication();
@@ -85,30 +127,9 @@ class GoogleDriveService implements ICloudStorageService {
 
   @override
   Future<String?> getAccountEmail() async {
+    if (!GoogleOAuthConfig.isConfigured) return null;
     await _ensureInitialized();
     return _account?.email;
-  }
-
-  @override
-  Future<Result<String>> signIn() async {
-    try {
-      await _ensureInitialized();
-      final account = await _googleSignIn.authenticate(scopeHint: _scopes);
-      _account = account;
-      // Reset cached API client so the new auth is used.
-      _driveApi = null;
-      _log.info('Google Drive sign-in successful: ${account.email}', tag: 'GoogleDriveService');
-      return Success(account.email);
-    } on GoogleSignInException catch (e, st) {
-      if (e.code == GoogleSignInExceptionCode.canceled) {
-        return const Failure(SyncFailure('Sign-in was cancelled'));
-      }
-      _log.error('Google Drive sign-in failed', tag: 'GoogleDriveService', error: e, stackTrace: st);
-      return Failure(SyncFailure('Failed to sign in to Google Drive', error: e, stackTrace: st));
-    } catch (e, st) {
-      _log.error('Google Drive sign-in failed', tag: 'GoogleDriveService', error: e, stackTrace: st);
-      return Failure(SyncFailure('Failed to sign in to Google Drive', error: e, stackTrace: st));
-    }
   }
 
   @override

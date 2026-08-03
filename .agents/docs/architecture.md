@@ -136,18 +136,23 @@ Navigation UX split:
 - Desktop/tablet shell: side rail keeps separate `Reports` and `Notifications` entries
 - Settings is a utility destination (header/rail action), not a primary tab
 - Reports expands window-scoped insights (habit consistency, estimates, time breakdowns,
-  throughput) via `ITaskStatsRepository` SQL aggregates; CSV export copies the active window
+  throughput) via `ITaskStatsRepository` SQL aggregates; CSV export uses a save-file dialog
+  (clipboard fallback if cancelled)
 
 ## Layout Architecture
 
 Core layout widgets:
 - `AdaptiveShell`
-- `MasterDetailLayout`
+- `MasterDetailLayout` (resizable; Tasks/Projects master widths persist via settings)
 - `ConstrainedContent`
+- `BaseFormScreen` (`isEmbedded` for detail-pane create/edit on desktop)
 
 Guidelines:
 - Compact/mobile layouts should avoid double-applied page padding.
 - Embedded list screens and standalone list screens may use different spacing strategies.
+- On expanded Tasks/Projects, create/edit open in the detail pane via pane-form providers
+  (`tasksPaneFormProvider` / `projectsPaneFormProvider`); compact keeps full-screen routes.
+- Embedded detail headers use an explicit back/close that clears selection (not `context.pop`).
 
 ## Database Architecture
 
@@ -234,6 +239,16 @@ Inbox behavior:
 - Notification taps should deep-link to the exact destination payload when possible.
 - Task reminder payloads include both task id and project id.
 - In-app inbox reads a notification event stream plus upcoming task reminder projections.
+
+## Onboarding
+
+- **Path:** `lib/features/onboarding/`
+- **Trigger:** `redirect:` callback in `appRouter` (lib/core/routing/app_router.dart) routes new installs to `/onboarding` until `onboarding_completed = 'true'`.
+- **Persistence:** reuses the existing key-value `settings_table`; no schema change. Keys: `display_name`, `onboarding_completed`.
+- **Container wiring:** router reads `userPreferencesProvider` via a global `ProviderContainer` (`appRouterContainer`) so the redirect is decoupled from any widget tree.
+- **Greeting:** `greetingFor({String? name, DateTime? now})` in `lib/core/utils/greeting.dart` is a pure function; the dashboard reads it via `userPreferencesProvider`. Both the home header and the desktop sidebar share the same provider.
+- **DI:** `OnboardingService` registered in `_initOnboardingDi()` in `lib/core/di/injection.dart`, depends on `SettingsService`.
+- **Flow:** 5-step `PageView` — Welcome, Deep work sessions, Projects & tasks, Insights that matter, Name capture. All steps skippable via `FHeaderAction.x` in the header suffix. Progress via `FDeterminateProgress`.
 
 ## Required Code Generation
 

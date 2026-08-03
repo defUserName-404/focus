@@ -47,7 +47,7 @@ class ReportsScreen extends ConsumerWidget {
         suffixes: const [ReportsCsvExportButton()],
       ),
       child: ConstrainedContent(
-        maxWidth: 800,
+        maxWidth: 840,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -135,7 +135,7 @@ final class TaskNotifierProvider extends $NotifierProvider<TaskNotifier, AsyncVa
   }
 }
 
-String _$taskNotifierHash() => r'21e7549a43ba8c1c71a79a787464fd700ce54a0b';
+String _$taskNotifierHash() => r'0ee9dd86da62fa29e7cc4e051f5dd14942994bc9';
 
 final class TaskNotifierFamily extends $Family
     with

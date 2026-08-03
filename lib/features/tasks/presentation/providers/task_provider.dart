@@ -7,6 +7,7 @@ import '../../domain/entities/task.dart';
 import '../../domain/entities/task_priority.dart';
 import '../../domain/entities/task_reminder_mode.dart';
 import '../../domain/entities/task_status.dart';
+import '../../domain/entities/recurrence_rule.dart';
 import '../../domain/repositories/i_task_repository.dart';
 import '../../domain/services/task_service.dart';
 import 'task_filter_state.dart';

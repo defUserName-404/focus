@@ -9,6 +9,8 @@ class MasterDetailLayout extends StatelessWidget {
   final Widget? detail;
   final Widget emptyDetail;
   final double masterWidth;
+  final ValueChanged<double>? onMasterWidthChanged;
+  final double minMasterWidth;
 
   const MasterDetailLayout({
     super.key,
@@ -16,6 +18,8 @@ class MasterDetailLayout extends StatelessWidget {
     this.detail,
     required this.emptyDetail,
     this.masterWidth = 360,
+    this.onMasterWidthChanged,
+    this.minMasterWidth = 280,
   });
 
   @override
@@ -28,19 +32,22 @@ class MasterDetailLayout extends StatelessWidget {
 
     return fu.FResizable(
       axis: .horizontal,
+      control: fu.FResizableControl.managedCascade(
+        onResizeEnd: onMasterWidthChanged == null
+            ? null
+            : (regions) {
+                if (regions.isEmpty) return;
+                onMasterWidthChanged!(regions.first.extent.current);
+              },
+      ),
       children: [
         fu.FResizableRegion.fixed(
           extent: masterWidth,
-          minExtent: 280,
+          minExtent: minMasterWidth,
           builder: (context, _, child) => child!,
           child: master,
         ),
-        fu.FResizableRegion.flex(
-          flex: 1,
-          minFlex: 1,
-          builder: (context, _, child) => child!,
-          child: detail ?? emptyDetail,
-        ),
+        fu.FResizableRegion.flex(flex: 1, builder: (context, _, child) => child!, child: detail ?? emptyDetail),
       ],
     );
   }
