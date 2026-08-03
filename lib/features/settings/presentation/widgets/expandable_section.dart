@@ -6,6 +6,7 @@ import '../../../../core/constants/app_constants.dart';
 
 class ExpandableSection extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final bool isExpanded;
   final VoidCallback onToggle;
   final Widget child;
@@ -13,6 +14,7 @@ class ExpandableSection extends StatelessWidget {
   const ExpandableSection({
     super.key,
     required this.title,
+    this.subtitle,
     required this.isExpanded,
     required this.onToggle,
     required this.child,
@@ -32,7 +34,14 @@ class ExpandableSection extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: context.typography.sm.copyWith(fontWeight: FontWeight.w600)),
+                        if (subtitle != null)
+                          Text(subtitle!, style: context.typography.xs.copyWith(color: context.colors.mutedForeground)),
+                      ],
+                    ),
                   ),
                   AnimatedRotation(
                     turns: isExpanded ? 0.5 : 0,

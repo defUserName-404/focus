@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../features/projects/presentation/commands/project_commands.dart';
-import '../../features/tasks/presentation/commands/task_commands.dart';
-import '../utils/platform_utils.dart';
+import '../../core/models/keyboard_shortcut.dart';
 
 class AppKeyboardShortcuts extends StatelessWidget {
   final Widget child;
@@ -13,18 +9,10 @@ class AppKeyboardShortcuts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final meta = PlatformUtils.isDesktop;
     return CallbackShortcuts(
       bindings: {
-        SingleActivator(LogicalKeyboardKey.keyN, control: !meta, meta: meta): () {
-          TaskCommands.createWithProject(context);
-        },
-        SingleActivator(LogicalKeyboardKey.keyP, control: !meta, meta: meta): () {
-          ProjectCommands.create(context);
-        },
-        const SingleActivator(LogicalKeyboardKey.escape): () {
-          if (context.canPop()) context.pop();
-        },
+        for (final s in KeyboardShortcuts.all)
+          if (s.actionBuilder != null) s.activator: () => s.actionBuilder!(context),
       },
       child: Focus(autofocus: true, child: child),
     );

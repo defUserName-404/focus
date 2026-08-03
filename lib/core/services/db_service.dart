@@ -238,9 +238,7 @@ class AppDatabase extends _$AppDatabase {
 
         // Backfill task status from legacy is_completed bool.
         // Hardcoded indices: old enum was todo=0, inProgress=1, blocked=2, done=3.
-        await customStatement(
-          'UPDATE task_table SET status = CASE WHEN is_completed = 1 THEN 3 ELSE 0 END',
-        );
+        await customStatement('UPDATE task_table SET status = CASE WHEN is_completed = 1 THEN 3 ELSE 0 END');
 
         await customStatement('CREATE INDEX IF NOT EXISTS task_status_idx ON task_table(status)');
         await customStatement('CREATE INDEX IF NOT EXISTS task_sort_order_idx ON task_table(sort_order)');

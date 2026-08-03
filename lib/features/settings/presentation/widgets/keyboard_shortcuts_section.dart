@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/config/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/utils/platform_utils.dart';
+import '../../../../core/models/keyboard_shortcut.dart';
 import 'expandable_section.dart';
 
 class KeyboardShortcutsSection extends StatefulWidget {
@@ -17,20 +17,18 @@ class _KeyboardShortcutsSectionState extends State<KeyboardShortcutsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final modifier = PlatformUtils.isMacOS ? '\u2318' : 'Ctrl';
-
     return ExpandableSection(
       title: 'Keyboard Shortcuts',
+      subtitle: 'Quick actions for power users',
       isExpanded: _expanded,
       onToggle: () => setState(() => _expanded = !_expanded),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _ShortcutRow(keys: [modifier, 'N'], description: 'Create new task'),
-          SizedBox(height: AppConstants.spacing.small),
-          _ShortcutRow(keys: [modifier, 'P'], description: 'Create new project'),
-          SizedBox(height: AppConstants.spacing.small),
-          _ShortcutRow(keys: const ['Esc'], description: 'Go back / close'),
+          for (var i = 0; i < KeyboardShortcuts.all.length; i++) ...[
+            if (i > 0) SizedBox(height: AppConstants.spacing.small),
+            _ShortcutRow(shortcut: KeyboardShortcuts.all[i]),
+          ],
         ],
       ),
     );
@@ -38,19 +36,21 @@ class _KeyboardShortcutsSectionState extends State<KeyboardShortcutsSection> {
 }
 
 class _ShortcutRow extends StatelessWidget {
-  final List<String> keys;
-  final String description;
+  final KeyboardShortcut shortcut;
 
-  const _ShortcutRow({required this.keys, required this.description});
+  const _ShortcutRow({required this.shortcut});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _KeyCap(keys: keys),
+        _KeyCap(keys: shortcut.displayKeys),
         SizedBox(width: AppConstants.spacing.regular),
         Expanded(
-          child: Text(description, style: context.typography.sm.copyWith(color: context.colors.mutedForeground)),
+          child: Text(
+            shortcut.description,
+            style: context.typography.sm.copyWith(color: context.colors.mutedForeground),
+          ),
         ),
       ],
     );

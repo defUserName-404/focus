@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
@@ -59,57 +60,68 @@ class _FocusSessionScreenState extends ConsumerState<FocusSessionScreen> {
 
     return PopScope(
       canPop: true,
-      child: GestureDetector(
-        onTap: () => ref.read(focusScreenProvider.notifier).onUserInteraction(),
-        behavior: HitTestBehavior.translucent,
-        child: Stack(
-          children: [
-            FScaffold(
-              header: FHeader.nested(prefixes: [FHeaderAction.back(onPress: () => context.pop())]),
-              child: Center(
-                child: Column(
-                  children: [
-                    AnimatedOpacity(
-                      duration: AppConstants.animation.medium,
-                      opacity: screenState.isControlsVisible ? 1.0 : 0.0,
-                      child: const FocusTaskInfo(),
-                    ),
-                    SizedBox(height: AppConstants.spacing.small),
-                    if (progress != null) ...[
-                      (() {
-                        final label = progress.isFocusPhase ? 'FOCUS' : 'BREAK';
-                        return AnimatedOpacity(
+      child: CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.space): () {
+            ref.read(focusScreenProvider.notifier).onUserInteraction();
+            ref.read(focusTimerProvider.notifier).togglePlayPause();
+          },
+        },
+        child: Focus(
+          autofocus: true,
+          child: GestureDetector(
+            onTap: () => ref.read(focusScreenProvider.notifier).onUserInteraction(),
+            behavior: HitTestBehavior.translucent,
+            child: Stack(
+              children: [
+                FScaffold(
+                  header: FHeader.nested(prefixes: [FHeaderAction.back(onPress: () => context.pop())]),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        AnimatedOpacity(
                           duration: AppConstants.animation.medium,
                           opacity: screenState.isControlsVisible ? 1.0 : 0.0,
-                          child: AnimatedSwitcher(
-                            duration: AppConstants.animation.medium,
-                            switchInCurve: Curves.easeOut,
-                            switchOutCurve: Curves.easeIn,
-                            child: FBadge(key: ValueKey(label), variant: .secondary, child: Text(label)),
-                          ),
-                        );
-                      })(),
-                    ],
-                    SizedBox(height: AppConstants.spacing.regular),
-                    AnimatedOpacity(
-                      duration: AppConstants.animation.medium,
-                      opacity: screenState.isControlsVisible ? 1.0 : 0.0,
-                      child: const AmbienceMarqueeRow(),
+                          child: const FocusTaskInfo(),
+                        ),
+                        SizedBox(height: AppConstants.spacing.small),
+                        if (progress != null) ...[
+                          (() {
+                            final label = progress.isFocusPhase ? 'FOCUS' : 'BREAK';
+                            return AnimatedOpacity(
+                              duration: AppConstants.animation.medium,
+                              opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                              child: AnimatedSwitcher(
+                                duration: AppConstants.animation.medium,
+                                switchInCurve: Curves.easeOut,
+                                switchOutCurve: Curves.easeIn,
+                                child: FBadge(key: ValueKey(label), variant: .secondary, child: Text(label)),
+                              ),
+                            );
+                          })(),
+                        ],
+                        SizedBox(height: AppConstants.spacing.regular),
+                        AnimatedOpacity(
+                          duration: AppConstants.animation.medium,
+                          opacity: screenState.isControlsVisible ? 1.0 : 0.0,
+                          child: const AmbienceMarqueeRow(),
+                        ),
+                        const Spacer(flex: 1),
+                        const CircularTimer(),
+                        SizedBox(height: AppConstants.spacing.extraLarge),
+                        FocusControlsWithCallback(
+                          onCompleteTask: _onCompleteTask,
+                          controlsVisible: screenState.isControlsVisible,
+                        ),
+                        const Spacer(flex: 2),
+                      ],
                     ),
-                    const Spacer(flex: 1),
-                    const CircularTimer(),
-                    SizedBox(height: AppConstants.spacing.extraLarge),
-                    FocusControlsWithCallback(
-                      onCompleteTask: _onCompleteTask,
-                      controlsVisible: screenState.isControlsVisible,
-                    ),
-                    const Spacer(flex: 2),
-                  ],
+                  ),
                 ),
-              ),
+                if (screenState.showCompletion) CompletionOverlay(onDismiss: _onAnimationDone),
+              ],
             ),
-            if (screenState.showCompletion) CompletionOverlay(onDismiss: _onAnimationDone),
-          ],
+          ),
         ),
       ),
     );

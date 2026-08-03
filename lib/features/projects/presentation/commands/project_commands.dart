@@ -13,6 +13,7 @@ import 'package:focus/features/projects/presentation/providers/projects_pane_for
 class ProjectCommands {
   static void create(BuildContext context) {
     if (!context.isCompact) {
+      context.go(AppRoutes.projects.path);
       ProviderScope.containerOf(context).read(projectsPaneFormProvider.notifier).showCreate();
       return;
     }
