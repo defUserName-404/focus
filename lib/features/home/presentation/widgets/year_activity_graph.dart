@@ -27,12 +27,19 @@ class _YearActivityGraphState extends ConsumerState<YearActivityGraph> {
   OverlayEntry? _tooltip;
   Timer? _tooltipTimer;
   bool _disposed = false;
+  TappedDateNotifier? _tappedDateNotifier;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToToday());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tappedDateNotifier ??= ref.read(tappedDateProvider.notifier);
   }
 
   @override
